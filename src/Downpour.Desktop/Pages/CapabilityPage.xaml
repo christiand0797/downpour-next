@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page x:Class="Downpour_Desktop.Pages.CapabilityPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      mc:Ignorable="d">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Padding="32,28,32,40" Spacing="22" MaxWidth="1100" HorizontalAlignment="Left">
+            <StackPanel Spacing="6">
+                <TextBlock x:Name="GroupLabel" Style="{StaticResource SubtitleTextBlockStyle}" />
+                <TextBlock x:Name="TitleLabel" Style="{StaticResource TitleTextBlockStyle}" />
+                <TextBlock x:Name="DescriptionLabel" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+            </StackPanel>
+            <Border Padding="22" CornerRadius="12" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                <StackPanel Spacing="12">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <FontIcon x:Name="StatusIcon" FontSize="18" />
+                        <TextBlock x:Name="StatusLabel" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <TextBlock x:Name="StatusDetail" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                    <TextBlock x:Name="SourceLabel" FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+            <Border Padding="22" CornerRadius="12" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                <StackPanel Spacing="10">
+                    <TextBlock FontSize="17" FontWeight="SemiBold" Text="Porting plan" />
+                    <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="1. Map this screen to the original capability and its data contracts." TextWrapping="Wrap" />
+                    <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="2. Move collection and analysis into the isolated Windows service." TextWrapping="Wrap" />
+                    <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="3. Add a typed, permission-checked service API and connect the desktop view." TextWrapping="Wrap" />
+                    <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="4. Verify parity, error handling, accessibility, and performance before marking this route implemented." TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Downpour.Desktop (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "Downpour.Desktop (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

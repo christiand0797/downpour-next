@@ -1,0 +1,499 @@
+[
+  {
+    "family": "Core Engines & Detection Modules",
+    "module": "downpour_v29_titanium.py",
+    "description": "Main application file (51,800+ lines). Contains GUI, controller, and integrates all subsystems.",
+    "sourceStatus": "Active (Core)",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Core Engines & Detection Modules",
+    "module": "advanced_threat_engine.py",
+    "description": "Primary threat detection framework and correlation logic.",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Core Engines & Detection Modules",
+    "module": "advanced_threat_analyzer.py",
+    "description": "In-depth file and process behavior analysis.",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Core Engines & Detection Modules",
+    "module": "threat_detection_engine.py",
+    "description": "Signature and heuristic based threat detection routing.",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Core Engines & Detection Modules",
+    "module": "ransomware_detector.py",
+    "description": "Entropy monitoring, shadow copy watch, canary files/honeytokens.",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Core Engines & Detection Modules",
+    "module": "kimwolf_botnet_detector.py",
+    "description": "Specific detection logic and IOCs for Kimwolf and other botnets (150+ IOCs).",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Core Engines & Detection Modules",
+    "module": "ai_security_engine.py",
+    "description": "ML-powered anomaly detection and KEV correlation.",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Core Engines & Detection Modules",
+    "module": "ml_behavioral_analyzer.py",
+    "description": "Behavioral baselining and anomaly scoring using sklearn.",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Core Engines & Detection Modules",
+    "module": "ml_optimization_engine.py",
+    "description": "Optimization for machine learning inference and training tasks.",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Core Engines & Detection Modules",
+    "module": "behavior_scanner.py",
+    "description": "Scans for known malicious behavior patterns and injects alerts.",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Core Engines & Detection Modules",
+    "module": "behavioral_analyzer.py",
+    "description": "Base behavioral analytics functions (often superseded by ML variants).",
+    "sourceStatus": "Legacy/Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Core Engines & Detection Modules",
+    "module": "sigma_engine.py",
+    "description": "Sigma rule ingestion (24 bundled rules + `sigma_rules/` YAML/JSON loader) matched against process cmdlines and PowerShell 4104 script blocks.",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Core Engines & Detection Modules",
+    "module": "yara_x_engine.py",
+    "description": "YARA-X (Rust) scan engine over `yara_rules/*.yar` with lenient compile + yara-python fallback.",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Core Engines & Detection Modules",
+    "module": "c2_beacon_detector.py",
+    "description": "Statistical C2 beacon detection (CV/jitter), DGA domain analysis, reverse shells.",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Core Engines & Detection Modules",
+    "module": "dns_cache_watch.py",
+    "description": "Resolver-cache surveillance: DGA scoring over every cached lookup, TOFU baseline.",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Core Engines & Detection Modules",
+    "module": "misp_feed.py",
+    "description": "MISP REST client (incremental attribute sync, disabled until configured).",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Core Engines & Detection Modules",
+    "module": "child_process_guard.py",
+    "description": "Windows Job Object containment: children die with parent, breakaway refused.",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Core Engines & Detection Modules",
+    "module": "firmware_posture.py",
+    "description": "BitLocker/Secure Boot/TPM/LSA-PPL/CredGuard/VBS-HVCI/SMBv1/patch posture checks.",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Core Engines & Detection Modules",
+    "module": "stix_taxii_feed.py",
+    "description": "TAXII 2.1 client + STIX 2.1 pattern extraction (disabled until configured).",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Core Engines & Detection Modules",
+    "module": "pe_analyzer.py",
+    "description": "Static PE analysis: sections, entropy, packer ID, import clustering, 0–100 risk score.",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Core Engines & Detection Modules",
+    "module": "persistence_watchers.py",
+    "description": "Registry Run/Winlogon baseline+diff, DLL-hijack shadows, new-driver/BYOVD monitor.",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Core Engines & Detection Modules",
+    "module": "event_log_monitor.py",
+    "description": "Windows Event Log watch: 7045/4698/4720/1102/104/4104/4625.",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Core Engines & Detection Modules",
+    "module": "port_firewall_unblock.py",
+    "description": "Detect + remove ALL Downpour firewall rules (22+ prefixes, dry-run default, audited).",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Core Engines & Detection Modules",
+    "module": "amsi_integration.py",
+    "description": "AMSI integration: AmsiScanString via ctypes + 22-pattern script-block analyzer.",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Core Engines & Detection Modules",
+    "module": "event_push_monitor.py",
+    "description": "EvtSubscribe push delivery of the same hostile-event set (zero poll latency) + 4104→Sigma + 4104→AMSI bridge.",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Core Engines & Detection Modules",
+    "module": "sysmon_monitor.py",
+    "description": "Sysmon event log monitor (process/network/file/DNS/registry) via wevtutil.",
+    "sourceStatus": "Active (wired via security monitors v29.55)",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Core Engines & Detection Modules",
+    "module": "lolbins_detector.py",
+    "description": "LOLBins abuse with parent-child correlation and MITRE mapping.",
+    "sourceStatus": "Active (wired via detection engine v29.54)",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Core Engines & Detection Modules",
+    "module": "dga_detector.py",
+    "description": "DGA domain detection (entropy + n-gram scoring).",
+    "sourceStatus": "Active (wired via detection engine v29.54)",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Core Engines & Detection Modules",
+    "module": "ioc_scanner.py",
+    "description": "Aho-Corasick multi-pattern IOC matching.",
+    "sourceStatus": "Active (available for scan paths)",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Threat Intelligence & Remediation",
+    "module": "threat_intelligence.py",
+    "description": "Legacy 11-source threat-intelligence downloader (not wired into the main app).",
+    "sourceStatus": "Legacy",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Threat Intelligence & Remediation",
+    "module": "threat_intelligence_updater.py",
+    "description": "KEV/EPSS/CVE live update engine, powers the OSINT feed aggregation.",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Threat Intelligence & Remediation",
+    "module": "threat_feed_aggregator.py",
+    "description": "Consolidates various OSINT feeds (URLhaus, AbuseCH, etc).",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Threat Intelligence & Remediation",
+    "module": "mega_threat_signatures.py",
+    "description": "750+ malware family signature database.",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Threat Intelligence & Remediation",
+    "module": "advanced_threat_remediation.py",
+    "description": "5-phase threat remediation engine (kill, quarantine, block, etc).",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Threat Intelligence & Remediation",
+    "module": "threat_response_center.py",
+    "description": "Automated response and mitigation logic.",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Threat Intelligence & Remediation",
+    "module": "emergency_response.py",
+    "description": "Incident response automation and isolation protocols.",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Monitors & Sensors",
+    "module": "process_monitor.py",
+    "description": "Live process tracking and injection detection.",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Monitors & Sensors",
+    "module": "network_monitor.py",
+    "description": "Live connection analysis, packet tracking, DNS tracking.",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Monitors & Sensors",
+    "module": "file_monitor.py",
+    "description": "File integrity and modification monitoring.",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Monitors & Sensors",
+    "module": "advanced_hardware_monitor.py",
+    "description": "CPU, RAM, Disk, and GPU telemetry extraction.",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Monitors & Sensors",
+    "module": "hardware_monitor_enhanced.py",
+    "description": "Enhanced hardware telemetry, thermal limits, and real-time load stats.",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Monitors & Sensors",
+    "module": "enhanced_hardware_integration.py",
+    "description": "Deep hardware integration logic for telemetry.",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Monitors & Sensors",
+    "module": "usb_protection.py",
+    "description": "USB device monitoring, blocking, and registry history.",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Scanners & Profilers",
+    "module": "file_scanner.py",
+    "description": "YARA + hash scan engine (integrates with yara_rules).",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Scanners & Profilers",
+    "module": "vulnerability_scanner.py",
+    "description": "CVE-aligned vulnerability assessment and system patch scanning.",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Scanners & Profilers",
+    "module": "iot_scanner.py",
+    "description": "IoT device fingerprinting, Mozi/Kimwolf detection on local subnets.",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Scanners & Profilers",
+    "module": "browser_protection.py",
+    "description": "Extension audit, history analysis (consolidated inline into main app v29.30).",
+    "sourceStatus": "Reference",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Scanners & Profilers",
+    "module": "email_security.py",
+    "description": "Phishing/malware email detection heuristics.",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Scanners & Profilers",
+    "module": "advanced_device_profiler.py",
+    "description": "Device/privilege profiler (evasion/bypass-capability oriented).",
+    "sourceStatus": "Declined for wiring",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Scanners & Profilers",
+    "module": "threat_hunt_engine.py",
+    "description": "Proactive hunt logic (LOLBAS, BYOVD, persistence mechanisms).",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Hardening & System Integration",
+    "module": "system_hardening.py",
+    "description": "DISA-STIG automated hardening and OS configuration checks.",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Hardening & System Integration",
+    "module": "security_hardening.py",
+    "description": "Additional security posture enforcement.",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Hardening & System Integration",
+    "module": "defender_compatibility.py",
+    "description": "Manages exclusions and integrations with Windows Defender.",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Hardening & System Integration",
+    "module": "defender_enhancer.py",
+    "description": "Enhances Defender capabilities via registry/powershell policies.",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Hardening & System Integration",
+    "module": "memory_forensics.py",
+    "description": "Memory dump analysis and process injection detection.",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Utilities, Memory, & Dashboard",
+    "module": "enhanced_memory_manager.py",
+    "description": "Memory pool management and garbage collection tuning.",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Utilities, Memory, & Dashboard",
+    "module": "enhanced_logging.py",
+    "description": "Advanced rotating file loggers and stream handlers.",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Utilities, Memory, & Dashboard",
+    "module": "enhanced_security_dashboard.py",
+    "description": "Dashboard metric aggregation and visual components.",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Utilities, Memory, & Dashboard",
+    "module": "enhanced_ui_components.py",
+    "description": "Custom Tkinter widgets (gauges, sparks, graphs).",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Utilities, Memory, & Dashboard",
+    "module": "adaptive_security_bypass.py",
+    "description": "Adaptive rule generation for bypassing known obfuscation.",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Utilities, Memory, & Dashboard",
+    "module": "device_adaptation_engine.py",
+    "description": "Adjusts scan intensity based on available hardware resources.",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Utilities, Memory, & Dashboard",
+    "module": "downpour_vpn_module.py",
+    "description": "VPN server fetching and configuration logic.",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Utilities, Memory, & Dashboard",
+    "module": "parental_controls.py",
+    "description": "Web filtering and app execution restriction logic.",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Utilities, Memory, & Dashboard",
+    "module": "backup_verifier.py",
+    "description": "Verifies integrity of critical system files/backups.",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Utilities, Memory, & Dashboard",
+    "module": "revolutionary_enhancements.py",
+    "description": "Experimental/beta feature staging ground.",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Utilities, Memory, & Dashboard",
+    "module": "advanced_file_analyzer.py",
+    "description": "Standalone file analysis tool (34.6 KB).",
+    "sourceStatus": "Orphaned",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Utilities, Memory, & Dashboard",
+    "module": "advanced_gauge_system.py",
+    "description": "Alternative gauge rendering (37.5 KB).",
+    "sourceStatus": "Orphaned",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Utilities, Memory, & Dashboard",
+    "module": "config.py",
+    "description": "Central config dict with ConfigWrapper (1.67 KB).",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Utilities, Memory, & Dashboard",
+    "module": "downpour_remote_access.py",
+    "description": "Remote access module (31.0 KB).",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Utilities, Memory, & Dashboard",
+    "module": "file_sandbox.py",
+    "description": "File sandboxing (2.1 KB).",
+    "sourceStatus": "Orphaned",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Utilities, Memory, & Dashboard",
+    "module": "gpu_detector_fix.py",
+    "description": "GPU detection fix utility (9.0 KB).",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  }
+]

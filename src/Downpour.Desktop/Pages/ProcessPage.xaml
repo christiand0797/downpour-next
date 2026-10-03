@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page x:Class="Downpour_Desktop.Pages.ProcessPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      mc:Ignorable="d">
+    <Grid Padding="28,24,28,28" RowSpacing="18">
+        <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
+        <Grid ColumnSpacing="16">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+            <StackPanel Spacing="5">
+                <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Text="LIVE SYSTEM INVENTORY" />
+                <TextBlock Style="{StaticResource TitleTextBlockStyle}" Text="Processes" />
+                <TextBlock x:Name="SnapshotStatus" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Waiting for the Downpour service…" />
+            </StackPanel>
+            <Button Grid.Column="1" Content="Refresh" Click="Refresh_Click" VerticalAlignment="Center">
+                <Button.KeyboardAccelerators><KeyboardAccelerator Key="R" Modifiers="Control" /></Button.KeyboardAccelerators>
+            </Button>
+        </Grid>
+        <Grid Grid.Row="1" ColumnSpacing="12">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+            <AutoSuggestBox x:Name="ProcessSearch" PlaceholderText="Filter by process name or PID" TextChanged="ProcessSearch_TextChanged" />
+            <TextBlock x:Name="ProcessCount" Grid.Column="1" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+        </Grid>
+        <ListView x:Name="ProcessList" Grid.Row="2" ItemsSource="{x:Bind Processes}" SelectionMode="None" IsItemClickEnabled="False">
+            <ListView.Header>
+                <Grid Padding="14,10" ColumnSpacing="12" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="70" /><ColumnDefinition Width="2*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="90" /></Grid.ColumnDefinitions>
+                    <TextBlock FontWeight="SemiBold" Text="PID" />
+                    <TextBlock Grid.Column="1" FontWeight="SemiBold" Text="PROCESS" />
+                    <TextBlock Grid.Column="2" FontWeight="SemiBold" Text="WORKING SET" />
+                    <TextBlock Grid.Column="3" FontWeight="SemiBold" Text="THREADS" />
+                </Grid>
+            </ListView.Header>
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <Grid Padding="14,9" ColumnSpacing="12">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="70" /><ColumnDefinition Width="2*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="90" /></Grid.ColumnDefinitions>
+                        <TextBlock Text="{Binding ProcessId}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <TextBlock Grid.Column="1" Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+                        <TextBlock Grid.Column="2" Text="{Binding MemoryDisplay}" />
+                        <TextBlock Grid.Column="3" Text="{Binding ThreadCount}" />
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+            <ListView.Footer>
+                <TextBlock Padding="14,12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Read-only snapshot. Command lines, handles, and response actions are not collected in this build." TextWrapping="Wrap" />
+            </ListView.Footer>
+        </ListView>
+    </Grid>
+</Page>
