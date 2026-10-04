@@ -21,7 +21,7 @@ This project aims to preserve every Downpour v29 capability and improve its usab
 
 ### 1. Observe and inventory
 
-- Port process, network, system resource, Windows event, and Windows service snapshots. System/process and network adapter/TCP inventories are live read-only slices. Windows Event Log samples 35 fixed v29 event IDs across seven channels; Windows Services has a bounded service-state/startup-type view. Event metadata now feeds persistent, stable-ID alerts with deduplication, bounded retention, local acknowledge/suppress/reopen review state, and two explicitly limited cross-channel time-proximity patterns. Remaining: continuous push subscriptions, Sigma/AMSI content analysis, Sysmon/ETW, broader correlation, full v29 investigation lifecycle, and response actions.
+- Port process, network, system resource, Windows event, and Windows service snapshots. System/process and network adapter/TCP inventories are live read-only slices. Windows Event Log samples 35 fixed v29 event IDs across seven channels, with future-event push subscriptions, a bounded callback queue, visible subscription/drop warnings, and polling fallback; Windows Services has a bounded service-state/startup-type view. Event metadata feeds persistent, stable-ID alerts with deduplication, bounded retention, local acknowledge/suppress/reopen review state, and two explicitly limited cross-channel time-proximity patterns. Remaining: Sigma/AMSI content analysis, Sysmon/ETW, broader correlation, full v29 investigation lifecycle, and response actions.
 - Add health and freshness states to the dashboard.
 - Use a single sensor snapshot per interval, then fan it out to consumers.
 - Reconcile the registry against every feature, watcher, setting, and background task in the Python source.

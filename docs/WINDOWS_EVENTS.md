@@ -2,7 +2,7 @@
 
 ## Working behavior
 
-While `Downpour.Service` is running, the service samples seven fixed local Windows Event Log channels every 15 seconds and keeps the latest bounded snapshot in memory. The Event Monitor page refreshes from the service snapshot, with search and severity filters. It does not need to remain open for collection to continue.
+While `Downpour.Service` is running, the service samples seven fixed local Windows Event Log channels every 15 seconds and subscribes to future allow-listed events with Windows `EventLogWatcher`. The push path coalesces short bursts for 150 ms and processes bounded batches through a 512-record channel; each published snapshot remains capped at 256 unique observations. The Event Monitor page refreshes from the service snapshot, with search and severity filters. It does not need to remain open for collection to continue.
 
 The current allowlist follows v29's 35 event/channel pairs:
 
@@ -16,10 +16,12 @@ The current allowlist follows v29's 35 event/channel pairs:
 
 Event message bodies, script text, usernames, process command lines, and event XML are not sent to the desktop or persisted. The service sends the channel, provider name, event ID, record ID, UTC timestamp, fixed severity/technique label, and a stable summary. Windows/Defender/firewall/RDP channels may be disabled or permission-restricted; each unavailable source is shown as a warning, not an empty healthy sensor.
 
-Windows Security Event 4625 is not shown individually. The service runs a bounded five-minute query and emits one high-severity brute-force observation at ten or more failures. The count is capped at 100 per sample and is only a threshold signal; it does not identify the account or source address.
+The watcher query is constructed only from the fixed event/channel catalog and starts with existing-event delivery disabled; it does not replay the historical log. A watcher failure is surfaced in bounded source warnings while the 15-second/24-hour polling path continues. If the push queue fills, new records are dropped rather than blocking Windows' callback thread, and the cumulative drop count is shown; polling remains the recovery path for records still inside its lookback and result limits. Therefore push delivery improves latency but is not a durable event journal and does not guarantee delivery through downtime, log rollover, permissions failure, or resource exhaustion. The alert SQLite projection remains deduplicated by channel/record identity.
+
+Windows Security Event 4625 is not shown individually. The push callback discards individual 4625 records; the service instead runs a bounded five-minute query and emits one high-severity brute-force observation at ten or more failures. The count is capped at 100 per sample and is only a threshold signal; it does not identify the account or source address.
 
 ## Limits and parity work
 
-This is an event observation slice, not the finished detection or response system. The service polls every 15 seconds; v29's push subscription, alert queue/lifecycle, investigation evidence, and suppressions are not yet ported. PowerShell 4104 script contents are intentionally not collected, so the original heuristic/Sigma/AMSI script analysis is not implemented here. Sysmon, ETW, registry/file/device watchers, cross-source correlation, durable alert history, notification delivery, and response actions remain outstanding. See `WORK_QUEUE.json` DN-004, DN-005, DN-007, and DN-008.
+This is an event observation slice, not the finished detection or response system. Push delivery and polling are active, but they do not form a durable event journal. PowerShell 4104 script contents are intentionally not collected, so the original heuristic/Sigma/AMSI script analysis is not implemented here. Sysmon, ETW, registry/file/device watchers, broader cross-source correlation, richer investigation evidence, notification delivery, and response actions remain outstanding. The current service smoke check opened watchers for 7/7 channels, while its polling account could read 6/7; channel health is machine- and permission-dependent. See `WORK_QUEUE.json` DN-004, DN-005, DN-007, and DN-008.
 
-No event automatically changes system state. All data remains in memory and is cleared when the sensor service exits.
+No event automatically changes system state. The latest event snapshot and push queue are memory-only and clear when the service exits. Validated, minimized alert metadata is retained by the separate local SQLite alert store under its documented 30-day/10,000-row policy; event message bodies are not persisted.

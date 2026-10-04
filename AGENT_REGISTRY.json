@@ -5,10 +5,10 @@
     {
       "id": "codex-primary",
       "role": "primary",
-      "taskId": "DN-005",
-      "status": "idle",
-      "heartbeatUtc": "2026-10-04T21:11:35Z",
-      "notes": "Completed and pushed DN-005 cross-channel alert correlation in 29a0d4d; v0.1.7 portable x64 package built from that commit and saved locally. 70 Release tests pass; 0 build warnings/errors. ZIP SHA-256 106C09CB9DFCD4506000C709433991395AEF41FA13FBF1EAF57F4C42EA1963C. Next: manually verify Alerts correlation summary/export picker in native app; continue DN-005 broader detection parity. v29 remains read-only."
+      "taskId": "DN-004",
+      "status": "active",
+      "heartbeatUtc": "2026-10-04T21:22:54Z",
+      "notes": "Implemented real-time allow-listed EventLogWatcher subscriptions with bounded queue, deduplicating batch merge, persistent failure/drop health warnings, and 15-second polling fallback. Release build clean; 74 tests pass; service smoke opened watchers for 7/7 channels (poll reads 6/7 on this host). Preparing local package and release; v29 remains read-only."
     },
     {
       "id": "v29_action_map",

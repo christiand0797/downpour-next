@@ -71,6 +71,64 @@ public sealed class SecurityEventProvider
 
     public static IReadOnlyCollection<int> WatchedEventIds => SecurityEventCatalog.WatchedEventIds;
 
+    /// <summary>Subscribes only to allow-listed future event IDs and forwards minimized metadata.</summary>
+    public IDisposable SubscribePush(Action<SecurityEventObservation> onObservation, Action<string> onWarning, out int activeSources)
+    {
+        ArgumentNullException.ThrowIfNull(onObservation);
+        ArgumentNullException.ThrowIfNull(onWarning);
+        var watchers = new List<EventLogWatcher>();
+        foreach (var source in Sources)
+        {
+            EventLogWatcher? watcher = null;
+            try
+            {
+                var ids = string.Join(" or ", source.EventIds.Select(id => $"EventID={id}"));
+                var query = new EventLogQuery(source.LogName, PathType.LogName, $"*[System[({ids})]]")
+                {
+                    TolerateQueryErrors = false
+                };
+                watcher = new EventLogWatcher(query, null, readExistingEvents: false);
+                var capturedSource = source;
+                watcher.EventRecordWritten += (_, args) =>
+                {
+                    if (args.EventException is not null)
+                    {
+                        onWarning($"Live event subscription encountered a read error for {capturedSource.LogName}; periodic polling remains active.");
+                        return;
+                    }
+
+                    using var record = args.EventRecord;
+                    if (record is null || record.Id == 4625) return; // Brute-force findings require the bounded five-minute aggregate.
+                    try
+                    {
+                        var created = ToUtc(record.TimeCreated);
+                        if (created is null || created > DateTimeOffset.UtcNow.AddMinutes(1)) return;
+                        var observation = CreateObservation(capturedSource.LogName, record.ProviderName, record.Id, record.RecordId, created);
+                        if (observation is not null) onObservation(observation);
+                    }
+                    catch (Exception exception) when (exception is EventLogException or InvalidOperationException or ArgumentException or System.Security.SecurityException)
+                    {
+                        onWarning($"A live event from {capturedSource.LogName} could not be minimized; periodic polling remains active.");
+                    }
+                };
+                watcher.Enabled = true;
+                watchers.Add(watcher);
+                watcher = null;
+            }
+            catch (Exception exception) when (exception is EventLogNotFoundException or EventLogException or UnauthorizedAccessException or InvalidOperationException or ArgumentException or System.Security.SecurityException)
+            {
+                onWarning($"Live event subscription unavailable for {source.LogName}; periodic polling remains active.");
+            }
+            finally
+            {
+                watcher?.Dispose();
+            }
+        }
+
+        activeSources = watchers.Count;
+        return new EventWatcherGroup(watchers);
+    }
+
     public static SecurityEventObservation? CreateObservation(
         string logName, string? provider, int eventId, long? recordId, DateTimeOffset? createdAtUtc)
     {
@@ -107,9 +165,7 @@ public sealed class SecurityEventProvider
             {
                 if (record.Id is < 0 or > ushort.MaxValue) continue;
                 if (record.Id == 4625) continue;
-                DateTimeOffset? created = record.TimeCreated is { } time
-                    ? new DateTimeOffset(DateTime.SpecifyKind(time, time.Kind == DateTimeKind.Unspecified ? DateTimeKind.Local : time.Kind)).ToUniversalTime()
-                    : null;
+                var created = ToUtc(record.TimeCreated);
                 if (created is { } timestamp && timestamp > capturedAt + TimeSpan.FromMinutes(1)) continue;
                 var observation = CreateObservation(source.LogName, record.ProviderName, record.Id, record.RecordId, created);
                 if (observation is not null) results.Add(observation);
@@ -165,6 +221,22 @@ public sealed class SecurityEventProvider
         if (string.IsNullOrWhiteSpace(value)) return "Unknown provider";
         var clean = new string(value.Where(character => !char.IsControl(character)).Take(maximumLength).ToArray()).Trim();
         return clean.Length == 0 ? "Unknown provider" : clean;
+    }
+
+    private static DateTimeOffset? ToUtc(DateTime? value) => value is { } time
+        ? new DateTimeOffset(DateTime.SpecifyKind(time, time.Kind == DateTimeKind.Unspecified ? DateTimeKind.Local : time.Kind)).ToUniversalTime()
+        : null;
+
+    private sealed class EventWatcherGroup(List<EventLogWatcher> watchers) : IDisposable
+    {
+        public void Dispose()
+        {
+            foreach (var watcher in watchers)
+            {
+                try { watcher.Enabled = false; } catch (EventLogException) { }
+                watcher.Dispose();
+            }
+        }
     }
 
     private sealed record EventSource(string LogName, int[] EventIds);

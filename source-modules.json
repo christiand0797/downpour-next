@@ -149,7 +149,7 @@
   {
     "family": "Core Engines & Detection Modules",
     "module": "event_log_monitor.py",
-    "description": "Partial parity: service-backed fixed channel/ID polling, metadata-only alert persistence and local triage, bounded export, and two cautious cross-channel time-proximity patterns; v29 push delivery, content-based detection, Sysmon/ETW, and full investigation workflow remain.",
+    "description": "Partial parity: service-backed fixed channel/ID polling plus bounded EventLogWatcher future-event delivery, metadata-only alert persistence/local triage, bounded export, and two cautious cross-channel time-proximity patterns; content-based detection, Sysmon/ETW, and full investigation workflow remain.",
     "sourceStatus": "Active",
     "migrationStatus": "in-progress"
   },

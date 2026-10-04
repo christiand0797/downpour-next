@@ -6,6 +6,7 @@ namespace Downpour.Service;
 public sealed class SecurityEventMonitorService(
     SecurityEventProvider provider,
     SecurityEventSnapshotStore store,
+    SecurityEventPushStatus pushStatus,
     SecurityAlertRepository alerts,
     SecurityAlertSnapshotStore alertSnapshots,
     ILogger<SecurityEventMonitorService> logger) : BackgroundService
@@ -23,6 +24,10 @@ public sealed class SecurityEventMonitorService(
             try
             {
                 snapshot = await Task.Run(provider.Capture, stoppingToken);
+                snapshot = snapshot with
+                {
+                    Warnings = snapshot.Warnings.Concat(pushStatus.GetWarnings()).Distinct(StringComparer.Ordinal).Take(64).ToArray()
+                };
                 store.Publish(snapshot);
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
