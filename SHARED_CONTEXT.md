@@ -28,7 +28,7 @@ Build a native Windows successor that preserves Downpour v29's security capabili
 - The old Downpour source was searched for driver behavior. It includes a KernelDriverAuditor, BYOVD name/path checks, and a new-driver baseline monitor; no driver package maintenance UI/workflow was found in the targeted code/module-map search. See `docs/DESIGN_REFERENCES.md`.
 - TMOG informed graph semantics only, not page layout. CPU/memory and network samples are graphed without interpolating unavailable readings. Additional per-core, disk, GPU, thermal, energy, and history-replay views remain planned.
 - Other security engines, scans, all but the initial CISA KEV feed, event monitors, security-policy settings, hardening, forensics, AEGIS layers, and response actions remain unported.
-- Tests cover route-registry integrity, live system/driver/network providers, KEV feed parsing bounds/validation, missing-service behavior, and authenticated local IPC round-trips.
+- Tests cover route-registry integrity, live system/driver/network providers, KEV feed parsing bounds/validation, missing-service behavior, and authenticated local IPC round-trips. UI/Core JSON uses pinned Newtonsoft.Json 13.0.4, disables type-name handling, and bounds local/IPC payloads.
 - Windows CI and Dependabot are configured; package/action pins were reviewed. GitHub blocked the first workflow before job start because recent account payments failed or the spending limit needs to be increased. This account-level notice prevents verifying remote CI and Dependabot runs.
 
 ## How to run locally
@@ -49,8 +49,9 @@ Check: Dashboard should show an observe-only connection and live system metrics.
 
 ## Last verification
 
-- `dotnet build Downpour.slnx -c Debug`: passed with 0 warnings and 0 errors after adding the CISA KEV route and consolidated Settings page.
-- `dotnet test Downpour.slnx -c Debug`: 14 passed, 0 failed (includes malformed/duplicate/oversized KEV inputs). A first build was blocked by a stale local `Downpour.Service.exe`; the exact repo-local process was stopped and the rerun passed.
+- `dotnet build Downpour.slnx -c Debug`: passed with 0 warnings and 0 errors after adding CISA KEV, Settings, and bounded Json.NET IPC parsing.
+- `dotnet test Downpour.slnx -c Debug` and `-c Release`: 14 passed, 0 failed (includes malformed/duplicate/oversized KEV inputs).
+- Self-contained x64 desktop/service publish passed. Direct EXE startup initially crashed in generated WinRT `GlobalVtableLookup` with `ComInterfaceEntry` TypeLoadException. After replacing UI/Core JSON parsing with pinned Newtonsoft.Json 13.0.4 and rebuilding to a clean candidate path, the portable desktop EXE remained running in the launch smoke check. The candidate currently has no trusted signature; no installer was generated.
 - Manual named-pipe smoke test initially failed with `Access to the path is denied.` The ACL was updated with authenticated-reader synchronization/read-attributes/read-permissions rights, and a subsequent manual client received a valid schema-v1 snapshot. Four automated tests now pass, including the pipe integration test.
 - WinUI packaged app was captured via `PrintWindow`; live CPU/memory gauges/history, clear landscape, separate moon, visible rain mode control, and denser animated precipitation render. Network page is provider/IPC tested; native route interaction and narrow/high-DPI review remain outstanding.
 - GitHub private repo created and first commit pushed to `main`. GitHub connector returned 404 for the private repository, but the browser showed the created repository and `git push` succeeded.

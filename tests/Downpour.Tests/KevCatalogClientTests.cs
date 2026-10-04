@@ -1,5 +1,6 @@
 using System.Text;
 using Downpour.Core;
+using Newtonsoft.Json;
 
 namespace Downpour.Tests;
 
@@ -41,6 +42,16 @@ public sealed class KevCatalogClientTests
             """;
 
         Assert.Throws<InvalidDataException>(() => KevCatalogClient.Parse(Encoding.UTF8.GetBytes(json)));
+    }
+
+    [Fact]
+    public void ParseRejectsDuplicateJsonPropertiesAndComments()
+    {
+        var duplicate = ValidCatalog.Replace("\"catalogVersion\":\"2026.10.03\"", "\"catalogVersion\":\"2026.10.03\",\"catalogVersion\":\"forged\"");
+        var comment = ValidCatalog.Replace("{\"catalogVersion\"", "{/* untrusted comment */\"catalogVersion\"");
+
+        Assert.Throws<JsonReaderException>(() => KevCatalogClient.Parse(Encoding.UTF8.GetBytes(duplicate)));
+        Assert.Throws<JsonReaderException>(() => KevCatalogClient.Parse(Encoding.UTF8.GetBytes(comment)));
     }
 
     [Fact]

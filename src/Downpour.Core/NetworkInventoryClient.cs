@@ -1,16 +1,14 @@
 using System.IO.Pipes;
-using System.Text.Json;
 using Downpour.Contracts;
+using Newtonsoft.Json;
 
 namespace Downpour.Core;
 
 public sealed class NetworkInventoryClient(string pipeName = NetworkInventoryClient.PipeName)
 {
     public const string PipeName = "Downpour.NetworkInventory.v1";
-    private const int MaximumPayloadBytes = 1_048_576;
     private const int MaximumInterfaces = 32;
     private const int MaximumConnections = 256;
-    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
     private readonly string _pipeName = pipeName;
 
     public async Task<NetworkInventorySnapshot?> TryGetSnapshotAsync(CancellationToken cancellationToken = default)
@@ -22,17 +20,7 @@ public sealed class NetworkInventoryClient(string pipeName = NetworkInventoryCli
             await using var pipe = new NamedPipeClientStream(".", _pipeName, PipeDirection.In, PipeOptions.Asynchronous);
             await pipe.ConnectAsync(timeout.Token);
 
-            await using var payload = new MemoryStream();
-            var buffer = new byte[8192];
-            int read;
-            while ((read = await pipe.ReadAsync(buffer, timeout.Token)) > 0)
-            {
-                if (payload.Length + read > MaximumPayloadBytes) return null;
-                await payload.WriteAsync(buffer.AsMemory(0, read), timeout.Token);
-            }
-
-            payload.Position = 0;
-            var snapshot = await JsonSerializer.DeserializeAsync<NetworkInventorySnapshot>(payload, JsonOptions, timeout.Token);
+            var snapshot = await BoundedJson.DeserializeAsync<NetworkInventorySnapshot>(pipe, timeout.Token);
             if (snapshot is null || snapshot.SchemaVersion != 1 || snapshot.TotalConnectionCount < 0 ||
                 snapshot.Interfaces is null || snapshot.Connections is null || snapshot.Warnings is null ||
                 snapshot.Interfaces.Count > MaximumInterfaces || snapshot.Connections.Count > MaximumConnections || snapshot.Warnings.Count > 64 ||
@@ -60,7 +48,11 @@ public sealed class NetworkInventoryClient(string pipeName = NetworkInventoryCli
         {
             return null;
         }
-        catch (JsonException)
+        catch (JsonReaderException)
+        {
+            return null;
+        }
+        catch (JsonSerializationException)
         {
             return null;
         }

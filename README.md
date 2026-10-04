@@ -13,7 +13,7 @@ Downpour Next is the native Windows rebuild of Downpour. The target is complete 
 
 ## Build
 
-Requirements: Windows 10 version 2004 (build 19041) or newer, .NET 10 SDK, and the Windows App SDK 2.5.1 NuGet package. Open `Downpour.slnx` in Visual Studio with the WinUI workload, or use the .NET CLI:
+Requirements: Windows 10 version 2004 (build 19041) or newer, .NET 10 SDK, and the Windows App SDK 2.5.1 NuGet package. Open `Downpour.slnx` in Visual Studio with the WinUI workload, or use the .NET CLI. See [`docs/BUILD_WINDOWS.md`](docs/BUILD_WINDOWS.md) for the self-contained local Windows x64 build and portable launch steps. A signed installer is not available yet.
 
 ```powershell
 dotnet restore Downpour.slnx

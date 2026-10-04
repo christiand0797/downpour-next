@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using Downpour.Core;
+using Newtonsoft.Json;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 
@@ -38,7 +39,7 @@ public sealed partial class IntelPage : Page
             SourceDetails.Text = $"Catalog {catalog.CatalogVersion} · released {catalog.ReleasedOn:yyyy-MM-dd} · downloaded {catalog.RetrievedAtUtc.ToLocalTime():yyyy-MM-dd HH:mm:ss} · {_entries.Count:N0} validated records.";
             ApplyFilter();
         }
-        catch (Exception exception) when (exception is HttpRequestException or IOException or InvalidDataException or System.Text.Json.JsonException or TaskCanceledException)
+        catch (Exception exception) when (exception is HttpRequestException or IOException or InvalidDataException or JsonReaderException or JsonSerializationException or TaskCanceledException)
         {
             SourceState.Text = "SOURCE UNAVAILABLE · NO CURRENT DATA";
             SourceDetails.Text = exception is TaskCanceledException

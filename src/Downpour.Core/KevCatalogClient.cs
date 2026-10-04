@@ -1,6 +1,8 @@
 using System.Net;
-using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Text;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Downpour.Core;
 
@@ -53,28 +55,40 @@ public sealed class KevCatalogClient
         if (payload.Length is 0 or > MaximumPayloadBytes)
             throw new InvalidDataException("The KEV payload is empty or exceeds the configured size limit.");
 
-        using var document = JsonDocument.Parse(payload, new JsonDocumentOptions { MaxDepth = 24, CommentHandling = JsonCommentHandling.Disallow, AllowTrailingCommas = false });
-        var root = document.RootElement;
-        if (root.ValueKind != JsonValueKind.Object ||
-            !root.TryGetProperty("vulnerabilities", out var vulnerabilities) ||
-            vulnerabilities.ValueKind != JsonValueKind.Array || vulnerabilities.GetArrayLength() > MaximumEntries)
+        JObject root;
+        try
+        {
+            using var stream = new MemoryStream(payload.ToArray(), writable: false);
+            using var text = new StreamReader(stream, new UTF8Encoding(false, true), detectEncodingFromByteOrderMarks: false);
+            using var reader = new JsonTextReader(text) { MaxDepth = 24, DateParseHandling = DateParseHandling.None, SupportMultipleContent = false };
+            root = BoundedJson.ParseStrict(reader) as JObject
+                ?? throw new InvalidDataException("The KEV catalog root must be a JSON object.");
+            if (reader.Read()) throw new JsonReaderException("Unexpected trailing JSON content.");
+        }
+        catch (DecoderFallbackException exception)
+        {
+            throw new InvalidDataException("The KEV catalog is not valid UTF-8.", exception);
+        }
+        if (root.GetValue("vulnerabilities", StringComparison.OrdinalIgnoreCase) is not JArray vulnerabilities || vulnerabilities.Count > MaximumEntries)
             throw new InvalidDataException("The KEV catalog has an invalid envelope or too many records.");
+        if (root.GetValue("count", StringComparison.OrdinalIgnoreCase)?.Value<int?>() != vulnerabilities.Count)
+            throw new InvalidDataException("The KEV catalog record count does not match its envelope.");
 
         var version = RequiredString(root, "catalogVersion", 64);
         var released = RequiredDate(root, "dateReleased");
-        var rows = new List<KevEntry>(vulnerabilities.GetArrayLength());
+        var rows = new List<KevEntry>(vulnerabilities.Count);
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var item in vulnerabilities.EnumerateArray())
+        foreach (var item in vulnerabilities)
         {
-            if (item.ValueKind != JsonValueKind.Object) throw new InvalidDataException("The KEV catalog contains a malformed record.");
-            var cveId = RequiredString(item, "cveID", 32).ToUpperInvariant();
+            if (item is not JObject record) throw new InvalidDataException("The KEV catalog contains a malformed record.");
+            var cveId = RequiredString(record, "cveID", 32).ToUpperInvariant();
             if (!CvePattern.IsMatch(cveId) || !seen.Add(cveId))
                 throw new InvalidDataException("The KEV catalog contains an invalid or duplicate CVE identifier.");
-            var vendor = RequiredString(item, "vendorProject", 256);
-            var product = RequiredString(item, "product", 256);
-            var name = RequiredString(item, "vulnerabilityName", 512);
-            var dateAdded = RequiredDate(item, "dateAdded");
-            var description = OptionalString(item, "shortDescription", 2_000);
+            var vendor = RequiredString(record, "vendorProject", 256);
+            var product = RequiredString(record, "product", 256);
+            var name = RequiredString(record, "vulnerabilityName", 512);
+            var dateAdded = RequiredDate(record, "dateAdded");
+            var description = OptionalString(record, "shortDescription", 2_000);
             rows.Add(new KevEntry(cveId, vendor, product, name, dateAdded, description));
         }
 
@@ -87,27 +101,29 @@ public sealed class KevCatalogClient
         return new HttpClient(handler, disposeHandler: true) { Timeout = Timeout.InfiniteTimeSpan };
     }
 
-    private static string RequiredString(JsonElement obj, string property, int maxLength)
+    private static string RequiredString(JObject obj, string property, int maxLength)
     {
-        if (!obj.TryGetProperty(property, out var value) || value.ValueKind != JsonValueKind.String)
+        var value = obj.GetValue(property, StringComparison.OrdinalIgnoreCase);
+        if (value?.Type != JTokenType.String)
             throw new InvalidDataException($"The KEV record is missing {property}.");
-        var result = value.GetString()?.Trim();
+        var result = value.Value<string>()?.Trim();
         if (string.IsNullOrWhiteSpace(result) || result.Length > maxLength || result.Any(char.IsControl))
             throw new InvalidDataException($"The KEV field {property} is invalid.");
         return result;
     }
 
-    private static string OptionalString(JsonElement obj, string property, int maxLength)
+    private static string OptionalString(JObject obj, string property, int maxLength)
     {
-        if (!obj.TryGetProperty(property, out var value) || value.ValueKind == JsonValueKind.Null) return "";
-        if (value.ValueKind != JsonValueKind.String) throw new InvalidDataException($"The KEV field {property} is invalid.");
-        var result = value.GetString() ?? "";
+        var value = obj.GetValue(property, StringComparison.OrdinalIgnoreCase);
+        if (value is null || value.Type == JTokenType.Null) return "";
+        if (value.Type != JTokenType.String) throw new InvalidDataException($"The KEV field {property} is invalid.");
+        var result = value.Value<string>() ?? "";
         if (result.Length > maxLength || result.Any(ch => char.IsControl(ch) && ch is not '\r' and not '\n' and not '\t'))
             throw new InvalidDataException($"The KEV field {property} exceeds its validation limit.");
         return result;
     }
 
-    private static DateOnly RequiredDate(JsonElement obj, string property)
+    private static DateOnly RequiredDate(JObject obj, string property)
     {
         var value = RequiredString(obj, property, 10);
         if (!DateOnly.TryParseExact(value, "yyyy-MM-dd", out var parsed))

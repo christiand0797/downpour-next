@@ -1,5 +1,5 @@
 using System.IO.Pipes;
-using System.Text.Json;
+using Newtonsoft.Json;
 using Downpour.Contracts;
 
 namespace Downpour.Core;
@@ -7,7 +7,6 @@ namespace Downpour.Core;
 public sealed class SystemSnapshotClient
 {
     public const string PipeName = "Downpour.SystemSnapshot.v1";
-    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
     private readonly string _pipeName;
 
     public SystemSnapshotClient(string pipeName = PipeName) => _pipeName = pipeName;
@@ -20,7 +19,8 @@ public sealed class SystemSnapshotClient
             timeout.CancelAfter(TimeSpan.FromSeconds(2));
             await using var pipe = new NamedPipeClientStream(".", _pipeName, PipeDirection.In, PipeOptions.Asynchronous);
             await pipe.ConnectAsync(timeout.Token);
-            return await JsonSerializer.DeserializeAsync<SystemHealthSnapshot>(pipe, JsonOptions, timeout.Token);
+            var snapshot = await BoundedJson.DeserializeAsync<SystemHealthSnapshot>(pipe, timeout.Token);
+            return snapshot is not null && IsValidSnapshot(snapshot) ? snapshot : null;
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
@@ -34,9 +34,24 @@ public sealed class SystemSnapshotClient
         {
             return null;
         }
-        catch (JsonException)
+        catch (JsonReaderException)
+        {
+            return null;
+        }
+        catch (JsonSerializationException)
         {
             return null;
         }
     }
+
+    public static bool IsValidSnapshot(SystemHealthSnapshot snapshot) =>
+        snapshot.SchemaVersion == 1 && snapshot.CapturedAtUtc >= DateTimeOffset.UtcNow.AddMinutes(-10) &&
+        snapshot.CapturedAtUtc <= DateTimeOffset.UtcNow.AddMinutes(1) && snapshot.ProcessCount >= 0 &&
+        snapshot.CpuPercent is null or (>= 0 and <= 100) &&
+        snapshot.MemoryAvailableBytes <= snapshot.MemoryTotalBytes &&
+        snapshot.ActiveTcpConnections is null or >= 0 &&
+        snapshot.TopProcesses is { Count: <= 8 } && snapshot.ProcessCount >= snapshot.TopProcesses.Count && snapshot.Warnings is { Count: <= 64 } &&
+        snapshot.TopProcesses.All(process => process is not null && process.ProcessId > 0 && process.Name is { Length: > 0 and <= 512 } && !process.Name.Any(char.IsControl) &&
+            process.WorkingSetBytes >= 0 && process.ThreadCount >= 0) &&
+        snapshot.Warnings.All(warning => warning is not null && warning.Length <= 512);
 }

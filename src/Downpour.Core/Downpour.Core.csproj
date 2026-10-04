@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Downpour.Contracts\Downpour.Contracts.csproj" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
   </ItemGroup>
 
   <PropertyGroup>

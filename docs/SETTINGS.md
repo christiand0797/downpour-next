@@ -1,6 +1,6 @@
 # Settings and local preferences
 
-Downpour Next has one Settings navigation destination. Supported visual preferences are stored in the packaged app's `ApplicationData.Current.LocalSettings` container under versioned keys for the current Windows user. The app does not store credentials or threat-feed contents in these settings.
+Downpour Next has one Settings navigation destination. Supported visual preferences are stored in the packaged app's `ApplicationData.Current.LocalSettings` container under versioned keys for the current Windows user. In portable/unpackaged mode, the app falls back to a bounded INI file under `%LOCALAPPDATA%\DownpourNext`. The app does not store credentials or threat-feed contents in these settings.
 
 Implemented preferences:
 

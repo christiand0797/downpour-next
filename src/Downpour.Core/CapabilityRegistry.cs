@@ -1,15 +1,17 @@
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using Downpour.Contracts;
+using Newtonsoft.Json;
 
 namespace Downpour.Core;
 
 public static class CapabilityRegistry
 {
-    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
+    private static readonly JsonSerializerSettings JsonOptions = new()
     {
-        PropertyNameCaseInsensitive = true,
-        UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow
+        TypeNameHandling = TypeNameHandling.None,
+        MissingMemberHandling = MissingMemberHandling.Error,
+        MaxDepth = 24,
+        DateParseHandling = DateParseHandling.None,
+        CheckAdditionalContent = true
     };
 
     public static IReadOnlyList<CapabilityDefinition> Load(string path)
@@ -19,11 +21,13 @@ public static class CapabilityRegistry
             throw new FileNotFoundException("The Downpour capability registry is missing.", path);
         }
 
-        using var stream = File.OpenRead(path);
-        var document = JsonSerializer.Deserialize<CapabilityDocument>(stream, JsonOptions)
+        var bytes = File.ReadAllBytes(path);
+        if (bytes.Length > BoundedJson.MaximumPayloadBytes)
+            throw new InvalidDataException("The Downpour capability registry exceeds its size limit.");
+        var document = JsonConvert.DeserializeObject<CapabilityDocument>(new System.Text.UTF8Encoding(false, true).GetString(bytes), JsonOptions)
             ?? throw new InvalidDataException("The Downpour capability registry is empty.");
 
-        if (document.SchemaVersion != 1 || document.Capabilities.Count == 0)
+        if (document.SchemaVersion != 1 || document.Capabilities is null || document.Capabilities.Count == 0)
         {
             throw new InvalidDataException("The Downpour capability registry has an unsupported schema or no routes.");
         }

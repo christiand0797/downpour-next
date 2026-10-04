@@ -20,20 +20,20 @@ Sensors → normalized events → detections → evidence/alerts
 WinUI desktop ─── versioned local read-only IPC ─── Windows service
 ```
 
-The diagram is the target design. At present, the only connected path is the service's read-only system snapshot. Detection, policy, action broker, durable evidence store, signed updates, and release signing are not implemented.
+The diagram is the target design. Connected paths currently include read-only system/process, loaded-driver, and network inventory plus the advisory CISA KEV catalog. Detection, policy, action broker, durable evidence store, signed updates, and release signing are not implemented.
 
 ## Threat areas
 
 | Area | Required safeguards | Current status |
 |---|---|---|
-| Local IPC | Named-pipe DACL, least privilege, versioning, bounded payloads, timeouts, replay-resistant action IDs if commands are later added | System, driver, and network snapshots use outbound-only servers with authenticated-local-user DACLs and bounded connection waits. Driver and network clients enforce a 1 MiB cap and schema/list/text bounds; network inventory is limited to 32 interfaces and 256 TCP endpoints. System snapshot client still needs equivalent payload/schema bounds; server identity verification and a narrower service-SID ACL remain open. |
+| Local IPC | Named-pipe DACL, least privilege, versioning, bounded payloads, timeouts, replay-resistant action IDs if commands are later added | System, driver, and network snapshots use outbound-only servers with authenticated-local-user DACLs and bounded connection waits. UI clients now enforce a 1 MiB cap, JSON depth/duplicate checks, schema/list/text bounds; network inventory is limited to 32 interfaces and 256 TCP endpoints. Server identity verification and a narrower service-SID ACL remain open. |
 | Service compromise | Narrow service identity, restricted handles, secure startup/recovery, signed binaries, service ACL review | Hosting scaffold only; installation identity not selected |
-| Malformed data | Strict JSON schemas, bounds, parser isolation, fuzzing, duplicate/unknown-field policy | Capability JSON validates metadata; IPC snapshot needs size/schema bounds and fuzz coverage |
-| Detection/content | TLS feeds, signature/integrity, provenance, expiration, rule validation, no executable feed content | Not ported |
+| Malformed data | Strict JSON schemas, bounds, parser isolation, fuzzing, duplicate/unknown-field policy | Capability JSON and IPC payloads are size/depth bounded; duplicate JSON properties are rejected on bounded IPC and KEV parse paths. Broader fuzz coverage remains open. UI/Core JSON uses pinned Newtonsoft.Json 13.0.4 with type-name handling disabled. |
+| Detection/content | TLS feeds, signature/integrity, provenance, expiration, rule validation, no executable feed content | One fixed-host HTTPS CISA KEV fetch has bounds, duplicate/CVE/date validation, and source/retrieval metadata. It has no persistent cache or detached signature validation; more feeds and rule engines remain unported. |
 | Privileged response | allow-listed arguments, authorization, preview, audit, timeout, rollback, kill switch, opt-in defaults | No response action enabled or implemented |
 | Local data | Minimize collection, DPAPI for secrets, restrictive ACLs, at-rest integrity, retention and deletion policy, verified backups | No persistent store implemented |
 | Supply chain | Pinned NuGet/action versions, Dependabot, Windows CI, SBOM, reproducible signed release, provenance | SDK package versions and workflow action SHAs are pinned; Dependabot and Windows CI are configured. First remote CI run, SBOM, signing, and release provenance remain outstanding. |
-| UI and availability | Dispatcher-only UI changes, bounded updates/queues, stale-data marker, reduced motion, input limits, graceful missing service | Dashboard renders live gauges and histories; network/driver routes show explicit offline states. Native visual validation has started; accessibility, reduced motion, and narrow/high-DPI review remain open. |
+| UI and availability | Dispatcher-only UI changes, bounded updates/queues, stale-data marker, reduced motion, input limits, graceful missing service | Dashboard renders live gauges and histories; network/driver routes show explicit offline states; Settings provides a wired reduce-motion choice. Full accessibility and narrow/high-DPI review remain open. |
 
 ## Release blockers
 

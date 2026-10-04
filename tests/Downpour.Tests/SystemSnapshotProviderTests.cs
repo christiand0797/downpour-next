@@ -23,4 +23,19 @@ public sealed class SystemSnapshotProviderTests
         Assert.True(snapshot.MemoryTotalBytes > 0);
         Assert.InRange(snapshot.CpuPercent ?? 0, 0, 100);
     }
+
+    [Fact]
+    public void ClientSnapshotValidationRejectsWrongSchemaAndOutOfRangeCounters()
+    {
+        var valid = new Downpour.Contracts.SystemHealthSnapshot(1, DateTimeOffset.UtcNow, 1, 50, 1024, 512, 2,
+            [new Downpour.Contracts.ProcessSnapshot(10, "safe", 128, 1)], []);
+        var wrongSchema = valid with { SchemaVersion = 2 };
+        var impossibleCpu = valid with { CpuPercent = 140 };
+        var badMemory = valid with { MemoryAvailableBytes = 2048 };
+
+        Assert.True(Downpour.Core.SystemSnapshotClient.IsValidSnapshot(valid));
+        Assert.False(Downpour.Core.SystemSnapshotClient.IsValidSnapshot(wrongSchema));
+        Assert.False(Downpour.Core.SystemSnapshotClient.IsValidSnapshot(impossibleCpu));
+        Assert.False(Downpour.Core.SystemSnapshotClient.IsValidSnapshot(badMemory));
+    }
 }

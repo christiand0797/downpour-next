@@ -139,13 +139,14 @@
     {
       "id": "DN-010",
       "title": "Package, sign, upgrade, recover, and release the Windows application",
-      "status": "queued",
+      "status": "in_progress",
       "priority": "medium",
       "acceptance": [
         "Reproducible signed installer",
         "Service lifecycle and least privilege documented",
         "Upgrade, rollback, uninstall, and data recovery checked"
-      ]
+      ],
+      "notes": "Local x64 self-contained portable bundle is built in ignored artifacts/DownpourNext-win-x64-final and packed as artifacts/DownpourNext-win-x64-preview.zip (SHA-256 F4E5F06163508174258816ED27E6231A822C146D502A12446A4575B4BB5463E9). Desktop and service launch smoke check passed; Release build has 0 warnings/errors and 16 tests pass. This is unsigned and not an installer. Trusted code signing, install/upgrade/rollback/uninstall and release signing remain release blockers."
     },
     {
       "id": "DN-011",
