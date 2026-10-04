@@ -10,9 +10,13 @@ public sealed partial class IntelPage : Page
 {
     private readonly KevCatalogClient _client = new();
     private readonly KevCatalogCache _cache = new();
+    private readonly EpssClient _epssClient = new();
     private IReadOnlyList<KevEntry> _entries = [];
     private bool _requestInFlight;
+    private bool _epssRequestInFlight;
     private bool _initialized;
+    private string? _selectedCve;
+    private EpssScore? _lastEpssScore;
 
     public ObservableCollection<KevEntryRow> VisibleEntries { get; } = [];
 
@@ -30,6 +34,63 @@ public sealed partial class IntelPage : Page
     }
 
     private async void Refresh_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e) => await RefreshAsync();
+
+    private void EntryList_ItemClick(object sender, ItemClickEventArgs e)
+    {
+        if (e.ClickedItem is not KevEntryRow row) return;
+        _selectedCve = row.CveId;
+        EpssState.Text = $"EPSS LOOKUP · {row.CveId} SELECTED";
+        EpssButton.IsEnabled = !_epssRequestInFlight;
+        if (_lastEpssScore is { } cached && cached.CveId.Equals(row.CveId, StringComparison.OrdinalIgnoreCase) &&
+            DateTimeOffset.UtcNow - cached.RetrievedAtUtc < TimeSpan.FromHours(24))
+        {
+            ShowEpssScore(cached, "IN-MEMORY RESULT · ");
+        }
+        else
+        {
+            EpssDetails.Text = "The score is fetched only when you click Look up EPSS. This sends the selected public CVE ID to FIRST; the full KEV catalog is not uploaded.";
+        }
+    }
+
+    private async void EpssLookup_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        var cve = _selectedCve;
+        if (_epssRequestInFlight || cve is null) return;
+        _epssRequestInFlight = true;
+        EpssButton.IsEnabled = false;
+        EpssState.Text = $"FIRST EPSS · LOOKING UP {cve}";
+        EpssDetails.Text = "Contacting the fixed FIRST HTTPS endpoint with a 10-second request limit.";
+        try
+        {
+            var score = await _epssClient.FetchAsync(cve);
+            _lastEpssScore = score;
+            if (score is null)
+            {
+                EpssState.Text = $"NO EPSS SCORE RETURNED · {cve}";
+                EpssDetails.Text = "FIRST did not return a score for this CVE. The CISA KEV entry remains available; no vulnerability conclusion is inferred.";
+            }
+            else
+            {
+                ShowEpssScore(score, "FIRST EPSS · ");
+            }
+        }
+        catch (Exception exception) when (exception is HttpRequestException or IOException or InvalidDataException or JsonReaderException or JsonSerializationException or OperationCanceledException)
+        {
+            EpssState.Text = $"EPSS SOURCE UNAVAILABLE · {cve}";
+            EpssDetails.Text = $"The bounded FIRST lookup failed ({exception.GetType().Name}). Retry when the source is reachable; no cached score is shown as current.";
+        }
+        finally
+        {
+            _epssRequestInFlight = false;
+            EpssButton.IsEnabled = _selectedCve is not null;
+        }
+    }
+
+    private void ShowEpssScore(EpssScore score, string prefix)
+    {
+        EpssState.Text = $"{prefix}{score.CveId} · SCORE DATE {score.ScoreDate:yyyy-MM-dd} · RETRIEVED {score.RetrievedAtUtc.ToLocalTime():HH:mm:ss}";
+        EpssDetails.Text = $"{score.Score:P1} estimated probability of exploitation in the next 30 days · {score.Percentile:P1} percentile. Population-level EPSS is not a device vulnerability verdict; installed product/version matching is not implemented.";
+    }
 
     private async Task RefreshAsync()
     {
@@ -115,6 +176,13 @@ public sealed partial class IntelPage : Page
             entry.Product.Contains(query, StringComparison.OrdinalIgnoreCase) ||
             entry.VulnerabilityName.Contains(query, StringComparison.OrdinalIgnoreCase) ||
             entry.Description.Contains(query, StringComparison.OrdinalIgnoreCase)).ToArray();
+        if (_selectedCve is not null && !matched.Any(entry => entry.CveId.Equals(_selectedCve, StringComparison.OrdinalIgnoreCase)))
+        {
+            _selectedCve = null;
+            EpssButton.IsEnabled = false;
+            EpssState.Text = "EPSS LOOKUP · SELECT A CISA KEV ENTRY";
+            EpssDetails.Text = "On-demand FIRST lookup for one selected CVE. The score is a population-level 30-day exploitation estimate, not device exposure confirmation.";
+        }
         VisibleEntries.Clear();
         foreach (var entry in matched.Take(500))
             VisibleEntries.Add(new KevEntryRow(entry.CveId, entry.Vendor, entry.Product, entry.VulnerabilityName, entry.DateAdded.ToString("yyyy-MM-dd"), entry.Description));

@@ -212,9 +212,9 @@
   {
     "family": "Threat Intelligence & Remediation",
     "module": "threat_intelligence_updater.py",
-    "description": "KEV/EPSS/CVE live update engine, powers the OSINT feed aggregation.",
+    "description": "Partial parity: bounded CISA KEV catalog plus explicit single-CVE FIRST EPSS lookups; no bulk feed aggregation, NVD/CPE matching, or local product vulnerability assessment yet.",
     "sourceStatus": "Active",
-    "migrationStatus": "planned"
+    "migrationStatus": "in-progress"
   },
   {
     "family": "Threat Intelligence & Remediation",

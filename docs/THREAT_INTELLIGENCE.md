@@ -6,6 +6,12 @@ The Threat Intelligence route currently downloads the CISA Known Exploited Vulne
 
 The route is advisory and read-only. It does not match installed products, claim that this machine is vulnerable, start scans, or change system state. It labels the source and catalog release/retrieval times, supports local search, and reports fetch/validation failures. A previously validated cache can be shown during a network failure with an explicit age/state label.
 
+## On-demand EPSS enrichment
+
+After selecting a CVE row from the validated CISA catalog, the user can explicitly request its current score from FIRST's [EPSS API](https://api.first.org/epss/). The request sends only that CVE identifier to the fixed HTTPS host `api.first.org`; Downpour does not upload the catalog or perform bulk lookups. The lookup is bounded by a 10-second deadline and a 64 KiB response limit, rejects redirects, validates the final host/path, applies strict duplicate-property JSON parsing, requires an exact CVE match, constrains score and percentile to 0–1, and checks the score date. A recent result for the same selection is held in memory for up to 24 hours; no EPSS response is written to disk.
+
+FIRST defines EPSS as a population-level estimate of the probability that a published CVE will be exploited in the wild over the next 30 days; the score is not an asset-specific risk or proof that an installed product is vulnerable ([FIRST EPSS overview](https://www.first.org/epss/), [data access guidance](https://www.first.org/epss/data.html)). The page displays the score date, retrieval time, probability, and percentile with that limitation. Product/version inventory matching and NVD CVSS/CPE analysis are not implemented.
+
 ## Ingestion controls
 
 - HTTPS to a hard-coded CISA host; automatic redirects are disabled and the final response URI is checked.
@@ -19,6 +25,6 @@ The route is advisory and read-only. It does not match installed products, claim
 
 ## Limitations and next steps
 
-This prototype does not verify a detached signature (the selected feed does not currently provide one through this integration), correlate KEV entries with installed software, ingest EPSS/NVD/URLhaus/MISP/TAXII, or evaluate Sigma/YARA rules. Add each additional feed as a separately allow-listed parser with its own provenance and failure state. Document Sigma and YARA compatibility before porting those rule formats.
+This prototype does not verify a detached signature (the selected feed does not currently provide one through this integration), correlate KEV entries with installed software, ingest NVD/URLhaus/MISP/TAXII, or evaluate Sigma/YARA rules. EPSS currently enriches one user-selected KEV CVE at a time; bulk EPSS ingestion is not implemented. Add each additional feed as a separately allow-listed parser with its own provenance and failure state. Document Sigma and YARA compatibility before porting those rule formats.
 
 The endpoint is chosen from the official CISA catalog. CISA's web page was not directly fetchable in the research browser during implementation (HTTP 403), so the client also rejects redirects and shows a clear unavailable state if the JSON endpoint is blocked or changes.

@@ -36,7 +36,7 @@
             </Grid>
             <Border Padding="0" CornerRadius="12" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
                 <Grid>
-                    <ListView x:Name="EntryList" ItemsSource="{x:Bind VisibleEntries}" SelectionMode="None" IsItemClickEnabled="False" MaxHeight="620">
+                    <ListView x:Name="EntryList" ItemsSource="{x:Bind VisibleEntries}" SelectionMode="Single" IsItemClickEnabled="True" ItemClick="EntryList_ItemClick" MaxHeight="620">
                         <ListView.ItemTemplate>
                             <DataTemplate>
                                 <Grid Padding="10,8" ColumnSpacing="14">
@@ -60,6 +60,16 @@
                         </ListView.ItemTemplate>
                     </ListView>
                     <TextBlock x:Name="EmptyState" Text="Refresh the catalog to load CISA KEV entries." HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" Margin="24" />
+                </Grid>
+            </Border>
+            <Border Padding="14,12" CornerRadius="10" Background="#A80B1524" BorderBrush="#3D46C5D8" BorderThickness="1">
+                <Grid ColumnSpacing="14">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                    <StackPanel Spacing="4">
+                        <TextBlock x:Name="EpssState" Text="EPSS LOOKUP · SELECT A CISA KEV ENTRY" FontWeight="SemiBold" Foreground="#FF76DDF5" />
+                        <TextBlock x:Name="EpssDetails" Text="On-demand FIRST lookup for one selected CVE. The score is a population-level 30-day exploitation estimate, not device exposure confirmation." FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                    </StackPanel>
+                    <Button x:Name="EpssButton" Grid.Column="1" Content="Look up EPSS" Click="EpssLookup_Click" IsEnabled="False" VerticalAlignment="Center" />
                 </Grid>
             </Border>
             <TextBlock Text="KEV presence means CISA has identified evidence of active exploitation. It is not a verdict that a particular device is vulnerable; local product/version matching and patch assessment are future work." FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" TextWrapping="Wrap" />
