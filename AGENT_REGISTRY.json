@@ -5,10 +5,10 @@
     {
       "id": "codex-primary",
       "role": "primary",
-      "taskId": "DN-006",
+      "taskId": "DN-010",
       "status": "active",
-      "heartbeatUtc": "2026-10-04T21:36:56Z",
-      "notes": "Implemented single-CVE EPSS enrichment from selected CISA KEV rows with strict fixed-host HTTPS, bounds, schema/range checks, explicit user initiation, 24h in-memory reuse and population-level caveat. Release build clean, 87 tests pass. Live API shape verified read-only. Preparing release docs/package."
+      "heartbeatUtc": "2026-10-04T22:01:59Z",
+      "notes": "Updater code/docs and tests implemented. Public repository access verified after user approval. Release build 0 warnings/errors, 97 tests pass. Self-contained v0.1.10 ZIP built (hash FA9F4A17BD953BB53CD8D5F60F81A604DE12D88A50F66A76D0F1635E7396B7FA); packaged app and owned-service graceful close smoke passed. Updating docs, pushing, and publishing package."
     },
     {
       "id": "v29_action_map",

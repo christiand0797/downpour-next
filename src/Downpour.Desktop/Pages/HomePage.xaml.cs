@@ -17,6 +17,7 @@ public sealed partial class HomePage : Page
     private readonly SystemSnapshotClient _snapshotClient = new();
     private readonly Queue<ResourceSample> _history = new();
     private bool _snapshotRequestInFlight;
+    private bool _updateRequestInFlight;
     private CircularGauge? _cpuGauge;
     private CircularGauge? _memoryGauge;
 
@@ -63,6 +64,39 @@ public sealed partial class HomePage : Page
     }
 
     private void StormModeButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e) => StormModeController.Cycle();
+
+    private async void UpdateButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        if (_updateRequestInFlight) return;
+        var restarting = false;
+        _updateRequestInFlight = true;
+        UpdateButton.IsEnabled = false;
+        UpdateButton.Content = "Checking updates…";
+        try
+        {
+            var progress = new Progress<string>(message => UpdateButton.Content = message);
+            var result = await PortableUpdateInstaller.CheckAndStageAsync(progress);
+            UpdateButton.Content = result.Updated ? "Restarting to update…" : "⟳  Update Downpour";
+            ToolTipService.SetToolTip(UpdateButton, result.Message);
+            if (result.Updated)
+            {
+                restarting = true;
+                App.CloseMainWindow();
+            }
+        }
+        catch (Exception exception)
+        {
+            UpdateButton.Content = "⟳  Update Downpour";
+            var detail = exception.Message.Length > 220 ? exception.Message[..220] : exception.Message;
+            ToolTipService.SetToolTip(UpdateButton, $"Update did not complete: {detail}");
+            SensorDescription.Text = $"Update did not complete: {detail}";
+        }
+        finally
+        {
+            _updateRequestInFlight = false;
+            if (!restarting) UpdateButton.IsEnabled = true;
+        }
+    }
 
     private void UpdateStormModeButton(int mode)
     {

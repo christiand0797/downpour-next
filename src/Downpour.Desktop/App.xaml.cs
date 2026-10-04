@@ -26,6 +26,11 @@ public partial class App : Application
             ? app._sensorService.EnsureRunningAsync()
             : Task.CompletedTask;
 
+    internal static void CloseMainWindow()
+    {
+        if (Current is App app) app._window?.Close();
+    }
+
     internal static IntPtr MainWindowHandle =>
         Current is App app && app._window is not null
             ? WinRT.Interop.WindowNative.GetWindowHandle(app._window)
@@ -50,6 +55,11 @@ public partial class App : Application
     /// <param name="args">Details about the launch request and process.</param>
     protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
     {
+        if (PortableUpdateInstaller.TryApplyAtStartup(Environment.GetCommandLineArgs()))
+        {
+            Exit();
+            return;
+        }
         _window = new MainWindow();
         var sensorService = new SensorServiceProcess(message => SensorServiceStatusHint = message);
         _sensorService = sensorService;

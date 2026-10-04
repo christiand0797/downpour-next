@@ -1,6 +1,6 @@
 # Security policy and development requirements
 
-Downpour Next is security-sensitive software. Report vulnerabilities privately to the repository owner; do not publish exploit details before a fix is available. This repository is currently private and does not yet have a formal response SLA.
+Downpour Next is security-sensitive software. The repository is public and does not yet have a formal response SLA. Report vulnerabilities privately to the repository owner; do not publish exploit details before a fix is available.
 
 ## Secure defaults
 

@@ -191,7 +191,19 @@
         "Service lifecycle and least privilege documented",
         "Upgrade, rollback, uninstall, and data recovery checked"
       ],
-      "notes": "Published GitHub prereleases: v0.1.1-preview and latest v0.1.2-preview (https://github.com/christiand0797/downpour-next/releases/tag/v0.1.2-preview). Latest asset DownpourNext-win-x64-preview-v012.zip includes the self-contained desktop, read-only service, and launcher; SHA-256 A8E51B054DE44956B9959B74F6E92878987470F41015273892EE24964E2EF5C3. Release build has 0 warnings/errors, 22 tests pass, and direct-EXE service auto-start/graceful shutdown are smoke-verified. Settings navigation still needs a native click-through. Bundle is unsigned and not an installer; trusted code signing and install/upgrade/rollback/uninstall remain blockers."
+      "notes": "Implemented one-click dashboard stable-release check against the fixed public repository, exact asset/type/tag validation, 512 MiB bounded download with SHA-256 verification, redirect allow-list, 1 GiB/2,000-entry safe ZIP extraction, reparse/traversal rejection, staged file-hash manifest, parent/service exit wait, best-effort per-file backup rollback, and app restart. User explicitly authorized public repository visibility; anonymous API access verified. Release build: 0 warnings/errors; 97 tests pass. Self-contained package built to artifacts/DownpourNext-win-x64-0.1.10.zip and copied to DownpourNext-Portable; archive hash and release publishing pending. Native button click-through and signed update provenance remain unverified/blockers.",
+      "files": [
+        "src/Downpour.Core/ReleaseUpdateClient.cs",
+        "src/Downpour.Desktop/PortableUpdateInstaller.cs",
+        "src/Downpour.Desktop/App.xaml.cs",
+        "src/Downpour.Desktop/Pages/HomePage.xaml",
+        "src/Downpour.Desktop/Pages/HomePage.xaml.cs",
+        "Start-Downpour-Next.cmd",
+        "tests/Downpour.Tests/ReleaseUpdateClientTests.cs",
+        "docs/UPDATES.md",
+        "docs/SECURITY_MODEL.md",
+        "docs/BUILD_WINDOWS.md"
+      ]
     },
     {
       "id": "DN-011",
