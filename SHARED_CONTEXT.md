@@ -1,11 +1,11 @@
 # Downpour Next shared context
 
-**Updated:** 2026-10-04 (America/Denver; alert triage checkpoint in progress)
+**Updated:** 2026-10-04 (America/Denver; v0.1.4 alert package published)
 
 **Repository:** private [christiand0797/downpour-next](https://github.com/christiand0797/downpour-next)  
 **Local path:** `C:\Users\purpl\Desktop\downpour v2`  
 **Branch:** `main`  
-**Latest pushed source checkpoint:** `9abaa6a Package runnable Windows x64 build`. The prior portable package is published as [v0.1.3](https://github.com/christiand0797/downpour-next/releases/tag/v0.1.3). Active local DN-005 slice adds persistent event-ID alerts and local triage; Release build passes with 0 warnings/errors and 59 tests pass. Rebuild the local `DownpourNext-Portable/` folder and publish the matching portable package after committing this alert slice. Do not claim full parity: cross-source detection, response, driver lifecycle, and installation remain incomplete.
+**Latest source checkpoint:** `5427953 Add persistent security alert triage` on `main`. Runnable self-contained x64 package is published as [v0.1.4](https://github.com/christiand0797/downpour-next/releases/tag/v0.1.4), asset `DownpourNext-win-x64-5427953.zip`, SHA-256 `A354894D66DA335DE205CE86F37407D538D7DB133AF3AED5D604F558FEC50A5A`. Local extracted package is `DownpourNext-Portable/` in the repo root. Release build has 0 warnings/errors and 59 tests pass; BAT smoke test starts the desktop and bundled service and creates the alert database. It is unsigned, portable, and not a full parity claim.
 
 The current implementation includes 512 bounded process rows, direct-EXE sensor auto-start, truthful service connectivity UI, oversized IPC handling, and a direct `.bat` launcher. Telemetry pipe DACLs now grant LocalSystem and the service's current user; same-user integration works and the named-pipe servers remain outbound-only. Latest source Release build: 0 warnings/errors; 54 tests passed. A self-contained x64 runtime was built into both `DownpourNext-Portable/` (local root folder) and ignored build artifacts; BAT launcher smoke test started the Desktop and bundled service. User can launch it from this folder or download release v0.1.3. Product goal remains full functional v29 parity, including controlled/audited system-changing actions; observe-only behavior is a current stage, not the product goal.
 

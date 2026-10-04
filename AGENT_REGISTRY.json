@@ -7,8 +7,8 @@
       "role": "primary",
       "taskId": "DN-005",
       "status": "active",
-      "heartbeatUtc": "2026-10-04T16:13:00Z",
-      "notes": "Source pushed through 9abaa6a; release v0.1.3 includes a verified portable x64 ZIP. Current DN-005 alert slice is implemented locally: persistent event-ID alerts, bounded retention, dedup, local ack/suppress/reopen, strict IPC, and Alerts route. Release build has 0 warnings/errors; all 59 tests pass. Commit/push source, rebuild `DownpourNext-Portable/`, then publish matching package. Two v29/architecture analysis agents hit usage limits before reporting. Portable service runs as current user; system-changing features still need an isolated trusted broker."
+      "heartbeatUtc": "2026-10-04T20:19:58Z",
+      "notes": "Source 5427953 is pushed. Release v0.1.4 includes the portable x64 ZIP; local `DownpourNext-Portable/` has the same build. DN-005 first slice now has persistent event-ID alerts, bounded retention, dedup, local ack/suppress/reopen, strict IPC, and Alerts route. Release build has 0 warnings/errors; all 59 tests pass; BAT smoke test started app/service and created alert database. Continue broader v29 detection/correlation parity. Two analysis agents hit usage limits before reporting. Portable service runs as current user; system-changing features still need an isolated trusted broker."
     },
     {
       "id": "v29_action_map",

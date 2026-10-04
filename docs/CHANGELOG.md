@@ -6,7 +6,8 @@
 - Added five-minute bucket deduplication for aggregated 4625 failed-logon bursts; occurrence counts track the observed maximum rather than adding every repeated poll.
 - Added a dedicated Alerts route with source/record evidence, severity filters, and local acknowledge, suppress, and reopen controls. Suppression affects only one alert record.
 - Added a separate 1 KiB strict-schema local control pipe with expected-state checks and idempotent request IDs. It cannot request OS changes or command execution.
-- Release build: 0 warnings/errors; 59 tests passed. Portable package and SHA-256 are recorded below after publishing.
+- Release build: 0 warnings/errors; 59 tests passed. BAT smoke check started both executables and confirmed alert DB creation.
+- Archive: `DownpourNext-win-x64-5427953.zip`; SHA-256: `A354894D66DA335DE205CE86F37407D538D7DB133AF3AED5D604F558FEC50A5A`; downloadable from [GitHub Releases](https://github.com/christiand0797/downpour-next/releases/tag/v0.1.4).
 - This remains an unsigned portable development build. Broader v29 detection/correlation, Sigma/AMSI, Sysmon/ETW, system-changing actions, and installer are still outstanding.
 
 ## v0.1.3 — runnable Windows x64 package
