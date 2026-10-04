@@ -1,5 +1,13 @@
 # Downpour Next changelog
 
+## v0.1.7 — bounded cross-channel alert correlation
+
+- Added two cautious alert patterns: service-install evidence across System/Security within two minutes and log-clear evidence across those channels within ten minutes.
+- Alerts and metadata-only investigation export now show deterministic, one-to-one evidence links and state plainly that temporal proximity does not prove a shared actor or action. Individually suppressed rows are excluded.
+- Investigation export schema is now version 2. Release build: 0 warnings/errors; 70 tests passed.
+- Package: `DownpourNext-win-x64-0.1.7.zip`; SHA-256 `106C09CB9DFCD4506000C709433991395AEF41FA13FBF1EAF57F4C42EA1963C5`.
+- Download the unsigned portable test build from [GitHub Releases](https://github.com/christiand0797/downpour-next/releases/tag/v0.1.7). This is not a full v29 parity claim.
+
 ## v0.1.6 — local investigation export
 
 - Added the Alerts page's user-selected JSON investigation export using the Windows save picker.

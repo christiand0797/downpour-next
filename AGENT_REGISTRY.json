@@ -6,9 +6,9 @@
       "id": "codex-primary",
       "role": "primary",
       "taskId": "DN-005",
-      "status": "active",
-      "heartbeatUtc": "2026-10-04T21:00:43Z",
-      "notes": "Working DN-005 bounded cross-channel alert correlation slice. Will test/build, document limits, package local files, and push source/doc changes; v29 remains read-only."
+      "status": "idle",
+      "heartbeatUtc": "2026-10-04T21:11:35Z",
+      "notes": "Completed and pushed DN-005 cross-channel alert correlation in 29a0d4d; v0.1.7 portable x64 package built from that commit and saved locally. 70 Release tests pass; 0 build warnings/errors. ZIP SHA-256 106C09CB9DFCD4506000C709433991395AEF41FA13FBF1EAF57F4C42EA1963C. Next: manually verify Alerts correlation summary/export picker in native app; continue DN-005 broader detection parity. v29 remains read-only."
     },
     {
       "id": "v29_action_map",
