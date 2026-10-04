@@ -6,9 +6,9 @@
       "id": "codex-primary",
       "role": "primary",
       "taskId": "DN-004",
-      "status": "active",
-      "heartbeatUtc": "2026-10-04T21:22:54Z",
-      "notes": "Implemented real-time allow-listed EventLogWatcher subscriptions with bounded queue, deduplicating batch merge, persistent failure/drop health warnings, and 15-second polling fallback. Release build clean; 74 tests pass; service smoke opened watchers for 7/7 channels (poll reads 6/7 on this host). Preparing local package and release; v29 remains read-only."
+      "status": "idle",
+      "heartbeatUtc": "2026-10-04T21:28:16Z",
+      "notes": "DN-004 bounded EventLogWatcher subscription slice built/tested/pushed in e0720df; v0.1.8 published with SHA-256 472BCDB927686643976765550638D333795EE34D2A9D1C5D7833A022F28FABAD. Local portable bundle refreshed and staged hashes verified. Release build 0 warnings/errors, 74 tests pass. Service smoke opened 7/7 watchers; polling could read 6/7 channels. Next: manually inject events and verify per-channel UI/alerts; continue DN-005/DN-006 parity. v29 remains read-only."
     },
     {
       "id": "v29_action_map",

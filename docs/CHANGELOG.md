@@ -1,5 +1,14 @@
 # Downpour Next changelog
 
+## v0.1.8 — bounded Windows event push subscriptions
+
+- Added future-event subscriptions for the fixed Windows Event Log allow-list, alongside the existing 15-second polling fallback.
+- Push handling uses a 512-record nonblocking queue, 150 ms coalescing window, batches capped at 256, and record-ID deduplication. Subscription failures and cumulative queue loss are surfaced as health warnings.
+- Individual Security 4625 push records are discarded; the five-minute bounded threshold aggregate remains the only 4625 finding.
+- Release build: 0 warnings/errors; 74 tests passed. Service smoke check opened watchers for 7/7 channels; polling could read 6/7 on this machine. Actual event generation was not forced in automated tests.
+- Package: `DownpourNext-win-x64-0.1.8.zip`; SHA-256 `472BCDB927686643976765550638D333795EE34D2A9D1C5D7833A022F28FABAD`.
+- Download the unsigned portable test build from [GitHub Releases](https://github.com/christiand0797/downpour-next/releases/tag/v0.1.8). It is not an installer or full v29 parity claim.
+
 ## v0.1.7 — bounded cross-channel alert correlation
 
 - Added two cautious alert patterns: service-install evidence across System/Security within two minutes and log-clear evidence across those channels within ten minutes.

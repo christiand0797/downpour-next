@@ -1,15 +1,15 @@
 # Downpour Next shared context
 
-**Updated:** 2026-10-04 (America/Denver; v0.1.7 alert correlation published)
+**Updated:** 2026-10-04 (America/Denver; v0.1.8 live event subscriptions published)
 
 **Repository:** private [christiand0797/downpour-next](https://github.com/christiand0797/downpour-next)  
 **Local path:** `C:\Users\purpl\Desktop\downpour v2`  
 **Branch:** `main`  
-**Latest source checkpoint:** `29a0d4d Add bounded cross-channel alert correlations` on `main`. Runnable self-contained x64 package is published as [v0.1.7](https://github.com/christiand0797/downpour-next/releases/tag/v0.1.7), asset `DownpourNext-win-x64-0.1.7.zip`, SHA-256 `106C09CB9DFCD4506000C709433991395AEF41FA13FBF1EAF57F4C42EA1963C5`. Local package is `DownpourNext-Portable/` in the repo root. Release build has 0 warnings/errors and 70 tests pass. It is unsigned, portable, and not a full parity claim.
+**Latest source checkpoint:** `e0720df Add bounded Windows event push subscriptions` on `main`. Runnable self-contained x64 package is published as [v0.1.8](https://github.com/christiand0797/downpour-next/releases/tag/v0.1.8), asset `DownpourNext-win-x64-0.1.8.zip`, SHA-256 `472BCDB927686643976765550638D333795EE34D2A9D1C5D7833A022F28FABAD`. Local package is `DownpourNext-Portable/` in the repo root. Release build has 0 warnings/errors and 74 tests pass. It is unsigned, portable, and not a full parity claim.
 
-Portable validation: the archive contains 764 files including the Desktop EXE, bundled service EXE, BAT/CMD launchers, and portable readme. Every staged file hash matches the local `DownpourNext-Portable/` copy. The previous package's launched app was responsive; its local sensor service's named pipe returned a valid live system snapshot. The latest correlation UI and save-picker export compiled, and 70 tests pass; native interactive click-through remains open.
+Portable validation: the archive contains 764 files including the Desktop EXE, bundled service EXE, BAT/CMD launchers, and portable readme. Every staged file hash matches the local `DownpourNext-Portable/` copy. The previous package's launched app was responsive; its local sensor service's named pipe returned a valid live system snapshot. v0.1.8 compiled with bounded event push subscriptions; the local service smoke check opened 7/7 watchers, while polling read 6/7 channels on this machine. Actual event generation through each channel is not automated.
 
-The v0.1.7 package was built from code commit `29a0d4d`; release metadata and handoff docs follow on `main`. The native export save-picker and new correlation summary click-through remain manual verification items.
+The v0.1.8 package was built from code commit `e0720df`; release metadata and handoff docs follow on `main`. The native export save-picker and correlation summary click-through remain manual verification items.
 
 The current implementation includes 512 bounded process rows, direct-EXE sensor auto-start, truthful service connectivity UI, oversized IPC handling, and a direct `.bat` launcher. Telemetry pipe DACLs now grant LocalSystem and the service's current user; same-user integration works and the named-pipe servers remain outbound-only. A self-contained x64 runtime is built into both `DownpourNext-Portable/` (local root folder) and ignored build artifacts. Product goal remains full functional v29 parity, including controlled/audited system-changing actions; observe-only behavior is a current stage, not the product goal.
 

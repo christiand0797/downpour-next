@@ -30,4 +30,4 @@ The bundle is x64 and unsigned at this stage. It is intended for local testing f
 
 ## Current local package
 
-The latest verified package is built into `DownpourNext-Portable/` at the repository root, so `Downpour.Desktop.exe`, `service/Downpour.Service.exe`, and both launchers are available together locally. The matching downloadable archive is `DownpourNext-win-x64-0.1.7.zip`, built from source commit `29a0d4d`. SHA-256: `106C09CB9DFCD4506000C709433991395AEF41FA13FBF1EAF57F4C42EA1963C5`. The same archive is attached to the GitHub release `v0.1.7`.
+The latest verified package is built into `DownpourNext-Portable/` at the repository root, so `Downpour.Desktop.exe`, `service/Downpour.Service.exe`, and both launchers are available together locally. The matching downloadable archive is `DownpourNext-win-x64-0.1.8.zip`, built from source commit `e0720df`. SHA-256: `472BCDB927686643976765550638D333795EE34D2A9D1C5D7833A022F28FABAD`. The same archive is attached to the GitHub release `v0.1.8`.
