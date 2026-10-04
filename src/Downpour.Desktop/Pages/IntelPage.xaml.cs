@@ -58,7 +58,7 @@ public sealed partial class IntelPage : Page
         {
             SourceState.Text = _entries.Count > 0 ? "SOURCE UNAVAILABLE · SHOWING VALIDATED CACHE" : "SOURCE UNAVAILABLE · NO CURRENT DATA";
             SourceDetails.Text = _entries.Count > 0
-                ? $"CISA refresh failed ({exception.Message}). Showing the locally validated catalog, retrieved {_cacheRetrievedAt?.ToLocalTime():yyyy-MM-dd HH:mm:ss}; cached data is limited to {_cache.MaximumAge.TotalDays:0} days."
+                ? $"CISA refresh failed ({exception.Message}). Showing the locally validated catalog, retrieved {_cacheRetrievedAt?.ToLocalTime():yyyy-MM-dd HH:mm:ss}; cached data is limited to {KevCatalogCache.MaximumAge.TotalDays:0} days."
                 : exception is TaskCanceledException
                     ? "CISA request timed out. Retry when the source is reachable. No recent validated cache is available."
                     : $"CISA catalog could not be safely loaded ({exception.Message}). No recent validated cache is available.";
