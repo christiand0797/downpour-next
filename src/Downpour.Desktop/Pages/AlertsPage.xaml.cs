@@ -83,6 +83,8 @@ public sealed partial class AlertsPage : Page
     private async void Acknowledge_Click(object sender, RoutedEventArgs e) => await ChangeStateFromButtonAsync(sender, "Acknowledged");
     private async void Suppress_Click(object sender, RoutedEventArgs e) => await ChangeStateFromButtonAsync(sender, "Suppressed");
     private async void Reopen_Click(object sender, RoutedEventArgs e) => await ChangeStateFromButtonAsync(sender, "Open");
+    private async void FalsePositive_Click(object sender, RoutedEventArgs e) => await ChangeStateFromButtonAsync(sender, "FalsePositive");
+    private async void RearmFalsePositive_Click(object sender, RoutedEventArgs e) => await ChangeStateFromButtonAsync(sender, "RearmFalsePositive");
 
     private async Task ChangeStateFromButtonAsync(object sender, string nextState)
     {
@@ -93,7 +95,12 @@ public sealed partial class AlertsPage : Page
         _stateChangeInFlight = true;
         try
         {
-            StatusHeadline.Text = $"Saving local triage state: {nextState}";
+            StatusHeadline.Text = nextState switch
+            {
+                "FalsePositive" => "Recording false-positive confirmation",
+                "RearmFalsePositive" => "Re-arming matching alert rule",
+                _ => $"Saving local triage state: {nextState}"
+            };
             var request = new AlertStateChangeRequest(1, Guid.NewGuid(), alert.AlertId, alert.State, nextState);
             var response = await _client.ChangeStateAsync(request);
             if (response is null)
@@ -109,8 +116,15 @@ public sealed partial class AlertsPage : Page
             }
             else
             {
-                StatusHeadline.Text = response.ResultCode == "updated" ? "Local triage state saved" : "Alert state is already current";
-                StatusDetail.Text = "Only local alert review state changed. No operating-system setting or process was touched.";
+                (StatusHeadline.Text, StatusDetail.Text) = response.ResultCode switch
+                {
+                    "confirmed-1" => ("False positive recorded · confirmation 1 of 3", "Only future matches of this exact channel/provider/event-ID rule can be auto-suppressed."),
+                    "confirmed-2" => ("False positive recorded · confirmation 2 of 3", "A third explicit confirmation is required before matching alerts are suppressed."),
+                    "fingerprint-suppressed" => ("Matching alert rule suppressed", "Three false-positive confirmations were recorded. Re-arm any matching row to remove the rule."),
+                    "rearmed" => ("Matching alert rule re-armed", "The false-positive suppression was cleared and its suppressed alerts were reopened."),
+                    "updated" => ("Local triage state saved", "Only local alert review state changed. No operating-system setting or process was touched."),
+                    _ => ("Alert state is already current", "Only local alert review state changed. No operating-system setting or process was touched.")
+                };
             }
             await RefreshAsync();
         }

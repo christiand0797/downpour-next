@@ -9,7 +9,8 @@ namespace Downpour.Service;
 /// <summary>Persists event-ID-backed alert observations and local triage state. It performs no system action.</summary>
 public sealed class SecurityAlertRepository(string databasePath)
 {
-    public const int CurrentSchemaVersion = 1;
+    public const int CurrentSchemaVersion = 2;
+    public const int FalsePositiveConfirmationThreshold = 3;
     public const int MaximumAlertCount = 10_000;
     public const int MaximumSnapshotAlerts = 512;
     private static readonly TimeSpan Retention = TimeSpan.FromDays(30);
@@ -42,7 +43,7 @@ public sealed class SecurityAlertRepository(string databasePath)
                 throw new IOException("SQLite did not enable WAL mode for the alert store.");
             await ExecuteAsync(connection, "PRAGMA synchronous=FULL;", cancellationToken);
             await ExecuteAsync(connection,
-                "CREATE TABLE IF NOT EXISTS alert_schema (version INTEGER NOT NULL CHECK(version BETWEEN 1 AND 1));" +
+                "CREATE TABLE IF NOT EXISTS alert_schema (version INTEGER NOT NULL CHECK(version BETWEEN 1 AND 2));" +
                 "INSERT INTO alert_schema(version) SELECT 1 WHERE NOT EXISTS(SELECT 1 FROM alert_schema);" +
                 "CREATE TABLE IF NOT EXISTS alerts (" +
                 "alert_id TEXT PRIMARY KEY CHECK(length(alert_id)=64), dedup_key TEXT NOT NULL UNIQUE CHECK(length(dedup_key)<=512), " +
@@ -55,9 +56,19 @@ public sealed class SecurityAlertRepository(string databasePath)
                 "CREATE INDEX IF NOT EXISTS ix_alerts_last_seen ON alerts(last_seen_utc DESC);" +
                 "CREATE TABLE IF NOT EXISTS alert_state_events (" +
                 "request_id TEXT PRIMARY KEY, alert_id TEXT NOT NULL, previous_state TEXT NOT NULL, next_state TEXT NOT NULL, " +
-                "created_at_utc TEXT NOT NULL, FOREIGN KEY(alert_id) REFERENCES alerts(alert_id) ON DELETE CASCADE);",
+                "created_at_utc TEXT NOT NULL, FOREIGN KEY(alert_id) REFERENCES alerts(alert_id) ON DELETE CASCADE);" +
+                "CREATE TABLE IF NOT EXISTS alert_fp_rules (fingerprint TEXT PRIMARY KEY CHECK(length(fingerprint)=64), confirmations INTEGER NOT NULL CHECK(confirmations BETWEEN 1 AND 1000000), suppressed INTEGER NOT NULL CHECK(suppressed IN (0,1)), title TEXT NOT NULL CHECK(length(title)<=160), log_name TEXT NOT NULL CHECK(length(log_name)<=128), event_id INTEGER NOT NULL CHECK(event_id BETWEEN 0 AND 65535), first_seen_utc TEXT NOT NULL, last_seen_utc TEXT NOT NULL);" +
+                "CREATE TABLE IF NOT EXISTS alert_fp_events (request_id TEXT PRIMARY KEY, alert_id TEXT NOT NULL, fingerprint TEXT NOT NULL, event_type TEXT NOT NULL CHECK(event_type IN ('confirm','rearm')), created_at_utc TEXT NOT NULL);" +
+                "CREATE TABLE IF NOT EXISTS alert_fp_applied (alert_id TEXT PRIMARY KEY, fingerprint TEXT NOT NULL);",
                 cancellationToken);
             var version = Convert.ToInt32(await ScalarAsync(connection, "SELECT MAX(version) FROM alert_schema;", cancellationToken));
+            if (version == 1)
+            {
+                await ExecuteAsync(connection,
+                    "DROP TABLE alert_schema; CREATE TABLE alert_schema(version INTEGER NOT NULL CHECK(version BETWEEN 1 AND 2)); INSERT INTO alert_schema(version) VALUES(2);",
+                    cancellationToken);
+                version = 2;
+            }
             if (version != CurrentSchemaVersion)
                 throw new InvalidDataException($"Unsupported alert store schema version {version}.");
         }
@@ -77,7 +88,9 @@ public sealed class SecurityAlertRepository(string databasePath)
             foreach (var observation in source.Events)
             {
                 var dedupKey = BuildDedupKey(observation);
+                var fingerprint = BuildFalsePositiveFingerprint(observation.LogName, observation.Provider, observation.EventId);
                 var id = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes("downpour-alert-v1\0" + dedupKey))).ToLowerInvariant();
+                var suppressionActive = await IsFingerprintSuppressedAsync(connection, transaction, fingerprint, cancellationToken);
                 await using var command = connection.CreateCommand();
                 command.Transaction = transaction;
                 command.CommandText =
@@ -101,6 +114,8 @@ public sealed class SecurityAlertRepository(string databasePath)
                 command.Parameters.AddWithValue("$lastSeen", source.CapturedAtUtc.ToUniversalTime().ToString("O"));
                 command.Parameters.AddWithValue("$occurrences", observation.Occurrences);
                 await command.ExecuteNonQueryAsync(cancellationToken);
+                if (suppressionActive)
+                    await ApplyFingerprintSuppressionAsync(connection, transaction, id, fingerprint, cancellationToken);
             }
 
             await PruneAsync(connection, transaction, source.CapturedAtUtc.ToUniversalTime(), cancellationToken);
@@ -136,7 +151,7 @@ public sealed class SecurityAlertRepository(string databasePath)
         AlertStateChangeRequest request, CancellationToken cancellationToken = default)
     {
         if (request.SchemaVersion != 1 || request.RequestId == Guid.Empty || !IsValidAlertId(request.AlertId) ||
-            !States.Contains(request.ExpectedState) || !States.Contains(request.State))
+            !States.Contains(request.ExpectedState) || !(States.Contains(request.State) || request.State is "FalsePositive" or "RearmFalsePositive"))
             return new AlertStateChangeResponse(1, request.RequestId, false, "invalid-request");
 
         await _gate.WaitAsync(cancellationToken);
@@ -165,10 +180,110 @@ public sealed class SecurityAlertRepository(string databasePath)
                 await transaction.CommitAsync(cancellationToken);
                 return new AlertStateChangeResponse(1, request.RequestId, false, "alert-not-found");
             }
+            if (request.State is "FalsePositive" or "RearmFalsePositive")
+            {
+                var identity = await ReadFingerprintIdentityAsync(connection, transaction, request.AlertId, cancellationToken);
+                if (identity is null)
+                {
+                    await transaction.CommitAsync(cancellationToken);
+                    return new AlertStateChangeResponse(1, request.RequestId, false, "alert-not-found");
+                }
+                var replayFingerprint = BuildFalsePositiveFingerprint(identity.Value.LogName, identity.Value.Provider, identity.Value.EventId);
+                await using var replay = connection.CreateCommand();
+                replay.Transaction = transaction;
+                replay.CommandText = "SELECT alert_id,fingerprint,event_type FROM alert_fp_events WHERE request_id=$request;";
+                replay.Parameters.AddWithValue("$request", request.RequestId.ToString("N"));
+                await using var replayReader = await replay.ExecuteReaderAsync(cancellationToken);
+                if (await replayReader.ReadAsync(cancellationToken))
+                {
+                    var same = replayReader.GetString(0) == request.AlertId && replayReader.GetString(1) == replayFingerprint &&
+                        replayReader.GetString(2) == (request.State == "FalsePositive" ? "confirm" : "rearm");
+                    await replayReader.DisposeAsync();
+                    await transaction.CommitAsync(cancellationToken);
+                    return new AlertStateChangeResponse(1, request.RequestId, same, same ? "replayed" : "request-id-conflict");
+                }
+            }
             if (current != request.ExpectedState)
             {
                 await transaction.CommitAsync(cancellationToken);
                 return new AlertStateChangeResponse(1, request.RequestId, false, "state-conflict");
+            }
+
+            if (request.State is "FalsePositive" or "RearmFalsePositive")
+            {
+                if (request.State == "FalsePositive" && current is not ("Open" or "Acknowledged"))
+                {
+                    await transaction.CommitAsync(cancellationToken);
+                    return new AlertStateChangeResponse(1, request.RequestId, false, "transition-denied");
+                }
+                var identity = await ReadFingerprintIdentityAsync(connection, transaction, request.AlertId, cancellationToken);
+                if (identity is null)
+                {
+                    await transaction.CommitAsync(cancellationToken);
+                    return new AlertStateChangeResponse(1, request.RequestId, false, "alert-not-found");
+                }
+                var fingerprint = BuildFalsePositiveFingerprint(identity.Value.LogName, identity.Value.Provider, identity.Value.EventId);
+                var eventType = request.State == "FalsePositive" ? "confirm" : "rearm";
+                var fpNow = DateTimeOffset.UtcNow.ToString("O");
+                if (eventType == "confirm")
+                {
+                    await using var rule = connection.CreateCommand();
+                    rule.Transaction = transaction;
+                    rule.CommandText = "INSERT INTO alert_fp_rules(fingerprint,confirmations,suppressed,title,log_name,event_id,first_seen_utc,last_seen_utc) VALUES($fp,1,0,$title,$log,$event,$now,$now) ON CONFLICT(fingerprint) DO UPDATE SET confirmations=MIN(alert_fp_rules.confirmations+1,1000000),suppressed=CASE WHEN alert_fp_rules.suppressed=1 OR alert_fp_rules.confirmations+1 >= $threshold THEN 1 ELSE 0 END,last_seen_utc=excluded.last_seen_utc;";
+                    rule.Parameters.AddWithValue("$fp", fingerprint);
+                    rule.Parameters.AddWithValue("$title", identity.Value.Title);
+                    rule.Parameters.AddWithValue("$log", identity.Value.LogName);
+                    rule.Parameters.AddWithValue("$event", identity.Value.EventId);
+                    rule.Parameters.AddWithValue("$now", fpNow);
+                    rule.Parameters.AddWithValue("$threshold", FalsePositiveConfirmationThreshold);
+                    await rule.ExecuteNonQueryAsync(cancellationToken);
+                }
+                else
+                {
+                    await using var rule = connection.CreateCommand();
+                    rule.Transaction = transaction;
+                    rule.CommandText = "UPDATE alert_fp_rules SET suppressed=0 WHERE fingerprint=$fp;";
+                    rule.Parameters.AddWithValue("$fp", fingerprint);
+                    await rule.ExecuteNonQueryAsync(cancellationToken);
+                    await using var reopen = connection.CreateCommand();
+                    reopen.Transaction = transaction;
+                    reopen.CommandText = "UPDATE alerts SET state='Open' WHERE alert_id IN (SELECT alert_id FROM alert_fp_applied WHERE fingerprint=$fp) AND state='Suppressed'; DELETE FROM alert_fp_applied WHERE fingerprint=$fp;";
+                    reopen.Parameters.AddWithValue("$fp", fingerprint);
+                    await reopen.ExecuteNonQueryAsync(cancellationToken);
+                }
+                await using (var audit = connection.CreateCommand())
+                {
+                    audit.Transaction = transaction;
+                    audit.CommandText = "INSERT INTO alert_fp_events(request_id,alert_id,fingerprint,event_type,created_at_utc) VALUES($request,$id,$fp,$type,$now);";
+                    audit.Parameters.AddWithValue("$request", request.RequestId.ToString("N"));
+                    audit.Parameters.AddWithValue("$id", request.AlertId);
+                    audit.Parameters.AddWithValue("$fp", fingerprint);
+                    audit.Parameters.AddWithValue("$type", eventType);
+                    audit.Parameters.AddWithValue("$now", fpNow);
+                    await audit.ExecuteNonQueryAsync(cancellationToken);
+                }
+                if (eventType == "confirm")
+                {
+                    await using var suppress = connection.CreateCommand();
+                    suppress.Transaction = transaction;
+                    suppress.CommandText = "INSERT OR IGNORE INTO alert_fp_applied(alert_id,fingerprint) SELECT alert_id,$fp FROM alerts WHERE log_name=$log AND event_id=$event AND provider=$provider AND state IN ('Open','Acknowledged') AND EXISTS(SELECT 1 FROM alert_fp_rules WHERE fingerprint=$fp AND suppressed=1); UPDATE alerts SET state='Suppressed' WHERE alert_id IN (SELECT alert_id FROM alert_fp_applied WHERE fingerprint=$fp) AND state IN ('Open','Acknowledged');";
+                    suppress.Parameters.AddWithValue("$log", identity.Value.LogName);
+                    suppress.Parameters.AddWithValue("$event", identity.Value.EventId);
+                    suppress.Parameters.AddWithValue("$provider", identity.Value.Provider);
+                    suppress.Parameters.AddWithValue("$fp", fingerprint);
+                    await suppress.ExecuteNonQueryAsync(cancellationToken);
+                }
+                await PruneFalsePositiveEventsAsync(connection, transaction, cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
+                await using var summary = connection.CreateCommand();
+                summary.CommandText = "SELECT confirmations,suppressed FROM alert_fp_rules WHERE fingerprint=$fp;";
+                summary.Parameters.AddWithValue("$fp", fingerprint);
+                await using var summaryReader = await summary.ExecuteReaderAsync(cancellationToken);
+                await summaryReader.ReadAsync(cancellationToken);
+                var count = summaryReader.GetInt32(0);
+                var suppressed = summaryReader.GetInt32(1) != 0;
+                return new AlertStateChangeResponse(1, request.RequestId, true,
+                    eventType == "rearm" ? "rearmed" : suppressed ? "fingerprint-suppressed" : $"confirmed-{Math.Min(count, FalsePositiveConfirmationThreshold)}");
             }
             if (!IsAllowedTransition(current, request.State))
             {
@@ -214,6 +329,44 @@ public sealed class SecurityAlertRepository(string databasePath)
 
     public static bool IsValidAlertId(string? value) => value is { Length: 64 } && value.All(ch => ch is >= '0' and <= '9' or >= 'a' and <= 'f');
 
+    public static string BuildFalsePositiveFingerprint(string logName, string provider, int eventId) =>
+        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes($"downpour-alert-fp-v1\0{logName.Trim().ToUpperInvariant()}\0{provider.Trim().ToUpperInvariant()}\0{eventId}"))).ToLowerInvariant();
+
+    private static async Task<bool> IsFingerprintSuppressedAsync(SqliteConnection connection, SqliteTransaction transaction, string fingerprint, CancellationToken token)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = "SELECT suppressed FROM alert_fp_rules WHERE fingerprint=$fp;";
+        command.Parameters.AddWithValue("$fp", fingerprint);
+        var result = await command.ExecuteScalarAsync(token);
+        return result is not null and not DBNull && Convert.ToInt32(result) == 1;
+    }
+
+    private static async Task ApplyFingerprintSuppressionAsync(SqliteConnection connection, SqliteTransaction transaction, string alertId, string fingerprint, CancellationToken token)
+    {
+        await using var update = connection.CreateCommand();
+        update.Transaction = transaction;
+        update.CommandText = "UPDATE alerts SET state='Suppressed' WHERE alert_id=$id AND state IN ('Open','Acknowledged');";
+        update.Parameters.AddWithValue("$id", alertId);
+        if (await update.ExecuteNonQueryAsync(token) != 1) return;
+        await using var mark = connection.CreateCommand();
+        mark.Transaction = transaction;
+        mark.CommandText = "INSERT OR IGNORE INTO alert_fp_applied(alert_id,fingerprint) VALUES($id,$fp);";
+        mark.Parameters.AddWithValue("$id", alertId);
+        mark.Parameters.AddWithValue("$fp", fingerprint);
+        await mark.ExecuteNonQueryAsync(token);
+    }
+
+    private static async Task<(string Title, string LogName, string Provider, int EventId)?> ReadFingerprintIdentityAsync(SqliteConnection connection, SqliteTransaction transaction, string alertId, CancellationToken token)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = "SELECT title,log_name,provider,event_id FROM alerts WHERE alert_id=$id;";
+        command.Parameters.AddWithValue("$id", alertId);
+        await using var reader = await command.ExecuteReaderAsync(token);
+        return await reader.ReadAsync(token) ? (reader.GetString(0), reader.GetString(1), reader.GetString(2), reader.GetInt32(3)) : null;
+    }
+
     private static string BuildDedupKey(SecurityEventObservation observation)
     {
         if (observation.EventId == 4625)
@@ -258,6 +411,20 @@ public sealed class SecurityAlertRepository(string databasePath)
         cap.CommandText = "DELETE FROM alerts WHERE alert_id IN (SELECT alert_id FROM alerts ORDER BY last_seen_utc DESC,alert_id LIMIT -1 OFFSET $maximum);";
         cap.Parameters.AddWithValue("$maximum", MaximumAlertCount);
         await cap.ExecuteNonQueryAsync(token);
+        await using var markers = connection.CreateCommand();
+        markers.Transaction = transaction;
+        markers.CommandText = "DELETE FROM alert_fp_applied WHERE NOT EXISTS(SELECT 1 FROM alerts WHERE alerts.alert_id=alert_fp_applied.alert_id);";
+        await markers.ExecuteNonQueryAsync(token);
+    }
+
+    private static async Task PruneFalsePositiveEventsAsync(SqliteConnection connection, SqliteTransaction transaction, CancellationToken token)
+    {
+        await using var prune = connection.CreateCommand();
+        prune.Transaction = transaction;
+        prune.CommandText = "DELETE FROM alert_fp_events WHERE created_at_utc < $cutoff; DELETE FROM alert_fp_events WHERE request_id IN (SELECT request_id FROM alert_fp_events ORDER BY created_at_utc DESC,request_id LIMIT -1 OFFSET $maximum);";
+        prune.Parameters.AddWithValue("$cutoff", DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(30)).ToString("O"));
+        prune.Parameters.AddWithValue("$maximum", 10_000);
+        await prune.ExecuteNonQueryAsync(token);
     }
 
     private async Task<SqliteConnection> OpenAsync(CancellationToken token)

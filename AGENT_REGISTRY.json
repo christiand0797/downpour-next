@@ -7,8 +7,8 @@
       "role": "primary",
       "taskId": "DN-005",
       "status": "active",
-      "heartbeatUtc": "2026-10-04T20:19:58Z",
-      "notes": "Source 5427953 is pushed. Release v0.1.4 includes the portable x64 ZIP; local `DownpourNext-Portable/` has the same build. DN-005 first slice now has persistent event-ID alerts, bounded retention, dedup, local ack/suppress/reopen, strict IPC, and Alerts route. Release build has 0 warnings/errors; all 59 tests pass; BAT smoke test started app/service and created alert database. Continue broader v29 detection/correlation parity. Two analysis agents hit usage limits before reporting. Portable service runs as current user; system-changing features still need an isolated trusted broker."
+      "heartbeatUtc": "2026-10-04T22:40:00Z",
+      "notes": "Active DN-005 slice: adds schema-v2 alert storage migration and v29-style repeated FP confirmation, fixed-field fingerprinting, bounded retry records, user-visible confirm/re-arm actions, and scope-safe rearm that preserves individually suppressed alerts. Release build clean (0 warnings/errors); full suite 63/63 passed, including migration, threshold, future match, replay, and manual-suppression isolation. Next: commit/push main, rebuild portable ZIP and refresh GitHub release asset; then continue cross-source detection/correlation."
     },
     {
       "id": "v29_action_map",

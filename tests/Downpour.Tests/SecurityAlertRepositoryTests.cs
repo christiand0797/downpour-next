@@ -86,6 +86,86 @@ public sealed class SecurityAlertRepositoryTests
     }
 
     [Fact]
+    public async Task FalsePositiveRuleRequiresThreeConfirmationsSuppressesMatchesAndCanBeRearmed()
+    {
+        using var database = new TemporaryAlertDatabase();
+        var repository = new SecurityAlertRepository(database.Path);
+        await repository.InitializeAsync();
+        var now = DateTimeOffset.UtcNow.AddMinutes(-4);
+        var firstObservation = SecurityEventProvider.CreateObservation("System", "Service Control Manager", 7045, 51, now)!;
+        await repository.IngestAsync(new SecurityEventSnapshot(1, now, [firstObservation], 7, []));
+        var firstAlert = Assert.Single((await repository.ReadSnapshotAsync()).Alerts);
+
+        var firstConfirmation = new AlertStateChangeRequest(1, Guid.NewGuid(), firstAlert.AlertId, "Open", "FalsePositive");
+        Assert.Equal("confirmed-1", (await repository.ChangeStateAsync(firstConfirmation)).ResultCode);
+        Assert.Equal("replayed", (await repository.ChangeStateAsync(firstConfirmation)).ResultCode);
+        Assert.Equal("confirmed-2", (await repository.ChangeStateAsync(firstConfirmation with { RequestId = Guid.NewGuid() })).ResultCode);
+        Assert.Equal("fingerprint-suppressed", (await repository.ChangeStateAsync(firstConfirmation with { RequestId = Guid.NewGuid() })).ResultCode);
+
+        var suppressed = Assert.Single((await repository.ReadSnapshotAsync()).Alerts);
+        Assert.Equal("Suppressed", suppressed.State);
+        var laterObservation = SecurityEventProvider.CreateObservation("System", "Service Control Manager", 7045, 52, now.AddMinutes(1))!;
+        await repository.IngestAsync(new SecurityEventSnapshot(1, now.AddMinutes(1), [laterObservation], 7, []));
+        Assert.Contains((await repository.ReadSnapshotAsync()).Alerts, alert => alert.AlertId != firstAlert.AlertId && alert.State == "Suppressed");
+
+        var rearm = new AlertStateChangeRequest(1, Guid.NewGuid(), firstAlert.AlertId, "Suppressed", "RearmFalsePositive");
+        Assert.Equal("rearmed", (await repository.ChangeStateAsync(rearm)).ResultCode);
+        Assert.All((await repository.ReadSnapshotAsync()).Alerts, alert => Assert.Equal("Open", alert.State));
+        var nextObservation = SecurityEventProvider.CreateObservation("System", "Service Control Manager", 7045, 53, now.AddMinutes(2))!;
+        await repository.IngestAsync(new SecurityEventSnapshot(1, now.AddMinutes(2), [nextObservation], 7, []));
+        Assert.Contains((await repository.ReadSnapshotAsync()).Alerts, alert => alert.AlertId != firstAlert.AlertId && alert.State == "Open");
+    }
+
+    [Fact]
+    public async Task ExistingVersionOneAlertDatabaseMigratesToVersionTwo()
+    {
+        using var database = new TemporaryAlertDatabase();
+        await using (var connection = new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={database.Path};Pooling=False"))
+        {
+            await connection.OpenAsync();
+            await using var command = connection.CreateCommand();
+            command.CommandText = "CREATE TABLE alert_schema(version INTEGER NOT NULL CHECK(version BETWEEN 1 AND 1)); INSERT INTO alert_schema VALUES(1);";
+            await command.ExecuteNonQueryAsync();
+        }
+        var repository = new SecurityAlertRepository(database.Path);
+        await repository.InitializeAsync();
+        await using (var migrated = new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={database.Path};Pooling=False"))
+        {
+            await migrated.OpenAsync();
+            await using var verify = migrated.CreateCommand();
+            verify.CommandText = "SELECT MAX(version) FROM alert_schema;";
+            Assert.Equal(2L, (long)(await verify.ExecuteScalarAsync())!);
+        }
+    }
+
+    [Fact]
+    public async Task RearmingFingerprintDoesNotReopenAnIndividuallySuppressedAlert()
+    {
+        using var database = new TemporaryAlertDatabase();
+        var repository = new SecurityAlertRepository(database.Path);
+        await repository.InitializeAsync();
+        var now = DateTimeOffset.UtcNow.AddMinutes(-3);
+        var first = SecurityEventProvider.CreateObservation("System", "Service Control Manager", 7045, 61, now)!;
+        var second = SecurityEventProvider.CreateObservation("System", "Service Control Manager", 7045, 62, now)!;
+        await repository.IngestAsync(new SecurityEventSnapshot(1, now, [first, second], 7, []));
+        var alerts = (await repository.ReadSnapshotAsync()).Alerts;
+        var autoTarget = alerts.Single(alert => alert.RecordId == 61);
+        var manualTarget = alerts.Single(alert => alert.RecordId == 62);
+        var manuallySuppress = new AlertStateChangeRequest(1, Guid.NewGuid(), manualTarget.AlertId, "Open", "Suppressed");
+        Assert.Equal("updated", (await repository.ChangeStateAsync(manuallySuppress)).ResultCode);
+
+        for (var count = 0; count < 3; count++)
+            await repository.ChangeStateAsync(new AlertStateChangeRequest(1, Guid.NewGuid(), autoTarget.AlertId, "Open", "FalsePositive"));
+        Assert.Equal("Suppressed", (await repository.ReadSnapshotAsync()).Alerts.Single(alert => alert.AlertId == manualTarget.AlertId).State);
+
+        var rearm = new AlertStateChangeRequest(1, Guid.NewGuid(), autoTarget.AlertId, "Suppressed", "RearmFalsePositive");
+        Assert.Equal("rearmed", (await repository.ChangeStateAsync(rearm)).ResultCode);
+        var final = (await repository.ReadSnapshotAsync()).Alerts;
+        Assert.Equal("Open", final.Single(alert => alert.AlertId == autoTarget.AlertId).State);
+        Assert.Equal("Suppressed", final.Single(alert => alert.AlertId == manualTarget.AlertId).State);
+    }
+
+    [Fact]
     public async Task AlertSnapshotAndTriagePipesExchangeBoundedLocalData()
     {
         using var database = new TemporaryAlertDatabase();
@@ -136,6 +216,9 @@ public sealed class SecurityAlertRepositoryTests
         Assert.True(SecurityAlertClient.IsValidRequest(new AlertStateChangeRequest(1, Guid.NewGuid(), new string('a', 64), "Open", "Acknowledged")));
         Assert.False(SecurityAlertClient.IsValidRequest(new AlertStateChangeRequest(1, Guid.NewGuid(), new string('A', 64), "Open", "Acknowledged")));
         Assert.False(SecurityAlertClient.IsValidRequest(new AlertStateChangeRequest(1, Guid.NewGuid(), new string('a', 64), "Suppressed", "Acknowledged")));
+        Assert.True(SecurityAlertClient.IsValidRequest(new AlertStateChangeRequest(1, Guid.NewGuid(), new string('a', 64), "Open", "FalsePositive")));
+        Assert.False(SecurityAlertClient.IsValidRequest(new AlertStateChangeRequest(1, Guid.NewGuid(), new string('a', 64), "Suppressed", "FalsePositive")));
+        Assert.True(SecurityAlertClient.IsValidRequest(new AlertStateChangeRequest(1, Guid.NewGuid(), new string('a', 64), "Suppressed", "RearmFalsePositive")));
         Assert.False(SecurityAlertClient.IsValidResponse(new AlertStateChangeResponse(1, Guid.NewGuid(), true, "updated"), Guid.NewGuid()));
     }
 

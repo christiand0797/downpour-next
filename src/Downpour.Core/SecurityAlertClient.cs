@@ -81,17 +81,23 @@ public sealed class SecurityAlertClient(string pipeName = SecurityAlertClient.Pi
         catch (System.Text.Json.JsonException) { return null; }
     }
 
-    public static bool IsValidRequest(AlertStateChangeRequest? request) => request is not null && request.SchemaVersion == 1 &&
-        request.RequestId != Guid.Empty && SecurityAlertRepositoryId.IsValid(request.AlertId) &&
-        States.Contains(request.ExpectedState) && States.Contains(request.State) &&
-        (request.ExpectedState == request.State || (request.ExpectedState, request.State) is
+    public static bool IsValidRequest(AlertStateChangeRequest? request)
+    {
+        if (request is null || request.SchemaVersion != 1 || request.RequestId == Guid.Empty ||
+            !SecurityAlertRepositoryId.IsValid(request.AlertId) || !States.Contains(request.ExpectedState))
+            return false;
+        if (request.State == "FalsePositive") return request.ExpectedState is "Open" or "Acknowledged";
+        if (request.State == "RearmFalsePositive") return States.Contains(request.ExpectedState);
+        if (!States.Contains(request.State)) return false;
+        return request.ExpectedState == request.State || (request.ExpectedState, request.State) is
             ("Open", "Acknowledged") or ("Open", "Suppressed") or ("Acknowledged", "Open") or
-            ("Acknowledged", "Suppressed") or ("Suppressed", "Open"));
+            ("Acknowledged", "Suppressed") or ("Suppressed", "Open");
+    }
 
     internal static bool IsValidResponse(AlertStateChangeResponse? response, Guid expectedRequest) => response is not null &&
         response.SchemaVersion == 1 && response.RequestId == expectedRequest &&
-        (response.ResultCode is "updated" or "replayed" or "unchanged" or "invalid-request" or "alert-not-found" or "state-conflict" or "transition-denied" or "request-id-conflict") &&
-        (response.Accepted == (response.ResultCode is "updated" or "replayed" or "unchanged"));
+        (response.ResultCode is "updated" or "replayed" or "unchanged" or "confirmed-1" or "confirmed-2" or "fingerprint-suppressed" or "rearmed" or "invalid-request" or "alert-not-found" or "state-conflict" or "transition-denied" or "request-id-conflict") &&
+        (response.Accepted == (response.ResultCode is "updated" or "replayed" or "unchanged" or "confirmed-1" or "confirmed-2" or "fingerprint-suppressed" or "rearmed"));
 
     private static async Task<AlertStateChangeResponse?> ReadResponseAsync(Stream pipe, CancellationToken token)
     {

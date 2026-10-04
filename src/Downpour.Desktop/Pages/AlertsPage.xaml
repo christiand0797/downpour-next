@@ -39,7 +39,7 @@
                 <TextBlock x:Name="AlertCount" Grid.Column="2" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="0 alerts" />
             </Grid>
             <Grid Grid.Row="1" Padding="12,9" ColumnSpacing="10" Background="#D0091321">
-                <Grid.ColumnDefinitions><ColumnDefinition Width="150" /><ColumnDefinition Width="90" /><ColumnDefinition Width="*" /><ColumnDefinition Width="135" /><ColumnDefinition Width="205" /></Grid.ColumnDefinitions>
+                <Grid.ColumnDefinitions><ColumnDefinition Width="150" /><ColumnDefinition Width="90" /><ColumnDefinition Width="*" /><ColumnDefinition Width="135" /><ColumnDefinition Width="320" /></Grid.ColumnDefinitions>
                 <TextBlock FontSize="10" FontWeight="SemiBold" CharacterSpacing="65" Text="FIRST SEEN" />
                 <TextBlock Grid.Column="1" FontSize="10" FontWeight="SemiBold" CharacterSpacing="65" Text="SEVERITY" />
                 <TextBlock Grid.Column="2" FontSize="10" FontWeight="SemiBold" CharacterSpacing="65" Text="FINDING / EVIDENCE" />
@@ -50,7 +50,7 @@
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <Grid Padding="12,9" ColumnSpacing="10">
-                            <Grid.ColumnDefinitions><ColumnDefinition Width="150" /><ColumnDefinition Width="90" /><ColumnDefinition Width="*" /><ColumnDefinition Width="135" /><ColumnDefinition Width="205" /></Grid.ColumnDefinitions>
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="150" /><ColumnDefinition Width="90" /><ColumnDefinition Width="*" /><ColumnDefinition Width="135" /><ColumnDefinition Width="320" /></Grid.ColumnDefinitions>
                             <TextBlock Text="{Binding FirstSeen}" FontFamily="Consolas" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
                             <TextBlock Grid.Column="1" Text="{Binding Severity}" Foreground="{Binding SeverityBrush}" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" />
                             <StackPanel Grid.Column="2" Spacing="3" VerticalAlignment="Center">
@@ -62,9 +62,11 @@
                                 <TextBlock Text="{Binding Occurrences}" FontSize="10" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                             </StackPanel>
                             <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                <Button Content="Acknowledge" Tag="{Binding AlertId}" IsEnabled="{Binding CanAcknowledge}" Click="Acknowledge_Click" Padding="8,5" FontSize="10" />
-                                <Button Content="Suppress" Tag="{Binding AlertId}" IsEnabled="{Binding CanSuppress}" Click="Suppress_Click" Padding="8,5" FontSize="10" />
-                                <Button Content="Reopen" Tag="{Binding AlertId}" IsEnabled="{Binding CanReopen}" Click="Reopen_Click" Padding="8,5" FontSize="10" />
+                                <Button Content="Ack" ToolTipService.ToolTip="Acknowledge this alert" Tag="{Binding AlertId}" IsEnabled="{Binding CanAcknowledge}" Click="Acknowledge_Click" Padding="7,5" FontSize="10" />
+                                <Button Content="FP confirm" ToolTipService.ToolTip="Confirm this finding is a false positive; matching catalog alerts are suppressed after three confirmations" Tag="{Binding AlertId}" IsEnabled="{Binding CanAcknowledge}" Click="FalsePositive_Click" Padding="7,5" FontSize="10" />
+                                <Button Content="Suppress" ToolTipService.ToolTip="Suppress this individual alert only" Tag="{Binding AlertId}" IsEnabled="{Binding CanSuppress}" Click="Suppress_Click" Padding="7,5" FontSize="10" />
+                                <Button Content="Reopen" ToolTipService.ToolTip="Reopen this alert" Tag="{Binding AlertId}" IsEnabled="{Binding CanReopen}" Click="Reopen_Click" Padding="7,5" FontSize="10" />
+                                <Button Content="Re-arm" ToolTipService.ToolTip="Clear the matching false-positive suppression rule and reopen its suppressed alerts" Tag="{Binding AlertId}" Click="RearmFalsePositive_Click" Padding="7,5" FontSize="10" />
                             </StackPanel>
                         </Grid>
                     </DataTemplate>
@@ -75,6 +77,6 @@
             </ListView>
         </Grid>
 
-        <TextBlock Grid.Row="3" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Acknowledge and suppress update only local triage state; suppress affects this individual alert and does not block future matching events. No processes, drivers, network, or Windows settings are changed." TextWrapping="Wrap" />
+        <TextBlock Grid.Row="3" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="False-positive rules match only the fixed channel, provider, and event ID. Three explicit confirmations suppress future matches; Re-arm clears that rule and reopens its alerts. These local review actions do not inspect event content or change Windows settings." TextWrapping="Wrap" />
     </Grid>
 </Page>
