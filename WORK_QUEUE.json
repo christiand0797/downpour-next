@@ -127,7 +127,7 @@
         "Backup and restore verification",
         "Privacy minimization"
       ],
-      "notes": "Implemented first service-side persistence slice: Microsoft.Data.Sqlite 10.0.12; schema-v1 operation projection and append-only transition events; transactional updates; WAL/FULL durability; fixed operation/state vocabulary; current actor SID; path-free bounded object IDs/reason codes; idempotency and restart-visible pending recovery; protected current-user/SYSTEM directory ACL; reparse checks; no action IPC or file/system mutations. 43 tests pass including ACL, migration/reopen, transition, rollback and recovery tests. Still missing retention/rotation, signed or independent tamper evidence, backups, alert/evidence history, and an isolated installed service identity. See docs/ACTION_JOURNAL.md."
+      "notes": "The pushed baseline added service-side SQLite schema v1. Review hardening migrated to schema v2 with service_sid naming and state validation triggers; verifies WAL activation; restricts object IDs to generated lowercase GUID tokens; binds BeginAsync retries to their original intent event; keeps Failed/RecoveryRequired visible and blocks generic finalization of uncertain states; rejects reparse-point ancestors in journal paths. Release build is clean and 51 tests pass, including v1 migration and isolated temp-folder ACL checks. Portable service remains the interactive-user account and the journal is not tamper-proof; no action API/mutation is present. Next: authenticated installed service identity, then retention/integrity and typed operator consent."
     },
     {
       "id": "DN-008",

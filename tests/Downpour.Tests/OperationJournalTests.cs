@@ -18,7 +18,8 @@ public sealed class OperationJournalTests
 
         var first = new OperationJournal(path);
         await first.InitializeAsync();
-        var begun = await first.BeginAsync(operationId, JournalOperationKind.QuarantineFile, "policy-v1", "obj-001", beginEvent);
+        var objectId = NewObjectId();
+        var begun = await first.BeginAsync(operationId, JournalOperationKind.QuarantineFile, "policy-v1", objectId, beginEvent);
         Assert.Equal(JournalOperationState.Prepared, begun.State);
         Assert.Equal(JournalOperationState.ContentStaged,
             (await first.TransitionAsync(operationId, stageEvent, JournalOperationState.ContentStaged, "stage-verified")).State);
@@ -41,7 +42,7 @@ public sealed class OperationJournalTests
         var journal = new OperationJournal(Path.Combine(temp.Path, "operations.db"));
         await journal.InitializeAsync();
         var id = Guid.NewGuid();
-        await journal.BeginAsync(id, JournalOperationKind.QuarantineFile, "policy-v1", "obj-002", Guid.NewGuid());
+        await journal.BeginAsync(id, JournalOperationKind.QuarantineFile, "policy-v1", NewObjectId(), Guid.NewGuid());
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => journal.TransitionAsync(id, Guid.NewGuid(), JournalOperationState.Quarantined, "skip-stage"));
         await Assert.ThrowsAsync<ArgumentException>(() => journal.BeginAsync(Guid.NewGuid(), JournalOperationKind.QuarantineFile, "policy-v1", "..\\secret", Guid.NewGuid()));
@@ -55,7 +56,7 @@ public sealed class OperationJournalTests
         var journal = new OperationJournal(Path.Combine(temp.Path, "operations.db"));
         await journal.InitializeAsync();
         var id = Guid.NewGuid();
-        await journal.BeginAsync(id, JournalOperationKind.QuarantineFile, "policy-v1", "obj-003", Guid.NewGuid());
+        await journal.BeginAsync(id, JournalOperationKind.QuarantineFile, "policy-v1", NewObjectId(), Guid.NewGuid());
         var transitionId = Guid.NewGuid();
 
         await journal.TransitionAsync(id, transitionId, JournalOperationState.ContentStaged, "stage-verified");
@@ -74,8 +75,8 @@ public sealed class OperationJournalTests
         await journal.InitializeAsync();
         var first = Guid.NewGuid();
         var second = Guid.NewGuid();
-        await journal.BeginAsync(first, JournalOperationKind.QuarantineFile, "policy-v1", "obj-004", Guid.NewGuid());
-        await journal.BeginAsync(second, JournalOperationKind.QuarantineFile, "policy-v1", "obj-005", Guid.NewGuid());
+        await journal.BeginAsync(first, JournalOperationKind.QuarantineFile, "policy-v1", NewObjectId(), Guid.NewGuid());
+        await journal.BeginAsync(second, JournalOperationKind.QuarantineFile, "policy-v1", NewObjectId(), Guid.NewGuid());
         await using (var connection = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = journal.DatabasePath, Pooling = false }.ToString()))
         {
             await connection.OpenAsync();
@@ -97,7 +98,7 @@ public sealed class OperationJournalTests
         await journal.InitializeAsync();
         await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => journal.GetPendingRecoveryAsync(1001));
         var id = Guid.NewGuid();
-        await journal.BeginAsync(id, JournalOperationKind.RestoreFile, "policy-v1", "obj-006", Guid.NewGuid());
+        await journal.BeginAsync(id, JournalOperationKind.RestoreFile, "policy-v1", NewObjectId(), Guid.NewGuid());
         await Assert.ThrowsAsync<ArgumentException>(() => journal.TransitionAsync(id, Guid.NewGuid(), JournalOperationState.Quarantined, "path=C:\\temp"));
     }
 
@@ -109,7 +110,7 @@ public sealed class OperationJournalTests
         var journal = new OperationJournal(path);
         await journal.InitializeAsync();
         var id = Guid.NewGuid();
-        await journal.BeginAsync(id, JournalOperationKind.RestoreFile, "policy-v1", "obj-007", Guid.NewGuid());
+        await journal.BeginAsync(id, JournalOperationKind.RestoreFile, "policy-v1", NewObjectId(), Guid.NewGuid());
 
         var reopened = new OperationJournal(path);
         await reopened.InitializeAsync();
@@ -120,27 +121,115 @@ public sealed class OperationJournalTests
     }
 
     [Fact]
-    public async Task ProductionJournalUsesProtectedCurrentUserAndSystemAcl()
+    public void JournalStateDirectoryUsesProtectedCurrentUserAndSystemAcl()
     {
-        var journal = OperationJournal.CreateForCurrentUser();
-        await journal.InitializeAsync();
+        using var temp = new TemporaryDirectory();
+        var path = Path.Combine(temp.Path, "state");
+        SecureJournalDirectory.Ensure(path);
+        var databasePath = Path.Combine(path, "operations.db");
+        File.WriteAllText(databasePath, "test");
+        SecureJournalDirectory.RestrictExistingFile(databasePath);
         var expected = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             WindowsIdentity.GetCurrent().User!.Value,
             new SecurityIdentifier(WellKnownSidType.LocalSystemSid, null).Value
         };
-        var directory = new DirectoryInfo(Path.GetDirectoryName(journal.DatabasePath)!);
+        var directory = new DirectoryInfo(path);
         var directorySecurity = directory.GetAccessControl();
         Assert.True(directorySecurity.AreAccessRulesProtected);
         Assert.Equal(expected.Order(), directorySecurity.GetAccessRules(true, true, typeof(SecurityIdentifier))
             .Cast<System.Security.AccessControl.FileSystemAccessRule>()
             .Select(rule => ((SecurityIdentifier)rule.IdentityReference).Value)
             .ToHashSet(StringComparer.OrdinalIgnoreCase).Order());
-        var fileSecurity = new FileInfo(journal.DatabasePath).GetAccessControl();
+        var fileSecurity = new FileInfo(databasePath).GetAccessControl();
+        Assert.True(fileSecurity.AreAccessRulesProtected);
         Assert.Equal(expected.Order(), fileSecurity.GetAccessRules(true, true, typeof(SecurityIdentifier))
             .Cast<System.Security.AccessControl.FileSystemAccessRule>()
             .Select(rule => ((SecurityIdentifier)rule.IdentityReference).Value)
             .ToHashSet(StringComparer.OrdinalIgnoreCase).Order());
+    }
+
+    [Fact]
+    public async Task FailedAndRecoveryRequiredOperationsStayPendingAndCannotBeGuessedComplete()
+    {
+        using var temp = new TemporaryDirectory();
+        var journal = new OperationJournal(Path.Combine(temp.Path, "operations.db"));
+        await journal.InitializeAsync();
+        var recoveryId = Guid.NewGuid();
+        var failedId = Guid.NewGuid();
+        await journal.BeginAsync(recoveryId, JournalOperationKind.QuarantineFile, "policy-v1", NewObjectId(), Guid.NewGuid());
+        await journal.TransitionAsync(recoveryId, Guid.NewGuid(), JournalOperationState.RecoveryRequired, "source-state-uncertain");
+        await Assert.ThrowsAsync<InvalidOperationException>(() => journal.TransitionAsync(recoveryId, Guid.NewGuid(), JournalOperationState.Quarantined, "verified-by-caller"));
+        await journal.BeginAsync(failedId, JournalOperationKind.RestoreFile, "policy-v1", NewObjectId(), Guid.NewGuid());
+        await journal.TransitionAsync(failedId, Guid.NewGuid(), JournalOperationState.Failed, "restore-partial");
+        var pending = await journal.GetPendingRecoveryAsync();
+        Assert.Contains(pending, row => row.OperationId == recoveryId && row.State == JournalOperationState.RecoveryRequired);
+        Assert.Contains(pending, row => row.OperationId == failedId && row.State == JournalOperationState.Failed);
+    }
+
+    [Fact]
+    public async Task BeginReplayMustMatchOriginalIntentEvent()
+    {
+        using var temp = new TemporaryDirectory();
+        var journal = new OperationJournal(Path.Combine(temp.Path, "operations.db"));
+        await journal.InitializeAsync();
+        var id = Guid.NewGuid();
+        var objectId = NewObjectId();
+        await journal.BeginAsync(id, JournalOperationKind.QuarantineFile, "policy-v1", objectId, Guid.NewGuid());
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => journal.BeginAsync(id, JournalOperationKind.QuarantineFile, "policy-v1", objectId, Guid.NewGuid()));
+    }
+
+    [Fact]
+    public async Task SchemaV1MigratesToServiceIdentityV2WithoutDroppingPendingIntent()
+    {
+        using var temp = new TemporaryDirectory();
+        var path = Path.Combine(temp.Path, "operations.db");
+        var operationId = Guid.NewGuid();
+        var eventId = Guid.NewGuid();
+        var objectId = NewObjectId();
+        var serviceSid = WindowsIdentity.GetCurrent().User!.Value;
+        var timestamp = DateTimeOffset.UtcNow.ToString("O");
+        Directory.CreateDirectory(temp.Path);
+        await using (var connection = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = path, Pooling = false }.ToString()))
+        {
+            await connection.OpenAsync();
+            await using var command = connection.CreateCommand();
+            command.CommandText = "CREATE TABLE schema_migrations(version INTEGER PRIMARY KEY, applied_at_utc TEXT NOT NULL);" +
+                "INSERT INTO schema_migrations(version,applied_at_utc) VALUES(1,'2026-10-04T00:00:00Z');" +
+                "CREATE TABLE operations(operation_id TEXT PRIMARY KEY,kind TEXT NOT NULL,state TEXT NOT NULL,actor_sid TEXT NOT NULL,policy_version TEXT NOT NULL,object_id TEXT NOT NULL,created_at_utc TEXT NOT NULL,updated_at_utc TEXT NOT NULL);" +
+                "CREATE TABLE operation_events(sequence INTEGER PRIMARY KEY AUTOINCREMENT,event_id TEXT NOT NULL UNIQUE,operation_id TEXT NOT NULL,previous_state TEXT NULL,state TEXT NOT NULL,result_code TEXT NOT NULL,created_at_utc TEXT NOT NULL,FOREIGN KEY(operation_id) REFERENCES operations(operation_id));" +
+                "INSERT INTO operations VALUES($id,'QuarantineFile','Prepared',$sid,'policy-v1',$object,$created,$updated);" +
+                "INSERT INTO operation_events(event_id,operation_id,previous_state,state,result_code,created_at_utc) VALUES($event,$id,NULL,'Prepared','intent-recorded',$created);";
+            command.Parameters.AddWithValue("$id", operationId.ToString("D"));
+            command.Parameters.AddWithValue("$sid", serviceSid);
+            command.Parameters.AddWithValue("$object", objectId);
+            command.Parameters.AddWithValue("$created", timestamp);
+            command.Parameters.AddWithValue("$updated", timestamp);
+            command.Parameters.AddWithValue("$event", eventId.ToString("D"));
+            await command.ExecuteNonQueryAsync();
+        }
+
+        var journal = new OperationJournal(path);
+        await journal.InitializeAsync();
+        var pending = await journal.GetPendingRecoveryAsync();
+        Assert.Single(pending);
+        Assert.Equal(serviceSid, pending[0].ServiceSid);
+        Assert.Equal(objectId, pending[0].ObjectId);
+    }
+
+    [Theory]
+    [InlineData("C:foo")]
+    [InlineData("obj-../foo")]
+    [InlineData("obj-%2f000000000000000000000000000000")]
+    [InlineData("obj-0000000000000000000000000000000Ａ")]
+    [InlineData("obj-0000000000000000000000000000000G")]
+    public async Task BeginRejectsObjectIdsOutsideGeneratedTokenGrammar(string invalidId)
+    {
+        using var temp = new TemporaryDirectory();
+        var journal = new OperationJournal(Path.Combine(temp.Path, "operations.db"));
+        await journal.InitializeAsync();
+        await Assert.ThrowsAsync<ArgumentException>(() => journal.BeginAsync(Guid.NewGuid(), JournalOperationKind.QuarantineFile, "policy-v1", invalidId, Guid.NewGuid()));
     }
 
     private sealed class TemporaryDirectory : IDisposable
@@ -152,6 +241,8 @@ public sealed class OperationJournalTests
             if (Directory.Exists(Path)) Directory.Delete(Path, recursive: true);
         }
     }
+
+    private static string NewObjectId() => $"obj-{Guid.NewGuid():N}";
 }
 
 

@@ -7,8 +7,8 @@
       "role": "primary",
       "taskId": "DN-007",
       "status": "active",
-      "heartbeatUtc": "2026-10-04T15:19:00Z",
-      "notes": "Parallel agents mapped v29 parity priorities, reviewed event coverage, wired the Events UI route, and assessed the durable journal/service identity boundary. Event monitoring is pushed as 8365d12; service SQLite journal foundation pushed as fe5020f. Release build: 0 warnings/errors; 43 tests pass. Journal is persistence only: protected current-user/SYSTEM directory, SQLite state/events, no action API, and no same-user tamper-proofing. Next critical work: choose/install an isolated service identity, authenticate UI requests, define typed action consent and recovery before actual quarantine/driver management. Do not create more preview releases."
+      "heartbeatUtc": "2026-10-04T16:08:00Z",
+      "notes": "Three agents reviewed current service installation identity, journal security, and v29 effectful action parity. They confirmed portable mode runs the service as the interactive user and no installer exists; actions must remain off until a signed installer establishes a restricted identity and client authentication. Journal hardening is ready to push: schema v2 migration, service SID naming, strict generated object IDs, exact intent replay binding, failed/recovery pending behavior, generic recovery-finalization denial, WAL confirmation, reparse ancestry checks, temp-isolated ACL testing. Release build: 0 warnings/errors; 51 tests pass. Quarantine/restore is the preferred first action only after service identity/consent/storage/recovery gates. No preview release."
     }
   ]
 }

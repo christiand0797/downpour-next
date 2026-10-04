@@ -2,13 +2,13 @@
 
 The sensor service initializes a versioned SQLite journal at `%LOCALAPPDATA%\DownpourNext\state\operations.v1.db`. Its containing `state` directory has an explicit protected Windows DACL granting full control only to the current service account and LocalSystem. Existing database/WAL/SHM files are checked for reparse points; existing files have their explicit ACL reset to the same principals before opening. New SQLite files and sidecars inherit the protected directory ACL.
 
-Schema version 1 contains:
+Schema version 2 contains (with an in-place migration from the first pushed schema):
 
-- `operations`: current operation projection, fixed operation kinds (`QuarantineFile`, `RestoreFile`), fixed state vocabulary, actor SID captured from the service process, bounded policy version, opaque object ID, and UTC timestamps.
+- `operations`: current operation projection, fixed operation kinds (`QuarantineFile`, `RestoreFile`), fixed state vocabulary, service SID captured from the service process (not an authenticated operator identity), bounded policy version, generated `obj-` plus lowercase GUID object IDs, and UTC timestamps.
 - `operation_events`: append-only-by-API transition history with a unique event ID, monotonic SQLite sequence, previous/current state, bounded reason code, and UTC timestamp. SQLite triggers reject updates and deletes to event rows.
 - `schema_migrations`: applied schema versions.
 
-Every transition updates the operation projection and appends its event in one SQLite transaction. SQLite uses WAL, foreign keys, a five-second busy timeout, and `synchronous=FULL`. The API enforces state transitions, idempotent event replay, opaque path-free object identifiers, ASCII reason-code bounds, and bounded pending/event query sizes. A restart leaves unfinished intent visible as pending recovery; nothing automatically resumes or changes files.
+Every transition updates the operation projection and appends its event in one SQLite transaction. SQLite uses WAL, foreign keys, a five-second busy timeout, and `synchronous=FULL`, and startup fails if WAL cannot be enabled. The API enforces state transitions, intent-event binding on retries, idempotent event replay, strict generated object identifiers, ASCII reason-code bounds, and bounded pending/event query sizes. Failed and uncertain operations remain visible as pending recovery. The generic transition API cannot complete a `RecoveryRequired` or `Failed` operation; that requires a future typed verifier. Startup never resumes or changes files.
 
 ## Deliberate scope boundary
 
