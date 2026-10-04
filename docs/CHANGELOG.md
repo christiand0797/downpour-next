@@ -1,5 +1,13 @@
 # Downpour Next changelog
 
+## v0.1.5 — persistent false-positive rules
+
+- Added false-positive confirmation and re-arm actions in Alerts. Three explicit confirmations of the same fixed channel/provider/event-ID rule suppress matching current and future alerts. Re-arming removes the rule and reopens only rows that it auto-suppressed; individual suppression remains independent.
+- Added retry-safe confirmation/re-arm request records, bounded to 10,000 rows / 30 days, and automatic alert DB migration from schema v1 to v2.
+- Fingerprints use fixed catalog metadata only. Event message text is neither collected nor analyzed.
+- Release build: 0 warnings/errors; 63 tests passed. Package: `DownpourNext-win-x64-85ba7d2.zip`, SHA-256 `E3578121CE3C22B2B54CC7C87B44D7D2F0782C0AF6CC85401DADD8705E86B396`.
+- Download the unsigned portable development build from [GitHub Releases](https://github.com/christiand0797/downpour-next/releases/tag/v0.1.5). This release is not an installer or full v29 parity claim.
+
 ## v0.1.4 — persistent event alerts and local triage
 
 - Added service-side SQLite persistence for allow-listed event observations with SHA-256 IDs based on event record identity, deduplication across repeated polling, 30-day retention, and a 10,000-alert cap.
