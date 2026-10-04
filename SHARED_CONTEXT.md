@@ -5,7 +5,7 @@
 **Repository:** private [christiand0797/downpour-next](https://github.com/christiand0797/downpour-next)  
 **Local path:** `C:\Users\purpl\Desktop\downpour v2`  
 **Branch:** `main`  
-**Latest pushed checkpoint:** `486a7c1 Update event monitor handoff checkpoint` pushed to `main`; current operation-journal work is uncommitted. Existing release [v0.1.2-preview](https://github.com/christiand0797/downpour-next/releases/tag/v0.1.2-preview) remains the only published binary bundle; do not create further preview releases per user direction.
+**Latest pushed checkpoint:** `fe5020f Add durable operation journal foundation` pushed to `main`, after `8365d12 Add bounded Windows security event monitor`. Existing release [v0.1.2-preview](https://github.com/christiand0797/downpour-next/releases/tag/v0.1.2-preview) remains the only published binary bundle; do not create further preview releases per user direction.
 
 The current implementation includes 512 bounded process rows, direct-EXE sensor auto-start, truthful service connectivity UI, oversized IPC handling, and a direct `.bat` launcher. Telemetry pipe DACLs now grant LocalSystem and the service's current user; same-user integration works and the named-pipe servers remain outbound-only. Current Release build: 0 warnings/errors; 36 tests pass. The current code goal is full functional v29 parity, including controlled/audited system-changing actions; observe-only behavior is a current stage, not the product goal. The last build artifacts in the ignored `artifacts/` directory are local and are not attached to the existing GitHub release.
 
@@ -77,6 +77,7 @@ Check: Dashboard should show an `ONLINE` observe-only connection and live system
 ## Architecture and safety constraints
 
 See `AGENTS.md`, `SECURITY.md`, `docs/SECURITY_MODEL.md`, `docs/FEATURE_PARITY.md`, and `docs/ARCHITECTURE_AND_MIGRATION.md`. The only enabled service behavior is observation. The pipe server endpoint is outbound-only; access is limited to the current user SID and LocalSystem. Do not enable system-changing actions without a reviewed allow-list, authorization policy, audit record, timeout, recovery path, and denial tests.
+
 
 
 

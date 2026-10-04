@@ -7,8 +7,8 @@
       "role": "primary",
       "taskId": "DN-007",
       "status": "active",
-      "heartbeatUtc": "2026-10-04T15:08:00Z",
-      "notes": "Used three parallel agents for v29 parity mapping, event slice review, and Security Events route wiring. The service-backed 35-event/7-channel monitor is committed and pushed as 8365d12; Release build: 0 warnings/errors; 36 tests pass. Security Events scope and limitations are documented. User wants full v29 feature parity including guarded effectful actions and no more preview releases. Next active slice: durable audit/recovery foundation, followed by narrow explicit-consent quarantine/restore. No privileged operations or broad command broker."
+      "heartbeatUtc": "2026-10-04T15:19:00Z",
+      "notes": "Parallel agents mapped v29 parity priorities, reviewed event coverage, wired the Events UI route, and assessed the durable journal/service identity boundary. Event monitoring is pushed as 8365d12; service SQLite journal foundation pushed as fe5020f. Release build: 0 warnings/errors; 43 tests pass. Journal is persistence only: protected current-user/SYSTEM directory, SQLite state/events, no action API, and no same-user tamper-proofing. Next critical work: choose/install an isolated service identity, authenticate UI requests, define typed action consent and recovery before actual quarantine/driver management. Do not create more preview releases."
     }
   ]
 }
