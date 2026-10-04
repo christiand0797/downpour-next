@@ -8,7 +8,7 @@
       "taskId": null,
       "status": "idle",
       "heartbeatUtc": "2026-10-04T00:12:09Z",
-      "notes": "Checkpoint ready to push. Next safe task: DN-002 packaged UI online/offline validation; see SHARED_CONTEXT.md and WORK_QUEUE.json."
+      "notes": "Latest checkpoint is pushed. GitHub Actions execution is blocked by the account billing/spending-limit notice. Next safe task: DN-002 packaged UI online/offline validation; see SHARED_CONTEXT.md and WORK_QUEUE.json."
     }
   ]
 }

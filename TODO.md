@@ -11,7 +11,8 @@ This checklist tracks current implementation state; the detailed order, dependen
 - [x] Add CI-testable registry and snapshot tests.
 - [x] Fix named-pipe ACL and add a schema-v1 local pipe integration test; verify test discovery and behavior on this host.
 - [ ] Visually and interactively validate online/offline dashboard and process page.
-- [x] Add Windows CI and Dependabot; pin wildcard package dependencies. First remote CI run still needs inspection.
+- [x] Configure Windows CI and Dependabot; pin wildcard package dependencies.
+- [ ] Resolve GitHub's account billing/spending-limit notice, then verify remote CI and Dependabot runs.
 
 ## Feature parity
 

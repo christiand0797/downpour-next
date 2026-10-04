@@ -20,7 +20,7 @@ Build a native Windows successor that preserves Downpour v29's security capabili
 - Processes page displays and filters the top eight process rows from the live snapshot. This is not equivalent to the original process behavior/injection detector.
 - All other security engines, scans, threat feeds, event monitors, settings persistence, hardening, forensics, AEGIS layers, and response actions remain unported.
 - Tests cover route-registry integrity, a live Windows snapshot, missing-service behavior, and an authenticated local pipe round-trip.
-- Windows CI and Dependabot are configured; package/action pins were reviewed. CI's first GitHub run still needs inspection.
+- Windows CI and Dependabot are configured; package/action pins were reviewed. GitHub blocked the first workflow before job start because recent account payments failed or the spending limit needs to be increased. This account-level notice prevents verifying remote CI and Dependabot runs.
 
 ## How to run locally
 
@@ -49,7 +49,7 @@ Check: Dashboard should show an observe-only connection and live system metrics.
 ## Immediate next actions
 
 1. Validate the UI dashboard/process route online and offline; native UI automation remains outstanding.
-2. Inspect the first GitHub Actions run after pushing the CI configuration.
+2. After resolving GitHub's account billing/spending-limit notice, inspect the first CI and Dependabot workflow runs.
 3. Add bounded IPC payload parsing and validate the server identity; narrow the pipe ACL to the eventual service SID/user model.
 4. Port read-only network/event telemetry, then implement normalized alerts and detection fixtures.
 5. Reconcile the complete module map, screens, configs, feeds, rules, workflows, storage, and action paths before declaring feature parity.

@@ -22,11 +22,11 @@
     {
       "id": "DN-003",
       "title": "Add Windows CI, Dependabot, and dependency pinning",
-      "status": "completed",
+      "status": "queued",
       "priority": "high",
       "files": [".github/workflows/ci.yml", ".github/dependabot.yml", "src/Downpour.Desktop/Downpour.Desktop.csproj"],
       "acceptance": ["Restore/build/test run on Windows GitHub Actions", "No wildcard package versions remain", "Dependency update schedule is documented"],
-      "notes": "Windows CI workflow and weekly NuGet/actions Dependabot updates are configured; SDK package wildcard pins were replaced with resolved versions. Inspect the first Actions run after push."
+      "notes": "Windows CI workflow and weekly NuGet/actions Dependabot updates are configured; SDK package wildcard pins were replaced with resolved versions. GitHub blocked the first workflow at startup because recent account payments failed or the spending limit needs to be increased. After the account billing setting is resolved, inspect CI and Dependabot workflow runs."
     },
     {
       "id": "DN-004",
