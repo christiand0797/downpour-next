@@ -5,10 +5,10 @@
     {
       "id": "codex-primary",
       "role": "primary",
-      "taskId": "DN-004",
+      "taskId": "DN-007",
       "status": "active",
-      "heartbeatUtc": "2026-10-04T15:07:00Z",
-      "notes": "Used three parallel agents for v29 parity mapping, event slice review, and UI route wiring. Security Events implementation is complete in the working tree: 35 fixed event/channel pairs across 7 channels, continuous 15-second service polling, bounded metadata-only IPC, 4625 five-minute burst threshold, explicit source health, searchable route. Release build 0 warnings/errors; 36 tests pass. Changes/docs are pending push. User wants full functional parity including guarded actions and no more preview releases. Next: push this checkpoint, then design DN-007 durable audit/recovery storage and DN-008 narrow consent-based quarantine/restore broker before effectful features."
+      "heartbeatUtc": "2026-10-04T15:08:00Z",
+      "notes": "Used three parallel agents for v29 parity mapping, event slice review, and Security Events route wiring. The service-backed 35-event/7-channel monitor is committed and pushed as 8365d12; Release build: 0 warnings/errors; 36 tests pass. Security Events scope and limitations are documented. User wants full v29 feature parity including guarded effectful actions and no more preview releases. Next active slice: durable audit/recovery foundation, followed by narrow explicit-consent quarantine/restore. No privileged operations or broad command broker."
     }
   ]
 }
