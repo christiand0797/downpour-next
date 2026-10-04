@@ -102,14 +102,15 @@
     {
       "id": "DN-007",
       "title": "Implement durable configuration, history, and migration-safe local storage",
-      "status": "queued",
+      "status": "in_progress",
       "priority": "medium",
       "acceptance": [
         "Transactional schema upgrades",
         "DPAPI-backed secrets",
         "Backup and restore verification",
         "Privacy minimization"
-      ]
+      ],
+      "notes": "Partial implementation shipped in this checkpoint: one Settings route persists the wired visual preferences (rain effects, reduced motion, auto storm cycle) in per-user packaged local settings and labels fallback behavior. No secrets are stored. Transactional schema upgrades, DPAPI secrets, backup/restore, user-configurable scan/privacy policies, and audit/history storage remain outstanding."
     },
     {
       "id": "DN-008",

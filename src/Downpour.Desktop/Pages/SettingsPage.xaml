@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page x:Class="Downpour_Desktop.Pages.SettingsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      mc:Ignorable="d">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Padding="28,24,28,36" Spacing="18" MaxWidth="1080" HorizontalAlignment="Left">
+            <StackPanel Spacing="5">
+                <TextBlock Text="OPERATIONS / APP PREFERENCES" Style="{StaticResource SubtitleTextBlockStyle}" />
+                <TextBlock Text="Settings" Style="{StaticResource TitleTextBlockStyle}" />
+                <TextBlock Text="A single place for Downpour preferences. Choices are stored locally for this Windows user." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+            </StackPanel>
+            <Border Padding="18" CornerRadius="12" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                <StackPanel Spacing="14">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Appearance &amp; motion" FontSize="18" FontWeight="SemiBold" />
+                        <TextBlock Text="Adjust the animated storm background without changing telemetry or protection behavior." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                    </StackPanel>
+                    <Grid ColumnSpacing="16">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                        <StackPanel Spacing="2"><TextBlock Text="Rain and sky effects" FontWeight="SemiBold" /><TextBlock Text="Show the animated rain, stars, aurora, and lightning layers." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" /></StackPanel>
+                        <ToggleSwitch x:Name="RainEffectsToggle" Grid.Column="1" IsOn="True" Toggled="RainEffects_Toggled" OnContent="On" OffContent="Off" />
+                    </Grid>
+                    <Grid ColumnSpacing="16">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                        <StackPanel Spacing="2"><TextBlock Text="Reduce motion" FontWeight="SemiBold" /><TextBlock Text="Pause continuous rain, star, aurora, and lightning animation while keeping the selected scene visible." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" /></StackPanel>
+                        <ToggleSwitch x:Name="ReduceMotionToggle" Grid.Column="1" IsOn="False" Toggled="ReduceMotion_Toggled" OnContent="On" OffContent="Off" />
+                    </Grid>
+                    <Grid ColumnSpacing="16">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                        <StackPanel Spacing="2"><TextBlock Text="Automatic storm rotation" FontWeight="SemiBold" /><TextBlock Text="Let the scene shift among drizzle, storm, thunderstorm, and hurricane. Choosing a mode on the dashboard holds it manually." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" /></StackPanel>
+                        <ToggleSwitch x:Name="AutoStormToggle" Grid.Column="1" IsOn="True" Toggled="AutoStorm_Toggled" OnContent="On" OffContent="Off" />
+                    </Grid>
+                    <TextBlock x:Name="SaveState" Text="" FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                </StackPanel>
+            </Border>
+            <Border Padding="18" CornerRadius="12" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="Privacy &amp; data" FontSize="18" FontWeight="SemiBold" />
+                    <TextBlock Text="This build stores only the visual preferences above in the current user's app settings. No usage analytics, clipboard data, browser data, command lines, or file contents are collected." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                    <TextBlock Text="Threat Intelligence contacts the fixed CISA endpoint only when you open that route or choose Refresh. The current prototype does not persist downloaded feed data." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+            <Border Padding="18" CornerRadius="12" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="Scanning &amp; protection" FontSize="18" FontWeight="SemiBold" />
+                    <TextBlock Text="System-changing actions remain disabled. Background scanning, quarantine, firewall changes, hardening, and driver package actions are not yet ported from Downpour v29. This page will only expose controls after their service policy, audit, and recovery paths are implemented." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

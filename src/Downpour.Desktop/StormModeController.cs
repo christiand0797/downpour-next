@@ -20,6 +20,8 @@ public static class StormModeController
         if (!IsManual) SetMode(mode);
     }
 
+    public static void SetAutomaticCycling(bool enabled) => IsManual = !enabled;
+
     public static void SetMode(int mode)
     {
         var boundedMode = Math.Clamp(mode, 0, Modes.Length - 1);

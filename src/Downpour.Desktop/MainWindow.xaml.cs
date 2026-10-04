@@ -51,6 +51,9 @@ public sealed partial class MainWindow : Window
         AppWindow.SetIcon("Assets/AppIcon.ico");
         InitializeStorm();
         StormModeController.ModeChanged += ApplyStormMode;
+        AppPreferences.Changed += ApplyVisualPreferences;
+        StormModeController.SetAutomaticCycling(AppPreferences.AutoStormCycle);
+        ApplyVisualPreferences();
         Activated += Window_Activated;
         NavFrame.Navigated += NavFrame_Navigated;
         BuildNavigation();
@@ -114,8 +117,7 @@ public sealed partial class MainWindow : Window
             Canvas.SetTop(star, _random.NextDouble() * e.NewSize.Height);
         }
 
-        _rainTimer?.Start();
-        _starTimer?.Start();
+        ApplyVisualPreferences();
     }
 
     private void AnimateRain()
@@ -127,7 +129,7 @@ public sealed partial class MainWindow : Window
         if (_stormPhaseAge >= 1150)
         {
             _stormPhaseAge = 0;
-            if (!StormModeController.IsManual) _stormPhaseTarget = _random.Next(StormPhases.Length);
+            if (AppPreferences.AutoStormCycle && !StormModeController.IsManual) _stormPhaseTarget = _random.Next(StormPhases.Length);
         }
         if (_stormPhaseIndex != _stormPhaseTarget && ++_phaseTransitionTicks >= 24)
         {
@@ -292,6 +294,30 @@ public sealed partial class MainWindow : Window
         }
         if (_rainDrops.Count > 0 && _rainTimer is { IsRunning: false }) _rainTimer.Start();
         if (_stars.Count > 0 && _starTimer is { IsRunning: false }) _starTimer.Start();
+        ApplyVisualPreferences();
+    }
+
+    private void ApplyVisualPreferences()
+    {
+        if (!DispatcherQueue.HasThreadAccess)
+        {
+            _ = DispatcherQueue.TryEnqueue(ApplyVisualPreferences);
+            return;
+        }
+
+        StormCanvas.Visibility = AppPreferences.RainEffectsEnabled ? Visibility.Visible : Visibility.Collapsed;
+        if (!AppPreferences.RainEffectsEnabled || AppPreferences.ReduceMotion)
+        {
+            _rainTimer?.Stop();
+            _starTimer?.Stop();
+            LightningFlash.Opacity = 0;
+            foreach (var bolt in _lightningBolts) StormCanvas.Children.Remove(bolt);
+            _lightningBolts.Clear();
+            _lightningTicksRemaining = 0;
+            return;
+        }
+        if (_rainDrops.Count > 0 && _rainTimer is { IsRunning: false }) _rainTimer.Start();
+        if (_stars.Count > 0 && _starTimer is { IsRunning: false }) _starTimer.Start();
     }
 
     private void BuildNavigation()
@@ -328,6 +354,8 @@ public sealed partial class MainWindow : Window
             NavFrame.Navigate(typeof(NetworkPage));
         else if (capability.RouteId.Equals("intel", StringComparison.OrdinalIgnoreCase))
             NavFrame.Navigate(typeof(IntelPage));
+        else if (capability.RouteId.Equals("settings", StringComparison.OrdinalIgnoreCase))
+            NavFrame.Navigate(typeof(SettingsPage));
         else
             NavFrame.Navigate(typeof(CapabilityPage), capability);
     }
@@ -355,6 +383,7 @@ public sealed partial class MainWindow : Window
             : args.Content is DriverPage ? "drivers"
             : args.Content is NetworkPage ? "network" : null;
         if (routeId is null && args.Content is IntelPage) routeId = "intel";
+        if (routeId is null && args.Content is SettingsPage) routeId = "settings";
 
         if (routeId is null || !_routeItems.TryGetValue(routeId, out var item)) return;
         _currentRouteId = routeId;

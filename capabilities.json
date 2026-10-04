@@ -34,7 +34,7 @@
     { "routeId": "emergency", "group": "Protection", "title": "Emergency Response", "icon": "E7BA", "sourceMethod": "_build_emergency_tab", "status": "planned", "description": "Emergency containment options and incident response workflows." },
     { "routeId": "defense", "group": "Protection", "title": "Defense Suite", "icon": "E72E", "sourceMethod": "_build_defense_tab", "status": "planned", "description": "Defense watcher status, alerts, and policy configuration." },
     { "routeId": "tools", "group": "Operations", "title": "Tools", "icon": "E713", "sourceMethod": "_build_tools_tab", "status": "planned", "description": "Supporting diagnostics and security utilities." },
-    { "routeId": "settings", "group": "Operations", "title": "Settings", "icon": "E713", "sourceMethod": "_build_settings_tab", "status": "planned", "description": "Application, scanning, privacy, and response preferences." },
+    { "routeId": "settings", "group": "Operations", "title": "Settings", "icon": "E713", "sourceMethod": "_build_settings_tab", "status": "in-progress", "description": "Consolidated local preferences for weather visuals, reduced motion, and automatic storm cycling. Scanning, privacy-service, and response controls remain unported." },
     { "routeId": "cognitive-immune-system", "group": "Protection", "title": "Cognitive Immune System", "icon": "E8A5", "sourceMethod": "_build_cis_tab", "status": "planned", "description": "Self-healing analysis and adaptive defense status." }
   ]
 }

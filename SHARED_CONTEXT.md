@@ -24,9 +24,10 @@ Build a native Windows successor that preserves Downpour v29's security capabili
 - Drivers route reads up to 512 loaded kernel modules from the service and classifies paths for review. It does not verify driver signatures or manage Driver Store packages. No install/update/reinstall/remove action is enabled.
 - Network route reads up to 32 adapters and 256 active TCP endpoints over `Downpour.NetworkInventory.v1`; a 1 MiB client cap and 2-second timeout bound IPC. Per-interface counters produce sampled send/receive rates, and history preserves unavailable gaps. There is no PID attribution, packet capture, DNS history, or detection.
 - Threat Intelligence now has a real advisory CISA KEV catalog route. The core client uses a fixed HTTPS endpoint with redirects disabled, a 15-second deadline, a 12 MiB response cap, strict JSON/CVE/date/field validation, duplicate rejection, and an in-memory searchable catalog. The UI shows release/retrieval times and explicit no-cache/offline failure state. It does not make local vulnerability claims or trigger actions. Persistent cache, signature validation, multiple feeds, product/version matching, EPSS/NVD, and Sigma/YARA are still outstanding; see `docs/THREAT_INTELLIGENCE.md`.
+- Settings now has one consolidated route with persistent local preferences for weather visuals, reduced motion, and automatic storm cycling. These are wired to the shell and stored in the current user's packaged app settings; no secret settings or unimplemented security-action toggles are exposed. See `docs/SETTINGS.md`.
 - The old Downpour source was searched for driver behavior. It includes a KernelDriverAuditor, BYOVD name/path checks, and a new-driver baseline monitor; no driver package maintenance UI/workflow was found in the targeted code/module-map search. See `docs/DESIGN_REFERENCES.md`.
 - TMOG informed graph semantics only, not page layout. CPU/memory and network samples are graphed without interpolating unavailable readings. Additional per-core, disk, GPU, thermal, energy, and history-replay views remain planned.
-- Other security engines, scans, all but the initial CISA KEV feed, event monitors, settings persistence, hardening, forensics, AEGIS layers, and response actions remain unported.
+- Other security engines, scans, all but the initial CISA KEV feed, event monitors, security-policy settings, hardening, forensics, AEGIS layers, and response actions remain unported.
 - Tests cover route-registry integrity, live system/driver/network providers, KEV feed parsing bounds/validation, missing-service behavior, and authenticated local IPC round-trips.
 - Windows CI and Dependabot are configured; package/action pins were reviewed. GitHub blocked the first workflow before job start because recent account payments failed or the spending limit needs to be increased. This account-level notice prevents verifying remote CI and Dependabot runs.
 
@@ -48,7 +49,7 @@ Check: Dashboard should show an observe-only connection and live system metrics.
 
 ## Last verification
 
-- `dotnet build Downpour.slnx -c Debug`: passed with 0 warnings and 0 errors after adding the CISA KEV route.
+- `dotnet build Downpour.slnx -c Debug`: passed with 0 warnings and 0 errors after adding the CISA KEV route and consolidated Settings page.
 - `dotnet test Downpour.slnx -c Debug`: 14 passed, 0 failed (includes malformed/duplicate/oversized KEV inputs). A first build was blocked by a stale local `Downpour.Service.exe`; the exact repo-local process was stopped and the rerun passed.
 - Manual named-pipe smoke test initially failed with `Access to the path is denied.` The ACL was updated with authenticated-reader synchronization/read-attributes/read-permissions rights, and a subsequent manual client received a valid schema-v1 snapshot. Four automated tests now pass, including the pipe integration test.
 - WinUI packaged app was captured via `PrintWindow`; live CPU/memory gauges/history, clear landscape, separate moon, visible rain mode control, and denser animated precipitation render. Network page is provider/IPC tested; native route interaction and narrow/high-DPI review remain outstanding.
