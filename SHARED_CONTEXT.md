@@ -1,13 +1,13 @@
 # Downpour Next shared context
 
-**Updated:** 2026-10-04 (America/Denver; 2026-10-04 14:38 UTC)
+**Updated:** 2026-10-04 (America/Denver; 2026-10-04 14:51 UTC)
 
 **Repository:** private [christiand0797/downpour-next](https://github.com/christiand0797/downpour-next)  
 **Local path:** `C:\Users\purpl\Desktop\downpour v2`  
 **Branch:** `main`  
-**Latest checkpoint:** `03ca465 Start bundled sensor service with desktop` pushed to `main`; release [v0.1.2-preview](https://github.com/christiand0797/downpour-next/releases/tag/v0.1.2-preview) is published with the portable x64 bundle.
+**Latest checkpoint:** `2f77f9a Add direct desktop BAT launcher` pushed to `main`, after `1e9af4b Restrict telemetry pipes to the service user`. Existing release [v0.1.2-preview](https://github.com/christiand0797/downpour-next/releases/tag/v0.1.2-preview) remains the only published binary bundle; do not create further preview releases per user direction.
 
-The current slice expands process inventory to 512 bounded rows, filters Windows PID 0 from exported rows, starts the bundled read-only sensor service when the desktop EXE is launched directly, distinguishes application-running from sensor-service-offline UI states, and treats oversized IPC messages as unavailable. Release build: 0 warnings/errors; 22 tests pass; packaged desktop auto-started its child service and graceful window close stopped that child. The 148 MiB bundle is attached to the published preview release; SHA-256 `A8E51B054DE44956B9959B74F6E92878987470F41015273892EE24964E2EF5C3`.
+The current implementation includes 512 bounded process rows, direct-EXE sensor auto-start, truthful service connectivity UI, oversized IPC handling, and a direct `.bat` launcher. Telemetry pipe DACLs now grant LocalSystem and the service's current user; same-user integration works and the named-pipe servers remain outbound-only. Release build: 0 warnings/errors; 22 tests pass. The current code goal is full functional v29 parity, including controlled/audited system-changing actions; observe-only behavior is a current stage, not the product goal. The last build artifacts in the ignored `artifacts/` directory are local and are not attached to the existing GitHub release.
 
 ## Goal
 

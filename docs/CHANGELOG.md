@@ -1,5 +1,11 @@
 # Downpour Next changelog
 
+## Unreleased
+
+- Restricted system, network, and driver telemetry pipes to the sensor service's current Windows account and LocalSystem; all servers remain one-way from service to desktop.
+- Added `Start-Downpour-Next.bat` for direct desktop launch. The desktop launches the bundled sensor service when needed.
+- The next parity slice is Windows Event Log sensing. Product parity includes explicit, audited, recoverable system actions; this is not intended to remain read-only.
+
 ## v0.1.2-preview — 2026-10-04
 
 Published at [GitHub Releases](https://github.com/christiand0797/downpour-next/releases/tag/v0.1.2-preview). Download `DownpourNext-win-x64-preview-v012.zip` to test the self-contained x64 bundle; SHA-256: `A8E51B054DE44956B9959B74F6E92878987470F41015273892EE24964E2EF5C3`.

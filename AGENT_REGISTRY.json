@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-03",
+  "updatedAt": "2026-10-04",
   "agents": [
     {
       "id": "codex-primary",
       "role": "primary",
       "taskId": "DN-002",
       "status": "active",
-      "heartbeatUtc": "2026-10-04T14:38:45Z",
-      "notes": "Working in downpour v2. DN-002 slice adds desktop-managed startup/shutdown for the bundled read-only service, truthful local telemetry status, 512-row bounded process inventory, PID 0 filtering, and oversized pipe handling. Release build passed with 0 warnings/errors; 22 tests pass; direct-EXE auto-start/graceful-shutdown smoke test passes. Commit 03ca465 is pushed; GitHub prerelease v0.1.2-preview is published with artifacts/DownpourNext-win-x64-preview-v012.zip (SHA-256 A8E51B054DE44956B9959B74F6E92878987470F41015273892EE24964E2EF5C3). Continue remaining native UI review; full feature parity remains incomplete."
+      "heartbeatUtc": "2026-10-04T14:51:01Z",
+      "notes": "Working only in downpour v2 (Downpour Next); old v29 repo is reference-only. Latest pushed source checkpoint: 2f77f9a, following ACL hardening 1e9af4b. Current-user-only pipe DACL and direct Desktop BAT launcher are committed. Release build has 0 warnings/errors and 22 tests pass after ACL change. Existing v0.1.2-preview remains the only published binary bundle; user asked to stop creating preview releases. Goal is full functional v29 feature parity plus improvements, including guarded audited response actions; current read-only telemetry is only a stage. Next: implement real Windows event-log sensing and continue DN-004; prioritize DN-008 action broker and driver lifecycle after validating safe authorization/recovery design."
     }
   ]
 }

@@ -8,6 +8,9 @@ This checklist tracks current implementation state; the detailed order, dependen
 - Process inventory is expanded from 8 to up to 512 rows with bounded names/payloads. Windows PID 0 (`Idle`) is excluded because the snapshot contract requires a real process ID; malformed oversized pipe messages return an unavailable result instead of escaping the client.
 - Verification: Release build 0 warnings/errors; `dotnet test Downpour.slnx -c Release`: 22 passed; self-contained x64 direct-launch smoke test confirmed service auto-start and graceful shutdown. Source commit `03ca465` is pushed and [v0.1.2-preview](https://github.com/christiand0797/downpour-next/releases/tag/v0.1.2-preview) contains the 148 MiB ZIP (SHA-256 `A8E51B054DE44956B9959B74F6E92878987470F41015273892EE24964E2EF5C3`).
 - Remaining DN-002 work: native Settings/navigation click-through and narrow/high-DPI layout review. Full Downpour v29 parity is still in progress; see `SHARED_CONTEXT.md` and `docs/FEATURE_PARITY.md`.
+- Telemetry pipe ACLs are narrowed from all authenticated local users to LocalSystem and the service's current account. Same-account snapshot/driver/network pipe integration tests pass. Commit `1e9af4b` pushed.
+- Added `Start-Downpour-Next.bat` to launch the self-contained desktop EXE directly; the app starts its bundled sensor service. Source/docs commit `2f77f9a` pushed. Existing release bundle still includes its `.cmd` launcher; no new preview release was created.
+- Product direction: implement full v29 parity and more, including authorized/audited actions. Read-only is only the current collection phase; sensitive changes must include explicit user authorization, previews, logs, and rollback/recovery where possible.
 
 ## Foundation
 
