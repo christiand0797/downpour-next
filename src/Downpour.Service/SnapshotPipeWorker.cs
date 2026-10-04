@@ -26,7 +26,7 @@ public sealed class SnapshotPipeWorker(
                     PipeOptions.Asynchronous | PipeOptions.WriteThrough,
                     inBufferSize: 0,
                     outBufferSize: 4096,
-                    PipeSecurityFactory.CreateAuthenticatedReadSecurity());
+                    PipeSecurityFactory.CreateCurrentUserReadSecurity());
 
                 using var connectionTimeout = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
                 connectionTimeout.CancelAfter(TimeSpan.FromSeconds(5));

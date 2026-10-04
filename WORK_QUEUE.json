@@ -18,7 +18,7 @@
         "Server pipe is outbound-only",
         "Client connection and server wait are time-bounded"
       ],
-      "notes": "Updated the DACL for authenticated local readers while retaining an outbound-only server endpoint. Manual schema-v1 read and integration test are implemented; re-run the test suite before handoff. No Everyone ACE and no client writes."
+      "notes": "Updated the DACL to grant LocalSystem full control and only the service's current user SID the access needed to open/read the outbound-only endpoint. Same-user schema-v1 integration test is implemented. No Authenticated Users/Everyone ACE. Independent server identity verification remains open."
     },
     {
       "id": "DN-002",
