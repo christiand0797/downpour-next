@@ -26,7 +26,7 @@ The diagram is the target design. At present, the only connected path is the ser
 
 | Area | Required safeguards | Current status |
 |---|---|---|
-| Local IPC | Named-pipe DACL, least privilege, versioning, bounded payloads, timeouts, replay-resistant action IDs if commands are later added | Snapshot-only; outbound-only server with an authenticated-local-user DACL, versioned payload, bounded client deadline, and passing integration test. Strict payload-size parsing, server identity verification, and narrower service-SID ACL remain open. |
+| Local IPC | Named-pipe DACL, least privilege, versioning, bounded payloads, timeouts, replay-resistant action IDs if commands are later added | System and driver snapshots use outbound-only servers with authenticated-local-user DACLs and bounded connection waits. Driver client enforces a 1 MiB cap, schema/list/text bounds, and timeout. System snapshot client still needs equivalent size/schema validation; server identity verification and a narrower service-SID ACL remain open. |
 | Service compromise | Narrow service identity, restricted handles, secure startup/recovery, signed binaries, service ACL review | Hosting scaffold only; installation identity not selected |
 | Malformed data | Strict JSON schemas, bounds, parser isolation, fuzzing, duplicate/unknown-field policy | Capability JSON validates metadata; IPC snapshot needs size/schema bounds and fuzz coverage |
 | Detection/content | TLS feeds, signature/integrity, provenance, expiration, rule validation, no executable feed content | Not ported |

@@ -6,29 +6,26 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using Microsoft.UI.Xaml.Shapes;
+using Windows.Foundation;
 using Windows.UI;
 
 namespace Downpour_Desktop.Pages;
 
 public sealed partial class HomePage : Page
 {
-    private readonly List<RainDrop> _rainDrops = [];
-    private readonly Random _random = new();
-    private DispatcherQueueTimer? _rainTimer;
     private readonly DispatcherQueueTimer _snapshotTimer;
     private readonly SystemSnapshotClient _snapshotClient = new();
+    private readonly Queue<ResourceSample> _history = new();
     private bool _snapshotRequestInFlight;
+    private CircularGauge? _cpuGauge;
+    private CircularGauge? _memoryGauge;
 
     public ObservableCollection<MetricCard> Metrics { get; } =
     [
-        new("Sensor service", "Disconnected", "Live telemetry is unavailable"),
-        new("Processes observed", "—", "Waiting for the process sensor"),
-        new("Open security alerts", "—", "Alert pipeline is not connected"),
+        new("Processes observed", "—", "Waiting for the local service"),
         new("Active TCP connections", "—", "Waiting for network telemetry"),
-        new("CPU utilization", "—", "Waiting for the first sample"),
-        new("Physical memory", "—", "Waiting for system telemetry"),
-        new("Threat intelligence", "—", "Feed health is not available yet"),
-        new("Last updated", "—", "Waiting for sensor data")
+        new("Last snapshot", "—", "No current service data"),
+        new("Sensor mode", "—", "Service status unavailable")
     ];
 
     public ObservableCollection<DashboardProcessRow> Processes { get; } = [];
@@ -36,6 +33,11 @@ public sealed partial class HomePage : Page
     public HomePage()
     {
         InitializeComponent();
+        _cpuGauge = new CircularGauge("CPU", Color.FromArgb(255, 74, 220, 243));
+        _memoryGauge = new CircularGauge("MEMORY", Color.FromArgb(255, 178, 121, 248));
+        GaugeHost.Children.Add(_cpuGauge);
+        GaugeHost.Children.Add(_memoryGauge);
+
         _snapshotTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
         _snapshotTimer.Interval = TimeSpan.FromSeconds(3);
         _snapshotTimer.IsRepeating = true;
@@ -44,45 +46,16 @@ public sealed partial class HomePage : Page
         _ = RefreshSnapshotAsync();
     }
 
-    private void RainBanner_SizeChanged(object sender, Microsoft.UI.Xaml.SizeChangedEventArgs e)
-    {
-        if (_rainDrops.Count == 0 && RainBanner.ActualWidth > 0)
-        {
-            for (var index = 0; index < 76; index++)
-            {
-                var height = _random.Next(9, 27);
-                var drop = new Rectangle
-                {
-                    Width = _random.Next(1, 3),
-                    Height = height,
-                    Opacity = _random.NextDouble() * 0.42 + 0.12,
-                    Fill = new SolidColorBrush(Color.FromArgb(255, 89, (byte)_random.Next(185, 232), 255))
-                };
-                _rainDrops.Add(new RainDrop(drop, _random.NextDouble() * RainBanner.ActualWidth, _random.NextDouble() * 188, _random.Next(4, 10)));
-                RainCanvas.Children.Add(drop);
-                Canvas.SetLeft(drop, _rainDrops[^1].X);
-                Canvas.SetTop(drop, _rainDrops[^1].Y);
-            }
-
-            _rainTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
-            _rainTimer.Interval = TimeSpan.FromMilliseconds(40);
-            _rainTimer.IsRepeating = true;
-            _rainTimer.Tick += (_, _) => AnimateRain();
-            _rainTimer.Start();
-        }
-    }
-
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
         base.OnNavigatedTo(e);
         if (!_snapshotTimer.IsRunning) _snapshotTimer.Start();
-        if (_rainDrops.Count > 0 && _rainTimer is { IsRunning: false }) _rainTimer.Start();
+        _ = RefreshSnapshotAsync();
     }
 
     protected override void OnNavigatedFrom(NavigationEventArgs e)
     {
         _snapshotTimer.Stop();
-        _rainTimer?.Stop();
         base.OnNavigatedFrom(e);
     }
 
@@ -95,35 +68,51 @@ public sealed partial class HomePage : Page
             var snapshot = await _snapshotClient.TryGetSnapshotAsync();
             if (snapshot is null)
             {
-                SensorHeadline.Text = "Sensor service is not connected";
-                SensorDescription.Text = "Start Downpour.Service to show live read-only process, CPU, memory, and TCP telemetry.";
+                SensorHeadline.Text = "Local sensor service is unavailable";
+                SensorDescription.Text = "Start Downpour.Service to restore read-only measurements. The chart stops at the last received sample.";
                 SensorBadge.Text = "OFFLINE";
-                Metrics[0] = new("Sensor service", "Disconnected", "Run the service project to connect");
-                Metrics[1] = new("Processes observed", "—", "Service connection unavailable");
-                Metrics[3] = new("Active TCP connections", "—", "Service connection unavailable");
-                Metrics[4] = new("CPU utilization", "—", "Service connection unavailable");
-                Metrics[5] = new("Physical memory", "—", "Service connection unavailable");
-                Metrics[7] = new("Last updated", "—", "No current service data");
+                SensorDot.Fill = new SolidColorBrush(Color.FromArgb(255, 255, 180, 85));
+                _cpuGauge?.SetValue(null);
+                _memoryGauge?.SetValue(null);
+                Metrics[0] = new("Processes observed", "—", "Service connection unavailable");
+                Metrics[1] = new("Active TCP connections", "—", "Service connection unavailable");
+                Metrics[2] = new("Last snapshot", "—", "No current service data");
+                Metrics[3] = new("Sensor mode", "Offline", "No current measurements");
                 Processes.Clear();
+                ResourceChart.Children.Clear();
+                ChartEmpty.Text = _history.Count > 0 ? "Service unavailable · awaiting a new sample" : "Awaiting live samples from Downpour.Service";
+                ChartEmpty.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
                 return;
             }
 
             SensorHeadline.Text = "Read-only sensor service connected";
-            SensorDescription.Text = "Live Windows telemetry is available. Detection engines and response actions are not connected in this build.";
+            SensorDescription.Text = "Live Windows measurements are updating every three seconds. Detection and response engines are not connected yet.";
             SensorBadge.Text = "OBSERVE ONLY";
+            SensorDot.Fill = new SolidColorBrush(Color.FromArgb(255, 73, 227, 193));
             var captured = snapshot.CapturedAtUtc.ToLocalTime();
-            Metrics[0] = new("Sensor service", "Connected", "Read-only mode; no system changes");
-            Metrics[1] = new("Processes observed", snapshot.ProcessCount.ToString("N0"), "Current Windows process snapshot");
-            Metrics[3] = new("Active TCP connections", snapshot.ActiveTcpConnections?.ToString("N0") ?? "—", "Current local connection count");
-            Metrics[4] = new("CPU utilization", snapshot.CpuPercent is double cpu ? $"{cpu:0.0}%" : "Sampling…", "System-wide processor activity");
-            var memoryTotalGb = snapshot.MemoryTotalBytes / 1024d / 1024d / 1024d;
-            var memoryUsedGb = (snapshot.MemoryTotalBytes - Math.Min(snapshot.MemoryTotalBytes, snapshot.MemoryAvailableBytes)) / 1024d / 1024d / 1024d;
-            Metrics[5] = new("Physical memory", snapshot.MemoryTotalBytes > 0 ? $"{memoryUsedGb:0.0} / {memoryTotalGb:0.0} GB" : "—", "Used / total system memory");
-            Metrics[7] = new("Last updated", captured.ToString("HH:mm:ss"), $"Snapshot at {captured:g}");
+            var usedBytes = snapshot.MemoryTotalBytes - Math.Min(snapshot.MemoryTotalBytes, snapshot.MemoryAvailableBytes);
+            double? memoryPercent = snapshot.MemoryTotalBytes > 0 ? usedBytes * 100d / snapshot.MemoryTotalBytes : null;
+            _cpuGauge?.SetValue(snapshot.CpuPercent);
+            _memoryGauge?.SetValue(memoryPercent);
+
+            Metrics[0] = new("Processes observed", snapshot.ProcessCount.ToString("N0"), "Current Windows process snapshot");
+            Metrics[1] = new("Active TCP connections", snapshot.ActiveTcpConnections?.ToString("N0") ?? "—", "Current connection count");
+            Metrics[2] = new("Last snapshot", captured.ToString("HH:mm:ss"), captured.ToString("MMM d · h:mm:ss tt"));
+            Metrics[3] = new("Sensor mode", "Observe only", "No system-changing actions enabled");
+
+            _history.Enqueue(new ResourceSample(snapshot.CpuPercent, memoryPercent));
+            while (_history.Count > 60) _history.Dequeue();
+            DrawResourceChart();
+
             Processes.Clear();
+            var largestWorkingSet = snapshot.TopProcesses.Count > 0 ? snapshot.TopProcesses.Max(process => process.WorkingSetBytes) : 0;
             foreach (var process in snapshot.TopProcesses)
             {
-                Processes.Add(new DashboardProcessRow(process.Name, $"PID {process.ProcessId}  ·  {process.WorkingSetBytes / 1024d / 1024d:0} MB  ·  {process.ThreadCount} threads"));
+                var share = largestWorkingSet > 0 ? Math.Clamp(process.WorkingSetBytes * 100d / largestWorkingSet, 0, 100) : 0;
+                Processes.Add(new DashboardProcessRow(
+                    process.Name,
+                    $"PID {process.ProcessId}  ·  {process.WorkingSetBytes / 1024d / 1024d:0} MB  ·  {process.ThreadCount} threads",
+                    share));
             }
         }
         finally
@@ -132,21 +121,91 @@ public sealed partial class HomePage : Page
         }
     }
 
-    private void AnimateRain()
-    {
-        var width = RainBanner.ActualWidth;
-        if (width <= 0) return;
+    private void ResourceChartHost_SizeChanged(object sender, Microsoft.UI.Xaml.SizeChangedEventArgs e) => DrawResourceChart();
 
-        foreach (var drop in _rainDrops)
+    private void DrawResourceChart()
+    {
+        if (ResourceChart is null) return;
+        var width = ResourceChart.ActualWidth;
+        var height = ResourceChart.ActualHeight;
+        ResourceChart.Children.Clear();
+        if (width <= 0 || height <= 0) return;
+
+        const double insetX = 12;
+        const double insetY = 7;
+        for (var index = 0; index <= 4; index++)
         {
-            drop.Y += drop.Speed;
-            if (drop.Y > RainBanner.ActualHeight)
+            var y = insetY + (height - insetY * 2) * index / 4;
+            var guide = new Line
             {
-                drop.Y = -drop.Shape.Height;
-                drop.X = _random.NextDouble() * width;
+                X1 = insetX,
+                X2 = Math.Max(insetX, width - insetX),
+                Y1 = y,
+                Y2 = y,
+                StrokeThickness = 1,
+                Stroke = new SolidColorBrush(Color.FromArgb(38, 190, 220, 242))
+            };
+            ResourceChart.Children.Add(guide);
+        }
+
+        var samples = _history.ToArray();
+        if (samples.Length >= 2)
+        {
+            DrawSeries(samples, sample => sample.CpuPercent, Color.FromArgb(255, 80, 219, 241), width, height, insetX, insetY);
+            DrawSeries(samples, sample => sample.MemoryPercent, Color.FromArgb(255, 180, 122, 248), width, height, insetX, insetY);
+        }
+        ChartEmpty.Visibility = samples.Any(sample => sample.CpuPercent.HasValue || sample.MemoryPercent.HasValue)
+            ? Microsoft.UI.Xaml.Visibility.Collapsed
+            : Microsoft.UI.Xaml.Visibility.Visible;
+    }
+
+    private void DrawSeries(ResourceSample[] samples, Func<ResourceSample, double?> selector, Color color,
+        double width, double height, double insetX, double insetY)
+    {
+        var segment = new List<Point>();
+        for (var index = 0; index < samples.Length; index++)
+        {
+            var value = selector(samples[index]);
+            if (value is null)
+            {
+                AddSegment();
+                continue;
             }
-            Canvas.SetLeft(drop.Shape, drop.X);
-            Canvas.SetTop(drop.Shape, drop.Y);
+
+            var x = insetX + (width - insetX * 2) * index / Math.Max(1, samples.Length - 1);
+            var y = insetY + (height - insetY * 2) * (1 - Math.Clamp(value.Value, 0, 100) / 100d);
+            segment.Add(new Point(x, y));
+        }
+        AddSegment();
+
+        void AddSegment()
+        {
+            if (segment.Count >= 2)
+            {
+                var points = new PointCollection();
+                foreach (var point in segment) points.Add(point);
+                ResourceChart.Children.Add(new Polyline
+                {
+                    Points = points,
+                    Stroke = new SolidColorBrush(color),
+                    StrokeThickness = 2.2,
+                    StrokeLineJoin = PenLineJoin.Round
+                });
+            }
+            else if (segment.Count == 1)
+            {
+                var point = segment[0];
+                ResourceChart.Children.Add(new Ellipse
+                {
+                    Width = 5,
+                    Height = 5,
+                    Fill = new SolidColorBrush(color)
+                });
+                var marker = ResourceChart.Children[ResourceChart.Children.Count - 1];
+                Canvas.SetLeft(marker, point.X - 2.5);
+                Canvas.SetTop(marker, point.Y - 2.5);
+            }
+            segment.Clear();
         }
     }
 }
@@ -163,15 +222,10 @@ public sealed class MetricCard
 public sealed class DashboardProcessRow
 {
     public DashboardProcessRow() { }
-    public DashboardProcessRow(string name, string detail) => (Name, Detail) = (name, detail);
+    public DashboardProcessRow(string name, string detail, double memoryShare) => (Name, Detail, MemoryShare) = (name, detail, memoryShare);
     public string Name { get; set; } = "";
     public string Detail { get; set; } = "";
+    public double MemoryShare { get; set; }
 }
 
-internal sealed class RainDrop(Rectangle shape, double x, double y, double speed)
-{
-    public Rectangle Shape { get; } = shape;
-    public double X { get; set; } = x;
-    public double Y { get; set; } = y;
-    public double Speed { get; } = speed;
-}
+internal sealed record ResourceSample(double? CpuPercent, double? MemoryPercent);

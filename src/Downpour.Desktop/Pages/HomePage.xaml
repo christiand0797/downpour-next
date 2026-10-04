@@ -7,80 +7,117 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       mc:Ignorable="d">
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel Padding="26,24,26,40" Spacing="22">
-            <Border Height="188" CornerRadius="14" Clip="{x:Null}">
-              <Grid x:Name="RainBanner" SizeChanged="RainBanner_SizeChanged">
-                <Grid.Background>
-                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                        <GradientStop Color="#07121D" Offset="0" />
-                        <GradientStop Color="#10152B" Offset="0.55" />
-                        <GradientStop Color="#17132B" Offset="1" />
-                    </LinearGradientBrush>
-                </Grid.Background>
-                <Canvas x:Name="RainCanvas" IsHitTestVisible="False" />
-                <Ellipse Width="150" Height="150" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,75,0" Opacity="0.12" Fill="#32D9FF" />
-                <TextBlock Text="&#x263E;" FontFamily="Segoe UI Symbol" FontSize="122" Foreground="#83E8FF" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,86,3" />
-                <StackPanel VerticalAlignment="Center" Margin="26,0,290,0" Spacing="10">
-                    <TextBlock FontSize="12" FontWeight="SemiBold" CharacterSpacing="180" Foreground="#65DFF8" Text="DOWNPOUR  /  SECURITY OPERATIONS" />
-                    <TextBlock FontSize="30" FontWeight="SemiBold" Foreground="#F1F7FF" Text="Stay ahead of the storm." />
-                    <TextBlock Foreground="#AEBBD0" Text="One view for system health, threats, and response." TextWrapping="Wrap" />
+        <StackPanel Padding="24,20,24,36" Spacing="16">
+            <Grid ColumnSpacing="20">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                <StackPanel Spacing="4">
+                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Foreground="#FF76DDF5" Text="DOWNPOUR  /  SYSTEM SUMMARY  /  LIVE" />
+                    <TextBlock Style="{StaticResource TitleTextBlockStyle}" FontSize="30" Text="System overview" />
+                    <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="See the pressure, follow the trend, and identify what is using your system." TextWrapping="Wrap" />
                 </StackPanel>
-              </Grid>
-            </Border>
-            <StackPanel Spacing="6">
-                <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Text="SECURITY OVERVIEW" />
-                <TextBlock Style="{StaticResource TitleTextBlockStyle}" Text="Dashboard" />
-                <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Protection health and sensor activity at a glance." />
-            </StackPanel>
-            <Border Padding="20" CornerRadius="12" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
-                <Grid ColumnSpacing="16">
-                    <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                    <FontIcon Glyph="&#xE7BA;" FontSize="24" Foreground="{ThemeResource SystemFillColorCautionBrush}" VerticalAlignment="Center" />
-                    <StackPanel Grid.Column="1" Spacing="4">
-                        <TextBlock x:Name="SensorHeadline" FontSize="16" FontWeight="SemiBold" Text="Sensor service is not connected" />
-                        <TextBlock x:Name="SensorDescription" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Start the Downpour service to show live read-only system telemetry." TextWrapping="Wrap" />
+                <Border Grid.Column="1" Padding="12,7" CornerRadius="9" BorderThickness="1" BorderBrush="#694CD6ED" Background="#AD071522" VerticalAlignment="Top">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Ellipse x:Name="SensorDot" Width="8" Height="8" Fill="#FF49E3C1" VerticalAlignment="Center" />
+                        <TextBlock x:Name="SensorBadge" FontSize="12" FontWeight="SemiBold" Text="CONNECTING" />
                     </StackPanel>
-                    <Border Grid.Column="2" Padding="10,5" CornerRadius="10" Background="{ThemeResource SystemFillColorCautionBackgroundBrush}" VerticalAlignment="Center">
-                        <TextBlock x:Name="SensorBadge" FontSize="12" FontWeight="SemiBold" Text="OFFLINE" />
-                    </Border>
+                </Border>
+            </Grid>
+
+            <Border Padding="14,11" CornerRadius="10" Background="#B9081220" BorderBrush="#423EC5D8" BorderThickness="1">
+                <Grid ColumnSpacing="12">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                    <FontIcon Glyph="&#xE7BA;" FontSize="20" Foreground="#FF60DBEE" VerticalAlignment="Center" />
+                    <StackPanel Grid.Column="1" Spacing="2">
+                        <TextBlock x:Name="SensorHeadline" FontWeight="SemiBold" Text="Connecting to the local sensor service" />
+                        <TextBlock x:Name="SensorDescription" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Measurements appear when the read-only service is available." TextWrapping="Wrap" />
+                    </StackPanel>
                 </Grid>
             </Border>
-            <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Text="SYSTEM HEALTH" />
+
+            <Grid ColumnSpacing="14">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                <Border Padding="14,14,14,10" CornerRadius="12" Background="#C808111E" BorderBrush="#5738B9D1" BorderThickness="1" VerticalAlignment="Stretch">
+                    <StackPanel Spacing="8">
+                        <TextBlock FontSize="11" FontWeight="SemiBold" CharacterSpacing="120" Foreground="#FF91AFC2" Text="LIVE LOAD" HorizontalAlignment="Center" />
+                        <StackPanel x:Name="GaugeHost" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center" />
+                        <TextBlock FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="CPU and physical memory" HorizontalAlignment="Center" />
+                    </StackPanel>
+                </Border>
+                <Border Grid.Column="1" Padding="16,13" CornerRadius="12" Background="#C808111E" BorderBrush="#5738B9D1" BorderThickness="1" SizeChanged="ResourceChartHost_SizeChanged">
+                    <Grid RowSpacing="8">
+                        <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                        <Grid ColumnSpacing="16">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                            <StackPanel Spacing="2">
+                                <TextBlock FontSize="14" FontWeight="SemiBold" Text="Resource history" />
+                                <TextBlock FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Live utilization · missing samples stay visible as gaps" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                                <StackPanel Orientation="Horizontal" Spacing="5"><Ellipse Width="7" Height="7" Fill="#FF50DBF1" /><TextBlock FontSize="11" Text="CPU" /></StackPanel>
+                                <StackPanel Orientation="Horizontal" Spacing="5"><Ellipse Width="7" Height="7" Fill="#FFB47AF8" /><TextBlock FontSize="11" Text="Memory" /></StackPanel>
+                            </StackPanel>
+                        </Grid>
+                        <Grid Grid.Row="1" MinHeight="138">
+                            <Canvas x:Name="ResourceChart" IsHitTestVisible="False" />
+                            <TextBlock x:Name="ChartEmpty" Text="Waiting for enough live samples to draw a trend" Foreground="{ThemeResource TextFillColorTertiaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Grid>
+                        <Grid Grid.Row="2" ColumnSpacing="10">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                            <TextBlock FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="100%" />
+                            <TextBlock Grid.Column="1" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Last 60 samples · 3 second polling" HorizontalAlignment="Center" />
+                            <TextBlock Grid.Column="2" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="0%" />
+                        </Grid>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Text="SYSTEM FACTS" />
             <GridView ItemsSource="{x:Bind Metrics}" IsItemClickEnabled="False" SelectionMode="None" HorizontalAlignment="Stretch" Padding="0">
                 <GridView.ItemsPanel><ItemsPanelTemplate><ItemsWrapGrid Orientation="Horizontal" MaximumRowsOrColumns="4" /></ItemsPanelTemplate></GridView.ItemsPanel>
                 <GridView.ItemTemplate>
                     <DataTemplate>
-                        <Border Width="240" MinHeight="138" Margin="0,0,12,12" Padding="18" CornerRadius="10" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
-                            <StackPanel Spacing="12">
-                                <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{Binding Label}" />
-                                <TextBlock FontSize="25" FontWeight="SemiBold" Text="{Binding Value}" />
-                                <TextBlock FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="{Binding Detail}" TextWrapping="Wrap" />
+                        <Border Width="220" MinHeight="110" Margin="0,0,10,10" Padding="15" CornerRadius="10" Background="#C808111E" BorderBrush="#453ABDD1" BorderThickness="1">
+                            <StackPanel Spacing="8">
+                                <TextBlock FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{Binding Label}" />
+                                <TextBlock FontSize="22" FontWeight="SemiBold" Text="{Binding Value}" />
+                                <TextBlock FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="{Binding Detail}" TextWrapping="Wrap" />
                             </StackPanel>
                         </Border>
                     </DataTemplate>
                 </GridView.ItemTemplate>
             </GridView>
-            <StackPanel Spacing="12">
-                <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Text="LARGEST PROCESSES" />
-                <GridView ItemsSource="{x:Bind Processes}" IsItemClickEnabled="False" SelectionMode="None" HorizontalAlignment="Stretch" Padding="0">
-                    <GridView.ItemsPanel><ItemsPanelTemplate><ItemsWrapGrid Orientation="Horizontal" MaximumRowsOrColumns="4" /></ItemsPanelTemplate></GridView.ItemsPanel>
-                    <GridView.ItemTemplate>
-                        <DataTemplate>
-                            <Border Width="240" Padding="16" Margin="0,0,12,12" CornerRadius="10" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
-                                <StackPanel Spacing="5">
-                                    <TextBlock FontWeight="SemiBold" Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
-                                    <TextBlock FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{Binding Detail}" />
-                                </StackPanel>
-                            </Border>
-                        </DataTemplate>
-                    </GridView.ItemTemplate>
-                </GridView>
-            </StackPanel>
-            <Border Padding="20" CornerRadius="12" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
-                <StackPanel Spacing="8">
-                    <TextBlock FontSize="16" FontWeight="SemiBold" Text="Feature migration" />
-                    <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="All 33 Downpour destinations are represented in navigation. The dashboard is a working UI prototype; remaining routes are marked planned until their features are implemented and connected." TextWrapping="Wrap" />
+
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                <StackPanel Spacing="3">
+                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Text="PROCESS PRESSURE" />
+                    <TextBlock FontSize="19" FontWeight="SemiBold" Text="Largest working sets" />
                 </StackPanel>
+                <TextBlock x:Name="ProcessWindowLabel" Grid.Column="1" VerticalAlignment="Bottom" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="TOP 8 · READ ONLY" />
+            </Grid>
+            <ListView ItemsSource="{x:Bind Processes}" SelectionMode="None" IsItemClickEnabled="False" Background="#B807101D">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Padding="12,9" ColumnSpacing="14">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="30" /><ColumnDefinition Width="2*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                            <TextBlock Text="&#xE9D9;" FontFamily="Segoe MDL2 Assets" Foreground="#FF5DCAE5" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="1" Text="{Binding Name}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                            <ProgressBar Grid.Column="2" Height="5" Minimum="0" Maximum="100" Value="{Binding MemoryShare}" VerticalAlignment="Center" Foreground="#FF38CFE7" />
+                            <TextBlock Grid.Column="3" Text="{Binding Detail}" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+                <ListView.Footer>
+                    <TextBlock Padding="12,10" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Sorted by working set. Paths, command lines, and process response actions are not collected in this build." TextWrapping="Wrap" />
+                </ListView.Footer>
+            </ListView>
+            <Border Padding="14,11" CornerRadius="9" Background="#9B08111C" BorderBrush="#3B39AFC5" BorderThickness="1">
+                <Grid ColumnSpacing="14">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                    <StackPanel Spacing="3"><TextBlock FontSize="10" CharacterSpacing="90" Foreground="#FF78A7B8" Text="DETECTION ENGINE" /><TextBlock FontSize="12" Text="Not connected · no alert counts fabricated" TextWrapping="Wrap" /></StackPanel>
+                    <StackPanel Grid.Column="1" Spacing="3"><TextBlock FontSize="10" CharacterSpacing="90" Foreground="#FF78A7B8" Text="RESPONSE ACTIONS" /><TextBlock FontSize="12" Text="Disabled · observe-only service" TextWrapping="Wrap" /></StackPanel>
+                    <StackPanel Grid.Column="2" Spacing="3"><TextBlock FontSize="10" CharacterSpacing="90" Foreground="#FF78A7B8" Text="FEATURE MIGRATION" /><TextBlock FontSize="12" Text="33 routes tracked · parity in progress" TextWrapping="Wrap" /></StackPanel>
+                </Grid>
             </Border>
         </StackPanel>
     </ScrollViewer>

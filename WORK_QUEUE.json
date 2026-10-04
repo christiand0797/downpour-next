@@ -14,10 +14,11 @@
     {
       "id": "DN-002",
       "title": "Validate dashboard and process route in the packaged Windows app",
-      "status": "queued",
+      "status": "in_progress",
       "priority": "high",
       "files": ["src/Downpour.Desktop/Pages/HomePage.xaml", "src/Downpour.Desktop/Pages/ProcessPage.xaml"],
-      "acceptance": ["Online telemetry appears in both routes", "Offline state is truthful", "Navigation selection stays synchronized with back navigation", "Narrow and high-DPI layouts remain usable"]
+      "acceptance": ["Online telemetry appears in both routes", "Offline state is truthful", "Navigation selection stays synchronized with back navigation", "Narrow and high-DPI layouts remain usable"],
+      "notes": "Dashboard received whole-app rain/moon backdrop, animated stars, CPU/memory gauges, history, and process pressure bars. The packaged window launches and responds; native visual review remains outstanding."
     },
     {
       "id": "DN-003",
@@ -76,6 +77,22 @@
       "status": "queued",
       "priority": "medium",
       "acceptance": ["Reproducible signed installer", "Service lifecycle and least privilege documented", "Upgrade, rollback, uninstall, and data recovery checked"]
+    },
+    {
+      "id": "DN-011",
+      "title": "Add read-only loaded-driver inventory and location review",
+      "status": "completed",
+      "priority": "high",
+      "files": ["src/Downpour.Contracts/ServiceHealthSnapshot.cs", "src/Downpour.Service/DriverInventoryProvider.cs", "src/Downpour.Service/DriverInventoryPipeWorker.cs", "src/Downpour.Core/DriverInventoryClient.cs", "src/Downpour.Desktop/Pages/DriverPage.xaml", "src/Downpour.Desktop/Pages/DriverPage.xaml.cs"],
+      "acceptance": ["Loaded kernel module inventory is read-only", "IPC payload is bounded and schema-checked", "Path review is labeled as a heuristic, not signature verification", "Online/offline states are explicit"],
+      "notes": "Added a separate versioned output-only pipe, 1 MiB client payload cap, 512-row/text bounds, and location heuristic. No driver package actions are enabled."
+    },
+    {
+      "id": "DN-012",
+      "title": "Implement verified driver package lifecycle broker",
+      "status": "queued",
+      "priority": "critical",
+      "acceptance": ["Enumerate installed Driver Store packages and match exact hardware IDs", "Require cryptographic signature and provenance validation for candidate packages", "Preview target device/version and require explicit elevated confirmation", "Export existing driver and prove rollback/recovery path before changes", "Audit each stage and test denial, interruption, reboot-needed, and recovery cases", "Never install, update, reinstall, or remove automatically"]
     }
   ]
 }

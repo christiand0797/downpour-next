@@ -20,3 +20,12 @@ public sealed record SystemHealthSnapshot(
     int? ActiveTcpConnections,
     IReadOnlyList<ProcessSnapshot> TopProcesses,
     IReadOnlyList<string> Warnings);
+
+public sealed record DriverInventoryEntry(string Name, string ImagePath, bool IsUnderSystemDrivers, bool IsInUserWritableLocation);
+
+public sealed record DriverInventorySnapshot(
+    int SchemaVersion,
+    DateTimeOffset CapturedAtUtc,
+    int DriverCount,
+    IReadOnlyList<DriverInventoryEntry> Drivers,
+    IReadOnlyList<string> Warnings);

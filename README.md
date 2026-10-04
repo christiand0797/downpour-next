@@ -5,8 +5,8 @@ Downpour Next is the native Windows rebuild of Downpour. The target is complete 
 ## Current state
 
 - Native WinUI 3 desktop shell with a dark, rain-and-crescent identity.
-- One registry drives all 33 existing Downpour destinations and marks each route's migration state.
-- Dashboard and process inventory consume live read-only process, CPU, memory, and TCP summary snapshots from the service.
+- One registry preserves all 33 Downpour destinations and adds a dedicated Drivers route; every route has an honest migration state.
+- The full app uses a subdued rain-and-moon backdrop. Dashboard and inventory views consume live read-only process, CPU, memory, TCP, and loaded-kernel-driver snapshots from the service.
 - Windows service uses a restricted, outbound-only local named pipe and performs no system-changing actions.
 - No original detection, scanning, remediation, or hardening engine has been ported yet.
 

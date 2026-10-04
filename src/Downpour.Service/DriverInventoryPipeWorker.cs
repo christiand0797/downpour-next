@@ -4,16 +4,15 @@ using Downpour.Core;
 
 namespace Downpour.Service;
 
-public sealed class SnapshotPipeWorker(
-    SystemSnapshotProvider provider,
-    ILogger<SnapshotPipeWorker> logger,
-    string pipeName = SystemSnapshotClient.PipeName) : BackgroundService
+public sealed class DriverInventoryPipeWorker(
+    DriverInventoryProvider provider,
+    ILogger<DriverInventoryPipeWorker> logger,
+    string pipeName = DriverInventoryClient.PipeName) : BackgroundService
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        logger.LogInformation("Downpour sensor service started. Connected sensors: read-only process, CPU, memory, and TCP summary.");
         while (!stoppingToken.IsCancellationRequested)
         {
             try
@@ -21,7 +20,7 @@ public sealed class SnapshotPipeWorker(
                 await using var pipe = NamedPipeServerStreamAcl.Create(
                     pipeName,
                     PipeDirection.Out,
-                    maxNumberOfServerInstances: 4,
+                    maxNumberOfServerInstances: 2,
                     PipeTransmissionMode.Byte,
                     PipeOptions.Asynchronous | PipeOptions.WriteThrough,
                     inBufferSize: 0,
@@ -37,13 +36,12 @@ public sealed class SnapshotPipeWorker(
             }
             catch (OperationCanceledException) when (!stoppingToken.IsCancellationRequested)
             {
-                // Recreate the pipe after idle time so every client receives a fresh, bounded connection.
+                // Recreate the endpoint after an idle client timeout.
             }
             catch (IOException exception) when (!stoppingToken.IsCancellationRequested)
             {
-                logger.LogDebug(exception, "A local snapshot client disconnected before its response completed.");
+                logger.LogDebug(exception, "A local driver inventory client disconnected before its response completed.");
             }
         }
     }
-
 }

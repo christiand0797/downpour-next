@@ -10,7 +10,10 @@ This checklist tracks current implementation state; the detailed order, dependen
 - [x] Add schema-v1 read-only system/process snapshot contracts and Windows provider.
 - [x] Add CI-testable registry and snapshot tests.
 - [x] Fix named-pipe ACL and add a schema-v1 local pipe integration test; verify test discovery and behavior on this host.
-- [ ] Visually and interactively validate online/offline dashboard and process page.
+- [x] Extend the whole-app background with a generated crescent/rain scene and restrained animated stars/rain.
+- [x] Add live CPU/memory gauges and a history graph that preserves missing-data gaps.
+- [x] Add a dedicated read-only Drivers route with bounded live kernel-driver inventory and path review.
+- [ ] Visually and interactively validate online/offline dashboard, process, and driver pages on the native app.
 - [x] Configure Windows CI and Dependabot; pin wildcard package dependencies.
 - [ ] Resolve GitHub's account billing/spending-limit notice, then verify remote CI and Dependabot runs.
 
@@ -28,6 +31,7 @@ This checklist tracks current implementation state; the detailed order, dependen
 ## Product quality and self-security
 
 - [ ] Security review of IPC, service identity, installer/service permissions, updates, feeds, storage, parsers, and response broker.
+- [ ] Verify driver signatures/packages, add driver install/update/reinstall/remove with an audited recovery-first broker.
 - [ ] Add fuzz/property tests for untrusted contracts, rule formats, manifests, and file metadata.
 - [ ] Add accessible keyboard navigation, high contrast, reduced motion, DPI/responsive layout, and clear sensor freshness.
 - [ ] Define performance budgets and compare against Downpour on the same Windows machine.
