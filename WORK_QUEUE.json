@@ -97,7 +97,7 @@
         "Sigma/YARA behavior compatibility documented",
         "Cache age and source integrity visible"
       ],
-      "notes": "Partial implementation in current checkpoint: fixed-host CISA KEV HTTPS fetch, redirects disabled, 15s/12MiB/10k bounds, strict CVE/date/field validation, duplicate rejection, searchable live Intel UI and explicit no-cache/offline messaging. Remaining: persistent integrity-checked cache with max age, additional feeds, EPSS/NVD correlation, Sigma/YARA compatibility, and local product/version matching. See docs/THREAT_INTELLIGENCE.md."
+      "notes": "Partial implementation: fixed-host CISA KEV HTTPS fetch, redirects disabled, 15s/12MiB/10k bounds, strict CVE/date/field validation, duplicate rejection, searchable Intel UI, and versioned atomic local cache with SHA-256 corruption detection, 24h stale label, and 7-day maximum age. Four cache tests cover round-trip, tampering, expiry, and invalid input. Remaining: source-signature strategy, additional feeds, local product matching, EPSS/NVD correlation, and Sigma/YARA compatibility. See docs/THREAT_INTELLIGENCE.md."
     },
     {
       "id": "DN-007",

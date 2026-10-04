@@ -19,7 +19,10 @@ public sealed class KevCatalogClient
 
     public KevCatalogClient(HttpClient? httpClient = null) => _httpClient = httpClient ?? SharedClient;
 
-    public async Task<KevCatalogSnapshot> FetchAsync(CancellationToken cancellationToken = default)
+    public async Task<KevCatalogSnapshot> FetchAsync(CancellationToken cancellationToken = default) =>
+        (await FetchWithPayloadAsync(cancellationToken).ConfigureAwait(false)).Snapshot;
+
+    public async Task<KevCatalogDownload> FetchWithPayloadAsync(CancellationToken cancellationToken = default)
     {
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         timeout.CancelAfter(TimeSpan.FromSeconds(15));
@@ -46,8 +49,9 @@ public sealed class KevCatalogClient
             await bounded.WriteAsync(buffer.AsMemory(0, read), timeout.Token).ConfigureAwait(false);
         }
 
-        var snapshot = Parse(bounded.ToArray());
-        return snapshot with { RetrievedAtUtc = DateTimeOffset.UtcNow };
+        var payload = bounded.ToArray();
+        var snapshot = Parse(payload) with { RetrievedAtUtc = DateTimeOffset.UtcNow };
+        return new KevCatalogDownload(snapshot, payload);
     }
 
     public static KevCatalogSnapshot Parse(ReadOnlyMemory<byte> payload)
@@ -134,3 +138,4 @@ public sealed class KevCatalogClient
 
 public sealed record KevCatalogSnapshot(string CatalogVersion, DateOnly ReleasedOn, DateTimeOffset RetrievedAtUtc, IReadOnlyList<KevEntry> Entries);
 public sealed record KevEntry(string CveId, string Vendor, string Product, string VulnerabilityName, DateOnly DateAdded, string Description);
+public sealed record KevCatalogDownload(KevCatalogSnapshot Snapshot, byte[] Payload);

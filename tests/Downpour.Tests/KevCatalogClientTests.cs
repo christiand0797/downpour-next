@@ -61,4 +61,87 @@ public sealed class KevCatalogClientTests
 
         Assert.Throws<InvalidDataException>(() => KevCatalogClient.Parse(bytes));
     }
+
+    [Fact]
+    public void CacheRoundTripsValidatedPayloadAndReportsAge()
+    {
+        var path = NewCachePath();
+        try
+        {
+            var retrieved = DateTimeOffset.UtcNow.AddHours(-2);
+            var payload = Encoding.UTF8.GetBytes(ValidCatalog);
+            var snapshot = KevCatalogClient.Parse(payload) with { RetrievedAtUtc = retrieved };
+            var cache = new KevCatalogCache(path);
+
+            cache.Write(new KevCatalogDownload(snapshot, payload));
+            var cached = cache.TryRead(retrieved.AddHours(2));
+
+            Assert.NotNull(cached);
+            Assert.False(cached.IsStale);
+            Assert.Equal(retrieved.ToUnixTimeSeconds(), cached.Snapshot.RetrievedAtUtc.ToUnixTimeSeconds());
+            Assert.Equal("CVE-2026-12345", Assert.Single(cached.Snapshot.Entries).CveId);
+        }
+        finally { DeleteCache(path); }
+    }
+
+    [Fact]
+    public void CacheRejectsTamperedPayload()
+    {
+        var path = NewCachePath();
+        try
+        {
+            var payload = Encoding.UTF8.GetBytes(ValidCatalog);
+            var snapshot = KevCatalogClient.Parse(payload) with { RetrievedAtUtc = DateTimeOffset.UtcNow };
+            var cache = new KevCatalogCache(path);
+            cache.Write(new KevCatalogDownload(snapshot, payload));
+            var bytes = File.ReadAllBytes(path);
+            bytes[^1] ^= 0x01;
+            File.WriteAllBytes(path, bytes);
+
+            Assert.Throws<InvalidDataException>(() => cache.TryRead());
+        }
+        finally { DeleteCache(path); }
+    }
+
+    [Fact]
+    public void CacheRejectsExpiredCatalog()
+    {
+        var path = NewCachePath();
+        try
+        {
+            var payload = Encoding.UTF8.GetBytes(ValidCatalog);
+            var retrieved = DateTimeOffset.UtcNow.Subtract(KevCatalogCache.MaximumAge).AddMinutes(5);
+            var snapshot = KevCatalogClient.Parse(payload) with { RetrievedAtUtc = retrieved };
+            var cache = new KevCatalogCache(path);
+            cache.Write(new KevCatalogDownload(snapshot, payload));
+
+            Assert.Null(cache.TryRead(retrieved.Add(KevCatalogCache.MaximumAge).AddMinutes(10)));
+        }
+        finally { DeleteCache(path); }
+    }
+
+    [Fact]
+    public void CacheWriteRejectsUnvalidatedPayload()
+    {
+        var path = NewCachePath();
+        try
+        {
+            var cache = new KevCatalogCache(path);
+            var badPayload = Encoding.UTF8.GetBytes("{\"unexpected\":true}");
+            var fakeSnapshot = new KevCatalogSnapshot("1", new DateOnly(2026, 1, 1), DateTimeOffset.UtcNow, []);
+
+            Assert.ThrowsAny<Exception>(() => cache.Write(new KevCatalogDownload(fakeSnapshot, badPayload)));
+            Assert.False(File.Exists(path));
+        }
+        finally { DeleteCache(path); }
+    }
+
+    private static string NewCachePath() => Path.Combine(Path.GetTempPath(), "DownpourNextTests", Guid.NewGuid().ToString("N"), "cisa-kev.cache");
+
+    private static void DeleteCache(string path)
+    {
+        if (File.Exists(path)) File.Delete(path);
+        var directory = Path.GetDirectoryName(path);
+        if (directory is not null && Directory.Exists(directory)) Directory.Delete(directory, recursive: true);
+    }
 }

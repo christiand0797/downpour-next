@@ -8,7 +8,7 @@
       "taskId": "DN-006",
       "status": "active",
       "heartbeatUtc": "2026-10-04T02:14:33Z",
-      "notes": "Published v0.1.0-preview with self-contained x64 desktop and service executables plus Start-Downpour-Next.cmd. Release: https://github.com/christiand0797/downpour-next/releases/tag/v0.1.0-preview. Build: 0 warnings/errors; tests: 16 passed. Settings crash mitigation is pushed as c0926ed; native click-through remains outstanding. Continuing DN-006 persistent CISA KEV cache."
+      "notes": "Published v0.1.0-preview with self-contained x64 desktop and service executables plus Start-Downpour-Next.cmd. Added versioned atomic CISA KEV cache with digest/schema revalidation, 24h stale label, 7-day maximum age, and four tests (20 total pass). Next: commit/push cache slice, publish refreshed x64 ZIP, then continue DN-006 feed correlation. Settings crash mitigation is pushed; native Settings click-through remains outstanding."
     }
   ]
 }
