@@ -7,12 +7,14 @@ builder.Services.AddWindowsService(options =>
 });
 builder.Services.AddSingleton<SystemSnapshotProvider>();
 builder.Services.AddSingleton<DriverInventoryProvider>();
+builder.Services.AddSingleton<WindowsServiceInventoryProvider>();
 builder.Services.AddSingleton<NetworkInventoryProvider>();
 builder.Services.AddSingleton<SecurityEventProvider>();
 builder.Services.AddSingleton<SecurityEventSnapshotStore>();
 builder.Services.AddSingleton(OperationJournal.CreateForCurrentUser());
 builder.Services.AddHostedService<SnapshotPipeWorker>();
 builder.Services.AddHostedService<DriverInventoryPipeWorker>();
+builder.Services.AddHostedService<WindowsServiceInventoryPipeWorker>();
 builder.Services.AddHostedService<NetworkInventoryPipeWorker>();
 builder.Services.AddHostedService<SecurityEventMonitorService>();
 builder.Services.AddHostedService<SecurityEventPipeWorker>();

@@ -5,10 +5,18 @@
     {
       "id": "codex-primary",
       "role": "primary",
-      "taskId": "DN-007",
+      "taskId": "DN-004",
       "status": "active",
-      "heartbeatUtc": "2026-10-04T16:08:00Z",
-      "notes": "Three agents reviewed current service installation identity, journal security, and v29 effectful action parity. They confirmed portable mode runs the service as the interactive user and no installer exists; actions must remain off until a signed installer establishes a restricted identity and client authentication. Journal hardening is ready to push: schema v2 migration, service SID naming, strict generated object IDs, exact intent replay binding, failed/recovery pending behavior, generic recovery-finalization denial, WAL confirmation, reparse ancestry checks, temp-isolated ACL testing. Release build: 0 warnings/errors; 51 tests pass. Quarantine/restore is the preferred first action only after service identity/consent/storage/recovery gates. No preview release."
+      "heartbeatUtc": "2026-10-04T16:13:00Z",
+      "notes": "Checkpoint ca38876 hardening SQLite journal pushed. Current Services route slice is integrated locally: bounded read-only SCM enumeration, separate output-only pipe, schema-validating client, search/30s refresh UI. Release build 0 warnings/errors; 54 tests pass. Next commit/push this slice. Three-agent review established that portable mode runs as current user, no installer exists, and actions need a dedicated restricted service identity and authenticated consent."
+    },
+    {
+      "id": "v29_action_map",
+      "role": "agent",
+      "taskId": "DN-004",
+      "status": "completed",
+      "heartbeatUtc": "2026-10-04T16:13:00Z",
+      "notes": "Completed bounded read-only Windows Services inventory for existing route. Debug build clean; 54 tests passed. No management actions or handoff edits."
     }
   ]
 }

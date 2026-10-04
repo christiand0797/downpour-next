@@ -90,7 +90,7 @@
         "Event source health and permission failures are visible",
         "No system-changing actions"
       ],
-      "notes": "Network inventory provides local interface counters/rates and up to 256 TCP endpoints. Event monitor now continuously samples 35 allow-listed v29 event IDs across 7 fixed Windows channels every 15 seconds while the service runs. Records contain bounded metadata only; raw event/script bodies are not collected. 4625 records are suppressed individually and aggregated into a HIGH alert at 10 events/300 seconds. Page has severity/search filters and explicit per-channel errors. Build/test: 0 warnings/errors; 36 tests pass including fixed source/event allowlist, classification, client bounds, burst threshold and current-user IPC round-trip. Remaining: v29 PowerShell Sigma/AMSI analysis, richer burst/rule detection, push subscriptions, normalized alert lifecycle, Sysmon/ETW, and source-to-detection parity. See docs/WINDOWS_EVENTS.md."
+      "notes": "Network inventory provides local interface counters/rates and up to 256 TCP endpoints. Event monitor continuously samples 35 allow-listed v29 event IDs across 7 fixed Windows channels every 15 seconds, with metadata-only IPC, source health, filters and 4625 aggregation; source/docs pushed. Services route now has bounded SCM enumeration (512 services, 16 pages), query-only startup-type lookup, separate output-only IPC, schema validation, searchable WinUI list, and explicit partial/access-denied handling. No service management actions. Release build: 0 warnings/errors; full suite: 54 passed. Remaining event parity: PowerShell Sigma/AMSI analysis, richer detection, push subscriptions, alert lifecycle, Sysmon/ETW. See docs/WINDOWS_EVENTS.md."
     },
     {
       "id": "DN-005",
@@ -127,7 +127,7 @@
         "Backup and restore verification",
         "Privacy minimization"
       ],
-      "notes": "The pushed baseline added service-side SQLite schema v1. Review hardening migrated to schema v2 with service_sid naming and state validation triggers; verifies WAL activation; restricts object IDs to generated lowercase GUID tokens; binds BeginAsync retries to their original intent event; keeps Failed/RecoveryRequired visible and blocks generic finalization of uncertain states; rejects reparse-point ancestors in journal paths. Release build is clean and 51 tests pass, including v1 migration and isolated temp-folder ACL checks. Portable service remains the interactive-user account and the journal is not tamper-proof; no action API/mutation is present. Next: authenticated installed service identity, then retention/integrity and typed operator consent."
+      "notes": "Service-side SQLite operation journal schema v2 and recovery hardening pushed in ca38876. Includes v1 migration, service-account SID naming, state validation triggers, WAL activation check, strict generated object IDs, exact begin-intent retry binding, Failed/RecoveryRequired visibility, generic recovery-finalization denial, reparse-ancestor rejection and isolated ACL tests. Release build: 0 warnings/errors; 51 tests pass. Portable service remains the interactive-user account; journal is not tamper-proof and no action API/mutation exists. Remaining: retention, independent integrity evidence, backups, alert/evidence history, authenticated installed service identity and consent."
     },
     {
       "id": "DN-008",

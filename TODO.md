@@ -4,9 +4,10 @@ This checklist tracks current implementation state; the detailed order, dependen
 
 ## 2026-10-04 continuation checkpoint
 
-- Security Events is now a real service-backed slice: 35 fixed v29 event/channel pairs across seven sources, 15-second service polling, bounded metadata-only IPC, per-source health, severity/search filters, and 4625 burst aggregation. Release build: 0 warnings/errors; 36 tests pass. `docs/WINDOWS_EVENTS.md` describes scope and missing detection parity. Source and docs are pending the next push; no new preview release is to be created.
+- Security Events is a real service-backed slice: 35 fixed v29 event/channel pairs across seven sources, 15-second service polling, bounded metadata-only IPC, per-source health, severity/search filters, and 4625 burst aggregation. `docs/WINDOWS_EVENTS.md` describes scope and missing detection parity. Source is pushed; no new preview release was created.
 - Three parallel agents mapped v29 action priorities, reviewed the event work, and wired the Security Events route. Their findings are captured in DN-005/DN-007/DN-008 and `SHARED_CONTEXT.md`. Begin action work with durable audit/recovery foundations and narrow quarantine/restore operations; do not enable a broad arbitrary-command broker.
 - Added a service-side SQLite journal foundation: protected user/SYSTEM state directory, schema v2 migration, transactional projection/event writes, fixed action/state enums, idempotent event IDs, legal transition checks, and restart-visible pending recovery. Tests cover ACLs, v1 migration, reopen, ordering, replay binding, rollback, recovery visibility, and bounds. This is not tamper-proof against same-user malware and does not authorize or perform any action. Details: [`ACTION_JOURNAL.md`](docs/ACTION_JOURNAL.md).
+- Latest pushed checkpoint before the current slice is `ca38876`. The Services route now has bounded SCM inventory, query-only startup-type lookup, separate output-only IPC, a searchable page, and explicit partial/access-denied status. Release build is clean and 54 tests pass; source push is the current next action. No start/stop/configure controls are present.
 
 - Desktop EXE now attempts to start the bundled read-only sensor service itself, reuses an existing service, and stops only a child service it owns on graceful window close. UI labels the app as running while clearly identifying unavailable local telemetry as `SERVICE OFFLINE`; a healthy snapshot is labeled `ONLINE`.
 - Process inventory is expanded from 8 to up to 512 rows with bounded names/payloads. Windows PID 0 (`Idle`) is excluded because the snapshot contract requires a real process ID; malformed oversized pipe messages return an unavailable result instead of escaping the client.
@@ -29,6 +30,7 @@ This checklist tracks current implementation state; the detailed order, dependen
 - [x] Add live CPU/memory gauges and a history graph that preserves missing-data gaps.
 - [x] Add a dedicated read-only Drivers route with bounded live kernel-driver inventory and path review.
 - [x] Add a read-only Network route with per-interface throughput/totals, active TCP endpoints, bounded IPC, and gap-preserving history.
+- [x] Add read-only Windows Services inventory with service state/startup type, bounded IPC, search, freshness, and explicit permission/partial status.
 - [ ] Visually and interactively validate online/offline dashboard, process, and driver pages on the native app.
 - [x] Configure Windows CI and Dependabot; pin wildcard package dependencies.
 - [ ] Resolve GitHub's account billing/spending-limit notice, then verify remote CI and Dependabot runs.

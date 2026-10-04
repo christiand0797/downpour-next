@@ -30,6 +30,20 @@ public sealed record DriverInventorySnapshot(
     IReadOnlyList<DriverInventoryEntry> Drivers,
     IReadOnlyList<string> Warnings);
 
+public sealed record WindowsServiceInventoryEntry(
+    string ServiceName,
+    string DisplayName,
+    string State,
+    string StartupType);
+
+public sealed record WindowsServiceInventorySnapshot(
+    int SchemaVersion,
+    DateTimeOffset CapturedAtUtc,
+    string CollectionStatus,
+    int ServiceCount,
+    IReadOnlyList<WindowsServiceInventoryEntry> Services,
+    IReadOnlyList<string> Warnings);
+
 public sealed record NetworkInterfaceEntry(
     string Name,
     string Description,
