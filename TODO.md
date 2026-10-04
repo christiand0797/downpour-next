@@ -2,6 +2,13 @@
 
 This checklist tracks current implementation state; the detailed order, dependencies, and acceptance criteria are in [`WORK_QUEUE.json`](WORK_QUEUE.json).
 
+## 2026-10-04 continuation checkpoint
+
+- Desktop EXE now attempts to start the bundled read-only sensor service itself, reuses an existing service, and stops only a child service it owns on graceful window close. UI labels the app as running while clearly identifying unavailable local telemetry as `SERVICE OFFLINE`; a healthy snapshot is labeled `ONLINE`.
+- Process inventory is expanded from 8 to up to 512 rows with bounded names/payloads. Windows PID 0 (`Idle`) is excluded because the snapshot contract requires a real process ID; malformed oversized pipe messages return an unavailable result instead of escaping the client.
+- Verification: Release build 0 warnings/errors; `dotnet test Downpour.slnx -c Release`: 22 passed; self-contained x64 direct-launch smoke test confirmed service auto-start and graceful shutdown.
+- Remaining DN-002 work: native Settings/navigation click-through and narrow/high-DPI layout review. Full Downpour v29 parity is still in progress; see `SHARED_CONTEXT.md` and `docs/FEATURE_PARITY.md`.
+
 ## Foundation
 
 - [x] Create private GitHub repository and push the initial WinUI/.NET solution.

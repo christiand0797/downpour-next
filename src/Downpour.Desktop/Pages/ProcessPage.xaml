@@ -45,7 +45,7 @@
                 </DataTemplate>
             </ListView.ItemTemplate>
             <ListView.Footer>
-                <TextBlock Padding="14,12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Read-only snapshot. Command lines, handles, and response actions are not collected in this build." TextWrapping="Wrap" />
+                <TextBlock Padding="14,12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Read-only snapshot of up to the 512 largest processes by working set. The total count includes entries outside this display limit. Command lines, handles, and response actions are not collected." TextWrapping="Wrap" />
             </ListView.Footer>
         </ListView>
     </Grid>

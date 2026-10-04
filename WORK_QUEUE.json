@@ -26,8 +26,17 @@
       "status": "in_progress",
       "priority": "high",
       "files": [
+        "src/Downpour.Desktop/App.xaml.cs",
+        "src/Downpour.Desktop/SensorServiceProcess.cs",
         "src/Downpour.Desktop/Pages/HomePage.xaml",
-        "src/Downpour.Desktop/Pages/ProcessPage.xaml"
+        "src/Downpour.Desktop/Pages/HomePage.xaml.cs",
+        "src/Downpour.Desktop/Pages/ProcessPage.xaml",
+        "src/Downpour.Desktop/Pages/ProcessPage.xaml.cs",
+        "src/Downpour.Desktop/Pages/NetworkPage.xaml.cs",
+        "src/Downpour.Desktop/Pages/DriverPage.xaml.cs",
+        "src/Downpour.Core/SystemSnapshotClient.cs",
+        "src/Downpour.Service/SystemSnapshotProvider.cs",
+        "tests/Downpour.Tests"
       ],
       "acceptance": [
         "Online telemetry appears in both routes",
@@ -35,7 +44,7 @@
         "Navigation selection stays synchronized with back navigation",
         "Narrow and high-DPI layouts remain usable"
       ],
-      "notes": "Dashboard has a clear landscape, separate crescent overlay, 280 animated rain drops, aurora, stars, lightning, CPU/memory gauges/history, and a rain mode control. Initial screenshot prompted moon placement and lightning adjustments; final capture and narrow/high-DPI review remain outstanding."
+      "notes": "Dashboard has a clear landscape, separate crescent overlay, 280 animated rain drops, aurora, stars, lightning, CPU/memory gauges/history, and a rain mode control. Process telemetry exposes up to 512 accessible rows by memory with bounded names/payload and visible total-versus-shown count; PID 0 is excluded. Desktop EXE auto-start and graceful owned-service shutdown are smoke-verified. UI distinguishes app-running from service-offline and labels a live local snapshot ONLINE. Release build: 0 warnings/errors; 22 tests pass. Remaining: native Settings/navigation click-through and narrow/high-DPI layout review."
     },
     {
       "id": "DN-003",

@@ -37,7 +37,7 @@ public sealed class SnapshotPipeIntegrationTests
             Assert.NotNull(snapshot);
             Assert.Equal(1, snapshot.SchemaVersion);
             Assert.True(snapshot.ProcessCount > 0);
-            Assert.True(snapshot.TopProcesses.Count <= 8);
+            Assert.InRange(snapshot.TopProcesses.Count, 1, SystemSnapshotProvider.MaximumProcessRows);
         }
         finally
         {

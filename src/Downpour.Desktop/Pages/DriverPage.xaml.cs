@@ -53,8 +53,14 @@ public sealed partial class DriverPage : Page
             var snapshot = await _client.TryGetSnapshotAsync();
             if (snapshot is null)
             {
-                InventoryStatus.Text = "Driver service unavailable. No local data is being substituted.";
-                DriverCount.Text = "OFFLINE";
+                await App.EnsureSensorServiceAsync();
+                snapshot = await _client.TryGetSnapshotAsync();
+            }
+
+            if (snapshot is null)
+            {
+                InventoryStatus.Text = $"Downpour is running, but its driver telemetry service is offline. {App.SensorServiceStatusHint} No local data is being substituted.";
+                DriverCount.Text = "SERVICE OFFLINE";
                 _allDrivers = [];
                 ApplyFilter();
                 return;

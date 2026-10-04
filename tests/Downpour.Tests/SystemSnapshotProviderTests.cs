@@ -12,7 +12,9 @@ public sealed class SystemSnapshotProviderTests
         Assert.Equal(1, snapshot.SchemaVersion);
         Assert.InRange((DateTimeOffset.UtcNow - snapshot.CapturedAtUtc).Duration(), TimeSpan.Zero, TimeSpan.FromMinutes(1));
         Assert.True(snapshot.ProcessCount > 0);
-        Assert.True(snapshot.TopProcesses.Count <= 8);
+        Assert.InRange(snapshot.TopProcesses.Count, 1, SystemSnapshotProvider.MaximumProcessRows);
+        Assert.Equal(snapshot.TopProcesses.OrderByDescending(process => process.WorkingSetBytes).Select(process => process.ProcessId),
+            snapshot.TopProcesses.Select(process => process.ProcessId));
         Assert.All(snapshot.TopProcesses, process =>
         {
             Assert.True(process.ProcessId > 0);
@@ -37,5 +39,17 @@ public sealed class SystemSnapshotProviderTests
         Assert.False(Downpour.Core.SystemSnapshotClient.IsValidSnapshot(wrongSchema));
         Assert.False(Downpour.Core.SystemSnapshotClient.IsValidSnapshot(impossibleCpu));
         Assert.False(Downpour.Core.SystemSnapshotClient.IsValidSnapshot(badMemory));
+    }
+
+    [Fact]
+    public void ClientSnapshotValidationBoundsProcessInventoryAndNames()
+    {
+        var row = new Downpour.Contracts.ProcessSnapshot(10, "safe", 128, 1);
+        var rows = Enumerable.Range(0, 512).Select(index => row with { ProcessId = index + 1 }).ToArray();
+        var snapshot = new Downpour.Contracts.SystemHealthSnapshot(1, DateTimeOffset.UtcNow, 513, 50, 1024, 512, 2, rows, []);
+
+        Assert.True(Downpour.Core.SystemSnapshotClient.IsValidSnapshot(snapshot));
+        Assert.False(Downpour.Core.SystemSnapshotClient.IsValidSnapshot(snapshot with { TopProcesses = [.. rows, row with { ProcessId = 513 }] }));
+        Assert.False(Downpour.Core.SystemSnapshotClient.IsValidSnapshot(snapshot with { TopProcesses = [row with { Name = new string('x', 129) }] }));
     }
 }

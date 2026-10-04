@@ -1,6 +1,6 @@
 # Build and run Downpour Next on Windows
 
-The portable x64 bundle contains the WinUI desktop app (`Downpour.Desktop.exe`), the read-only telemetry service, and `Start-Downpour-Next.cmd`. It does not require GitHub Actions or a .NET runtime on the target machine. It is not an installer and does not register a Windows service. Extract the full ZIP and double-click the CMD launcher, or launch the desktop EXE alone for an offline UI check.
+The portable x64 bundle contains the WinUI desktop app (`Downpour.Desktop.exe`), the read-only telemetry service, and `Start-Downpour-Next.cmd`. It does not require GitHub Actions or a .NET runtime on the target machine. It is not an installer and does not register a Windows service. Extract the full ZIP and launch the CMD launcher or desktop EXE; the desktop starts the bundled sensor service automatically when needed.
 
 ## Build locally
 
@@ -21,7 +21,7 @@ The UI/Core JSON path uses pinned Newtonsoft.Json 13.0.4, with JSON type-name ha
 
 ## Run the portable build
 
-Extract the full `DownpourNext-win-x64.zip`, then double-click `Start-Downpour-Next.cmd`. It opens the read-only service in a console window and launches `Downpour.Desktop.exe`. Close the service console to stop telemetry. Launching the desktop EXE alone is supported but shows an offline sensor state until the service is running.
+Extract the full `DownpourNext-win-x64.zip`, then double-click `Start-Downpour-Next.cmd` or `Downpour.Desktop.exe`. The desktop checks for an existing local snapshot service and starts the bundled `service\Downpour.Service.exe` in the background when needed. It stops a service process it started when its window closes; a service started by the CMD launcher is left under the launcher's control. If the service executable is missing or fails to start, the UI stays available and reports that the sensor service is offline while making clear that Downpour itself is running. A source-build started with `dotnet run` still requires starting `Downpour.Service` separately from the development instructions above.
 
 The Settings route now attaches toggle handlers after its XAML controls are initialized, avoiding early toggle events during page construction. Build/test and desktop startup are verified; an interactive click-through of the Settings route remains to be checked on the target desktop session.
 

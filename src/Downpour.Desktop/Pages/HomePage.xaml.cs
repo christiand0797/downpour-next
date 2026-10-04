@@ -83,9 +83,15 @@ public sealed partial class HomePage : Page
             var snapshot = await _snapshotClient.TryGetSnapshotAsync();
             if (snapshot is null)
             {
-                SensorHeadline.Text = "Local sensor service is unavailable";
-                SensorDescription.Text = "Start Downpour.Service to restore read-only measurements. The chart stops at the last received sample.";
-                SensorBadge.Text = "OFFLINE";
+                await App.EnsureSensorServiceAsync();
+                snapshot = await _snapshotClient.TryGetSnapshotAsync();
+            }
+
+            if (snapshot is null)
+            {
+                SensorHeadline.Text = "Downpour is running · sensor service offline";
+                SensorDescription.Text = $"{App.SensorServiceStatusHint} The chart stops at the last received sample.";
+                SensorBadge.Text = "SERVICE OFFLINE";
                 SensorDot.Fill = new SolidColorBrush(Color.FromArgb(255, 255, 180, 85));
                 _cpuGauge?.SetValue(null);
                 _memoryGauge?.SetValue(null);
@@ -100,9 +106,10 @@ public sealed partial class HomePage : Page
                 return;
             }
 
+            App.MarkSensorServiceConnected();
             SensorHeadline.Text = "Read-only sensor service connected";
-            SensorDescription.Text = "Live Windows measurements are updating every three seconds. Detection and response engines are not connected yet.";
-            SensorBadge.Text = "OBSERVE ONLY";
+            SensorDescription.Text = "Downpour is online with live local measurements updating every three seconds. Detection and response engines are not connected yet.";
+            SensorBadge.Text = "ONLINE";
             SensorDot.Fill = new SolidColorBrush(Color.FromArgb(255, 73, 227, 193));
             var captured = snapshot.CapturedAtUtc.ToLocalTime();
             var usedBytes = snapshot.MemoryTotalBytes - Math.Min(snapshot.MemoryTotalBytes, snapshot.MemoryAvailableBytes);
@@ -120,8 +127,9 @@ public sealed partial class HomePage : Page
             DrawResourceChart();
 
             Processes.Clear();
-            var largestWorkingSet = snapshot.TopProcesses.Count > 0 ? snapshot.TopProcesses.Max(process => process.WorkingSetBytes) : 0;
-            foreach (var process in snapshot.TopProcesses)
+            var dashboardProcesses = snapshot.TopProcesses.Take(8).ToArray();
+            var largestWorkingSet = dashboardProcesses.Length > 0 ? dashboardProcesses.Max(process => process.WorkingSetBytes) : 0;
+            foreach (var process in dashboardProcesses)
             {
                 var share = largestWorkingSet > 0 ? Math.Clamp(process.WorkingSetBytes * 100d / largestWorkingSet, 0, 100) : 0;
                 Processes.Add(new DashboardProcessRow(

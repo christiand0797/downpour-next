@@ -2,7 +2,7 @@
 
 ## Download a test build
 
-Download the latest **Downpour Next portable preview** from [GitHub Releases](https://github.com/christiand0797/downpour-next/releases). Extract the full ZIP, then double-click `Start-Downpour-Next.cmd`; it starts the read-only service and opens `Downpour.Desktop.exe`. You can launch the EXE alone, but system metrics will show offline until the service is running. This unsigned preview is for local testing and is not an installer. See [`docs/BUILD_WINDOWS.md`](docs/BUILD_WINDOWS.md) for requirements and limitations.
+Download the latest **Downpour Next portable preview** from [GitHub Releases](https://github.com/christiand0797/downpour-next/releases). Extract the full ZIP, then double-click `Start-Downpour-Next.cmd` or `Downpour.Desktop.exe`. The desktop automatically starts the bundled read-only sensor service when needed and stops the child service when the app closes. If the service is missing or cannot start, the app remains usable and labels sensor telemetry as offline with a reason. This unsigned preview is for local testing and is not an installer. See [`docs/BUILD_WINDOWS.md`](docs/BUILD_WINDOWS.md) for requirements and limitations.
 
 Downpour Next is the native Windows rebuild of Downpour. The target is complete feature parity with the current Python application, plus a more capable desktop experience. The implementation is deliberately staged: a visible route is not counted as a port until its sensors, analysis, settings, and response behavior are connected and verified.
 

@@ -7,6 +7,8 @@ namespace Downpour.Service;
 
 public sealed class SystemSnapshotProvider
 {
+    public const int MaximumProcessRows = 512;
+    public const int MaximumProcessNameLength = 128;
     private ulong? _previousIdle;
     private ulong? _previousKernel;
     private ulong? _previousUser;
@@ -24,9 +26,12 @@ public sealed class SystemSnapshotProvider
             {
                 try
                 {
+                    var processId = process.Id;
+                    if (processId <= 0) continue;
+                    var processName = process.ProcessName;
                     processes.Add(new ProcessSnapshot(
-                        process.Id,
-                        process.ProcessName,
+                        processId,
+                        processName[..Math.Min(processName.Length, MaximumProcessNameLength)],
                         process.WorkingSet64,
                         process.Threads.Count));
                 }
@@ -77,7 +82,7 @@ public sealed class SystemSnapshotProvider
             memoryTotal,
             memoryAvailable,
             activeConnections,
-            processes.OrderByDescending(process => process.WorkingSetBytes).Take(8).ToArray(),
+            processes.OrderByDescending(process => process.WorkingSetBytes).Take(MaximumProcessRows).ToArray(),
             warnings);
     }
 

@@ -12,6 +12,8 @@ public sealed partial class ProcessPage : Page
     private readonly SystemSnapshotClient _client = new();
     private readonly DispatcherQueueTimer _timer;
     private IReadOnlyList<ProcessRow> _allProcesses = [];
+    private int _totalProcessCount;
+    private bool _hasSnapshot;
     private bool _refreshing;
 
     public ObservableCollection<ProcessRow> Processes { get; } = [];
@@ -48,8 +50,15 @@ public sealed partial class ProcessPage : Page
             var snapshot = await _client.TryGetSnapshotAsync();
             if (snapshot is null)
             {
-                SnapshotStatus.Text = "Service disconnected. Start Downpour.Service to load a process snapshot.";
-                ProcessCount.Text = "";
+                await App.EnsureSensorServiceAsync();
+                snapshot = await _client.TryGetSnapshotAsync();
+            }
+
+            if (snapshot is null)
+            {
+                SnapshotStatus.Text = $"Downpour is running, but the sensor service is offline. {App.SensorServiceStatusHint}";
+                _totalProcessCount = 0;
+                _hasSnapshot = false;
                 _allProcesses = [];
                 ApplyFilter();
                 return;
@@ -60,6 +69,8 @@ public sealed partial class ProcessPage : Page
                 process.Name,
                 process.WorkingSetBytes,
                 process.ThreadCount)).ToArray();
+            _totalProcessCount = snapshot.ProcessCount;
+            _hasSnapshot = true;
             SnapshotStatus.Text = $"Observe-only · {snapshot.ProcessCount:N0} processes on this device · refreshed {snapshot.CapturedAtUtc.ToLocalTime():T}";
             ApplyFilter();
         }
@@ -71,6 +82,12 @@ public sealed partial class ProcessPage : Page
 
     private void ApplyFilter()
     {
+        if (!_hasSnapshot)
+        {
+            Processes.Clear();
+            if (ProcessCount is not null) ProcessCount.Text = "";
+            return;
+        }
         var query = ProcessSearch?.Text?.Trim() ?? "";
         var visible = string.IsNullOrEmpty(query)
             ? _allProcesses
@@ -78,7 +95,12 @@ public sealed partial class ProcessPage : Page
                 process.ProcessId.ToString().Contains(query, StringComparison.OrdinalIgnoreCase)).ToArray();
         Processes.Clear();
         foreach (var process in visible) Processes.Add(process);
-        if (ProcessCount is not null) ProcessCount.Text = $"{visible.Count:N0} shown · top {visible.Count} by memory";
+        if (ProcessCount is not null)
+        {
+            ProcessCount.Text = string.IsNullOrWhiteSpace(query)
+                ? $"Showing {_allProcesses.Count:N0} of {_totalProcessCount:N0} processes · sorted by memory"
+                : $"{visible.Count:N0} matches in top {_allProcesses.Count:N0} of {_totalProcessCount:N0}";
+        }
     }
 
     private async void Refresh_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e) => await RefreshAsync();

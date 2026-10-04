@@ -16,6 +16,18 @@ namespace Downpour_Desktop;
 public partial class App : Application
 {
     private Window? _window;
+    private SensorServiceProcess? _sensorService;
+
+    internal static string SensorServiceStatusHint { get; private set; } =
+        "The desktop app is running; sensor-service startup has not completed.";
+
+    internal static Task EnsureSensorServiceAsync() =>
+        Current is App app && app._sensorService is not null
+            ? app._sensorService.EnsureRunningAsync()
+            : Task.CompletedTask;
+
+    internal static void MarkSensorServiceConnected() =>
+        SensorServiceStatusHint = "The desktop app is running and connected to the local sensor service.";
     
     /// <summary>
     /// Initializes the singleton application object.  This is the first line of authored code
@@ -34,6 +46,10 @@ public partial class App : Application
     protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
     {
         _window = new MainWindow();
+        var sensorService = new SensorServiceProcess(message => SensorServiceStatusHint = message);
+        _sensorService = sensorService;
+        _window.Closed += (_, _) => sensorService.Dispose();
         _window.Activate();
+        _ = _sensorService.EnsureRunningAsync();
     }
 }

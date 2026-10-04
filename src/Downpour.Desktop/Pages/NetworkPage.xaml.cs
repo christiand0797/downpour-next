@@ -56,8 +56,14 @@ public sealed partial class NetworkPage : Page
             var snapshot = await _client.TryGetSnapshotAsync();
             if (snapshot is null)
             {
-                NetworkHeadline.Text = "Network sensor service unavailable";
-                NetworkDescription.Text = "No cached or substituted values are shown. Reconnect the local service to resume collection.";
+                await App.EnsureSensorServiceAsync();
+                snapshot = await _client.TryGetSnapshotAsync();
+            }
+
+            if (snapshot is null)
+            {
+                NetworkHeadline.Text = "Downpour is running · network sensor offline";
+                NetworkDescription.Text = $"{App.SensorServiceStatusHint} No cached or substituted values are shown.";
                 ReceiveRate.Text = "—";
                 SendRate.Text = "—";
                 ConnectionCount.Text = "—";
