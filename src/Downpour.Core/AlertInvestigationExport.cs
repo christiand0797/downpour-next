@@ -15,7 +15,7 @@ public static class AlertInvestigationExport
             throw new InvalidDataException("The alert snapshot did not pass its data contract validation.");
 
         var document = new AlertInvestigationDocument(
-            SchemaVersion: 1,
+            SchemaVersion: 2,
             Product: "Downpour Next",
             GeneratedAtUtc: DateTimeOffset.UtcNow,
             SnapshotCapturedAtUtc: snapshot.CapturedAtUtc,
@@ -36,7 +36,8 @@ public static class AlertInvestigationExport
                 alert.FirstSeenUtc,
                 alert.LastSeenUtc,
                 alert.Occurrences,
-                alert.State)).ToArray());
+                alert.State)).ToArray(),
+            CorrelatedPatterns: AlertCorrelationEngine.Correlate(snapshot));
 
         var json = JsonConvert.SerializeObject(document, Formatting.Indented, new JsonSerializerSettings
         {
@@ -59,7 +60,8 @@ public sealed record AlertInvestigationDocument(
     int TotalRetainedAlerts,
     int IncludedAlerts,
     IReadOnlyList<string> Warnings,
-    IReadOnlyList<AlertInvestigationItem> Alerts);
+    IReadOnlyList<AlertInvestigationItem> Alerts,
+    IReadOnlyList<CorrelatedAlertFinding> CorrelatedPatterns);
 
 public sealed record AlertInvestigationItem(
     string AlertId,

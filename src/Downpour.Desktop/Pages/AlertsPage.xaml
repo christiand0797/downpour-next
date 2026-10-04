@@ -32,8 +32,14 @@
         </Border>
 
         <Grid Grid.Row="2" RowSpacing="10">
-            <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
-            <Grid ColumnSpacing="10">
+            <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
+            <Border Padding="12,9" CornerRadius="8" Background="#9B111A2A" BorderBrush="#333EC5D8" BorderThickness="1">
+                <StackPanel Spacing="3">
+                    <TextBlock FontSize="10" FontWeight="SemiBold" CharacterSpacing="65" Foreground="#FF76DDF5" Text="CROSS-CHANNEL PATTERNS · TIME PROXIMITY ONLY" />
+                    <TextBlock x:Name="CorrelationSummary" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Waiting for validated alert metadata." TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+            <Grid Grid.Row="1" ColumnSpacing="10">
                 <Grid.ColumnDefinitions><ColumnDefinition Width="2*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                 <TextBox x:Name="SearchBox" PlaceholderText="Filter by summary, channel, event ID, technique, or provider" TextChanged="SearchBox_TextChanged" />
                 <ComboBox x:Name="StateFilter" Grid.Column="1" Width="150" SelectedIndex="0" SelectionChanged="StateFilter_SelectionChanged">
@@ -41,7 +47,7 @@
                 </ComboBox>
                 <TextBlock x:Name="AlertCount" Grid.Column="2" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="0 alerts" />
             </Grid>
-            <Grid Grid.Row="1" Padding="12,9" ColumnSpacing="10" Background="#D0091321">
+            <Grid Grid.Row="2" Padding="12,9" ColumnSpacing="10" Background="#D0091321">
                 <Grid.ColumnDefinitions><ColumnDefinition Width="150" /><ColumnDefinition Width="90" /><ColumnDefinition Width="*" /><ColumnDefinition Width="135" /><ColumnDefinition Width="320" /></Grid.ColumnDefinitions>
                 <TextBlock FontSize="10" FontWeight="SemiBold" CharacterSpacing="65" Text="FIRST SEEN" />
                 <TextBlock Grid.Column="1" FontSize="10" FontWeight="SemiBold" CharacterSpacing="65" Text="SEVERITY" />
@@ -49,7 +55,7 @@
                 <TextBlock Grid.Column="3" FontSize="10" FontWeight="SemiBold" CharacterSpacing="65" Text="TRIAGE" />
                 <TextBlock Grid.Column="4" FontSize="10" FontWeight="SemiBold" CharacterSpacing="65" Text="LOCAL REVIEW" />
             </Grid>
-            <ListView x:Name="AlertList" Grid.Row="2" ItemsSource="{x:Bind Alerts}" SelectionMode="None" IsItemClickEnabled="False" Background="#A807101D">
+            <ListView x:Name="AlertList" Grid.Row="3" ItemsSource="{x:Bind Alerts}" SelectionMode="None" IsItemClickEnabled="False" Background="#A807101D">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <Grid Padding="12,9" ColumnSpacing="10">

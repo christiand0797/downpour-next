@@ -21,10 +21,11 @@ public sealed class AlertInvestigationExportTests
         var document = JsonConvert.DeserializeObject<AlertInvestigationDocument>(json);
 
         Assert.NotNull(document);
-        Assert.Equal(1, document.SchemaVersion);
+        Assert.Equal(2, document.SchemaVersion);
         Assert.Equal(1, document.TotalRetainedAlerts);
         Assert.Equal(1, document.IncludedAlerts);
         Assert.Equal(alert.AlertId, Assert.Single(document.Alerts).AlertId);
+        Assert.Empty(document.CorrelatedPatterns);
         Assert.Contains("event messages", document.Scope, StringComparison.OrdinalIgnoreCase);
         var exportedFields = JObject.Parse(json).Properties().Select(property => property.Name).ToArray();
         Assert.DoesNotContain("commandLine", exportedFields, StringComparer.OrdinalIgnoreCase);
@@ -42,5 +43,25 @@ public sealed class AlertInvestigationExportTests
                 captured, captured, captured, 1, "Open")], []);
 
         Assert.Throws<InvalidDataException>(() => AlertInvestigationExport.CreateJson(malformed));
+    }
+
+    [Fact]
+    public void ExportIncludesBoundedCrossChannelPatternsAndTheirLimitations()
+    {
+        var captured = DateTimeOffset.UtcNow;
+        Assert.True(SecurityEventCatalog.TryGetRule("System", 7045, out var systemRule));
+        Assert.True(SecurityEventCatalog.TryGetRule("Security", 4697, out var securityRule));
+        var system = new SecurityAlert(new string('a', 64), systemRule.Summary, systemRule.Severity, systemRule.Technique,
+            "System", "Service Control Manager", 7045, 902, captured.AddSeconds(-45), captured.AddMinutes(-1), captured.AddSeconds(-45), 1, "Open");
+        var security = new SecurityAlert(new string('b', 64), securityRule.Summary, securityRule.Severity, securityRule.Technique,
+            "Security", "Microsoft-Windows-Security-Auditing", 4697, 903, captured.AddSeconds(-30), captured.AddMinutes(-1), captured.AddSeconds(-30), 1, "Open");
+        var snapshot = new SecurityAlertSnapshot(1, captured, 2, [system, security], []);
+
+        var document = JsonConvert.DeserializeObject<AlertInvestigationDocument>(AlertInvestigationExport.CreateJson(snapshot));
+
+        Assert.NotNull(document);
+        var finding = Assert.Single(document.CorrelatedPatterns);
+        Assert.Equal(2, finding.EvidenceAlertIds.Count);
+        Assert.Contains("shared operation identifier", finding.Limitation, StringComparison.Ordinal);
     }
 }

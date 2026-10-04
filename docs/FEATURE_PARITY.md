@@ -21,7 +21,7 @@ This project aims to preserve every Downpour v29 capability and improve its usab
 
 ### 1. Observe and inventory
 
-- Port process, network, system resource, Windows event, and Windows service snapshots. System/process and network adapter/TCP inventories are live read-only slices. Windows Event Log samples 35 fixed v29 event IDs across seven channels; Windows Services has a bounded service-state/startup-type view. Event metadata now feeds persistent, stable-ID alerts with deduplication, bounded retention, and local acknowledge/suppress/reopen review state. Remaining: continuous push subscriptions, Sigma/AMSI content analysis, Sysmon/ETW, cross-source correlation, full v29 investigation lifecycle, and response actions.
+- Port process, network, system resource, Windows event, and Windows service snapshots. System/process and network adapter/TCP inventories are live read-only slices. Windows Event Log samples 35 fixed v29 event IDs across seven channels; Windows Services has a bounded service-state/startup-type view. Event metadata now feeds persistent, stable-ID alerts with deduplication, bounded retention, local acknowledge/suppress/reopen review state, and two explicitly limited cross-channel time-proximity patterns. Remaining: continuous push subscriptions, Sigma/AMSI content analysis, Sysmon/ETW, broader correlation, full v29 investigation lifecycle, and response actions.
 - Add health and freshness states to the dashboard.
 - Use a single sensor snapshot per interval, then fan it out to consumers.
 - Reconcile the registry against every feature, watcher, setting, and background task in the Python source.
@@ -29,7 +29,7 @@ This project aims to preserve every Downpour v29 capability and improve its usab
 ### 2. Detection and triage
 
 - Port threat ingestion, suspicious process/network analysis, ransomware behavior, vulnerability checks, and intelligence feeds.
-- Extend the first alert slice with cross-source grouping, investigation timeline/evidence, and the full v29 alert lifecycle while preserving the current local review-state audit. A user-selected metadata-only JSON export of up to 512 validated alerts is now implemented; it is not yet a correlated case timeline/evidence bundle.
+- Extend the first alert slice with broader cross-source grouping, investigation timeline/evidence, and the full v29 alert lifecycle while preserving the current local review-state audit. The UI and schema-v2 metadata-only export include two explicitly limited time-proximity patterns over up to 512 validated alerts; this is not a complete correlated case timeline/evidence bundle.
 - Preserve offline behavior and validate feed integrity / cache expiration.
 
 ### 3. Protection controls

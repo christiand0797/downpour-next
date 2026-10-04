@@ -105,6 +105,7 @@ public sealed partial class AlertsPage : Page
                 StatusDetail.Text = $"{App.SensorServiceStatusHint} No cached or substituted alert data is shown.";
                 _allAlerts = [];
                 _currentSnapshot = null;
+                CorrelationSummary.Text = "Unavailable until the local alert sensor returns a validated snapshot.";
                 ExportButton.IsEnabled = false;
                 AlertCount.Text = "ALERT STORE OFFLINE";
                 ApplyFilters();
@@ -115,6 +116,12 @@ public sealed partial class AlertsPage : Page
             _currentSnapshot = snapshot;
             ExportButton.IsEnabled = !_exportInFlight;
             _allAlerts = snapshot.Alerts;
+            var correlated = AlertCorrelationEngine.Correlate(snapshot);
+            CorrelationSummary.Text = correlated.Count == 0
+                ? "No supported cross-channel patterns in the latest snapshot. Correlation uses only fixed event IDs and event timestamps."
+                : string.Join(Environment.NewLine, correlated.Take(3).Select(finding =>
+                    $"{finding.Severity} · {finding.Title} · {finding.EvidenceSummary}")) +
+                  (correlated.Count > 3 ? $"{Environment.NewLine}And {correlated.Count - 3:N0} more in the investigation export." : string.Empty);
             var openCount = snapshot.Alerts.Count(alert => alert.State == "Open");
             StatusHeadline.Text = snapshot.Warnings.Count == 0
                 ? "Local security alert monitor connected"
