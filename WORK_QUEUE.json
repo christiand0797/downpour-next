@@ -127,7 +127,7 @@
         "Backup and restore verification",
         "Privacy minimization"
       ],
-      "notes": "Settings persists visual preferences only. Durable storage is a prerequisite for effectful parity: versioned schema/migration, restrictive per-user/service ACLs, integrity-protected audit records, retention/rotation, crash recovery, backup/restore, and DPAPI-backed secrets where required. Never persist secrets in plain text."
+      "notes": "Implemented first service-side persistence slice: Microsoft.Data.Sqlite 10.0.12; schema-v1 operation projection and append-only transition events; transactional updates; WAL/FULL durability; fixed operation/state vocabulary; current actor SID; path-free bounded object IDs/reason codes; idempotency and restart-visible pending recovery; protected current-user/SYSTEM directory ACL; reparse checks; no action IPC or file/system mutations. 43 tests pass including ACL, migration/reopen, transition, rollback and recovery tests. Still missing retention/rotation, signed or independent tamper evidence, backups, alert/evidence history, and an isolated installed service identity. See docs/ACTION_JOURNAL.md."
     },
     {
       "id": "DN-008",

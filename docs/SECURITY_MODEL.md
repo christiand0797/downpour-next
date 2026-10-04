@@ -20,7 +20,7 @@ Sensors → normalized events → detections → evidence/alerts
 WinUI desktop ─── versioned local read-only IPC ─── Windows service
 ```
 
-The diagram is the target design. Connected paths currently include read-only system/process, loaded-driver, and network inventory plus the advisory CISA KEV catalog. Detection, policy, action broker, durable evidence store, signed updates, and release signing are not implemented.
+The diagram is the target design. Connected paths currently include read-only system/process, loaded-driver, network inventory, Windows event metadata, and the advisory CISA KEV catalog. A local operation journal is initialized, but detection, policy, action broker, durable evidence store, signed updates, and release signing are not implemented.
 
 ## Threat areas
 
@@ -32,7 +32,7 @@ The diagram is the target design. Connected paths currently include read-only sy
 | Detection/content | TLS feeds, signature/integrity, provenance, expiration, rule validation, no executable feed content | One fixed-host HTTPS CISA KEV fetch has bounds, duplicate/CVE/date validation, and source/retrieval metadata. It has no persistent cache or detached signature validation; more feeds and rule engines remain unported. |
 | Windows events | Fixed local sources, query allowlist, low-privilege read, bounded cadence, minimize event data, explicit channel health | Samples 35 fixed event IDs across seven channels every 15 seconds while the service runs. Only bounded event metadata/stable summaries cross IPC; script/event bodies are not collected. Source permission/availability warnings are visible. Push subscriptions, Sigma/AMSI, Sysmon/ETW, normalized alert lifecycle, and durable history remain open. |
 | Privileged response | allow-listed arguments, authorization, preview, audit, timeout, rollback, kill switch, opt-in defaults | No response action enabled or implemented |
-| Local data | Minimize collection, DPAPI for secrets, restrictive ACLs, at-rest integrity, retention and deletion policy, verified backups | No persistent store implemented |
+| Local data | Minimize collection, DPAPI for secrets, restrictive ACLs, at-rest integrity, retention and deletion policy, verified backups | The service initializes a schema-v1 SQLite operation journal under a current-user/SYSTEM-only protected directory. It records no file content and exposes no action API. It has no retention policy or independent tamper-proofing; the same-user service identity can modify its database. See `ACTION_JOURNAL.md`. |
 | Supply chain | Pinned NuGet/action versions, Dependabot, Windows CI, SBOM, reproducible signed release, provenance | SDK package versions and workflow action SHAs are pinned; Dependabot and Windows CI are configured. First remote CI run, SBOM, signing, and release provenance remain outstanding. |
 | UI and availability | Dispatcher-only UI changes, bounded updates/queues, stale-data marker, reduced motion, input limits, graceful missing service | Dashboard renders live gauges and histories; dashboard, process, network, and driver routes distinguish an active desktop UI from unavailable local telemetry. The portable desktop starts its bundled service automatically and labels a connected read-only snapshot `ONLINE`; Settings provides a wired reduce-motion choice. Full accessibility and narrow/high-DPI review remain open. |
 
@@ -41,6 +41,6 @@ The diagram is the target design. Connected paths currently include read-only sy
 1. Re-run and verify snapshot IPC ACL and service/client integration tests.
 2. Define supported service identity and installer permission boundary.
 3. Inspect first CI run and add SBOM/binary scanning before release.
-4. Complete secure storage, feed/rule verification, and event-data retention design before collecting sensitive evidence.
-5. Implement no system-changing response until policy and audit/rollback design passes review.
+4. Complete bounded journal retention, secure storage, feed/rule verification, and event-data retention before collecting sensitive evidence.
+5. Keep system-changing response disabled until the installed service identity, request authentication, verified consent, audit failure behavior, and rollback/recovery design pass review.
 6. Add threat-model tests, fuzzing, dependency and binary scanning, SBOM, signing, and upgrade/recovery checks.

@@ -46,7 +46,7 @@
             <Border Padding="18" CornerRadius="12" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
                 <StackPanel Spacing="8">
                     <TextBlock Text="Scanning &amp; protection" FontSize="18" FontWeight="SemiBold" />
-                    <TextBlock Text="System-changing actions remain disabled. Background scanning, quarantine, firewall changes, hardening, and driver package actions are not yet ported from Downpour v29. This page will only expose controls after their service policy, audit, and recovery paths are implemented." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                    <TextBlock Text="System-changing actions remain disabled. A durable operation journal is initialized by the service, but it does not authorize or perform changes. Quarantine, firewall changes, hardening, and driver package actions need an isolated service identity, verified consent, audit failure handling, and tested recovery before controls are enabled." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                 </StackPanel>
             </Border>
         </StackPanel>
