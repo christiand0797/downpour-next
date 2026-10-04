@@ -4,6 +4,9 @@ This checklist tracks current implementation state; the detailed order, dependen
 
 ## 2026-10-04 continuation checkpoint
 
+- DN-005 first connected alert slice is implemented locally: SecurityEventSnapshot entries persist as stable-ID event alerts, duplicate polls update rather than duplicate, 4625 bursts group by five-minute buckets, and the service applies 30-day/10,000-row retention. Alerts has local acknowledge/suppress/reopen with expected-state and request-replay checks, a bounded strict control pipe, evidence references, and explicit offline/partial source health. Release build is clean; 59 tests pass. Rebuild and push the matching portable package after committing.
+- `docs/ALERTS.md` records IDs, evidence, retention, transition semantics, and security limits. This is not cross-source v29 alert parity; Sigma/AMSI, Sysmon/ETW, investigation, and response remain queued.
+
 - Built the current self-contained Windows x64 package into `DownpourNext-Portable/` in the repository folder. It includes `Downpour.Desktop.exe`, `service/Downpour.Service.exe`, both launchers, and a run/limitations readme. Release build: 0 warnings/errors; tests: 54/54; EXE smoke-check found the app still running and its bundled service started. Published the 156 MB ZIP to GitHub release [v0.1.3](https://github.com/christiand0797/downpour-next/releases/tag/v0.1.3), SHA-256 `915439E1ECAAABD60DE8D3FE1FC83FF7C2C68BBEEC6F3D14677F1D724DE5C9C7`. The release is portable, unsigned, and not an installer; read-only/system-changing scope is stated on the release page.
 
 - Security Events is a real service-backed slice: 35 fixed v29 event/channel pairs across seven sources, 15-second service polling, bounded metadata-only IPC, per-source health, severity/search filters, and 4625 burst aggregation. `docs/WINDOWS_EVENTS.md` describes scope and missing detection parity. Source is pushed; no new preview release was created.

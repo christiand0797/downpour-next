@@ -12,7 +12,7 @@ Downpour Next is the native Windows rebuild of Downpour. The target is complete 
 - One registry preserves all 33 Downpour destinations and adds a dedicated Drivers route; every route has an honest migration state.
 - The app uses a clear moonless night landscape, a separate realistic crescent overlay, twinkling stars, animated rain, aurora, and occasional upper-sky lightning. The Dashboard cycles drizzle, storm, thunderstorm, and hurricane modes; every mode keeps rain active, scales its speed/visibility, and changes wind/lightning behavior.
 - Dashboard, Processes, Drivers, and Network consume live read-only system/process, loaded-kernel-driver, adapter-throughput, and TCP endpoint data from the service. Network history shows gaps when samples are unavailable.
-- Services and Security Events show bounded local read-only Windows service inventory and allow-listed event metadata. The current package does not perform system-changing actions.
+- Services and Security Events show bounded local read-only Windows service inventory and allow-listed event metadata. Alerts now persist unique event-ID findings and support local acknowledge/suppress/reopen triage; this changes review state only and performs no system-changing action.
 - Windows service uses a restricted, outbound-only local named pipe and performs no system-changing actions.
 - No original detection, scanning, remediation, or hardening engine has been ported yet.
 

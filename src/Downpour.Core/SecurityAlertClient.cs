@@ -1,0 +1,121 @@
+using System.IO.Pipes;
+using System.Text.Json;
+using Downpour.Contracts;
+using Newtonsoft.Json;
+
+namespace Downpour.Core;
+
+public sealed class SecurityAlertClient(string pipeName = SecurityAlertClient.PipeName)
+{
+    public const string PipeName = "Downpour.SecurityAlerts.v1";
+    private const int MaximumAlerts = 512;
+    private const int MaximumWarnings = 32;
+    private readonly string _pipeName = pipeName;
+    private static readonly HashSet<string> States = new(StringComparer.Ordinal) { "Open", "Acknowledged", "Suppressed" };
+
+    public async Task<SecurityAlertSnapshot?> TryGetSnapshotAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            timeout.CancelAfter(TimeSpan.FromSeconds(2));
+            await using var pipe = new NamedPipeClientStream(".", _pipeName, PipeDirection.In, PipeOptions.Asynchronous);
+            await pipe.ConnectAsync(timeout.Token);
+            var snapshot = await BoundedJson.DeserializeAsync<SecurityAlertSnapshot>(pipe, timeout.Token);
+            return IsValidSnapshot(snapshot) ? snapshot : null;
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested) { return null; }
+        catch (IOException) { return null; }
+        catch (UnauthorizedAccessException) { return null; }
+        catch (JsonReaderException) { return null; }
+        catch (JsonSerializationException) { return null; }
+        catch (InvalidDataException) { return null; }
+    }
+
+    public static bool IsValidSnapshot(SecurityAlertSnapshot? snapshot)
+    {
+        if (snapshot is null || snapshot.SchemaVersion != 1 || snapshot.TotalCount < 0 ||
+            snapshot.TotalCount > 10_000 || snapshot.Alerts is not { Count: <= MaximumAlerts } ||
+            snapshot.Warnings is not { Count: <= MaximumWarnings } ||
+            snapshot.CapturedAtUtc < DateTimeOffset.UtcNow.AddMinutes(-10) ||
+            snapshot.CapturedAtUtc > DateTimeOffset.UtcNow.AddMinutes(1) || snapshot.TotalCount < snapshot.Alerts.Count)
+            return false;
+
+        var ids = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var alert in snapshot.Alerts)
+        {
+            if (alert is null || !SecurityAlertRepositoryId.IsValid(alert.AlertId) || !ids.Add(alert.AlertId) ||
+                !Bounded(alert.Title, 160) || !Bounded(alert.Severity, 16) || !Bounded(alert.Technique, 32) ||
+                !Bounded(alert.LogName, 128) || !Bounded(alert.Provider, 128) || alert.EventId is < 0 or > ushort.MaxValue ||
+                alert.RecordId is < 0 || alert.Occurrences is < 1 or > 100 || !States.Contains(alert.State) ||
+                alert.FirstSeenUtc.Offset != TimeSpan.Zero || alert.LastSeenUtc.Offset != TimeSpan.Zero || alert.EventTimeUtc.Offset != TimeSpan.Zero ||
+                alert.FirstSeenUtc > snapshot.CapturedAtUtc.AddMinutes(1) || alert.LastSeenUtc > snapshot.CapturedAtUtc.AddMinutes(1) ||
+                alert.FirstSeenUtc > alert.LastSeenUtc || alert.EventTimeUtc > snapshot.CapturedAtUtc.AddMinutes(1) ||
+                !SecurityEventCatalog.TryGetRule(alert.LogName, alert.EventId, out var rule) || rule.Severity != alert.Severity ||
+                rule.Technique != alert.Technique || rule.Summary != alert.Title)
+                return false;
+        }
+        return snapshot.Warnings.All(warning => Bounded(warning, 512, allowEmpty: true));
+    }
+
+    public async Task<AlertStateChangeResponse?> ChangeStateAsync(AlertStateChangeRequest request, CancellationToken cancellationToken = default)
+    {
+        if (!IsValidRequest(request)) return new AlertStateChangeResponse(1, request.RequestId, false, "invalid-request");
+        try
+        {
+            using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            timeout.CancelAfter(TimeSpan.FromSeconds(2));
+            await using var pipe = new NamedPipeClientStream(".", _pipeName + ".Control", PipeDirection.InOut, PipeOptions.Asynchronous);
+            await pipe.ConnectAsync(timeout.Token);
+            var json = System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(request, new JsonSerializerOptions(JsonSerializerDefaults.Web));
+            if (json.Length > 1024) return null;
+            await pipe.WriteAsync(json, timeout.Token);
+            await pipe.WriteAsync(new byte[] { (byte)'\n' }, timeout.Token);
+            await pipe.FlushAsync(timeout.Token);
+            var response = await ReadResponseAsync(pipe, timeout.Token);
+            return IsValidResponse(response, request.RequestId) ? response : null;
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested) { return null; }
+        catch (IOException) { return null; }
+        catch (UnauthorizedAccessException) { return null; }
+        catch (System.Text.Json.JsonException) { return null; }
+    }
+
+    public static bool IsValidRequest(AlertStateChangeRequest? request) => request is not null && request.SchemaVersion == 1 &&
+        request.RequestId != Guid.Empty && SecurityAlertRepositoryId.IsValid(request.AlertId) &&
+        States.Contains(request.ExpectedState) && States.Contains(request.State) &&
+        (request.ExpectedState == request.State || (request.ExpectedState, request.State) is
+            ("Open", "Acknowledged") or ("Open", "Suppressed") or ("Acknowledged", "Open") or
+            ("Acknowledged", "Suppressed") or ("Suppressed", "Open"));
+
+    internal static bool IsValidResponse(AlertStateChangeResponse? response, Guid expectedRequest) => response is not null &&
+        response.SchemaVersion == 1 && response.RequestId == expectedRequest &&
+        (response.ResultCode is "updated" or "replayed" or "unchanged" or "invalid-request" or "alert-not-found" or "state-conflict" or "transition-denied" or "request-id-conflict") &&
+        (response.Accepted == (response.ResultCode is "updated" or "replayed" or "unchanged"));
+
+    private static async Task<AlertStateChangeResponse?> ReadResponseAsync(Stream pipe, CancellationToken token)
+    {
+        using var buffer = new MemoryStream();
+        var one = new byte[1];
+        while (buffer.Length <= 512)
+        {
+            var read = await pipe.ReadAsync(one, token);
+            if (read == 0) break;
+            if (one[0] == (byte)'\n')
+            {
+                if (buffer.Length == 0) return null;
+                return System.Text.Json.JsonSerializer.Deserialize<AlertStateChangeResponse>(buffer.ToArray(), new JsonSerializerOptions(JsonSerializerDefaults.Web));
+            }
+            buffer.WriteByte(one[0]);
+        }
+        return null;
+    }
+
+    private static bool Bounded(string? value, int max, bool allowEmpty = false) => value is not null && value.Length <= max &&
+        (allowEmpty || !string.IsNullOrWhiteSpace(value)) && !value.Any(char.IsControl);
+}
+
+internal static class SecurityAlertRepositoryId
+{
+    public static bool IsValid(string? value) => value is { Length: 64 } && value.All(ch => ch is >= '0' and <= '9' or >= 'a' and <= 'f');
+}

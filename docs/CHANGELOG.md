@@ -1,5 +1,14 @@
 # Downpour Next changelog
 
+## v0.1.4 — persistent event alerts and local triage
+
+- Added service-side SQLite persistence for allow-listed event observations with SHA-256 IDs based on event record identity, deduplication across repeated polling, 30-day retention, and a 10,000-alert cap.
+- Added five-minute bucket deduplication for aggregated 4625 failed-logon bursts; occurrence counts track the observed maximum rather than adding every repeated poll.
+- Added a dedicated Alerts route with source/record evidence, severity filters, and local acknowledge, suppress, and reopen controls. Suppression affects only one alert record.
+- Added a separate 1 KiB strict-schema local control pipe with expected-state checks and idempotent request IDs. It cannot request OS changes or command execution.
+- Release build: 0 warnings/errors; 59 tests passed. Portable package and SHA-256 are recorded below after publishing.
+- This remains an unsigned portable development build. Broader v29 detection/correlation, Sigma/AMSI, Sysmon/ETW, system-changing actions, and installer are still outstanding.
+
 ## v0.1.3 — runnable Windows x64 package
 
 - Added a self-contained portable Windows x64 package with `Downpour.Desktop.exe`, the bundled local sensor service, a BAT launcher, a CMD launcher, and a portable readme.
@@ -15,8 +24,7 @@
 - Restricted system, network, and driver telemetry pipes to the sensor service's current Windows account and LocalSystem; all servers remain one-way from service to desktop.
 - Added `Start-Downpour-Next.bat` for direct desktop launch. The desktop launches the bundled sensor service when needed.
 - Added service-backed Windows Event Log sensing for 35 fixed v29 event/channel pairs across seven channels, with bounded metadata-only IPC, per-source health, severity/search filters, and five-minute Security 4625 burst aggregation.
-- Product parity includes explicit, audited, recoverable system actions; this is not intended to remain read-only. Next: alert lifecycle, durable audit/recovery storage, and a narrow response broker before enabling quarantine or driver actions.
-- Verification for this source checkpoint: Release build has 0 warnings/errors; 36 tests pass. No new preview release was created.
+- Product parity includes explicit, audited, recoverable system actions; this is not intended to remain read-only. Before enabling them, add the isolated installed-service identity and a narrow verified action broker.
 
 ## v0.1.2-preview — 2026-10-04
 

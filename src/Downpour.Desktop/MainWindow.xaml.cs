@@ -356,6 +356,8 @@ public sealed partial class MainWindow : Window
             NavFrame.Navigate(typeof(NetworkPage));
         else if (capability.RouteId.Equals("security-events", StringComparison.OrdinalIgnoreCase))
             NavFrame.Navigate(typeof(SecurityEventsPage));
+        else if (capability.RouteId.Equals("alerts", StringComparison.OrdinalIgnoreCase))
+            NavFrame.Navigate(typeof(AlertsPage));
         else if (capability.RouteId.Equals("intel", StringComparison.OrdinalIgnoreCase))
             NavFrame.Navigate(typeof(IntelPage));
         else if (capability.RouteId.Equals("settings", StringComparison.OrdinalIgnoreCase))
@@ -388,6 +390,7 @@ public sealed partial class MainWindow : Window
             : args.Content is ServicesPage ? "services"
             : args.Content is NetworkPage ? "network"
             : args.Content is SecurityEventsPage ? "security-events" : null;
+        if (routeId is null && args.Content is AlertsPage) routeId = "alerts";
         if (routeId is null && args.Content is IntelPage) routeId = "intel";
         if (routeId is null && args.Content is SettingsPage) routeId = "settings";
 

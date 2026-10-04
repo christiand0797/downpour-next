@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page x:Class="Downpour_Desktop.Pages.AlertsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      mc:Ignorable="d">
+    <Grid Padding="24,20,24,30" RowSpacing="14">
+        <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+        <Grid ColumnSpacing="16">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+            <StackPanel Spacing="4">
+                <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Foreground="#FF76DDF5" Text="DOWNPOUR  /  TRIAGE  /  LOCAL ALERTS" />
+                <TextBlock Style="{StaticResource TitleTextBlockStyle}" FontSize="30" Text="Alerts" />
+                <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Persistent findings from allow-listed Windows event IDs, linked to channel, provider, record, and rule." TextWrapping="Wrap" />
+            </StackPanel>
+            <Button Grid.Column="1" Content="Refresh now" Click="Refresh_Click" VerticalAlignment="Center" />
+        </Grid>
+
+        <Border Grid.Row="1" Padding="14,11" CornerRadius="10" Background="#B9081220" BorderBrush="#423EC5D8" BorderThickness="1">
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                <FontIcon Glyph="&#xE7BA;" FontSize="20" Foreground="#FF60DBEE" VerticalAlignment="Center" />
+                <StackPanel Grid.Column="1" Spacing="3">
+                    <TextBlock x:Name="StatusHeadline" FontWeight="SemiBold" Text="Connecting to the local alert store" />
+                    <TextBlock x:Name="StatusDetail" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Severity follows fixed event-ID rules. Event content is not collected and no confidence score is inferred." TextWrapping="Wrap" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="2" RowSpacing="10">
+            <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
+            <Grid ColumnSpacing="10">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="2*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                <TextBox x:Name="SearchBox" PlaceholderText="Filter by summary, channel, event ID, technique, or provider" TextChanged="SearchBox_TextChanged" />
+                <ComboBox x:Name="StateFilter" Grid.Column="1" Width="150" SelectedIndex="0" SelectionChanged="StateFilter_SelectionChanged">
+                    <ComboBoxItem Content="All states" /><ComboBoxItem Content="Open" /><ComboBoxItem Content="Acknowledged" /><ComboBoxItem Content="Suppressed" />
+                </ComboBox>
+                <TextBlock x:Name="AlertCount" Grid.Column="2" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="0 alerts" />
+            </Grid>
+            <Grid Grid.Row="1" Padding="12,9" ColumnSpacing="10" Background="#D0091321">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="150" /><ColumnDefinition Width="90" /><ColumnDefinition Width="*" /><ColumnDefinition Width="135" /><ColumnDefinition Width="205" /></Grid.ColumnDefinitions>
+                <TextBlock FontSize="10" FontWeight="SemiBold" CharacterSpacing="65" Text="FIRST SEEN" />
+                <TextBlock Grid.Column="1" FontSize="10" FontWeight="SemiBold" CharacterSpacing="65" Text="SEVERITY" />
+                <TextBlock Grid.Column="2" FontSize="10" FontWeight="SemiBold" CharacterSpacing="65" Text="FINDING / EVIDENCE" />
+                <TextBlock Grid.Column="3" FontSize="10" FontWeight="SemiBold" CharacterSpacing="65" Text="TRIAGE" />
+                <TextBlock Grid.Column="4" FontSize="10" FontWeight="SemiBold" CharacterSpacing="65" Text="LOCAL REVIEW" />
+            </Grid>
+            <ListView x:Name="AlertList" Grid.Row="2" ItemsSource="{x:Bind Alerts}" SelectionMode="None" IsItemClickEnabled="False" Background="#A807101D">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Padding="12,9" ColumnSpacing="10">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="150" /><ColumnDefinition Width="90" /><ColumnDefinition Width="*" /><ColumnDefinition Width="135" /><ColumnDefinition Width="205" /></Grid.ColumnDefinitions>
+                            <TextBlock Text="{Binding FirstSeen}" FontFamily="Consolas" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="1" Text="{Binding Severity}" Foreground="{Binding SeverityBrush}" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" />
+                            <StackPanel Grid.Column="2" Spacing="3" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding Title}" FontSize="12" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                <TextBlock Text="{Binding Evidence}" FontSize="10" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="3" Spacing="3" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding State}" Foreground="{Binding StateBrush}" FontSize="11" FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding Occurrences}" FontSize="10" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                <Button Content="Acknowledge" Tag="{Binding AlertId}" IsEnabled="{Binding CanAcknowledge}" Click="Acknowledge_Click" Padding="8,5" FontSize="10" />
+                                <Button Content="Suppress" Tag="{Binding AlertId}" IsEnabled="{Binding CanSuppress}" Click="Suppress_Click" Padding="8,5" FontSize="10" />
+                                <Button Content="Reopen" Tag="{Binding AlertId}" IsEnabled="{Binding CanReopen}" Click="Reopen_Click" Padding="8,5" FontSize="10" />
+                            </StackPanel>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+                <ListView.Footer>
+                    <TextBlock x:Name="EmptyState" Padding="14" FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="No matching alerts. Event collection and alert persistence must both be available." TextWrapping="Wrap" />
+                </ListView.Footer>
+            </ListView>
+        </Grid>
+
+        <TextBlock Grid.Row="3" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Acknowledge and suppress update only local triage state; suppress affects this individual alert and does not block future matching events. No processes, drivers, network, or Windows settings are changed." TextWrapping="Wrap" />
+    </Grid>
+</Page>

@@ -11,6 +11,8 @@ builder.Services.AddSingleton<WindowsServiceInventoryProvider>();
 builder.Services.AddSingleton<NetworkInventoryProvider>();
 builder.Services.AddSingleton<SecurityEventProvider>();
 builder.Services.AddSingleton<SecurityEventSnapshotStore>();
+builder.Services.AddSingleton<SecurityAlertRepository>(SecurityAlertRepository.CreateForCurrentUser());
+builder.Services.AddSingleton<SecurityAlertSnapshotStore>();
 builder.Services.AddSingleton(OperationJournal.CreateForCurrentUser());
 builder.Services.AddHostedService<SnapshotPipeWorker>();
 builder.Services.AddHostedService<DriverInventoryPipeWorker>();
@@ -18,6 +20,8 @@ builder.Services.AddHostedService<WindowsServiceInventoryPipeWorker>();
 builder.Services.AddHostedService<NetworkInventoryPipeWorker>();
 builder.Services.AddHostedService<SecurityEventMonitorService>();
 builder.Services.AddHostedService<SecurityEventPipeWorker>();
+builder.Services.AddHostedService<SecurityAlertPipeWorker>();
+builder.Services.AddHostedService<SecurityAlertControlPipeWorker>();
 builder.Services.AddHostedService<OperationJournalStartupWorker>();
 
 var host = builder.Build();

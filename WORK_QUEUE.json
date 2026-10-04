@@ -90,7 +90,7 @@
         "Event source health and permission failures are visible",
         "No system-changing actions"
       ],
-      "notes": "Network inventory provides local interface counters/rates and up to 256 TCP endpoints. Event monitor continuously samples 35 allow-listed v29 event IDs across 7 fixed Windows channels every 15 seconds, with metadata-only IPC, source health, filters and 4625 aggregation; source/docs pushed. Services route now has bounded SCM enumeration (512 services, 16 pages), query-only startup-type lookup, separate output-only IPC, schema validation, searchable WinUI list, and explicit partial/access-denied handling. No service management actions. Release build: 0 warnings/errors; full suite: 54 passed. Services slice pushed as 24aed93. Remaining event parity: PowerShell Sigma/AMSI analysis, richer detection, push subscriptions, alert lifecycle, Sysmon/ETW. See docs/WINDOWS_EVENTS.md."
+      "notes": "Network inventory provides local interface counters/rates and up to 256 TCP endpoints. Event monitor samples 35 allow-listed v29 event IDs across 7 channels every 15 seconds; sources and alert projection have explicit partial/permission health. Services route provides bounded SCM enumeration (512 services, 16 pages), query-only startup-type lookup, separate output-only IPC, schema validation, and searchable WinUI list. No service management actions. Release build: 0 warnings/errors; full suite is now 59 passed. Remaining event parity: PowerShell Sigma/AMSI, richer detection, push subscriptions, Sysmon/ETW. See docs/WINDOWS_EVENTS.md."
     },
     {
       "id": "DN-005",
@@ -102,7 +102,19 @@
         "Benign, suspicious, malformed, and unavailable-data fixtures",
         "No automatic action enabled"
       ],
-      "notes": "Active next slice: normalize current bounded SecurityEventSnapshot observations into stable deduplicated alert records with record-ID evidence, bounded SQLite retention, and a visible read-only alert route. Do not invent detection confidence; severity comes only from the fixed event catalog. Preserve metadata-only defaults. A v29 alert-semantics analysis was attempted, but the agent hit its usage limit without returning; mapping still needed. A separate architecture review also hit the usage limit; no files changed."
+      "files": [
+        "src/Downpour.Contracts/ServiceHealthSnapshot.cs",
+        "src/Downpour.Service/SecurityAlertRepository.cs",
+        "src/Downpour.Service/SecurityEventMonitorService.cs",
+        "src/Downpour.Service/SecurityAlertPipeWorker.cs",
+        "src/Downpour.Service/SecurityAlertControlPipeWorker.cs",
+        "src/Downpour.Service/SecurityAlertSnapshotStore.cs",
+        "src/Downpour.Core/SecurityAlertClient.cs",
+        "src/Downpour.Desktop/Pages/AlertsPage.xaml",
+        "src/Downpour.Desktop/Pages/AlertsPage.xaml.cs",
+        "tests/Downpour.Tests/SecurityAlertRepositoryTests.cs"
+      ],
+      "notes": "First connected slice implemented locally: validated SecurityEventSnapshot observations become event-record-keyed stable alerts, with SHA-256 IDs, 30-day/10,000-row SQLite retention, five-minute 4625 burst dedup, local expected-state acknowledgment/suppression/reopen, strict bounded control IPC, source health, and Alerts UI. No detection confidence is invented; severity/title/technique come only from fixed catalog rules. This does not implement cross-source detection, Sigma/AMSI content analysis, Sysmon/ETW, or full v29 lifecycle. Release build is clean and the full suite passes 59 tests. Two analysis agents hit usage limits before returning; no source changes from them."
     },
     {
       "id": "DN-006",

@@ -84,6 +84,31 @@ public sealed record SecurityEventSnapshot(
     int SourcesQueried,
     IReadOnlyList<string> Warnings);
 
+public sealed record SecurityAlert(
+    string AlertId,
+    string Title,
+    string Severity,
+    string Technique,
+    string LogName,
+    string Provider,
+    int EventId,
+    long? RecordId,
+    DateTimeOffset EventTimeUtc,
+    DateTimeOffset FirstSeenUtc,
+    DateTimeOffset LastSeenUtc,
+    int Occurrences,
+    string State);
+
+public sealed record SecurityAlertSnapshot(
+    int SchemaVersion,
+    DateTimeOffset CapturedAtUtc,
+    int TotalCount,
+    IReadOnlyList<SecurityAlert> Alerts,
+    IReadOnlyList<string> Warnings);
+
+public sealed record AlertStateChangeRequest(int SchemaVersion, Guid RequestId, string AlertId, string ExpectedState, string State);
+public sealed record AlertStateChangeResponse(int SchemaVersion, Guid RequestId, bool Accepted, string ResultCode);
+
 public static class SecurityEventCatalog
 {
     private static readonly IReadOnlyDictionary<(string Log, int Id), SecurityEventRule> Rules =
