@@ -8,7 +8,7 @@
       "taskId": "DN-004",
       "status": "active",
       "heartbeatUtc": "2026-10-04T16:13:00Z",
-      "notes": "Checkpoint ca38876 hardening SQLite journal pushed. Current Services route slice is integrated locally: bounded read-only SCM enumeration, separate output-only pipe, schema-validating client, search/30s refresh UI. Release build 0 warnings/errors; 54 tests pass. Next commit/push this slice. Three-agent review established that portable mode runs as current user, no installer exists, and actions need a dedicated restricted service identity and authenticated consent."
+      "notes": "Checkpoint 24aed93 pushed: bounded read-only SCM enumeration, separate output-only pipe, schema-validating client, search/30s refresh UI. Release build 0 warnings/errors; 54 tests pass. Three-agent review established that portable mode runs as current user, no installer exists, and actions need a dedicated restricted service identity and authenticated consent."
     },
     {
       "id": "v29_action_map",

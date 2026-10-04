@@ -5,7 +5,7 @@
 **Repository:** private [christiand0797/downpour-next](https://github.com/christiand0797/downpour-next)  
 **Local path:** `C:\Users\purpl\Desktop\downpour v2`  
 **Branch:** `main`  
-**Latest pushed checkpoint before this slice:** `ca38876 Harden operation journal recovery state` on `main`. The Services inventory work is verified locally and is being committed/pushed as the next source checkpoint; the GitHub binary remains the older `v0.1.2-preview` bundle. Do not create further preview releases per user direction.
+**Latest pushed checkpoint:** `24aed93 Add read-only Windows services inventory` on `main`. Source and documentation are pushed; the GitHub binary remains the older `v0.1.2-preview` bundle. Do not create further preview releases per user direction.
 
 The current implementation includes 512 bounded process rows, direct-EXE sensor auto-start, truthful service connectivity UI, oversized IPC handling, and a direct `.bat` launcher. Telemetry pipe DACLs now grant LocalSystem and the service's current user; same-user integration works and the named-pipe servers remain outbound-only. Latest pushed Release build: 0 warnings/errors; 51 tests passed. Product goal remains full functional v29 parity, including controlled/audited system-changing actions; observe-only behavior is a current stage, not the product goal. The last build artifacts in the ignored `artifacts/` directory are local and are not attached to the existing GitHub release.
 

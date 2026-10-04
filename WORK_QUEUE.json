@@ -90,7 +90,7 @@
         "Event source health and permission failures are visible",
         "No system-changing actions"
       ],
-      "notes": "Network inventory provides local interface counters/rates and up to 256 TCP endpoints. Event monitor continuously samples 35 allow-listed v29 event IDs across 7 fixed Windows channels every 15 seconds, with metadata-only IPC, source health, filters and 4625 aggregation; source/docs pushed. Services route now has bounded SCM enumeration (512 services, 16 pages), query-only startup-type lookup, separate output-only IPC, schema validation, searchable WinUI list, and explicit partial/access-denied handling. No service management actions. Release build: 0 warnings/errors; full suite: 54 passed. Remaining event parity: PowerShell Sigma/AMSI analysis, richer detection, push subscriptions, alert lifecycle, Sysmon/ETW. See docs/WINDOWS_EVENTS.md."
+      "notes": "Network inventory provides local interface counters/rates and up to 256 TCP endpoints. Event monitor continuously samples 35 allow-listed v29 event IDs across 7 fixed Windows channels every 15 seconds, with metadata-only IPC, source health, filters and 4625 aggregation; source/docs pushed. Services route now has bounded SCM enumeration (512 services, 16 pages), query-only startup-type lookup, separate output-only IPC, schema validation, searchable WinUI list, and explicit partial/access-denied handling. No service management actions. Release build: 0 warnings/errors; full suite: 54 passed. Services slice pushed as 24aed93. Remaining event parity: PowerShell Sigma/AMSI analysis, richer detection, push subscriptions, alert lifecycle, Sysmon/ETW. See docs/WINDOWS_EVENTS.md."
     },
     {
       "id": "DN-005",
