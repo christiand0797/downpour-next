@@ -110,11 +110,13 @@
         "src/Downpour.Service/SecurityAlertControlPipeWorker.cs",
         "src/Downpour.Service/SecurityAlertSnapshotStore.cs",
         "src/Downpour.Core/SecurityAlertClient.cs",
+        "src/Downpour.Core/AlertInvestigationExport.cs",
         "src/Downpour.Desktop/Pages/AlertsPage.xaml",
         "src/Downpour.Desktop/Pages/AlertsPage.xaml.cs",
-        "tests/Downpour.Tests/SecurityAlertRepositoryTests.cs"
+        "tests/Downpour.Tests/SecurityAlertRepositoryTests.cs",
+        "tests/Downpour.Tests/AlertInvestigationExportTests.cs"
       ],
-      "notes": "First connected slice pushed in 5427953 and packaged in release v0.1.4: validated SecurityEventSnapshot observations become event-record-keyed stable alerts, with SHA-256 IDs, 30-day/10,000-row SQLite retention, five-minute 4625 burst dedup, local expected-state acknowledgment/suppression/reopen, strict bounded control IPC, source health, and Alerts UI. Follow-on source `85ba7d2` adds schema v2 migration and durable false-positive confirmations; matching uses fixed channel/provider/event-ID only, suppresses after three explicit user confirmations, and re-arm reopens only rows automatically suppressed by that rule. Regression coverage keeps individually suppressed findings suppressed. Release v0.1.5 ZIP is published (SHA-256 E3578121CE3C22B2B54CC7C87B44D7D2F0782C0AF6CC85401DADD8705E86B396); build is clean and 63 tests pass. Broader work remains: cross-source detections, Sigma/AMSI, Sysmon/ETW, investigation/export, and full v29 lifecycle."
+      "notes": "First connected slice pushed in 5427953 and packaged in release v0.1.4: validated SecurityEventSnapshot observations become event-record-keyed stable alerts, with SHA-256 IDs, 30-day/10,000-row SQLite retention, five-minute 4625 burst dedup, local expected-state acknowledgment/suppression/reopen, strict bounded control IPC, source health, and Alerts UI. Follow-on source `85ba7d2` adds schema v2 migration and durable false-positive confirmations; matching uses fixed channel/provider/event-ID only, suppresses after three explicit user confirmations, and re-arm reopens only rows automatically suppressed by that rule. Regression coverage keeps individually suppressed findings suppressed. Current slice adds a UI file-save picker for a point-in-time metadata-only JSON investigation export, contract revalidation, and a 1 MiB cap; no raw event message or user content. Release build is clean (0 warnings/errors); 65 tests pass. Remaining in this slice: push source/docs, refresh `DownpourNext-Portable/`, and publish a matching stable ZIP/hash."
     },
     {
       "id": "DN-006",

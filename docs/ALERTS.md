@@ -31,6 +31,10 @@ The service stores `alerts.v1.db` under `%LOCALAPPDATA%\DownpourNext\state`, in 
 
 The control pipe runs under the same signed-in account as the portable UI. Its ACL is a local boundary against other unprivileged accounts, not protection from malware already running as the same user. System-changing action authorization still requires an installed restricted service identity, authenticated client identity, explicit consent, durable action audit, and recovery design.
 
+## Investigation export
+
+The Alerts page offers a user-initiated JSON investigation export through the Windows save picker. It exports one validated point-in-time snapshot of up to the latest 512 retained alerts, including fixed titles/rules, alert IDs, severity, technique, event source IDs, timestamps, occurrence count, triage state, and source-health warnings. It does not include raw Windows event XML/messages, usernames, command lines, or file contents. The export builder rejects snapshots outside the existing alert contract and caps serialized output at 1 MiB. The user chooses the destination; Downpour does not upload or automatically share the report. The resulting file becomes user-controlled data at that destination.
+
 ## Remaining alert parity
 
-This slice does not yet include cross-source detection correlation, Sigma/AMSI script analysis, Sysmon/ETW, alert grouping by campaign or process, investigation timelines, notification routing, richer user-defined suppression criteria, or the full v29 alert lifecycle. Keep the existing Events route as the raw bounded observation view and use Alerts for retained unique event findings.
+This slice does not yet include cross-source detection correlation, Sigma/AMSI script analysis, Sysmon/ETW, alert grouping by campaign or process, rich investigation timelines, notification routing, richer user-defined suppression criteria, or the full v29 alert lifecycle. Keep the existing Events route as the raw bounded observation view and use Alerts for retained unique event findings.

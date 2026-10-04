@@ -26,6 +26,11 @@ public partial class App : Application
             ? app._sensorService.EnsureRunningAsync()
             : Task.CompletedTask;
 
+    internal static IntPtr MainWindowHandle =>
+        Current is App app && app._window is not null
+            ? WinRT.Interop.WindowNative.GetWindowHandle(app._window)
+            : IntPtr.Zero;
+
     internal static void MarkSensorServiceConnected() =>
         SensorServiceStatusHint = "The desktop app is running and connected to the local sensor service.";
     

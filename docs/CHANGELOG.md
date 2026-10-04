@@ -29,6 +29,7 @@
 
 ## Unreleased
 
+- Added a user-selected JSON investigation export for the latest validated alert snapshot, with an explicit local save picker, metadata-only fields, contract revalidation, and a 1 MiB size ceiling.
 - Added persistent false-positive rule review: three explicit confirmations for the same fixed channel/provider/event-ID fingerprint suppress future matching alert rows; Re-arm removes that rule and reopens only rows it suppressed. Added schema-v1-to-v2 migration and retry-safe confirmation audit records. This never inspects event message text and does not perform OS actions.
 - Added a service-side SQLite operation journal with schema versioning, transactional state/event writes, path-free object IDs, replay-safe event IDs, constrained transitions, restart-visible pending recovery, protected current-user/SYSTEM state directory, and append-only event triggers. It does not authorize or execute system actions.
 - Restricted system, network, and driver telemetry pipes to the sensor service's current Windows account and LocalSystem; all servers remain one-way from service to desktop.

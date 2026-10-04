@@ -7,6 +7,8 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using Windows.UI;
+using Windows.Storage;
+using Windows.Storage.Pickers;
 
 namespace Downpour_Desktop.Pages;
 
@@ -15,8 +17,10 @@ public sealed partial class AlertsPage : Page
     private readonly SecurityAlertClient _client = new();
     private readonly DispatcherQueueTimer _refreshTimer;
     private IReadOnlyList<SecurityAlert> _allAlerts = [];
+    private SecurityAlertSnapshot? _currentSnapshot;
     private bool _requestInFlight;
     private bool _stateChangeInFlight;
+    private bool _exportInFlight;
 
     public ObservableCollection<SecurityAlertRow> Alerts { get; } = [];
 
@@ -44,6 +48,45 @@ public sealed partial class AlertsPage : Page
 
     private async void Refresh_Click(object sender, RoutedEventArgs e) => await RefreshAsync();
 
+    private async void Export_Click(object sender, RoutedEventArgs e)
+    {
+        var snapshot = _currentSnapshot;
+        if (_exportInFlight || snapshot is null) return;
+        _exportInFlight = true;
+        ExportButton.IsEnabled = false;
+        try
+        {
+            var picker = new FileSavePicker
+            {
+                SuggestedStartLocation = PickerLocationId.DocumentsLibrary,
+                SuggestedFileName = $"Downpour-Investigation-{DateTimeOffset.Now:yyyyMMdd-HHmmss}"
+            };
+            picker.FileTypeChoices.Add("JSON investigation", new List<string> { ".json" });
+            WinRT.Interop.InitializeWithWindow.Initialize(picker, App.MainWindowHandle);
+            var file = await picker.PickSaveFileAsync();
+            if (file is null)
+            {
+                StatusHeadline.Text = "Investigation export cancelled";
+                return;
+            }
+
+            var json = AlertInvestigationExport.CreateJson(snapshot);
+            await FileIO.WriteTextAsync(file, json);
+            StatusHeadline.Text = "Investigation snapshot exported";
+            StatusDetail.Text = $"Saved {snapshot.Alerts.Count:N0} bounded alert records as metadata-only JSON. Event bodies and user content are excluded.";
+        }
+        catch (Exception exception)
+        {
+            StatusHeadline.Text = "Investigation export failed";
+            StatusDetail.Text = $"The report was not confirmed as saved ({exception.GetType().Name}). Choose another local destination and retry.";
+        }
+        finally
+        {
+            _exportInFlight = false;
+            ExportButton.IsEnabled = _currentSnapshot is not null;
+        }
+    }
+
     private async Task RefreshAsync()
     {
         if (_requestInFlight) return;
@@ -61,12 +104,16 @@ public sealed partial class AlertsPage : Page
                 StatusHeadline.Text = "Downpour is running · local alert sensor offline";
                 StatusDetail.Text = $"{App.SensorServiceStatusHint} No cached or substituted alert data is shown.";
                 _allAlerts = [];
+                _currentSnapshot = null;
+                ExportButton.IsEnabled = false;
                 AlertCount.Text = "ALERT STORE OFFLINE";
                 ApplyFilters();
                 return;
             }
 
             App.MarkSensorServiceConnected();
+            _currentSnapshot = snapshot;
+            ExportButton.IsEnabled = !_exportInFlight;
             _allAlerts = snapshot.Alerts;
             var openCount = snapshot.Alerts.Count(alert => alert.State == "Open");
             StatusHeadline.Text = snapshot.Warnings.Count == 0

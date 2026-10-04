@@ -7,9 +7,8 @@
       "role": "primary",
       "taskId": "DN-005",
       "status": "active",
-      "status": "idle",
-      "heartbeatUtc": "2026-10-04T20:37:12Z",
-      "notes": "Completed DN-005 false-positive review slice in commit 85ba7d2 and docs checkpoint e89c4b9; both are pushed. Release v0.1.5 is published with archive SHA-256 E3578121CE3C22B2B54CC7C87B44D7D2F0782C0AF6CC85401DADD8705E86B396. Local DownpourNext-Portable has 764/764 files byte-matched to staging; EXE smoke launch is responsive and bundled service is running. Release build clean (0 warnings/errors); 63/63 tests pass. Next: continue DN-005 cross-source detection/correlation and investigation/export work; then prioritize controlled response foundations before any system-changing capability."
+      "heartbeatUtc": "2026-10-04T20:49:51Z",
+      "notes": "Active DN-005 investigation export slice: Core builder validates snapshot and outputs only approved metadata, max 1 MiB; Alerts page uses WinUI FileSavePicker. Contract/privacy tests pass; Release build is clean (0 warnings/errors) and 65 tests pass. Need push source/docs, build x64 portable, replace local package contents, publish stable release, then update hash/release checkpoint."
     },
     {
       "id": "v29_action_map",

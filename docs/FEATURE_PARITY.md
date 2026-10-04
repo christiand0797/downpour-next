@@ -29,7 +29,7 @@ This project aims to preserve every Downpour v29 capability and improve its usab
 ### 2. Detection and triage
 
 - Port threat ingestion, suspicious process/network analysis, ransomware behavior, vulnerability checks, and intelligence feeds.
-- Extend the first alert slice with cross-source grouping, investigation timeline/evidence, export, and full v29 alert lifecycle while preserving the current local review-state audit.
+- Extend the first alert slice with cross-source grouping, investigation timeline/evidence, and the full v29 alert lifecycle while preserving the current local review-state audit. A user-selected metadata-only JSON export of up to 512 validated alerts is now implemented; it is not yet a correlated case timeline/evidence bundle.
 - Preserve offline behavior and validate feed integrity / cache expiration.
 
 ### 3. Protection controls
