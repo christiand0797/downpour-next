@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page x:Class="Downpour_Desktop.Pages.SecurityEventsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      mc:Ignorable="d">
+    <Grid Padding="24,20,24,30" RowSpacing="14">
+        <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+        <Grid ColumnSpacing="16">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+            <StackPanel Spacing="4">
+                <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Foreground="#FF76DDF5" Text="DOWNPOUR  /  DETECTION  /  WINDOWS EVENTS" />
+                <TextBlock Style="{StaticResource TitleTextBlockStyle}" FontSize="30" Text="Event monitor" />
+                <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Recent service, account, task, audit, logon, process, and PowerShell event metadata." TextWrapping="Wrap" />
+            </StackPanel>
+            <Button Grid.Column="1" Content="Refresh now" Click="Refresh_Click" VerticalAlignment="Center" />
+        </Grid>
+
+        <Border Grid.Row="1" Padding="14,11" CornerRadius="10" Background="#B9081220" BorderBrush="#423EC5D8" BorderThickness="1">
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                <FontIcon Glyph="&#xE9D9;" FontSize="20" Foreground="#FF60DBEE" VerticalAlignment="Center" />
+                <StackPanel Grid.Column="1" Spacing="3">
+                    <TextBlock x:Name="StatusHeadline" FontWeight="SemiBold" Text="Connecting to Windows Event Log" />
+                    <TextBlock x:Name="StatusDetail" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Only fixed allow-listed channels and event IDs are queried. Event message bodies are not collected." TextWrapping="Wrap" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="2" RowSpacing="10">
+            <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
+            <Grid ColumnSpacing="10">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="2*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                <TextBox x:Name="SearchBox" PlaceholderText="Filter events by source, ID, or summary" TextChanged="SearchBox_TextChanged" />
+                <ComboBox x:Name="SeverityFilter" Grid.Column="1" Width="170" SelectedIndex="0" SelectionChanged="SeverityFilter_SelectionChanged">
+                    <ComboBoxItem Content="All severity levels" />
+                    <ComboBoxItem Content="Critical" />
+                    <ComboBoxItem Content="High" />
+                    <ComboBoxItem Content="Medium" />
+                    <ComboBoxItem Content="Low" />
+                    <ComboBoxItem Content="Info" />
+                </ComboBox>
+                <TextBlock x:Name="EventCount" Grid.Column="2" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="0 events" />
+            </Grid>
+            <Grid Grid.Row="1" Padding="12,9" ColumnSpacing="12" Background="#D0091321">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="150" /><ColumnDefinition Width="110" /><ColumnDefinition Width="*" /><ColumnDefinition Width="220" /><ColumnDefinition Width="110" /></Grid.ColumnDefinitions>
+                <TextBlock FontSize="10" FontWeight="SemiBold" CharacterSpacing="65" Text="TIME (LOCAL)" />
+                <TextBlock Grid.Column="1" FontSize="10" FontWeight="SemiBold" CharacterSpacing="65" Text="SEVERITY" />
+                <TextBlock Grid.Column="2" FontSize="10" FontWeight="SemiBold" CharacterSpacing="65" Text="OBSERVATION" />
+                <TextBlock Grid.Column="3" FontSize="10" FontWeight="SemiBold" CharacterSpacing="65" Text="SOURCE / CHANNEL" />
+                <TextBlock Grid.Column="4" FontSize="10" FontWeight="SemiBold" CharacterSpacing="65" Text="EVENT / ATT&amp;CK" />
+            </Grid>
+            <ListView x:Name="EventList" Grid.Row="2" ItemsSource="{x:Bind Events}" SelectionMode="None" IsItemClickEnabled="False" Background="#A807101D">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Padding="12,9" ColumnSpacing="12">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="150" /><ColumnDefinition Width="110" /><ColumnDefinition Width="*" /><ColumnDefinition Width="220" /><ColumnDefinition Width="110" /></Grid.ColumnDefinitions>
+                            <TextBlock Text="{Binding Time}" FontFamily="Consolas" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="1" Text="{Binding Severity}" Foreground="{Binding SeverityBrush}" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="2" Text="{Binding Summary}" FontSize="12" TextWrapping="Wrap" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="3" Text="{Binding Source}" FontSize="10" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="4" Text="{Binding Technique}" FontFamily="Consolas" FontSize="10" Foreground="#FF91D9E7" VerticalAlignment="Center" />
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+                <ListView.Footer>
+                    <TextBlock x:Name="EmptyState" Padding="14" FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="No matching events were reported." TextWrapping="Wrap" />
+                </ListView.Footer>
+            </ListView>
+        </Grid>
+
+        <TextBlock Grid.Row="3" x:Name="SourceWarnings" FontSize="11" Foreground="#FFFFC577" TextWrapping="Wrap" />
+    </Grid>
+</Page>

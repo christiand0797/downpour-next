@@ -4,7 +4,9 @@
 
 - Restricted system, network, and driver telemetry pipes to the sensor service's current Windows account and LocalSystem; all servers remain one-way from service to desktop.
 - Added `Start-Downpour-Next.bat` for direct desktop launch. The desktop launches the bundled sensor service when needed.
-- The next parity slice is Windows Event Log sensing. Product parity includes explicit, audited, recoverable system actions; this is not intended to remain read-only.
+- Added service-backed Windows Event Log sensing for 35 fixed v29 event/channel pairs across seven channels, with bounded metadata-only IPC, per-source health, severity/search filters, and five-minute Security 4625 burst aggregation.
+- Product parity includes explicit, audited, recoverable system actions; this is not intended to remain read-only. Next: alert lifecycle, durable audit/recovery storage, and a narrow response broker before enabling quarantine or driver actions.
+- Verification for this source checkpoint: Release build has 0 warnings/errors; 36 tests pass. No new preview release was created.
 
 ## v0.1.2-preview — 2026-10-04
 

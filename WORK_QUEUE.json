@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-03",
+  "updatedAt": "2026-10-04",
   "tasks": [
     {
       "id": "DN-001",
@@ -72,9 +72,16 @@
         "src/Downpour.Contracts/ServiceHealthSnapshot.cs",
         "src/Downpour.Service/NetworkInventoryProvider.cs",
         "src/Downpour.Service/NetworkInventoryPipeWorker.cs",
+        "src/Downpour.Service/SecurityEventProvider.cs",
+        "src/Downpour.Service/SecurityEventMonitorService.cs",
+        "src/Downpour.Service/SecurityEventSnapshotStore.cs",
+        "src/Downpour.Service/SecurityEventPipeWorker.cs",
         "src/Downpour.Core/NetworkInventoryClient.cs",
+        "src/Downpour.Core/SecurityEventClient.cs",
         "src/Downpour.Desktop/Pages/NetworkPage.xaml",
         "src/Downpour.Desktop/Pages/NetworkPage.xaml.cs",
+        "src/Downpour.Desktop/Pages/SecurityEventsPage.xaml",
+        "src/Downpour.Desktop/Pages/SecurityEventsPage.xaml.cs",
         "tests/Downpour.Tests"
       ],
       "acceptance": [
@@ -83,7 +90,7 @@
         "Event source health and permission failures are visible",
         "No system-changing actions"
       ],
-      "notes": "Read-only per-interface byte counters and sampled receive/send rates plus up to 256 active TCP endpoints are implemented over an output-only schema-v1 pipe with 1 MiB/2 s client bounds. Network view preserves gaps in 60-sample history and shows capture warnings. Next implementation slice: fixed allow-list Windows Event Log provider, typed minimized event records, bounded IPC, and a working event-monitor screen. ETW/Sysmon sources remain to do."
+      "notes": "Network inventory provides local interface counters/rates and up to 256 TCP endpoints. Event monitor now continuously samples 35 allow-listed v29 event IDs across 7 fixed Windows channels every 15 seconds while the service runs. Records contain bounded metadata only; raw event/script bodies are not collected. 4625 records are suppressed individually and aggregated into a HIGH alert at 10 events/300 seconds. Page has severity/search filters and explicit per-channel errors. Build/test: 0 warnings/errors; 36 tests pass including fixed source/event allowlist, classification, client bounds, burst threshold and current-user IPC round-trip. Remaining: v29 PowerShell Sigma/AMSI analysis, richer burst/rule detection, push subscriptions, normalized alert lifecycle, Sysmon/ETW, and source-to-detection parity. See docs/WINDOWS_EVENTS.md."
     },
     {
       "id": "DN-005",
@@ -94,7 +101,8 @@
         "Each active source detection has a stable ID and evidence contract",
         "Benign, suspicious, malformed, and unavailable-data fixtures",
         "No automatic action enabled"
-      ]
+      ],
+      "notes": "Next: turn current event observations into normalized, deduplicated alerts with stable IDs, severity/confidence, evidence references, bounded retention, suppression/acknowledgment state, and test fixtures. Preserve metadata-only defaults; assess safe event push subscription and privacy-preserving 4104 analysis separately."
     },
     {
       "id": "DN-006",
@@ -119,7 +127,7 @@
         "Backup and restore verification",
         "Privacy minimization"
       ],
-      "notes": "Partial implementation shipped in this checkpoint: one Settings route persists the wired visual preferences (rain effects, reduced motion, auto storm cycle) in per-user packaged local settings and labels fallback behavior. Settings toggle handlers were moved out of XAML to avoid early invocation during control construction after a user-reported crash; build/tests and process startup pass, but native interactive route confirmation remains outstanding. No secrets are stored. Transactional schema upgrades, DPAPI secrets, backup/restore, user-configurable scan/privacy policies, and audit/history storage remain outstanding."
+      "notes": "Settings persists visual preferences only. Durable storage is a prerequisite for effectful parity: versioned schema/migration, restrictive per-user/service ACLs, integrity-protected audit records, retention/rotation, crash recovery, backup/restore, and DPAPI-backed secrets where required. Never persist secrets in plain text."
     },
     {
       "id": "DN-008",
@@ -132,7 +140,8 @@
         "Audit outcome and rollback",
         "Denial, timeout, race, and recovery tests",
         "Feature switches default off"
-      ]
+      ],
+      "notes": "Critical prerequisite before any destructive/system-changing feature. Define a versioned narrow action catalog, policy validation, explicit per-action consent, default-deny, dry-run preview, idempotency, bounded execution, structured audit, cancellation/timeout, and recovery. First candidate: quarantine/restore with canonical path/file-handle and hash rechecks, encrypted staged copy, restrictive ACL, write-ahead manifest, atomic/copy-verify-delete, crash reconciliation, and exact-hash verified restore. No arbitrary shell/command execution."
     },
     {
       "id": "DN-009",

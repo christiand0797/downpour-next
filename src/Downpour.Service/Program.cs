@@ -8,9 +8,13 @@ builder.Services.AddWindowsService(options =>
 builder.Services.AddSingleton<SystemSnapshotProvider>();
 builder.Services.AddSingleton<DriverInventoryProvider>();
 builder.Services.AddSingleton<NetworkInventoryProvider>();
+builder.Services.AddSingleton<SecurityEventProvider>();
+builder.Services.AddSingleton<SecurityEventSnapshotStore>();
 builder.Services.AddHostedService<SnapshotPipeWorker>();
 builder.Services.AddHostedService<DriverInventoryPipeWorker>();
 builder.Services.AddHostedService<NetworkInventoryPipeWorker>();
+builder.Services.AddHostedService<SecurityEventMonitorService>();
+builder.Services.AddHostedService<SecurityEventPipeWorker>();
 
 var host = builder.Build();
 host.Run();

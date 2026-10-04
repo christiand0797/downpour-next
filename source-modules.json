@@ -149,9 +149,9 @@
   {
     "family": "Core Engines & Detection Modules",
     "module": "event_log_monitor.py",
-    "description": "Windows Event Log watch: 7045/4698/4720/1102/104/4104/4625.",
+    "description": "Partial parity: service-backed fixed channel/ID polling and metadata-only event observations; v29 push delivery, alert lifecycle, and investigation workflow remain.",
     "sourceStatus": "Active",
-    "migrationStatus": "planned"
+    "migrationStatus": "in-progress"
   },
   {
     "family": "Core Engines & Detection Modules",
@@ -170,7 +170,7 @@
   {
     "family": "Core Engines & Detection Modules",
     "module": "event_push_monitor.py",
-    "description": "EvtSubscribe push delivery of the same hostile-event set (zero poll latency) + 4104→Sigma + 4104→AMSI bridge.",
+    "description": "v29 push delivery, 4104-to-Sigma/AMSI bridge, and low-latency hostile-event subscription; still outstanding in Downpour Next.",
     "sourceStatus": "Active",
     "migrationStatus": "planned"
   },

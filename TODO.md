@@ -4,6 +4,9 @@ This checklist tracks current implementation state; the detailed order, dependen
 
 ## 2026-10-04 continuation checkpoint
 
+- Security Events is now a real service-backed slice: 35 fixed v29 event/channel pairs across seven sources, 15-second service polling, bounded metadata-only IPC, per-source health, severity/search filters, and 4625 burst aggregation. Release build: 0 warnings/errors; 36 tests pass. `docs/WINDOWS_EVENTS.md` describes scope and missing detection parity. Source and docs are pending the next push; no new preview release is to be created.
+- Three parallel agents mapped v29 action priorities, reviewed the event work, and wired the Security Events route. Their findings are captured in DN-005/DN-007/DN-008 and `SHARED_CONTEXT.md`. Begin action work with durable audit/recovery foundations and narrow quarantine/restore operations; do not enable a broad arbitrary-command broker.
+
 - Desktop EXE now attempts to start the bundled read-only sensor service itself, reuses an existing service, and stops only a child service it owns on graceful window close. UI labels the app as running while clearly identifying unavailable local telemetry as `SERVICE OFFLINE`; a healthy snapshot is labeled `ONLINE`.
 - Process inventory is expanded from 8 to up to 512 rows with bounded names/payloads. Windows PID 0 (`Idle`) is excluded because the snapshot contract requires a real process ID; malformed oversized pipe messages return an unavailable result instead of escaping the client.
 - Verification: Release build 0 warnings/errors; `dotnet test Downpour.slnx -c Release`: 22 passed; self-contained x64 direct-launch smoke test confirmed service auto-start and graceful shutdown. Source commit `03ca465` is pushed and [v0.1.2-preview](https://github.com/christiand0797/downpour-next/releases/tag/v0.1.2-preview) contains the 148 MiB ZIP (SHA-256 `A8E51B054DE44956B9959B74F6E92878987470F41015273892EE24964E2EF5C3`).

@@ -5,10 +5,10 @@
     {
       "id": "codex-primary",
       "role": "primary",
-      "taskId": "DN-002",
+      "taskId": "DN-004",
       "status": "active",
-      "heartbeatUtc": "2026-10-04T14:51:01Z",
-      "notes": "Working only in downpour v2 (Downpour Next); old v29 repo is reference-only. Latest pushed source checkpoint: 2f77f9a, following ACL hardening 1e9af4b. Current-user-only pipe DACL and direct Desktop BAT launcher are committed. Release build has 0 warnings/errors and 22 tests pass after ACL change. Existing v0.1.2-preview remains the only published binary bundle; user asked to stop creating preview releases. Goal is full functional v29 feature parity plus improvements, including guarded audited response actions; current read-only telemetry is only a stage. Next: implement real Windows event-log sensing and continue DN-004; prioritize DN-008 action broker and driver lifecycle after validating safe authorization/recovery design."
+      "heartbeatUtc": "2026-10-04T15:07:00Z",
+      "notes": "Used three parallel agents for v29 parity mapping, event slice review, and UI route wiring. Security Events implementation is complete in the working tree: 35 fixed event/channel pairs across 7 channels, continuous 15-second service polling, bounded metadata-only IPC, 4625 five-minute burst threshold, explicit source health, searchable route. Release build 0 warnings/errors; 36 tests pass. Changes/docs are pending push. User wants full functional parity including guarded actions and no more preview releases. Next: push this checkpoint, then design DN-007 durable audit/recovery storage and DN-008 narrow consent-based quarantine/restore broker before effectful features."
     }
   ]
 }

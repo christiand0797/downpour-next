@@ -352,6 +352,8 @@ public sealed partial class MainWindow : Window
             NavFrame.Navigate(typeof(DriverPage));
         else if (capability.RouteId.Equals("network", StringComparison.OrdinalIgnoreCase))
             NavFrame.Navigate(typeof(NetworkPage));
+        else if (capability.RouteId.Equals("security-events", StringComparison.OrdinalIgnoreCase))
+            NavFrame.Navigate(typeof(SecurityEventsPage));
         else if (capability.RouteId.Equals("intel", StringComparison.OrdinalIgnoreCase))
             NavFrame.Navigate(typeof(IntelPage));
         else if (capability.RouteId.Equals("settings", StringComparison.OrdinalIgnoreCase))
@@ -381,7 +383,8 @@ public sealed partial class MainWindow : Window
             : args.Content is HomePage ? "dashboard"
             : args.Content is ProcessPage ? "processes"
             : args.Content is DriverPage ? "drivers"
-            : args.Content is NetworkPage ? "network" : null;
+            : args.Content is NetworkPage ? "network"
+            : args.Content is SecurityEventsPage ? "security-events" : null;
         if (routeId is null && args.Content is IntelPage) routeId = "intel";
         if (routeId is null && args.Content is SettingsPage) routeId = "settings";
 

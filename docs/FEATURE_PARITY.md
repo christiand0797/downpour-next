@@ -1,6 +1,6 @@
 # Feature parity and migration plan
 
-This project aims to preserve every Downpour v29 capability and improve its usability, performance, and maintainability. [`../capabilities.json`](../capabilities.json) preserves the 33 original UI destinations and adds one new Drivers destination. [`../source-modules.json`](../source-modules.json) tracks all 71 entries in the source module map and retains their original active, legacy, reference, orphaned, or declined status. These lists are starting inventories; reconcile them against the source's wired features, settings, scheduled jobs, rules, data stores, and workflows before claiming parity.
+This project aims to preserve every Downpour v29 capability and improve its usability, performance, and maintainability. [`../capabilities.json`](../capabilities.json) preserves the 33 original UI destinations and adds Drivers and Security Events destinations. [`../source-modules.json`](../source-modules.json) tracks all 71 entries in the source module map and retains their original active, legacy, reference, orphaned, or declined status. These lists are starting inventories; reconcile them against the source's wired features, settings, scheduled jobs, rules, data stores, and workflows before claiming parity.
 
 ## Principles
 
@@ -21,7 +21,7 @@ This project aims to preserve every Downpour v29 capability and improve its usab
 
 ### 1. Observe and inventory
 
-- Port process, network, system resource, and Windows service snapshots. System/process and network adapter/TCP inventories are live read-only slices; Windows event sources and service inventory remain outstanding.
+- Port process, network, system resource, Windows event, and Windows service snapshots. System/process and network adapter/TCP inventories are live read-only slices. Windows Event Log now samples 35 v29 event IDs across seven fixed channels every 15 seconds while the service runs; the page shows bounded metadata and source health. It does not yet match continuous push subscriptions, script-content Sigma/AMSI analysis, Sysmon/ETW, normalized alert lifecycle, or response actions. Windows service inventory remains outstanding.
 - Add health and freshness states to the dashboard.
 - Use a single sensor snapshot per interval, then fan it out to consumers.
 - Reconcile the registry against every feature, watcher, setting, and background task in the Python source.
