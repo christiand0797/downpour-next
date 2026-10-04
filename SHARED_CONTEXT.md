@@ -9,7 +9,7 @@
 
 Portable validation: the archive contains 764 files including the Desktop EXE, bundled service EXE, BAT/CMD launchers, and portable readme. Every staged file hash matches the local `DownpourNext-Portable/` copy. The launched app is responsive; its local sensor service's named pipe returned a valid live system snapshot. The save-picker export UI compiled and contract tests passed, but its native interactive click path still needs confirmation in the desktop session.
 
-Package verification after publish: ZIP contains the desktop EXE, bundled service EXE, BAT/CMD launchers, and portable readme. The local `DownpourNext-Portable/` contains all 764 packaged files byte-for-byte identical to the staging output. Direct EXE smoke launch is running and responsive, with the bundled `Downpour.Service.exe` also running. Source/docs are pushed to `main` through `e89c4b9`.
+The package was built from code commit `d305c2a`; release metadata and handoff docs are committed on `main` through `bc8ee0a`. The native export save-picker click path is the next manual verification item.
 
 The current implementation includes 512 bounded process rows, direct-EXE sensor auto-start, truthful service connectivity UI, oversized IPC handling, and a direct `.bat` launcher. Telemetry pipe DACLs now grant LocalSystem and the service's current user; same-user integration works and the named-pipe servers remain outbound-only. A self-contained x64 runtime is built into both `DownpourNext-Portable/` (local root folder) and ignored build artifacts. Product goal remains full functional v29 parity, including controlled/audited system-changing actions; observe-only behavior is a current stage, not the product goal.
 
