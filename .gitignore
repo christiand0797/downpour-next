@@ -10,3 +10,5 @@
 *.appxbundle
 TestResults/
 artifacts/
+DownpourNext-Portable/
+DownpourNext-win-x64-*.zip

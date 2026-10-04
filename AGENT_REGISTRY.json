@@ -5,10 +5,10 @@
     {
       "id": "codex-primary",
       "role": "primary",
-      "taskId": "DN-004",
+      "taskId": "DN-005",
       "status": "active",
       "heartbeatUtc": "2026-10-04T16:13:00Z",
-      "notes": "Checkpoint 24aed93 pushed: bounded read-only SCM enumeration, separate output-only pipe, schema-validating client, search/30s refresh UI. Release build 0 warnings/errors; 54 tests pass. Three-agent review established that portable mode runs as current user, no installer exists, and actions need a dedicated restricted service identity and authenticated consent."
+      "notes": "Source pushed through ce0bcd9; release v0.1.3 includes a verified portable x64 ZIP and extracted package exists in DownpourNext-Portable/. Release build 0 warnings/errors, 54 tests passed, and BAT launcher smoke-check started the bundled desktop and service. Latest local changes update docs/README/ignore rules for packaging; commit/push them before the next code slice. Next active task DN-005 is the normalized persistent event-alert view. Two analysis agents exhausted usage before returning; no edits were made by those agents. Portable service runs as the current user, so system-changing features still need an isolated trusted broker."
     },
     {
       "id": "v29_action_map",

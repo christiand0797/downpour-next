@@ -95,14 +95,14 @@
     {
       "id": "DN-005",
       "title": "Port alert pipeline, detection engines, and parity fixtures",
-      "status": "queued",
+      "status": "in_progress",
       "priority": "high",
       "acceptance": [
         "Each active source detection has a stable ID and evidence contract",
         "Benign, suspicious, malformed, and unavailable-data fixtures",
         "No automatic action enabled"
       ],
-      "notes": "Next: turn current event observations into normalized, deduplicated alerts with stable IDs, severity/confidence, evidence references, bounded retention, suppression/acknowledgment state, and test fixtures. Preserve metadata-only defaults; assess safe event push subscription and privacy-preserving 4104 analysis separately."
+      "notes": "Active next slice: normalize current bounded SecurityEventSnapshot observations into stable deduplicated alert records with record-ID evidence, bounded SQLite retention, and a visible read-only alert route. Do not invent detection confidence; severity comes only from the fixed event catalog. Preserve metadata-only defaults. A v29 alert-semantics analysis was attempted, but the agent hit its usage limit without returning; mapping still needed. A separate architecture review also hit the usage limit; no files changed."
     },
     {
       "id": "DN-006",

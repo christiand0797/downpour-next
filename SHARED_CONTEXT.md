@@ -1,13 +1,13 @@
 # Downpour Next shared context
 
-**Updated:** 2026-10-04 (America/Denver; Services inventory checkpoint)
+**Updated:** 2026-10-04 (America/Denver; portable package checkpoint)
 
 **Repository:** private [christiand0797/downpour-next](https://github.com/christiand0797/downpour-next)  
 **Local path:** `C:\Users\purpl\Desktop\downpour v2`  
 **Branch:** `main`  
-**Latest pushed checkpoint:** `24aed93 Add read-only Windows services inventory` on `main`. Source and documentation are pushed; the GitHub binary remains the older `v0.1.2-preview` bundle. Do not create further preview releases per user direction.
+**Latest source checkpoint:** `ce0bcd9 Record services inventory checkpoint` on `main`; packaging documentation is the current local change. The new portable package is published as the non-preview GitHub release [v0.1.3](https://github.com/christiand0797/downpour-next/releases/tag/v0.1.3), asset `DownpourNext-win-x64-ce0bcd9.zip`, SHA-256 `915439E1ECAAABD60DE8D3FE1FC83FF7C2C68BBEEC6F3D14677F1D724DE5C9C7`. Local extracted package is `DownpourNext-Portable/` in the repo root; binaries and ZIP are ignored by git. It is a self-contained unsigned portable development build, not an installer or a full parity claim.
 
-The current implementation includes 512 bounded process rows, direct-EXE sensor auto-start, truthful service connectivity UI, oversized IPC handling, and a direct `.bat` launcher. Telemetry pipe DACLs now grant LocalSystem and the service's current user; same-user integration works and the named-pipe servers remain outbound-only. Latest pushed Release build: 0 warnings/errors; 51 tests passed. Product goal remains full functional v29 parity, including controlled/audited system-changing actions; observe-only behavior is a current stage, not the product goal. The last build artifacts in the ignored `artifacts/` directory are local and are not attached to the existing GitHub release.
+The current implementation includes 512 bounded process rows, direct-EXE sensor auto-start, truthful service connectivity UI, oversized IPC handling, and a direct `.bat` launcher. Telemetry pipe DACLs now grant LocalSystem and the service's current user; same-user integration works and the named-pipe servers remain outbound-only. Latest source Release build: 0 warnings/errors; 54 tests passed. A self-contained x64 runtime was built into both `DownpourNext-Portable/` (local root folder) and ignored build artifacts; BAT launcher smoke test started the Desktop and bundled service. User can launch it from this folder or download release v0.1.3. Product goal remains full functional v29 parity, including controlled/audited system-changing actions; observe-only behavior is a current stage, not the product goal.
 
 ## Goal
 
@@ -68,7 +68,7 @@ Check: Dashboard should show an `ONLINE` observe-only connection and live system
 1. Verify the Settings route opens and saves preferences in a native interactive click-through; continue native route/layout review, especially responsive width on narrow windows.
 2. Continue DN-002 native route/layout review, especially the Settings click-through and narrow/high-DPI widths.
 3. Ingest additional independently allow-listed feeds and correlate with local software inventory.
-4. Add normalized, deduplicated alert lifecycle on top of current event observations, while retaining bounded metadata-only collection until privacy/consent design is complete.
+4. Add normalized, deduplicated alert lifecycle on top of current event observations, while retaining bounded metadata-only collection until privacy/consent design is complete. Old v29 alert mapping agent hit its usage limit before returning; analysis is still needed.
 5. Implement DN-005 normalized alerts/detection fixtures, push event subscriptions, and safe 4104 analysis.
 6. Define a signed installer and dedicated restricted service identity before creating any action IPC. The current portable service runs as the interactive user and must remain observe-only.
 7. Implement quarantine/restore only after client authentication, explicit consent, protected storage, audit-failure handling, and verifiable recovery are in place.

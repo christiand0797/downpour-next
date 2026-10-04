@@ -2,7 +2,7 @@
 
 ## Download a test build
 
-Download the latest Windows x64 bundle from [GitHub Releases](https://github.com/christiand0797/downpour-next/releases). Extract the full ZIP, then double-click `Start-Downpour-Next.bat`, `Start-Downpour-Next.cmd`, or `Downpour.Desktop.exe`. The `.bat` launcher runs the desktop EXE directly; the desktop automatically starts the bundled read-only sensor service when needed and stops the child service when the app closes. If the service is missing or cannot start, the app remains usable and labels sensor telemetry as offline with a reason. This unsigned build is not an installer. See [`docs/BUILD_WINDOWS.md`](docs/BUILD_WINDOWS.md) for requirements and limitations.
+Download [Downpour Next v0.1.3 — Windows x64 portable](https://github.com/christiand0797/downpour-next/releases/tag/v0.1.3). Extract the full ZIP, then double-click `Start-Downpour-Next.bat`, `Start-Downpour-Next.cmd`, or `Downpour.Desktop.exe`. The `.bat` launcher runs the desktop EXE directly; the desktop automatically starts the bundled read-only sensor service when needed and stops the child service when the app closes. If the service is missing or cannot start, the app remains usable and labels sensor telemetry as offline with a reason. This unsigned build is not an installer. See [`docs/BUILD_WINDOWS.md`](docs/BUILD_WINDOWS.md) for requirements and limitations.
 
 Downpour Next is the native Windows rebuild of Downpour. The target is complete feature parity with the current Python application, plus a more capable desktop experience. The implementation is deliberately staged: a visible route is not counted as a port until its sensors, analysis, settings, and response behavior are connected and verified.
 
@@ -12,6 +12,7 @@ Downpour Next is the native Windows rebuild of Downpour. The target is complete 
 - One registry preserves all 33 Downpour destinations and adds a dedicated Drivers route; every route has an honest migration state.
 - The app uses a clear moonless night landscape, a separate realistic crescent overlay, twinkling stars, animated rain, aurora, and occasional upper-sky lightning. The Dashboard cycles drizzle, storm, thunderstorm, and hurricane modes; every mode keeps rain active, scales its speed/visibility, and changes wind/lightning behavior.
 - Dashboard, Processes, Drivers, and Network consume live read-only system/process, loaded-kernel-driver, adapter-throughput, and TCP endpoint data from the service. Network history shows gaps when samples are unavailable.
+- Services and Security Events show bounded local read-only Windows service inventory and allow-listed event metadata. The current package does not perform system-changing actions.
 - Windows service uses a restricted, outbound-only local named pipe and performs no system-changing actions.
 - No original detection, scanning, remediation, or hardening engine has been ported yet.
 

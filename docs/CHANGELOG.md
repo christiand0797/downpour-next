@@ -1,5 +1,14 @@
 # Downpour Next changelog
 
+## v0.1.3 — runnable Windows x64 package
+
+- Added a self-contained portable Windows x64 package with `Downpour.Desktop.exe`, the bundled local sensor service, a BAT launcher, a CMD launcher, and a portable readme.
+- Added the working read-only Windows Services inventory page with service state, startup type, search, and a separate bounded service IPC channel.
+- The desktop EXE starts and connects to the bundled service in the tested local package. No separate .NET runtime is required.
+- Release build: 0 warnings/errors. Test suite: 54 passed. Direct EXE smoke check kept the UI alive and found its bundled service process.
+- Archive: `DownpourNext-win-x64-ce0bcd9.zip`; SHA-256: `915439E1ECAAABD60DE8D3FE1FC83FF7C2C68BBEEC6F3D14677F1D724DE5C9C7`.
+- This is an unsigned portable development build, not an installer or a claim of full v29 parity. System-changing security and driver actions are not available yet.
+
 ## Unreleased
 
 - Added a service-side SQLite operation journal with schema versioning, transactional state/event writes, path-free object IDs, replay-safe event IDs, constrained transitions, restart-visible pending recovery, protected current-user/SYSTEM state directory, and append-only event triggers. It does not authorize or execute system actions.
