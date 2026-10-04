@@ -326,6 +326,8 @@ public sealed partial class MainWindow : Window
             NavFrame.Navigate(typeof(DriverPage));
         else if (capability.RouteId.Equals("network", StringComparison.OrdinalIgnoreCase))
             NavFrame.Navigate(typeof(NetworkPage));
+        else if (capability.RouteId.Equals("intel", StringComparison.OrdinalIgnoreCase))
+            NavFrame.Navigate(typeof(IntelPage));
         else
             NavFrame.Navigate(typeof(CapabilityPage), capability);
     }
@@ -352,6 +354,7 @@ public sealed partial class MainWindow : Window
             : args.Content is ProcessPage ? "processes"
             : args.Content is DriverPage ? "drivers"
             : args.Content is NetworkPage ? "network" : null;
+        if (routeId is null && args.Content is IntelPage) routeId = "intel";
 
         if (routeId is null || !_routeItems.TryGetValue(routeId, out var item)) return;
         _currentRouteId = routeId;

@@ -7,8 +7,17 @@
       "title": "Fix and integration-test local snapshot pipe authorization",
       "status": "completed",
       "priority": "critical",
-      "files": ["src/Downpour.Service/SnapshotPipeWorker.cs", "src/Downpour.Core/SystemSnapshotClient.cs", "tests/Downpour.Tests"],
-      "acceptance": ["Authenticated desktop user reads a valid schema-v1 snapshot", "No anonymous or Everyone ACE is present", "Server pipe is outbound-only", "Client connection and server wait are time-bounded"],
+      "files": [
+        "src/Downpour.Service/SnapshotPipeWorker.cs",
+        "src/Downpour.Core/SystemSnapshotClient.cs",
+        "tests/Downpour.Tests"
+      ],
+      "acceptance": [
+        "Authenticated desktop user reads a valid schema-v1 snapshot",
+        "No anonymous or Everyone ACE is present",
+        "Server pipe is outbound-only",
+        "Client connection and server wait are time-bounded"
+      ],
       "notes": "Updated the DACL for authenticated local readers while retaining an outbound-only server endpoint. Manual schema-v1 read and integration test are implemented; re-run the test suite before handoff. No Everyone ACE and no client writes."
     },
     {
@@ -16,8 +25,16 @@
       "title": "Validate dashboard and process route in the packaged Windows app",
       "status": "in_progress",
       "priority": "high",
-      "files": ["src/Downpour.Desktop/Pages/HomePage.xaml", "src/Downpour.Desktop/Pages/ProcessPage.xaml"],
-      "acceptance": ["Online telemetry appears in both routes", "Offline state is truthful", "Navigation selection stays synchronized with back navigation", "Narrow and high-DPI layouts remain usable"],
+      "files": [
+        "src/Downpour.Desktop/Pages/HomePage.xaml",
+        "src/Downpour.Desktop/Pages/ProcessPage.xaml"
+      ],
+      "acceptance": [
+        "Online telemetry appears in both routes",
+        "Offline state is truthful",
+        "Navigation selection stays synchronized with back navigation",
+        "Narrow and high-DPI layouts remain usable"
+      ],
       "notes": "Dashboard has a clear landscape, separate crescent overlay, 280 animated rain drops, aurora, stars, lightning, CPU/memory gauges/history, and a rain mode control. Initial screenshot prompted moon placement and lightning adjustments; final capture and narrow/high-DPI review remain outstanding."
     },
     {
@@ -25,8 +42,16 @@
       "title": "Add Windows CI, Dependabot, and dependency pinning",
       "status": "queued",
       "priority": "high",
-      "files": [".github/workflows/ci.yml", ".github/dependabot.yml", "src/Downpour.Desktop/Downpour.Desktop.csproj"],
-      "acceptance": ["Restore/build/test run on Windows GitHub Actions", "No wildcard package versions remain", "Dependency update schedule is documented"],
+      "files": [
+        ".github/workflows/ci.yml",
+        ".github/dependabot.yml",
+        "src/Downpour.Desktop/Downpour.Desktop.csproj"
+      ],
+      "acceptance": [
+        "Restore/build/test run on Windows GitHub Actions",
+        "No wildcard package versions remain",
+        "Dependency update schedule is documented"
+      ],
       "notes": "Windows CI workflow and weekly NuGet/actions Dependabot updates are configured; SDK package wildcard pins were replaced with resolved versions. GitHub blocked the first workflow at startup because recent account payments failed or the spending limit needs to be increased. After the account billing setting is resolved, inspect CI and Dependabot workflow runs."
     },
     {
@@ -34,8 +59,21 @@
       "title": "Implement read-only network inventory and Windows event sources",
       "status": "in_progress",
       "priority": "high",
-      "files": ["src/Downpour.Contracts/ServiceHealthSnapshot.cs", "src/Downpour.Service/NetworkInventoryProvider.cs", "src/Downpour.Service/NetworkInventoryPipeWorker.cs", "src/Downpour.Core/NetworkInventoryClient.cs", "src/Downpour.Desktop/Pages/NetworkPage.xaml", "src/Downpour.Desktop/Pages/NetworkPage.xaml.cs", "tests/Downpour.Tests"],
-      "acceptance": ["Typed bounded event contracts", "Connection inventory with clear collection scope", "Event source health and permission failures are visible", "No system-changing actions"],
+      "files": [
+        "src/Downpour.Contracts/ServiceHealthSnapshot.cs",
+        "src/Downpour.Service/NetworkInventoryProvider.cs",
+        "src/Downpour.Service/NetworkInventoryPipeWorker.cs",
+        "src/Downpour.Core/NetworkInventoryClient.cs",
+        "src/Downpour.Desktop/Pages/NetworkPage.xaml",
+        "src/Downpour.Desktop/Pages/NetworkPage.xaml.cs",
+        "tests/Downpour.Tests"
+      ],
+      "acceptance": [
+        "Typed bounded event contracts",
+        "Connection inventory with clear collection scope",
+        "Event source health and permission failures are visible",
+        "No system-changing actions"
+      ],
       "notes": "Read-only per-interface byte counters and sampled receive/send rates plus up to 256 active TCP endpoints are implemented over an output-only schema-v1 pipe with 1 MiB/2 s client bounds. Network view preserves gaps in 60-sample history and shows capture warnings. Windows event-log/ETW/Sysmon sources and event contracts remain to do."
     },
     {
@@ -43,50 +81,90 @@
       "title": "Port alert pipeline, detection engines, and parity fixtures",
       "status": "queued",
       "priority": "high",
-      "acceptance": ["Each active source detection has a stable ID and evidence contract", "Benign, suspicious, malformed, and unavailable-data fixtures", "No automatic action enabled"]
+      "acceptance": [
+        "Each active source detection has a stable ID and evidence contract",
+        "Benign, suspicious, malformed, and unavailable-data fixtures",
+        "No automatic action enabled"
+      ]
     },
     {
       "id": "DN-006",
       "title": "Port scan, threat-intelligence, vulnerability, and rule workflows",
-      "status": "queued",
+      "status": "in_progress",
       "priority": "high",
-      "acceptance": ["Validated signed/TLS feed inputs", "Sigma/YARA behavior compatibility documented", "Cache age and source integrity visible"]
+      "acceptance": [
+        "Validated signed/TLS feed inputs",
+        "Sigma/YARA behavior compatibility documented",
+        "Cache age and source integrity visible"
+      ],
+      "notes": "Partial implementation in current checkpoint: fixed-host CISA KEV HTTPS fetch, redirects disabled, 15s/12MiB/10k bounds, strict CVE/date/field validation, duplicate rejection, searchable live Intel UI and explicit no-cache/offline messaging. Remaining: persistent integrity-checked cache with max age, additional feeds, EPSS/NVD correlation, Sigma/YARA compatibility, and local product/version matching. See docs/THREAT_INTELLIGENCE.md."
     },
     {
       "id": "DN-007",
       "title": "Implement durable configuration, history, and migration-safe local storage",
       "status": "queued",
       "priority": "medium",
-      "acceptance": ["Transactional schema upgrades", "DPAPI-backed secrets", "Backup and restore verification", "Privacy minimization"]
+      "acceptance": [
+        "Transactional schema upgrades",
+        "DPAPI-backed secrets",
+        "Backup and restore verification",
+        "Privacy minimization"
+      ]
     },
     {
       "id": "DN-008",
       "title": "Implement audited response broker and reversible protection actions",
       "status": "queued",
       "priority": "critical",
-      "acceptance": ["Explicit allow-list and authorization policy", "Dry run and operator preview", "Audit outcome and rollback", "Denial, timeout, race, and recovery tests", "Feature switches default off"]
+      "acceptance": [
+        "Explicit allow-list and authorization policy",
+        "Dry run and operator preview",
+        "Audit outcome and rollback",
+        "Denial, timeout, race, and recovery tests",
+        "Feature switches default off"
+      ]
     },
     {
       "id": "DN-009",
       "title": "Port AEGIS, forensics, parental controls, cleanup, VPN, remote, and remaining routes",
       "status": "queued",
       "priority": "medium",
-      "acceptance": ["Every source module has explicit implemented/partial/legacy/declined disposition", "Sensitive collection has local consent and minimization", "No placeholder marked complete"]
+      "acceptance": [
+        "Every source module has explicit implemented/partial/legacy/declined disposition",
+        "Sensitive collection has local consent and minimization",
+        "No placeholder marked complete"
+      ]
     },
     {
       "id": "DN-010",
       "title": "Package, sign, upgrade, recover, and release the Windows application",
       "status": "queued",
       "priority": "medium",
-      "acceptance": ["Reproducible signed installer", "Service lifecycle and least privilege documented", "Upgrade, rollback, uninstall, and data recovery checked"]
+      "acceptance": [
+        "Reproducible signed installer",
+        "Service lifecycle and least privilege documented",
+        "Upgrade, rollback, uninstall, and data recovery checked"
+      ]
     },
     {
       "id": "DN-011",
       "title": "Add read-only loaded-driver inventory and location review",
       "status": "completed",
       "priority": "high",
-      "files": ["src/Downpour.Contracts/ServiceHealthSnapshot.cs", "src/Downpour.Service/DriverInventoryProvider.cs", "src/Downpour.Service/DriverInventoryPipeWorker.cs", "src/Downpour.Core/DriverInventoryClient.cs", "src/Downpour.Desktop/Pages/DriverPage.xaml", "src/Downpour.Desktop/Pages/DriverPage.xaml.cs"],
-      "acceptance": ["Loaded kernel module inventory is read-only", "IPC payload is bounded and schema-checked", "Path review is labeled as a heuristic, not signature verification", "Online/offline states are explicit"],
+      "files": [
+        "src/Downpour.Contracts/ServiceHealthSnapshot.cs",
+        "src/Downpour.Service/DriverInventoryProvider.cs",
+        "src/Downpour.Service/DriverInventoryPipeWorker.cs",
+        "src/Downpour.Core/DriverInventoryClient.cs",
+        "src/Downpour.Desktop/Pages/DriverPage.xaml",
+        "src/Downpour.Desktop/Pages/DriverPage.xaml.cs"
+      ],
+      "acceptance": [
+        "Loaded kernel module inventory is read-only",
+        "IPC payload is bounded and schema-checked",
+        "Path review is labeled as a heuristic, not signature verification",
+        "Online/offline states are explicit"
+      ],
       "notes": "Added a separate versioned output-only pipe, 1 MiB client payload cap, 512-row/text bounds, and location heuristic. No driver package actions are enabled."
     },
     {
@@ -94,7 +172,14 @@
       "title": "Implement verified driver package lifecycle broker",
       "status": "queued",
       "priority": "critical",
-      "acceptance": ["Enumerate installed Driver Store packages and match exact hardware IDs", "Require cryptographic signature and provenance validation for candidate packages", "Preview target device/version and require explicit elevated confirmation", "Export existing driver and prove rollback/recovery path before changes", "Audit each stage and test denial, interruption, reboot-needed, and recovery cases", "Never install, update, reinstall, or remove automatically"]
+      "acceptance": [
+        "Enumerate installed Driver Store packages and match exact hardware IDs",
+        "Require cryptographic signature and provenance validation for candidate packages",
+        "Preview target device/version and require explicit elevated confirmation",
+        "Export existing driver and prove rollback/recovery path before changes",
+        "Audit each stage and test denial, interruption, reboot-needed, and recovery cases",
+        "Never install, update, reinstall, or remove automatically"
+      ]
     }
   ]
 }

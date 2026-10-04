@@ -16,6 +16,7 @@ This project aims to preserve every Downpour v29 capability and improve its usab
 
 - Native desktop shell, route registry, dark visual system, rain and crescent motif.
 - Service host runs in observe-only mode.
+- Threat Intelligence has a real bounded CISA KEV fetch/search slice; broader feeds, cache, signatures, local product correlation, and vulnerability scanning are still unported.
 - Define versioned contracts and a supported Windows / .NET release baseline.
 
 ### 1. Observe and inventory

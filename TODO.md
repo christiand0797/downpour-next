@@ -25,6 +25,7 @@ This checklist tracks current implementation state; the detailed order, dependen
 - [ ] Port Windows event-log, ETW/Sysmon, registry, file, and device sensors; add connection process attribution and network detection.
 - [ ] Port normalized detection pipeline, alert lifecycle, investigation, suppression, and reporting.
 - [ ] Port file/PE/YARA scans, threat feeds, vulnerability checks, cache, and rule management.
+- [x] Add initial bounded, advisory CISA KEV ingestion and searchable Threat Intelligence route; see [`docs/THREAT_INTELLIGENCE.md`](docs/THREAT_INTELLIGENCE.md).
 - [ ] Port all five AEGIS layers and advanced protection watchers.
 - [ ] Port quarantine, rollback, remediation, hardening, firewall, Defender compatibility, parental controls, cleanup, VPN, remote access, and emergency response.
 - [ ] Add local persistence, migration, backup/restore, audit/history, diagnostics, installer, upgrade, and uninstall workflows.
