@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-03",
+  "tasks": [
+    {
+      "id": "DN-001",
+      "title": "Fix and integration-test local snapshot pipe authorization",
+      "status": "completed",
+      "priority": "critical",
+      "files": ["src/Downpour.Service/SnapshotPipeWorker.cs", "src/Downpour.Core/SystemSnapshotClient.cs", "tests/Downpour.Tests"],
+      "acceptance": ["Authenticated desktop user reads a valid schema-v1 snapshot", "No anonymous or Everyone ACE is present", "Server pipe is outbound-only", "Client connection and server wait are time-bounded"],
+      "notes": "Updated the DACL for authenticated local readers while retaining an outbound-only server endpoint. Manual schema-v1 read and integration test are implemented; re-run the test suite before handoff. No Everyone ACE and no client writes."
+    },
+    {
+      "id": "DN-002",
+      "title": "Validate dashboard and process route in the packaged Windows app",
+      "status": "queued",
+      "priority": "high",
+      "files": ["src/Downpour.Desktop/Pages/HomePage.xaml", "src/Downpour.Desktop/Pages/ProcessPage.xaml"],
+      "acceptance": ["Online telemetry appears in both routes", "Offline state is truthful", "Navigation selection stays synchronized with back navigation", "Narrow and high-DPI layouts remain usable"]
+    },
+    {
+      "id": "DN-003",
+      "title": "Add Windows CI, Dependabot, and dependency pinning",
+      "status": "completed",
+      "priority": "high",
+      "files": [".github/workflows/ci.yml", ".github/dependabot.yml", "src/Downpour.Desktop/Downpour.Desktop.csproj"],
+      "acceptance": ["Restore/build/test run on Windows GitHub Actions", "No wildcard package versions remain", "Dependency update schedule is documented"],
+      "notes": "Windows CI workflow and weekly NuGet/actions Dependabot updates are configured; SDK package wildcard pins were replaced with resolved versions. Inspect the first Actions run after push."
+    },
+    {
+      "id": "DN-004",
+      "title": "Implement read-only network inventory and Windows event sources",
+      "status": "queued",
+      "priority": "high",
+      "acceptance": ["Typed bounded event contracts", "Connection inventory with clear collection scope", "Event source health and permission failures are visible", "No system-changing actions"]
+    },
+    {
+      "id": "DN-005",
+      "title": "Port alert pipeline, detection engines, and parity fixtures",
+      "status": "queued",
+      "priority": "high",
+      "acceptance": ["Each active source detection has a stable ID and evidence contract", "Benign, suspicious, malformed, and unavailable-data fixtures", "No automatic action enabled"]
+    },
+    {
+      "id": "DN-006",
+      "title": "Port scan, threat-intelligence, vulnerability, and rule workflows",
+      "status": "queued",
+      "priority": "high",
+      "acceptance": ["Validated signed/TLS feed inputs", "Sigma/YARA behavior compatibility documented", "Cache age and source integrity visible"]
+    },
+    {
+      "id": "DN-007",
+      "title": "Implement durable configuration, history, and migration-safe local storage",
+      "status": "queued",
+      "priority": "medium",
+      "acceptance": ["Transactional schema upgrades", "DPAPI-backed secrets", "Backup and restore verification", "Privacy minimization"]
+    },
+    {
+      "id": "DN-008",
+      "title": "Implement audited response broker and reversible protection actions",
+      "status": "queued",
+      "priority": "critical",
+      "acceptance": ["Explicit allow-list and authorization policy", "Dry run and operator preview", "Audit outcome and rollback", "Denial, timeout, race, and recovery tests", "Feature switches default off"]
+    },
+    {
+      "id": "DN-009",
+      "title": "Port AEGIS, forensics, parental controls, cleanup, VPN, remote, and remaining routes",
+      "status": "queued",
+      "priority": "medium",
+      "acceptance": ["Every source module has explicit implemented/partial/legacy/declined disposition", "Sensitive collection has local consent and minimization", "No placeholder marked complete"]
+    },
+    {
+      "id": "DN-010",
+      "title": "Package, sign, upgrade, recover, and release the Windows application",
+      "status": "queued",
+      "priority": "medium",
+      "acceptance": ["Reproducible signed installer", "Service lifecycle and least privilege documented", "Upgrade, rollback, uninstall, and data recovery checked"]
+    }
+  ]
+}

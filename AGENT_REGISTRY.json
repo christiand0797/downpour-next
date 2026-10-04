@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-03",
+  "agents": [
+    {
+      "id": "codex-primary",
+      "role": "primary",
+      "taskId": null,
+      "status": "idle",
+      "heartbeatUtc": "2026-10-04T00:12:09Z",
+      "notes": "Checkpoint ready to push. Next safe task: DN-002 packaged UI online/offline validation; see SHARED_CONTEXT.md and WORK_QUEUE.json."
+    }
+  ]
+}

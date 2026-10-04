@@ -6,7 +6,10 @@ using Downpour.Core;
 
 namespace Downpour.Service;
 
-public sealed class SnapshotPipeWorker(SystemSnapshotProvider provider, ILogger<SnapshotPipeWorker> logger) : BackgroundService
+public sealed class SnapshotPipeWorker(
+    SystemSnapshotProvider provider,
+    ILogger<SnapshotPipeWorker> logger,
+    string pipeName = SystemSnapshotClient.PipeName) : BackgroundService
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
@@ -18,7 +21,7 @@ public sealed class SnapshotPipeWorker(SystemSnapshotProvider provider, ILogger<
             try
             {
                 await using var pipe = NamedPipeServerStreamAcl.Create(
-                    SystemSnapshotClient.PipeName,
+                    pipeName,
                     PipeDirection.Out,
                     maxNumberOfServerInstances: 4,
                     PipeTransmissionMode.Byte,
@@ -51,7 +54,10 @@ public sealed class SnapshotPipeWorker(SystemSnapshotProvider provider, ILogger<
         var system = new SecurityIdentifier(WellKnownSidType.LocalSystemSid, null);
         var authenticatedUsers = new SecurityIdentifier(WellKnownSidType.AuthenticatedUserSid, null);
         security.AddAccessRule(new PipeAccessRule(system, PipeAccessRights.FullControl, AccessControlType.Allow));
-        security.AddAccessRule(new PipeAccessRule(authenticatedUsers, PipeAccessRights.ReadData | PipeAccessRights.ReadAttributes, AccessControlType.Allow));
+        security.AddAccessRule(new PipeAccessRule(
+            authenticatedUsers,
+            PipeAccessRights.ReadWrite | PipeAccessRights.ReadAttributes | PipeAccessRights.ReadPermissions | PipeAccessRights.Synchronize,
+            AccessControlType.Allow));
         return security;
     }
 }
