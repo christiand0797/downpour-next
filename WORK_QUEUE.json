@@ -146,7 +146,7 @@
         "Service lifecycle and least privilege documented",
         "Upgrade, rollback, uninstall, and data recovery checked"
       ],
-      "notes": "Fresh x64 self-contained portable bundle with Downpour.Desktop.exe, Downpour.Service.exe, and Start-Downpour-Next.cmd is packed as artifacts/DownpourNext-win-x64-preview-settings-fix.zip (SHA-256 771F1EA78E6BEC9A6BD71982968F37BD56A11BE8C21DF46150F7A44D0A70F96A). Release build has 0 warnings/errors, all 16 tests pass, and the desktop process remains alive after launch. Settings handler initialization was adjusted after user-reported route crash; interactive Settings navigation still needs confirmation. Publish this ZIP as the GitHub prerelease. Bundle is unsigned and is not an installer; trusted code signing, install/upgrade/rollback/uninstall and release signing remain blockers."
+      "notes": "Published GitHub prerelease v0.1.0-preview: https://github.com/christiand0797/downpour-next/releases/tag/v0.1.0-preview. The attached self-contained x64 ZIP contains Downpour.Desktop.exe, Downpour.Service.exe, and Start-Downpour-Next.cmd; SHA-256 771F1EA78E6BEC9A6BD71982968F37BD56A11BE8C21DF46150F7A44D0A70F96A. Build has 0 warnings/errors and 16 tests pass. Settings handler initialization was adjusted after the reported crash; interactive navigation still needs confirmation. This is unsigned and not an installer; code signing and install/upgrade/rollback/uninstall remain blockers."
     },
     {
       "id": "DN-011",

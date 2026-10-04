@@ -69,3 +69,4 @@ Check: Dashboard should show an observe-only connection and live system metrics.
 ## Architecture and safety constraints
 
 See `AGENTS.md`, `SECURITY.md`, `docs/SECURITY_MODEL.md`, `docs/FEATURE_PARITY.md`, and `docs/ARCHITECTURE_AND_MIGRATION.md`. The only enabled service behavior is observation. The pipe server endpoint is outbound-only, but the DACL grants authenticated local users the rights needed to open/read the endpoint. Do not enable system-changing actions without a reviewed allow-list, authorization policy, audit record, timeout, recovery path, and denial tests.
+
