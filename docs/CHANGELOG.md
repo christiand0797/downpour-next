@@ -1,5 +1,12 @@
 # Downpour Next changelog
 
+## v0.1.6 — local investigation export
+
+- Added the Alerts page's user-selected JSON investigation export using the Windows save picker.
+- Export contains up to 512 validated alert metadata rows and health warnings. It revalidates the alert snapshot, excludes event bodies/user content, HTML-escapes serialized values, and refuses output over 1 MiB.
+- Release build: 0 warnings/errors; 65 tests passed. Archive: `DownpourNext-win-x64-d305c2a.zip`; SHA-256 `F9FA96476CD3FF082F0353EE9B4F0BD25198E8FE91894E76E7C5BC7222E0010B`.
+- Download from [GitHub Releases](https://github.com/christiand0797/downpour-next/releases/tag/v0.1.6). This remains an unsigned portable development build and does not claim full v29 parity.
+
 ## v0.1.5 — persistent false-positive rules
 
 - Added false-positive confirmation and re-arm actions in Alerts. Three explicit confirmations of the same fixed channel/provider/event-ID rule suppress matching current and future alerts. Re-arming removes the rule and reopens only rows that it auto-suppressed; individual suppression remains independent.
@@ -29,7 +36,6 @@
 
 ## Unreleased
 
-- Added a user-selected JSON investigation export for the latest validated alert snapshot, with an explicit local save picker, metadata-only fields, contract revalidation, and a 1 MiB size ceiling.
 - Added persistent false-positive rule review: three explicit confirmations for the same fixed channel/provider/event-ID fingerprint suppress future matching alert rows; Re-arm removes that rule and reopens only rows it suppressed. Added schema-v1-to-v2 migration and retry-safe confirmation audit records. This never inspects event message text and does not perform OS actions.
 - Added a service-side SQLite operation journal with schema versioning, transactional state/event writes, path-free object IDs, replay-safe event IDs, constrained transitions, restart-visible pending recovery, protected current-user/SYSTEM state directory, and append-only event triggers. It does not authorize or execute system actions.
 - Restricted system, network, and driver telemetry pipes to the sensor service's current Windows account and LocalSystem; all servers remain one-way from service to desktop.

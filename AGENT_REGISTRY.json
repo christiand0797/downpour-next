@@ -6,9 +6,9 @@
       "id": "codex-primary",
       "role": "primary",
       "taskId": "DN-005",
-      "status": "active",
-      "heartbeatUtc": "2026-10-04T20:49:51Z",
-      "notes": "Active DN-005 investigation export slice: Core builder validates snapshot and outputs only approved metadata, max 1 MiB; Alerts page uses WinUI FileSavePicker. Contract/privacy tests pass; Release build is clean (0 warnings/errors) and 65 tests pass. Need push source/docs, build x64 portable, replace local package contents, publish stable release, then update hash/release checkpoint."
+      "status": "idle",
+      "heartbeatUtc": "2026-10-04T20:55:25Z",
+      "notes": "Completed alert investigation export in source commit d305c2a and published v0.1.6. ZIP SHA-256 F9FA96476CD3FF082F0353EE9B4F0BD25198E8FE91894E76E7C5BC7222E0010B. All 764 local portable files hash-match staging; UI and local system snapshot pipe smoke check passed. Release build clean; 65 tests pass. Native Save File picker click-through is still a manual verification item. Next: continue DN-005 event correlation and timeline work; broader v29 parity and safe action architecture remain unfinished."
     },
     {
       "id": "v29_action_map",
