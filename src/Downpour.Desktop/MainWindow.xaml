@@ -13,9 +13,13 @@
             <RowDefinition Height="48" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <Image Grid.RowSpan="2" Source="ms-appx:///Assets/StormBackdrop.png" Stretch="UniformToFill" Opacity="0.72" IsHitTestVisible="False" />
-        <Border Grid.RowSpan="2" Background="#65040A16" IsHitTestVisible="False" />
+        <Image Grid.RowSpan="2" Source="ms-appx:///Assets/StormBackdrop.png" Stretch="UniformToFill" Opacity="0.86" IsHitTestVisible="False" />
+        <Border Grid.RowSpan="2" Background="#3D040A16" IsHitTestVisible="False" />
+        <Image Grid.RowSpan="2" Source="ms-appx:///Assets/CrescentMoon.png" Width="210" Height="200"
+               HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,48,260,0" Opacity="0.9"
+               Stretch="Uniform" IsHitTestVisible="False" />
         <Canvas x:Name="StormCanvas" Grid.RowSpan="2" IsHitTestVisible="False" />
+        <Border x:Name="LightningFlash" Grid.RowSpan="2" Background="#FFD8F5FF" Opacity="0" IsHitTestVisible="False" />
         <TitleBar x:Name="AppTitleBar" Title="Downpour" BackRequested="TitleBar_BackRequested"
                   IsBackButtonVisible="{x:Bind NavFrame.CanGoBack, Mode=OneWay}"
                   IsPaneToggleButtonVisible="True" PaneToggleRequested="TitleBar_PaneToggleRequested">

@@ -20,7 +20,7 @@ This project aims to preserve every Downpour v29 capability and improve its usab
 
 ### 1. Observe and inventory
 
-- Port process, network, system resource, and Windows service snapshots.
+- Port process, network, system resource, and Windows service snapshots. System/process and network adapter/TCP inventories are live read-only slices; Windows event sources and service inventory remain outstanding.
 - Add health and freshness states to the dashboard.
 - Use a single sensor snapshot per interval, then fan it out to consumers.
 - Reconcile the registry against every feature, watcher, setting, and background task in the Python source.

@@ -27,6 +27,7 @@
     <Content Include="Assets\AppIcon.ico" />
     <Content Include="Assets\Wide310x150Logo.scale-200.png" />
     <Content Include="Assets\StormBackdrop.png" />
+    <Content Include="Assets\CrescentMoon.png" />
   </ItemGroup>
 
   <ItemGroup>

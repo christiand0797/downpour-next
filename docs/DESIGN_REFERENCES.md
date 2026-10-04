@@ -19,7 +19,7 @@ The eight attachments in the design request were reviewed as one mood board. Two
 | #7 | Warm amber/red states for caution and critical indicators, distinct from the normal cyan palette |
 | #8 | Duplicate of #7; no additional visual requirement |
 
-The application uses native WinUI controls, with a generated night-rain background image, translucent panels, live circular CPU/memory gauges, and CPU/memory history. The rain overlay is limited to the active window and pauses when the window is deactivated.
+The application uses native WinUI controls, with a clear night landscape, a separate realistic cratered crescent overlay, translucent neon-accented panels, live circular CPU/memory gauges, and CPU/memory history. Rain is fully animated rather than baked into the backdrop. Drizzle, storm, thunderstorm, and hurricane modes scale rain visibility/speed and wind/lightning; the mode cycles automatically until the user selects one, which holds it in manual mode. Stars and aurora twinkle/drift, lightning forks stay in the upper sky, and animation pauses when the window is deactivated.
 
 ## Task Manager OG graph analysis
 
@@ -32,8 +32,9 @@ Applied here:
 - Offline or unavailable telemetry displays an explicit state instead of a plausible zero.
 - The dashboard calls out that detection and response are not connected; it never fabricates alert counts.
 - Process bars compare each displayed working set with the largest displayed process and are labeled as relative.
+- Network view shows sampled per-adapter send/receive rates and totals, bounded active TCP endpoints, and a rolling throughput history that preserves missing-sample gaps.
 
-Still to implement before matching the depth of a full performance instrument: per-core CPU history, disk throughput/activity, network bytes-per-second and per-interface totals, GPU utilization/memory, thermal sensors, power/energy attribution, memory composition/pressure, time-range controls, and history recording/replay. Each must come from a real provider and expose sensor availability.
+Still to implement before matching the depth of a full performance instrument: per-core CPU history, disk throughput/activity, GPU utilization/memory, thermal sensors, power/energy attribution, memory composition/pressure, time-range controls, and history recording/replay. Windows network event sources, process attribution, and threat classification also remain unported. Each must come from a real provider and expose sensor availability.
 
 ## Source audit: Downpour v29 driver capability
 

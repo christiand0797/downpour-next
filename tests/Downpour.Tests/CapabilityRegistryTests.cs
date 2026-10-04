@@ -5,7 +5,7 @@ namespace Downpour.Tests;
 public sealed class CapabilityRegistryTests
 {
     [Fact]
-    public void RegistryPreservesOriginalRoutesAndAddsUniqueDriverRoute()
+    public void RegistryPreservesOriginalRoutesAndAddsUniqueDriversRoute()
     {
         var path = Path.Combine(AppContext.BaseDirectory, "capabilities.json");
 
@@ -17,5 +17,6 @@ public sealed class CapabilityRegistryTests
         Assert.Contains(capabilities, item => item.RouteId == "dashboard" && item.Status == "prototype");
         Assert.Contains(capabilities, item => item.RouteId == "processes" && item.Status == "in-progress");
         Assert.Contains(capabilities, item => item.RouteId == "drivers" && item.Status == "in-progress");
+        Assert.Contains(capabilities, item => item.RouteId == "network" && item.Status == "in-progress");
     }
 }

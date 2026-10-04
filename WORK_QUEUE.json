@@ -18,7 +18,7 @@
       "priority": "high",
       "files": ["src/Downpour.Desktop/Pages/HomePage.xaml", "src/Downpour.Desktop/Pages/ProcessPage.xaml"],
       "acceptance": ["Online telemetry appears in both routes", "Offline state is truthful", "Navigation selection stays synchronized with back navigation", "Narrow and high-DPI layouts remain usable"],
-      "notes": "Dashboard received whole-app rain/moon backdrop, animated stars, CPU/memory gauges, history, and process pressure bars. The packaged window launches and responds; native visual review remains outstanding."
+      "notes": "Dashboard has a clear landscape, separate crescent overlay, 280 animated rain drops, aurora, stars, lightning, CPU/memory gauges/history, and a rain mode control. Initial screenshot prompted moon placement and lightning adjustments; final capture and narrow/high-DPI review remain outstanding."
     },
     {
       "id": "DN-003",
@@ -32,9 +32,11 @@
     {
       "id": "DN-004",
       "title": "Implement read-only network inventory and Windows event sources",
-      "status": "queued",
+      "status": "in_progress",
       "priority": "high",
-      "acceptance": ["Typed bounded event contracts", "Connection inventory with clear collection scope", "Event source health and permission failures are visible", "No system-changing actions"]
+      "files": ["src/Downpour.Contracts/ServiceHealthSnapshot.cs", "src/Downpour.Service/NetworkInventoryProvider.cs", "src/Downpour.Service/NetworkInventoryPipeWorker.cs", "src/Downpour.Core/NetworkInventoryClient.cs", "src/Downpour.Desktop/Pages/NetworkPage.xaml", "src/Downpour.Desktop/Pages/NetworkPage.xaml.cs", "tests/Downpour.Tests"],
+      "acceptance": ["Typed bounded event contracts", "Connection inventory with clear collection scope", "Event source health and permission failures are visible", "No system-changing actions"],
+      "notes": "Read-only per-interface byte counters and sampled receive/send rates plus up to 256 active TCP endpoints are implemented over an output-only schema-v1 pipe with 1 MiB/2 s client bounds. Network view preserves gaps in 60-sample history and shows capture warnings. Windows event-log/ETW/Sysmon sources and event contracts remain to do."
     },
     {
       "id": "DN-005",

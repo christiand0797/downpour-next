@@ -7,8 +7,10 @@ builder.Services.AddWindowsService(options =>
 });
 builder.Services.AddSingleton<SystemSnapshotProvider>();
 builder.Services.AddSingleton<DriverInventoryProvider>();
+builder.Services.AddSingleton<NetworkInventoryProvider>();
 builder.Services.AddHostedService<SnapshotPipeWorker>();
 builder.Services.AddHostedService<DriverInventoryPipeWorker>();
+builder.Services.AddHostedService<NetworkInventoryPipeWorker>();
 
 var host = builder.Build();
 host.Run();

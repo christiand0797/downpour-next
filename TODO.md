@@ -10,9 +10,11 @@ This checklist tracks current implementation state; the detailed order, dependen
 - [x] Add schema-v1 read-only system/process snapshot contracts and Windows provider.
 - [x] Add CI-testable registry and snapshot tests.
 - [x] Fix named-pipe ACL and add a schema-v1 local pipe integration test; verify test discovery and behavior on this host.
-- [x] Extend the whole-app background with a generated crescent/rain scene and restrained animated stars/rain.
+- [x] Separate the clear static night landscape from the realistic crescent overlay, stars, and animated storm system.
+- [x] Add drizzle, storm, thunderstorm, and hurricane modes with rain, wind, and lightning scaling; manual selection holds the chosen mode.
 - [x] Add live CPU/memory gauges and a history graph that preserves missing-data gaps.
 - [x] Add a dedicated read-only Drivers route with bounded live kernel-driver inventory and path review.
+- [x] Add a read-only Network route with per-interface throughput/totals, active TCP endpoints, bounded IPC, and gap-preserving history.
 - [ ] Visually and interactively validate online/offline dashboard, process, and driver pages on the native app.
 - [x] Configure Windows CI and Dependabot; pin wildcard package dependencies.
 - [ ] Resolve GitHub's account billing/spending-limit notice, then verify remote CI and Dependabot runs.
@@ -20,7 +22,7 @@ This checklist tracks current implementation state; the detailed order, dependen
 ## Feature parity
 
 - [ ] Reconcile source modules, config, background jobs, feeds, rules, persistent state, and actions with the module map.
-- [ ] Port network, event-log, ETW/Sysmon, registry, file, and device sensors.
+- [ ] Port Windows event-log, ETW/Sysmon, registry, file, and device sensors; add connection process attribution and network detection.
 - [ ] Port normalized detection pipeline, alert lifecycle, investigation, suppression, and reporting.
 - [ ] Port file/PE/YARA scans, threat feeds, vulnerability checks, cache, and rule management.
 - [ ] Port all five AEGIS layers and advanced protection watchers.

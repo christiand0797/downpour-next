@@ -78,4 +78,34 @@ public sealed class SnapshotPipeIntegrationTests
             await service.StopAsync(CancellationToken.None);
         }
     }
+
+    [Fact]
+    public async Task NetworkInventoryPipeReturnsBoundedReadOnlySnapshot()
+    {
+        using var shutdown = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+        var pipeName = $"Downpour.NetworkTest.{Guid.NewGuid():N}";
+        using var service = new NetworkInventoryPipeWorker(new NetworkInventoryProvider(), NullLogger<NetworkInventoryPipeWorker>.Instance, pipeName);
+        var client = new NetworkInventoryClient(pipeName);
+        await service.StartAsync(shutdown.Token);
+
+        try
+        {
+            NetworkInventorySnapshot? snapshot = null;
+            for (var attempt = 0; attempt < 10 && snapshot is null; attempt++)
+            {
+                snapshot = await client.TryGetSnapshotAsync(shutdown.Token);
+                if (snapshot is null) await Task.Delay(100, shutdown.Token);
+            }
+
+            Assert.NotNull(snapshot);
+            Assert.Equal(1, snapshot.SchemaVersion);
+            Assert.InRange(snapshot.Interfaces.Count, 0, 32);
+            Assert.InRange(snapshot.Connections.Count, 0, 256);
+            Assert.True(snapshot.TotalConnectionCount >= snapshot.Connections.Count);
+        }
+        finally
+        {
+            await service.StopAsync(CancellationToken.None);
+        }
+    }
 }

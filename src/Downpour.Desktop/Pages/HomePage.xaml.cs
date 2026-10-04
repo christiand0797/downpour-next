@@ -49,14 +49,29 @@ public sealed partial class HomePage : Page
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
         base.OnNavigatedTo(e);
+        StormModeController.ModeChanged += UpdateStormModeButton;
+        UpdateStormModeButton(StormModeController.CurrentMode);
         if (!_snapshotTimer.IsRunning) _snapshotTimer.Start();
         _ = RefreshSnapshotAsync();
     }
 
     protected override void OnNavigatedFrom(NavigationEventArgs e)
     {
+        StormModeController.ModeChanged -= UpdateStormModeButton;
         _snapshotTimer.Stop();
         base.OnNavigatedFrom(e);
+    }
+
+    private void StormModeButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e) => StormModeController.Cycle();
+
+    private void UpdateStormModeButton(int mode)
+    {
+        if (DispatcherQueue.HasThreadAccess)
+        {
+            StormModeButton.Content = $"⛈  {StormModeController.Modes[mode]} · {(StormModeController.IsManual ? "MANUAL" : "AUTO")}";
+            return;
+        }
+        _ = DispatcherQueue.TryEnqueue(() => StormModeButton.Content = $"⛈  {StormModeController.Modes[mode]} · {(StormModeController.IsManual ? "MANUAL" : "AUTO")}");
     }
 
     private async Task RefreshSnapshotAsync()

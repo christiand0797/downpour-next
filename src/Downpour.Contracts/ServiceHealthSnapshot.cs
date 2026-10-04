@@ -29,3 +29,25 @@ public sealed record DriverInventorySnapshot(
     int DriverCount,
     IReadOnlyList<DriverInventoryEntry> Drivers,
     IReadOnlyList<string> Warnings);
+
+public sealed record NetworkInterfaceEntry(
+    string Name,
+    string Description,
+    string Status,
+    long? ReceiveBytesPerSecond,
+    long? SendBytesPerSecond,
+    long TotalReceivedBytes,
+    long TotalSentBytes);
+
+public sealed record NetworkConnectionEntry(
+    string LocalEndpoint,
+    string RemoteEndpoint,
+    string State);
+
+public sealed record NetworkInventorySnapshot(
+    int SchemaVersion,
+    DateTimeOffset CapturedAtUtc,
+    IReadOnlyList<NetworkInterfaceEntry> Interfaces,
+    IReadOnlyList<NetworkConnectionEntry> Connections,
+    int TotalConnectionCount,
+    IReadOnlyList<string> Warnings);

@@ -26,14 +26,14 @@ The diagram is the target design. At present, the only connected path is the ser
 
 | Area | Required safeguards | Current status |
 |---|---|---|
-| Local IPC | Named-pipe DACL, least privilege, versioning, bounded payloads, timeouts, replay-resistant action IDs if commands are later added | System and driver snapshots use outbound-only servers with authenticated-local-user DACLs and bounded connection waits. Driver client enforces a 1 MiB cap, schema/list/text bounds, and timeout. System snapshot client still needs equivalent size/schema validation; server identity verification and a narrower service-SID ACL remain open. |
+| Local IPC | Named-pipe DACL, least privilege, versioning, bounded payloads, timeouts, replay-resistant action IDs if commands are later added | System, driver, and network snapshots use outbound-only servers with authenticated-local-user DACLs and bounded connection waits. Driver and network clients enforce a 1 MiB cap and schema/list/text bounds; network inventory is limited to 32 interfaces and 256 TCP endpoints. System snapshot client still needs equivalent payload/schema bounds; server identity verification and a narrower service-SID ACL remain open. |
 | Service compromise | Narrow service identity, restricted handles, secure startup/recovery, signed binaries, service ACL review | Hosting scaffold only; installation identity not selected |
 | Malformed data | Strict JSON schemas, bounds, parser isolation, fuzzing, duplicate/unknown-field policy | Capability JSON validates metadata; IPC snapshot needs size/schema bounds and fuzz coverage |
 | Detection/content | TLS feeds, signature/integrity, provenance, expiration, rule validation, no executable feed content | Not ported |
 | Privileged response | allow-listed arguments, authorization, preview, audit, timeout, rollback, kill switch, opt-in defaults | No response action enabled or implemented |
 | Local data | Minimize collection, DPAPI for secrets, restrictive ACLs, at-rest integrity, retention and deletion policy, verified backups | No persistent store implemented |
 | Supply chain | Pinned NuGet/action versions, Dependabot, Windows CI, SBOM, reproducible signed release, provenance | SDK package versions and workflow action SHAs are pinned; Dependabot and Windows CI are configured. First remote CI run, SBOM, signing, and release provenance remain outstanding. |
-| UI and availability | Dispatcher-only UI changes, bounded updates/queues, stale-data marker, reduced motion, input limits, graceful missing service | UI prototype; visual validation pending |
+| UI and availability | Dispatcher-only UI changes, bounded updates/queues, stale-data marker, reduced motion, input limits, graceful missing service | Dashboard renders live gauges and histories; network/driver routes show explicit offline states. Native visual validation has started; accessibility, reduced motion, and narrow/high-DPI review remain open. |
 
 ## Release blockers
 
