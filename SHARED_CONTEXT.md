@@ -7,6 +7,8 @@
 **Branch:** `main`  
 **Latest source checkpoint:** `85ba7d2 Add persistent false-positive alert suppression` on `main`. Runnable self-contained x64 package is published as [v0.1.5](https://github.com/christiand0797/downpour-next/releases/tag/v0.1.5), asset `DownpourNext-win-x64-85ba7d2.zip`, SHA-256 `E3578121CE3C22B2B54CC7C87B44D7D2F0782C0AF6CC85401DADD8705E86B396`. Local package is `DownpourNext-Portable/` in the repo root. Release build has 0 warnings/errors and 63 tests pass. It is unsigned, portable, and not a full parity claim.
 
+Package verification after publish: ZIP contains the desktop EXE, bundled service EXE, BAT/CMD launchers, and portable readme. The local `DownpourNext-Portable/` contains all 764 packaged files byte-for-byte identical to the staging output. Direct EXE smoke launch is running and responsive, with the bundled `Downpour.Service.exe` also running. Source/docs are pushed to `main` through `e89c4b9`.
+
 The current implementation includes 512 bounded process rows, direct-EXE sensor auto-start, truthful service connectivity UI, oversized IPC handling, and a direct `.bat` launcher. Telemetry pipe DACLs now grant LocalSystem and the service's current user; same-user integration works and the named-pipe servers remain outbound-only. A self-contained x64 runtime is built into both `DownpourNext-Portable/` (local root folder) and ignored build artifacts. Product goal remains full functional v29 parity, including controlled/audited system-changing actions; observe-only behavior is a current stage, not the product goal.
 
 ## Goal
