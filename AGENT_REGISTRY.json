@@ -7,8 +7,8 @@
       "role": "primary",
       "taskId": "DN-002",
       "status": "active",
-      "heartbeatUtc": "2026-10-04T14:31:04Z",
-      "notes": "Working in downpour v2. DN-002 slice adds desktop-managed startup/shutdown for the bundled read-only service, truthful local telemetry status, 512-row bounded process inventory, PID 0 filtering, and oversized pipe handling. Release build passed with 0 warnings/errors; 22 tests pass; direct-EXE auto-start/graceful-shutdown smoke test passes. Portable x64 ZIP built at artifacts/DownpourNext-win-x64-preview-v012.zip (SHA-256 A8E51B054DE44956B9959B74F6E92878987470F41015273892EE24964E2EF5C3). Source commit/push and release upload pending; preserve this worktree and continue remaining native UI review."
+      "heartbeatUtc": "2026-10-04T14:38:45Z",
+      "notes": "Working in downpour v2. DN-002 slice adds desktop-managed startup/shutdown for the bundled read-only service, truthful local telemetry status, 512-row bounded process inventory, PID 0 filtering, and oversized pipe handling. Release build passed with 0 warnings/errors; 22 tests pass; direct-EXE auto-start/graceful-shutdown smoke test passes. Commit 03ca465 is pushed; GitHub prerelease v0.1.2-preview is published with artifacts/DownpourNext-win-x64-preview-v012.zip (SHA-256 A8E51B054DE44956B9959B74F6E92878987470F41015273892EE24964E2EF5C3). Continue remaining native UI review; full feature parity remains incomplete."
     }
   ]
 }

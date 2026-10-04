@@ -155,7 +155,7 @@
         "Service lifecycle and least privilege documented",
         "Upgrade, rollback, uninstall, and data recovery checked"
       ],
-      "notes": "Published GitHub prerelease v0.1.1-preview: https://github.com/christiand0797/downpour-next/releases/tag/v0.1.1-preview. Download asset DownpourNext-win-x64-preview-v011.zip contains Downpour.Desktop.exe, Downpour.Service.exe, and Start-Downpour-Next.cmd; SHA-256 39D3E45860CA949F6CB055A87DC42E781DF6775E284B2B8296ED4C645A70B3CA. Release build has 0 warnings/errors, 20 tests pass, and desktop EXE startup smoke check passed. Settings navigation still needs a native click-through. Bundle is unsigned and not an installer; trusted code signing and install/upgrade/rollback/uninstall remain blockers."
+      "notes": "Published GitHub prereleases: v0.1.1-preview and latest v0.1.2-preview (https://github.com/christiand0797/downpour-next/releases/tag/v0.1.2-preview). Latest asset DownpourNext-win-x64-preview-v012.zip includes the self-contained desktop, read-only service, and launcher; SHA-256 A8E51B054DE44956B9959B74F6E92878987470F41015273892EE24964E2EF5C3. Release build has 0 warnings/errors, 22 tests pass, and direct-EXE service auto-start/graceful shutdown are smoke-verified. Settings navigation still needs a native click-through. Bundle is unsigned and not an installer; trusted code signing and install/upgrade/rollback/uninstall remain blockers."
     },
     {
       "id": "DN-011",

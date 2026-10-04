@@ -2,6 +2,8 @@
 
 ## v0.1.2-preview — 2026-10-04
 
+Published at [GitHub Releases](https://github.com/christiand0797/downpour-next/releases/tag/v0.1.2-preview). Download `DownpourNext-win-x64-preview-v012.zip` to test the self-contained x64 bundle; SHA-256: `A8E51B054DE44956B9959B74F6E92878987470F41015273892EE24964E2EF5C3`.
+
 - Launching `Downpour.Desktop.exe` now starts the bundled read-only sensor service when no instance is available and shuts down only the child process it owns when the window closes.
 - Dashboard, Processes, Drivers, and Network clarify that the desktop app can be running while local sensor telemetry is offline. A healthy dashboard snapshot is labeled `ONLINE`; this describes local telemetry, not internet access.
 - Process inventory now carries up to 512 bounded rows instead of eight. The provider filters the Windows PID 0 `Idle` pseudo-process so valid snapshots are not rejected.

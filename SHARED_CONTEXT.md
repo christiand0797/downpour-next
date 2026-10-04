@@ -1,13 +1,13 @@
 # Downpour Next shared context
 
-**Updated:** 2026-10-04 (America/Denver; 2026-10-04 14:31 UTC)
+**Updated:** 2026-10-04 (America/Denver; 2026-10-04 14:38 UTC)
 
 **Repository:** private [christiand0797/downpour-next](https://github.com/christiand0797/downpour-next)  
 **Local path:** `C:\Users\purpl\Desktop\downpour v2`  
 **Branch:** `main`  
-**Latest checkpoint:** Inspect `git log -1 --oneline` on `main`; this slice is being verified before the checkpoint is committed/pushed.
+**Latest checkpoint:** `03ca465 Start bundled sensor service with desktop` pushed to `main`; release [v0.1.2-preview](https://github.com/christiand0797/downpour-next/releases/tag/v0.1.2-preview) is published with the portable x64 bundle.
 
-The current slice expands process inventory to 512 bounded rows, filters Windows PID 0 from exported rows, starts the bundled read-only sensor service when the desktop EXE is launched directly, distinguishes application-running from sensor-service-offline UI states, and treats oversized IPC messages as unavailable. Verification so far: Release build 0 warnings/errors; 22 tests pass; packaged desktop auto-started its child service and graceful window close stopped that child. Refresh the hash and checkpoint details after the portable release package is committed.
+The current slice expands process inventory to 512 bounded rows, filters Windows PID 0 from exported rows, starts the bundled read-only sensor service when the desktop EXE is launched directly, distinguishes application-running from sensor-service-offline UI states, and treats oversized IPC messages as unavailable. Release build: 0 warnings/errors; 22 tests pass; packaged desktop auto-started its child service and graceful window close stopped that child. The 148 MiB bundle is attached to the published preview release; SHA-256 `A8E51B054DE44956B9959B74F6E92878987470F41015273892EE24964E2EF5C3`.
 
 ## Goal
 
@@ -54,7 +54,7 @@ Check: Dashboard should show an `ONLINE` observe-only connection and live system
 - `dotnet build Downpour.slnx -c Release`: passed with 0 warnings and 0 errors after service auto-start wiring and PID 0 filtering.
 - `dotnet test Downpour.slnx -c Release`: 22 passed, 0 failed, including the oversized local-pipe message case.
 - Packaged self-contained x64 desktop startup smoke test: direct EXE launch started its bundled `Downpour.Service.exe`; closing the app window stopped the child process. An earlier forced termination intentionally bypassed graceful cleanup; that smoke-test process was cleaned up before the successful graceful-close check.
-- Refreshed portable package: `artifacts/DownpourNext-win-x64-preview-v012.zip`, SHA-256 `A8E51B054DE44956B9959B74F6E92878987470F41015273892EE24964E2EF5C3`; archive inspection confirmed desktop EXE, service EXE, and CMD launcher are present.
+- Refreshed portable package: `artifacts/DownpourNext-win-x64-preview-v012.zip`, SHA-256 `A8E51B054DE44956B9959B74F6E92878987470F41015273892EE24964E2EF5C3`; archive inspection confirmed desktop EXE, service EXE, and CMD launcher. Published as a GitHub prerelease asset; release page confirms the asset name, digest, and 148 MB size.
 - Self-contained x64 desktop/service publish passed to `artifacts/DownpourNext-win-x64-settings-fix`; packaged EXE and launcher are present. The user-reported Settings failure aligns with a XAML/WinUI crash recorded by Windows Error Reporting; toggle handlers now attach after initialization. The new EXE remained running in the startup smoke check, but the Settings click path has not yet been interactively verified. ZIP: `artifacts/DownpourNext-win-x64-preview-settings-fix.zip`, SHA-256 `771F1EA78E6BEC9A6BD71982968F37BD56A11BE8C21DF46150F7A44D0A70F96A`. The bundle has no trusted signature and is not an installer.
 - Manual named-pipe smoke test initially failed with `Access to the path is denied.` The ACL was updated with authenticated-reader synchronization/read-attributes/read-permissions rights, and a subsequent manual client received a valid schema-v1 snapshot. Four automated tests now pass, including the pipe integration test.
 - WinUI packaged app was captured via `PrintWindow`; live CPU/memory gauges/history, clear landscape, separate moon, visible rain mode control, and denser animated precipitation render. Network page is provider/IPC tested; native route interaction and narrow/high-DPI review remain outstanding.
@@ -63,7 +63,7 @@ Check: Dashboard should show an `ONLINE` observe-only connection and live system
 ## Immediate next actions
 
 1. Verify the Settings route opens and saves preferences in a native interactive click-through; continue native route/layout review, especially responsive width on narrow windows.
-2. Commit/push this verified autostart/status/process-inventory slice, then publish its refreshed portable preview for laptop testing.
+2. Continue DN-002 native route/layout review, especially the Settings click-through and narrow/high-DPI widths.
 3. Ingest additional independently allow-listed feeds and correlate with local software inventory.
 4. Port Windows event telemetry, then implement normalized alerts/detection fixtures.
 5. Port the original driver's BYOVD/signature/path audit semantics with current signed intelligence and independently validated evidence.
