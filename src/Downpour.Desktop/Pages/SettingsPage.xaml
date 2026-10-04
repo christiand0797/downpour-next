@@ -21,17 +21,17 @@
                     <Grid ColumnSpacing="16">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                         <StackPanel Spacing="2"><TextBlock Text="Rain and sky effects" FontWeight="SemiBold" /><TextBlock Text="Show the animated rain, stars, aurora, and lightning layers." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" /></StackPanel>
-                        <ToggleSwitch x:Name="RainEffectsToggle" Grid.Column="1" IsOn="True" Toggled="RainEffects_Toggled" OnContent="On" OffContent="Off" />
+                        <ToggleSwitch x:Name="RainEffectsToggle" Grid.Column="1" IsOn="True" OnContent="On" OffContent="Off" />
                     </Grid>
                     <Grid ColumnSpacing="16">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                         <StackPanel Spacing="2"><TextBlock Text="Reduce motion" FontWeight="SemiBold" /><TextBlock Text="Pause continuous rain, star, aurora, and lightning animation while keeping the selected scene visible." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" /></StackPanel>
-                        <ToggleSwitch x:Name="ReduceMotionToggle" Grid.Column="1" IsOn="False" Toggled="ReduceMotion_Toggled" OnContent="On" OffContent="Off" />
+                        <ToggleSwitch x:Name="ReduceMotionToggle" Grid.Column="1" IsOn="False" OnContent="On" OffContent="Off" />
                     </Grid>
                     <Grid ColumnSpacing="16">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                         <StackPanel Spacing="2"><TextBlock Text="Automatic storm rotation" FontWeight="SemiBold" /><TextBlock Text="Let the scene shift among drizzle, storm, thunderstorm, and hurricane. Choosing a mode on the dashboard holds it manually." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" /></StackPanel>
-                        <ToggleSwitch x:Name="AutoStormToggle" Grid.Column="1" IsOn="True" Toggled="AutoStorm_Toggled" OnContent="On" OffContent="Off" />
+                        <ToggleSwitch x:Name="AutoStormToggle" Grid.Column="1" IsOn="True" OnContent="On" OffContent="Off" />
                     </Grid>
                     <TextBlock x:Name="SaveState" Text="" FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
                 </StackPanel>

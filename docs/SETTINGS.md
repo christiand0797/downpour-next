@@ -9,3 +9,5 @@ Implemented preferences:
 - Automatic storm rotation: allow scene changes among drizzle, storm, thunderstorm, and hurricane; a dashboard mode selection holds the selected mode manually.
 
 If Windows local settings are unavailable, the screen reports that choices will only last for the current run. Protection, scanning, telemetry, and response controls remain absent until their underlying feature and policy paths exist. This avoids presenting nonfunctional toggles or implying that unported v29 capabilities are active.
+
+The toggle handlers are attached in the page constructor after `InitializeComponent` so initial XAML control construction cannot invoke handlers before the named controls are ready. Build/test and process startup passed after this adjustment; a native interactive navigation check remains outstanding.

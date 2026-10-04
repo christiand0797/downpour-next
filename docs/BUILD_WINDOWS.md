@@ -1,6 +1,6 @@
 # Build and run Downpour Next on Windows
 
-The local portable x64 bundle contains the WinUI desktop app and the read-only telemetry service. It does not require GitHub Actions or a .NET runtime on the target machine. It is not an installer and does not register a Windows service. The desktop EXE was launch-checked from the published folder on this Windows host.
+The portable x64 bundle contains the WinUI desktop app (`Downpour.Desktop.exe`), the read-only telemetry service, and `Start-Downpour-Next.cmd`. It does not require GitHub Actions or a .NET runtime on the target machine. It is not an installer and does not register a Windows service. Extract the full ZIP and double-click the CMD launcher, or launch the desktop EXE alone for an offline UI check.
 
 ## Build locally
 
@@ -22,5 +22,7 @@ The UI/Core JSON path uses pinned Newtonsoft.Json 13.0.4, with JSON type-name ha
 ## Run the portable build
 
 Extract the full `DownpourNext-win-x64.zip`, then double-click `Start-Downpour-Next.cmd`. It opens the read-only service in a console window and launches `Downpour.Desktop.exe`. Close the service console to stop telemetry. Launching the desktop EXE alone is supported but shows an offline sensor state until the service is running.
+
+The Settings route now attaches toggle handlers after its XAML controls are initialized, avoiding early toggle events during page construction. Build/test and desktop startup are verified; an interactive click-through of the Settings route remains to be checked on the target desktop session.
 
 The bundle is x64 and unsigned at this stage. It is intended for local testing from a trusted source. A signed MSIX/installer, Windows service installation/upgrade/rollback, and release signing identity have not been implemented; do not treat this portable bundle as a production security product.

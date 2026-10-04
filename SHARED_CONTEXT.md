@@ -24,7 +24,7 @@ Build a native Windows successor that preserves Downpour v29's security capabili
 - Drivers route reads up to 512 loaded kernel modules from the service and classifies paths for review. It does not verify driver signatures or manage Driver Store packages. No install/update/reinstall/remove action is enabled.
 - Network route reads up to 32 adapters and 256 active TCP endpoints over `Downpour.NetworkInventory.v1`; a 1 MiB client cap and 2-second timeout bound IPC. Per-interface counters produce sampled send/receive rates, and history preserves unavailable gaps. There is no PID attribution, packet capture, DNS history, or detection.
 - Threat Intelligence now has a real advisory CISA KEV catalog route. The core client uses a fixed HTTPS endpoint with redirects disabled, a 15-second deadline, a 12 MiB response cap, strict JSON/CVE/date/field validation, duplicate rejection, and an in-memory searchable catalog. The UI shows release/retrieval times and explicit no-cache/offline failure state. It does not make local vulnerability claims or trigger actions. Persistent cache, signature validation, multiple feeds, product/version matching, EPSS/NVD, and Sigma/YARA are still outstanding; see `docs/THREAT_INTELLIGENCE.md`.
-- Settings now has one consolidated route with persistent local preferences for weather visuals, reduced motion, and automatic storm cycling. These are wired to the shell and stored in the current user's packaged app settings; no secret settings or unimplemented security-action toggles are exposed. See `docs/SETTINGS.md`.
+- Settings now has one consolidated route with persistent local preferences for weather visuals, reduced motion, and automatic storm cycling. Toggle handlers are attached only after XAML initialization following a user-reported Settings crash. Build/test and launch pass; native interactive confirmation is outstanding. See `docs/SETTINGS.md`.
 - The old Downpour source was searched for driver behavior. It includes a KernelDriverAuditor, BYOVD name/path checks, and a new-driver baseline monitor; no driver package maintenance UI/workflow was found in the targeted code/module-map search. See `docs/DESIGN_REFERENCES.md`.
 - TMOG informed graph semantics only, not page layout. CPU/memory and network samples are graphed without interpolating unavailable readings. Additional per-core, disk, GPU, thermal, energy, and history-replay views remain planned.
 - Other security engines, scans, all but the initial CISA KEV feed, event monitors, security-policy settings, hardening, forensics, AEGIS layers, and response actions remain unported.
@@ -49,16 +49,16 @@ Check: Dashboard should show an observe-only connection and live system metrics.
 
 ## Last verification
 
-- `dotnet build Downpour.slnx -c Debug`: passed with 0 warnings and 0 errors after adding CISA KEV, Settings, and bounded Json.NET IPC parsing.
-- `dotnet test Downpour.slnx -c Debug` and `-c Release`: 14 passed, 0 failed (includes malformed/duplicate/oversized KEV inputs).
-- Self-contained x64 desktop/service publish passed. Direct EXE startup initially crashed in generated WinRT `GlobalVtableLookup` with `ComInterfaceEntry` TypeLoadException. After replacing UI/Core JSON parsing with pinned Newtonsoft.Json 13.0.4 and rebuilding to a clean candidate path, the portable desktop EXE remained running in the launch smoke check. The candidate currently has no trusted signature; no installer was generated.
+- `dotnet build Downpour.slnx -c Release`: passed with 0 warnings and 0 errors after moving Settings toggle handlers to post-initialization wiring.
+- `dotnet test Downpour.slnx -c Release`: 16 passed, 0 failed.
+- Self-contained x64 desktop/service publish passed to `artifacts/DownpourNext-win-x64-settings-fix`; packaged EXE and launcher are present. The user-reported Settings failure aligns with a XAML/WinUI crash recorded by Windows Error Reporting; toggle handlers now attach after initialization. The new EXE remained running in the startup smoke check, but the Settings click path has not yet been interactively verified. ZIP: `artifacts/DownpourNext-win-x64-preview-settings-fix.zip`, SHA-256 `771F1EA78E6BEC9A6BD71982968F37BD56A11BE8C21DF46150F7A44D0A70F96A`. The bundle has no trusted signature and is not an installer.
 - Manual named-pipe smoke test initially failed with `Access to the path is denied.` The ACL was updated with authenticated-reader synchronization/read-attributes/read-permissions rights, and a subsequent manual client received a valid schema-v1 snapshot. Four automated tests now pass, including the pipe integration test.
 - WinUI packaged app was captured via `PrintWindow`; live CPU/memory gauges/history, clear landscape, separate moon, visible rain mode control, and denser animated precipitation render. Network page is provider/IPC tested; native route interaction and narrow/high-DPI review remain outstanding.
 - GitHub private repo created and first commit pushed to `main`. GitHub connector returned 404 for the private repository, but the browser showed the created repository and `git push` succeeded.
 
 ## Immediate next actions
 
-1. Continue native route/layout review, especially responsive width on narrow windows.
+1. Verify the Settings route opens and saves preferences in a native interactive click-through; continue native route/layout review, especially responsive width on narrow windows.
 2. Add a versioned local KEV cache with integrity/freshness rules, then ingest additional independently allow-listed feeds and correlate with local software inventory.
 3. Port Windows event telemetry, then implement normalized alerts/detection fixtures.
 4. Port the original driver's BYOVD/signature/path audit semantics with current signed intelligence and independently validated evidence.

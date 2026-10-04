@@ -8,7 +8,7 @@
       "taskId": null,
       "status": "idle",
       "heartbeatUtc": "2026-10-04T02:14:33Z",
-      "notes": "Portable x64 preview built and launched locally; source changes need a focused commit/push before publishing zip. Next: verify GitHub release upload; continue DN-006 cache and DN-007 schema/storage work."
+      "notes": "Settings crash mitigation is committed/pending: handlers now attach after XAML initialization. Release build passes with 0 warnings/errors; 16 tests pass; fresh portable x64 ZIP includes desktop and service EXEs plus one-click CMD launcher, SHA-256 771F1EA78E6BEC9A6BD71982968F37BD56A11BE8C21DF46150F7A44D0A70F96A. Interactive Settings route verification remains outstanding. Next: push source, publish GitHub prerelease, then continue DN-006 cache and DN-007 storage."
     }
   ]
 }

@@ -110,7 +110,7 @@
         "Backup and restore verification",
         "Privacy minimization"
       ],
-      "notes": "Partial implementation shipped in this checkpoint: one Settings route persists the wired visual preferences (rain effects, reduced motion, auto storm cycle) in per-user packaged local settings and labels fallback behavior. No secrets are stored. Transactional schema upgrades, DPAPI secrets, backup/restore, user-configurable scan/privacy policies, and audit/history storage remain outstanding."
+      "notes": "Partial implementation shipped in this checkpoint: one Settings route persists the wired visual preferences (rain effects, reduced motion, auto storm cycle) in per-user packaged local settings and labels fallback behavior. Settings toggle handlers were moved out of XAML to avoid early invocation during control construction after a user-reported crash; build/tests and process startup pass, but native interactive route confirmation remains outstanding. No secrets are stored. Transactional schema upgrades, DPAPI secrets, backup/restore, user-configurable scan/privacy policies, and audit/history storage remain outstanding."
     },
     {
       "id": "DN-008",
@@ -146,7 +146,7 @@
         "Service lifecycle and least privilege documented",
         "Upgrade, rollback, uninstall, and data recovery checked"
       ],
-      "notes": "Local x64 self-contained portable bundle is built in ignored artifacts/DownpourNext-win-x64-final and packed as artifacts/DownpourNext-win-x64-preview.zip (SHA-256 F4E5F06163508174258816ED27E6231A822C146D502A12446A4575B4BB5463E9). Desktop and service launch smoke check passed; Release build has 0 warnings/errors and 16 tests pass. This is unsigned and not an installer. Trusted code signing, install/upgrade/rollback/uninstall and release signing remain release blockers."
+      "notes": "Fresh x64 self-contained portable bundle with Downpour.Desktop.exe, Downpour.Service.exe, and Start-Downpour-Next.cmd is packed as artifacts/DownpourNext-win-x64-preview-settings-fix.zip (SHA-256 771F1EA78E6BEC9A6BD71982968F37BD56A11BE8C21DF46150F7A44D0A70F96A). Release build has 0 warnings/errors, all 16 tests pass, and the desktop process remains alive after launch. Settings handler initialization was adjusted after user-reported route crash; interactive Settings navigation still needs confirmation. Publish this ZIP as the GitHub prerelease. Bundle is unsigned and is not an installer; trusted code signing, install/upgrade/rollback/uninstall and release signing remain blockers."
     },
     {
       "id": "DN-011",

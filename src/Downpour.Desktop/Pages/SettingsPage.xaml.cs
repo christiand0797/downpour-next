@@ -7,16 +7,32 @@ public sealed partial class SettingsPage : Page
 {
     private bool _loading;
 
-    public SettingsPage() => InitializeComponent();
+    public SettingsPage()
+    {
+        InitializeComponent();
+
+        // Attach handlers only after every named control has been materialized.
+        // ToggleSwitch can raise Toggled while its initial state is applied; wiring
+        // handlers in XAML can run them before the page's generated fields are ready.
+        RainEffectsToggle.Toggled += RainEffects_Toggled;
+        ReduceMotionToggle.Toggled += ReduceMotion_Toggled;
+        AutoStormToggle.Toggled += AutoStorm_Toggled;
+    }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
         base.OnNavigatedTo(e);
         _loading = true;
-        RainEffectsToggle.IsOn = AppPreferences.RainEffectsEnabled;
-        ReduceMotionToggle.IsOn = AppPreferences.ReduceMotion;
-        AutoStormToggle.IsOn = AppPreferences.AutoStormCycle;
-        _loading = false;
+        try
+        {
+            RainEffectsToggle.IsOn = AppPreferences.RainEffectsEnabled;
+            ReduceMotionToggle.IsOn = AppPreferences.ReduceMotion;
+            AutoStormToggle.IsOn = AppPreferences.AutoStormCycle;
+        }
+        finally
+        {
+            _loading = false;
+        }
         ShowSaveState();
     }
 
