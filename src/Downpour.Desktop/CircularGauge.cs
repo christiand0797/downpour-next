@@ -15,7 +15,7 @@ public sealed class CircularGauge : UserControl
     private const double Center = RingSize / 2;
     private const double Radius = 56;
     private const double StrokeWidth = 8;
-    private readonly Path _progressRing;
+    private readonly Microsoft.UI.Xaml.Shapes.Path _progressRing;
     private readonly Ellipse _fullProgressRing;
     private readonly TextBlock _valueText;
     private double? _value;
@@ -52,7 +52,7 @@ public sealed class CircularGauge : UserControl
         };
         root.Children.Add(_fullProgressRing);
 
-        _progressRing = new Path
+        _progressRing = new Microsoft.UI.Xaml.Shapes.Path
         {
             Width = RingSize,
             Height = RingSize,
