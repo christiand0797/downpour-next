@@ -15,7 +15,7 @@ public sealed class CircularGauge : UserControl
     private const double Center = RingSize / 2;
     private const double Radius = 56;
     private const double StrokeWidth = 8;
-    private readonly Polyline _progressRing;
+    private readonly Path _progressRing;
     private readonly Ellipse _fullProgressRing;
     private readonly TextBlock _valueText;
     private double? _value;
@@ -52,7 +52,7 @@ public sealed class CircularGauge : UserControl
         };
         root.Children.Add(_fullProgressRing);
 
-        _progressRing = new Polyline
+        _progressRing = new Path
         {
             Width = RingSize,
             Height = RingSize,
@@ -101,8 +101,8 @@ public sealed class CircularGauge : UserControl
             return;
         }
 
-        // Sample the same centerline as the 120px track. This keeps every point on the
-        // ring while avoiding circumference/dash approximations that caused drift.
+        // Follow the exact centerline of the track with a single arc. A PathGeometry
+        // avoids rebuilding mutable PointCollections during the live refresh cycle.
         if (value >= 99.95)
         {
             _progressRing.Visibility = Visibility.Collapsed;
@@ -110,14 +110,22 @@ public sealed class CircularGauge : UserControl
             return;
         }
         _fullProgressRing.Visibility = Visibility.Collapsed;
-        var points = new PointCollection();
-        var pointCount = Math.Max(2, (int)Math.Ceiling(360d * value / 100d / 1.5d));
-        for (var index = 0; index <= pointCount; index++)
+        var endAngle = (-90d + 360d * value / 100d) * Math.PI / 180d;
+        var geometry = new PathGeometry();
+        var figure = new PathFigure
         {
-            var angle = (-90d + 360d * value / 100d * index / pointCount) * Math.PI / 180d;
-            points.Add(new Windows.Foundation.Point(Center + Radius * Math.Cos(angle), Center + Radius * Math.Sin(angle)));
-        }
-        _progressRing.Points = points;
+            StartPoint = new Windows.Foundation.Point(Center, Center - Radius),
+            IsClosed = false
+        };
+        figure.Segments.Add(new ArcSegment
+        {
+            Point = new Windows.Foundation.Point(Center + Radius * Math.Cos(endAngle), Center + Radius * Math.Sin(endAngle)),
+            Size = new Windows.Foundation.Size(Radius, Radius),
+            IsLargeArc = value > 50,
+            SweepDirection = SweepDirection.Clockwise
+        });
+        geometry.Figures.Add(figure);
+        _progressRing.Data = geometry;
         _progressRing.Visibility = Visibility.Visible;
     }
 }
