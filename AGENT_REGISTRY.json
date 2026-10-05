@@ -7,8 +7,8 @@
       "role": "primary",
       "taskId": "DN-014",
       "status": "active",
-      "heartbeatUtc": "2026-10-05T02:52:00Z",
-      "notes": "DN-014 follow-on adds real service-side per-process CPU deltas (normalized across logical processor capacity, resets on process start-time/PID reuse, null on first/inaccessible sample), client validation, and Process/Performance readouts. Release serial build passed (0 warnings/errors); 115 tests pass including the live two-sample provider test. Fresh desktop/service publishes copied to local portable package and packaged app/service startup was confirmed. Native Performance-route/save-picker click-through remains. Next: add per-core CPU, disk I/O, and pagefile telemetry with bounded contracts and source tests; keep unsupported readings unknown."
+      "heartbeatUtc": "2026-10-05T03:08:48Z",
+      "notes": "DN-014 follow-on source commit cff89ec adds service-side per-process CPU deltas normalized across logical processor capacity, PID-reuse reset and null first/inaccessible readings, client validation, and Process/Performance readouts. Serial Release build passes with 0 warnings/errors; all 115 tests pass including a live second-sample provider test. Fresh desktop/service publishes copied to local portable package; app launch and service auto-start confirmed. Native Performance-route/save-picker click-through remains. Next: add per-core CPU, disk I/O, and pagefile telemetry with bounded contracts and source tests; keep unsupported readings unknown."
     },
     {
       "id": "v29_action_map",
