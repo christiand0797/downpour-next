@@ -1,5 +1,15 @@
 # Downpour Next changelog
 
+## v0.1.12 — repair in-app update apply and recovery
+
+- Fixed the portable update's Windows directory containment check and moved file replacement into a separate self-contained `Downpour.UpdateHelper.exe` outside the package directory.
+- Update failures now show their concrete exception detail and write `%LOCALAPPDATA%\DownpourNext\updates\last-update-error.txt`. Safe failed staging can be cleared and retried.
+- Added regression checks for trailing-separator roots and sibling-prefix escapes.
+- Full Release build: 0 warnings/errors; 107 tests passed. A disposable v0.1.11-to-v0.1.12 apply updated the desktop, service, and helper hashes and relaunched successfully.
+- Existing v0.1.10/v0.1.11 users must manually extract v0.1.12 once; future updates use the standalone helper.
+- Package: `DownpourNext-win-x64-0.1.12.zip` (196,706,743 bytes); SHA-256 `C696A091F78E43EA1B663716B25DEF0500533342E22C79F1C0554575D7B19FA5`.
+- Download [v0.1.12](https://github.com/christiand0797/downpour-next/releases/tag/v0.1.12). Unsigned portable build; GitHub's digest is not a publisher signature. See [`UPDATES.md`](UPDATES.md).
+
 ## v0.1.11 — local software inventory and KEV candidate review
 
 - Added a working Vulnerabilities route with bounded machine/current-user uninstall-key inventory and explicit software refresh/search.

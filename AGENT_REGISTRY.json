@@ -7,8 +7,8 @@
       "role": "primary",
       "taskId": "DN-010",
       "status": "active",
-      "heartbeatUtc": "2026-10-05T00:59:00Z",
-      "notes": "Investigating user-reported in-app update rollback. Root cause found: path containment rejects every package destination when BaseDirectory has trailing slash; update helper also runs from the executable it tries to replace. Building a standalone single-file helper, safe relative-path check, retry cleanup, and regression tests; target release v0.1.12."
+      "heartbeatUtc": "2026-10-05T01:05:00Z",
+      "notes": "User-reported update rollback fixed and v0.1.12 published. Cause: path containment check mishandled trailing separator; old helper attempted to replace its own executable. Standalone helper implemented, 107 tests pass, full disposable v0.1.11-to-v0.1.12 apply/relaunch/hash check passes. Next resume DN-006 threat/vulnerability parity; laptop native click-through remains manual."
     },
     {
       "id": "v29_action_map",
