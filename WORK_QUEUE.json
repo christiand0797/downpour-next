@@ -281,7 +281,7 @@
         "docs/FILE_INSPECTOR.md",
         "docs/FEATURE_PARITY.md"
       ],
-      "notes": "Current slice wires Scanner navigation to a one-file static PE inspector. The code hashes at most 256 MiB, bounds PE headers/96 sections, and reports architecture/timestamp/section flags/certificate-table presence. It does not detect threats, verify trust, upload, execute, or remediate. Release build and 112 tests currently pass; follow with package smoke and v0.1.13 release. Full scan, YARA/Defender, recursive scope, and native picker click-through remain open."
+      "notes": "One-file static PE inspector is shipped in v0.1.13 from source e3fb605. Hashes at most 256 MiB, bounds PE headers/96 sections, and reports architecture/timestamp/section flags/certificate-table presence. It does not detect threats, verify trust, upload, execute, or remediate. Release build 0 warnings/errors; 112 tests pass; package hash verified and desktop/service launch/shutdown smoke passed. Full v29 scan, YARA/Defender, recursive scope, and native file-picker click-through remain open."
     }
   ]
 }

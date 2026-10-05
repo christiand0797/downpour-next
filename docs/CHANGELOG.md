@@ -1,5 +1,14 @@
 # Downpour Next changelog
 
+## v0.1.13 — static PE file inspector
+
+- Wired the Scanner route to a working user-selected local file inspector for `.exe`, `.dll`, and `.sys` files up to 256 MiB.
+- Computes SHA-256 as a stream and parses bounded PE architecture, timestamp, section count, writable+executable section count, and embedded certificate-table presence.
+- File is never executed/uploaded/modified/persisted by this feature. Certificate presence is not trust verification and the page makes no malware verdict.
+- Release build: 0 warnings/errors; 112 tests passed. Package hash matches GitHub, and desktop/service launch plus graceful close passed. Native file-picker click-through remains manual.
+- Package: `DownpourNext-win-x64-0.1.13.zip` (196,734,379 bytes); SHA-256 `72AB2B9204FF110962091DF08BA4103FDCF2E6E3A080C6DE3230A5AE3376F6FD`.
+- Download [v0.1.13](https://github.com/christiand0797/downpour-next/releases/tag/v0.1.13). Unsigned portable build; not full scanner parity. See [`FILE_INSPECTOR.md`](FILE_INSPECTOR.md).
+
 ## v0.1.12 — repair in-app update apply and recovery
 
 - Fixed the portable update's Windows directory containment check and moved file replacement into a separate self-contained `Downpour.UpdateHelper.exe` outside the package directory.

@@ -7,8 +7,8 @@
       "role": "primary",
       "taskId": "DN-013",
       "status": "active",
-      "heartbeatUtc": "2026-10-05T01:12:00Z",
-      "notes": "DN-010 update rollback fixed and v0.1.12 published; end-to-end local update passes. Current slice DN-013 implements a bounded user-selected PE inspector (SHA-256 and metadata only, not a malware verdict); finish parser/provider/page tests, push source, then package v0.1.13."
+      "heartbeatUtc": "2026-10-05T01:20:00Z",
+      "notes": "DN-013 static PE inspector implemented and released in v0.1.13 (source e3fb605). Release build clean, 112 tests pass, local package hash and desktop/service launch/shutdown verified. Scope is bounded metadata/hash, not detection. Next resume complete v29 scanner parity and other remaining routes; native file-picker interaction remains manual."
     },
     {
       "id": "v29_action_map",
