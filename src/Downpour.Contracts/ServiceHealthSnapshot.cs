@@ -19,7 +19,9 @@ public sealed record SystemHealthSnapshot(
     ulong MemoryAvailableBytes,
     int? ActiveTcpConnections,
     IReadOnlyList<ProcessSnapshot> TopProcesses,
-    IReadOnlyList<string> Warnings);
+    IReadOnlyList<string> Warnings,
+    ulong? MemoryCommitLimitBytes = null,
+    ulong? MemoryCommittedBytes = null);
 
 public sealed record DriverInventoryEntry(string Name, string ImagePath, bool IsUnderSystemDrivers, bool IsInUserWritableLocation);
 

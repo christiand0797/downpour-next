@@ -25,6 +25,10 @@ public sealed class SystemSnapshotProviderTests
         });
         Assert.True(snapshot.MemoryTotalBytes > 0);
         Assert.InRange(snapshot.CpuPercent ?? 0, 0, 100);
+        if (snapshot.MemoryCommitLimitBytes is { } commitLimit && snapshot.MemoryCommittedBytes is { } committed)
+            Assert.InRange<ulong>(committed, 0, commitLimit);
+        else
+            Assert.Contains(snapshot.Warnings, warning => warning.Contains("commit counters", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -92,5 +96,24 @@ public sealed class SystemSnapshotProviderTests
         {
             TopProcesses = [valid.TopProcesses[0] with { CpuPercent = 100.1 }]
         }));
+    }
+
+    [Fact]
+    public void CommitCounterValidationRequiresAConsistentSystemWidePair()
+    {
+        var valid = new Downpour.Contracts.SystemHealthSnapshot(1, DateTimeOffset.UtcNow, 1, 50, 1024, 512, 2,
+            [new Downpour.Contracts.ProcessSnapshot(10, "safe", 128, 1)], [], 4096, 2048);
+
+        Assert.True(Downpour.Core.SystemSnapshotClient.IsValidSnapshot(valid));
+        Assert.False(Downpour.Core.SystemSnapshotClient.IsValidSnapshot(valid with { MemoryCommittedBytes = 8192 }));
+        Assert.False(Downpour.Core.SystemSnapshotClient.IsValidSnapshot(valid with { MemoryCommitLimitBytes = null }));
+    }
+
+    [Fact]
+    public void PerformancePageCountsConvertSaturatingPagesToBytes()
+    {
+        Assert.Equal(16_384UL, SystemSnapshotProvider.PagesToBytes((nuint)4, (nuint)4_096));
+        Assert.Equal(0UL, SystemSnapshotProvider.PagesToBytes((nuint)4, 0));
+        Assert.Equal(ulong.MaxValue, SystemSnapshotProvider.PagesToBytes(nuint.MaxValue, (nuint)4_096));
     }
 }

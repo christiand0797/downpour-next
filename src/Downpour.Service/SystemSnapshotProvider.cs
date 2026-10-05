@@ -86,6 +86,10 @@ public sealed class SystemSnapshotProvider
             warnings.Add("Physical memory counters are unavailable.");
         }
 
+        var (commitLimitBytes, committedBytes) = ReadSystemCommitUsage();
+        if (commitLimitBytes is null || committedBytes is null)
+            warnings.Add("System-wide memory commit counters are unavailable.");
+
         int? activeConnections = null;
         try
         {
@@ -106,7 +110,31 @@ public sealed class SystemSnapshotProvider
             memoryAvailable,
             activeConnections,
             processes.OrderByDescending(process => process.WorkingSetBytes).Take(MaximumProcessRows).ToArray(),
-            warnings);
+            warnings,
+            commitLimitBytes,
+            committedBytes);
+    }
+
+    private static (ulong? LimitBytes, ulong? CommittedBytes) ReadSystemCommitUsage()
+    {
+        try
+        {
+            var info = new PerformanceInformation { Size = (uint)Marshal.SizeOf<PerformanceInformation>() };
+            if (!GetPerformanceInfo(ref info, info.Size) || info.PageSize == 0 || info.CommitLimit == 0 || info.CommitTotal > info.CommitLimit)
+                return (null, null);
+            return (PagesToBytes(info.CommitLimit, info.PageSize), PagesToBytes(info.CommitTotal, info.PageSize));
+        }
+        catch (Exception exception) when (exception is DllNotFoundException or EntryPointNotFoundException or BadImageFormatException)
+        {
+            return (null, null);
+        }
+    }
+
+    internal static ulong PagesToBytes(nuint pages, nuint pageSize)
+    {
+        var pageCount = (ulong)pages;
+        var size = (ulong)pageSize;
+        return size == 0 ? 0 : pageCount > ulong.MaxValue / size ? ulong.MaxValue : pageCount * size;
     }
 
     private double? ReadCpuPercent()
@@ -167,9 +195,32 @@ public sealed class SystemSnapshotProvider
         public ulong AvailableExtendedVirtual;
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    private struct PerformanceInformation
+    {
+        public uint Size;
+        public nuint CommitTotal;
+        public nuint CommitLimit;
+        public nuint CommitPeak;
+        public nuint PhysicalTotal;
+        public nuint PhysicalAvailable;
+        public nuint SystemCache;
+        public nuint KernelTotal;
+        public nuint KernelPaged;
+        public nuint KernelNonpaged;
+        public nuint PageSize;
+        public uint HandleCount;
+        public uint ProcessCount;
+        public uint ThreadCount;
+    }
+
     [DllImport("kernel32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool GlobalMemoryStatusEx(ref MemoryStatus buffer);
+
+    [DllImport("psapi.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool GetPerformanceInfo(ref PerformanceInformation performanceInformation, uint size);
 
     [DllImport("kernel32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]

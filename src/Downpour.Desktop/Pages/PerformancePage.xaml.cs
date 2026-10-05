@@ -23,6 +23,7 @@ public sealed partial class PerformancePage : Page
     private readonly Queue<PerformanceSample> _history = new();
     private readonly CircularGauge _cpuGauge;
     private readonly CircularGauge _memoryGauge;
+    private readonly CircularGauge _commitGauge;
     private readonly CircularGauge _diskGauge;
     private readonly CircularGauge _receiveGauge;
     private readonly CircularGauge _sendGauge;
@@ -37,6 +38,7 @@ public sealed partial class PerformancePage : Page
         InitializeComponent();
         _cpuGauge = new CircularGauge("CPU", Color.FromArgb(255, 74, 220, 243));
         _memoryGauge = new CircularGauge("MEMORY", Color.FromArgb(255, 178, 121, 248));
+        _commitGauge = new CircularGauge("COMMIT", Color.FromArgb(255, 255, 174, 92));
         _diskGauge = new CircularGauge("OS DISK", Color.FromArgb(255, 255, 176, 94));
         _receiveGauge = new CircularGauge("RX / s", Color.FromArgb(255, 80, 219, 241));
         _sendGauge = new CircularGauge("TX / s", Color.FromArgb(255, 180, 122, 248));
@@ -45,6 +47,7 @@ public sealed partial class PerformancePage : Page
         AddGauge(_diskGauge, 2, 0);
         AddGauge(_receiveGauge, 0, 1);
         AddGauge(_sendGauge, 1, 1);
+        AddGauge(_commitGauge, 2, 1);
         CpuCount.Text = Environment.ProcessorCount.ToString("N0");
         CpuDetail.Text = "Logical processors · Windows reports topology only";
         _timer = DispatcherQueue.GetForCurrentThread().CreateTimer();
@@ -88,7 +91,7 @@ public sealed partial class PerformancePage : Page
             : "Pause automatic three-second sampling.");
         StatusDescription.Text = _samplingPaused
             ? "Automatic sampling is paused. Use Refresh for a one-time current snapshot."
-            : "CPU and physical memory update every three seconds. Missing readings remain visible as graph gaps.";
+            : "CPU, memory, commit, and adapter rates update every three seconds. Missing readings remain visible as graph gaps.";
     }
 
     private async void Export_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -113,12 +116,15 @@ public sealed partial class PerformancePage : Page
                 return;
             }
 
-            var csv = new System.Text.StringBuilder("captured_at_local,cpu_percent,memory_percent,receive_bytes_per_second,send_bytes_per_second\r\n");
+            var csv = new System.Text.StringBuilder("captured_at_local,cpu_percent,memory_percent,commit_percent,committed_bytes,commit_limit_bytes,receive_bytes_per_second,send_bytes_per_second\r\n");
             foreach (var sample in samples)
             {
                 csv.Append(sample.CapturedAtUtc.ToLocalTime().ToString("O"))
                     .Append(',').Append(sample.Cpu?.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture) ?? "")
                     .Append(',').Append(sample.Memory?.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture) ?? "")
+                    .Append(',').Append(sample.CommitPercent?.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture) ?? "")
+                    .Append(',').Append(sample.CommittedBytes?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "")
+                    .Append(',').Append(sample.CommitLimitBytes?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "")
                     .Append(',').Append(sample.Receive?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "")
                     .Append(',').Append(sample.Send?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "")
                     .Append("\r\n");
@@ -164,14 +170,16 @@ public sealed partial class PerformancePage : Page
                 StatusDescription.Text = $"{App.SensorServiceStatusHint} New graph samples will resume when local telemetry reconnects.";
                 _cpuGauge.SetValue(null);
                 _memoryGauge.SetValue(null);
+                _commitGauge.SetMetric(null, null);
                 _receiveGauge.SetMetric(null, null);
                 _sendGauge.SetMetric(null, null);
                 MemorySummary.Text = "Physical memory totals are unavailable with the sensor offline";
+                CommitSummary.Text = "System commit counters unavailable";
                 ProcessCount.Text = "—";
                 ConnectionCount.Text = "—";
                 UptimeValue.Text = FormatUptime(TimeSpan.FromMilliseconds(Math.Max(0, Environment.TickCount64)));
                 Processes.Clear();
-                _history.Enqueue(new PerformanceSample(DateTimeOffset.UtcNow, null, null, null, null));
+                _history.Enqueue(new PerformanceSample(DateTimeOffset.UtcNow, null, null, null, null, null, null, null));
                 TrimHistory();
                 DrawHistory();
                 DrawNetworkHistory();
@@ -184,9 +192,16 @@ public sealed partial class PerformancePage : Page
             var captured = snapshot.CapturedAtUtc.ToLocalTime();
             var usedBytes = snapshot.MemoryTotalBytes - Math.Min(snapshot.MemoryTotalBytes, snapshot.MemoryAvailableBytes);
             double? memoryPercent = snapshot.MemoryTotalBytes > 0 ? usedBytes * 100d / snapshot.MemoryTotalBytes : null;
+            double? commitPercent = snapshot.MemoryCommitLimitBytes is { } commitLimit && commitLimit > 0 && snapshot.MemoryCommittedBytes is { } committed
+                ? Math.Clamp(committed * 100d / commitLimit, 0, 100)
+                : null;
             _cpuGauge.SetValue(snapshot.CpuPercent);
             _memoryGauge.SetValue(memoryPercent);
+            _commitGauge.SetMetric(commitPercent, commitPercent is { } commitValue ? $"{commitValue:0}%" : null);
             MemorySummary.Text = $"Physical memory · {FormatBytes(usedBytes)} used · {FormatBytes(snapshot.MemoryAvailableBytes)} available · {FormatBytes(snapshot.MemoryTotalBytes)} total";
+            CommitSummary.Text = snapshot.MemoryCommittedBytes is { } committedBytes && snapshot.MemoryCommitLimitBytes is { } limitBytes
+                ? $"System commit · {FormatBytes(committedBytes)} committed of {FormatBytes(limitBytes)} limit"
+                : "System-wide commit limit unavailable";
             ProcessCount.Text = snapshot.ProcessCount.ToString("N0");
             UptimeValue.Text = FormatUptime(TimeSpan.FromMilliseconds(Math.Max(0, Environment.TickCount64)));
             StatusHeadline.Text = $"Live system sample · captured {captured:HH:mm:ss}";
@@ -197,9 +212,10 @@ public sealed partial class PerformancePage : Page
             ConnectionCount.Text = network?.TotalConnectionCount.ToString("N0") ?? "—";
             StatusDescription.Text = network is null
                 ? "System CPU/memory and volume readings are local. Adapter rates and connection totals are unavailable in this sample."
-                : "CPU, memory, volume, adapter rates, and process inventory update locally every three seconds. Missing measurements remain unknown.";
+                : "CPU, physical memory, system commit, volume, adapter rates, and process inventory update locally every three seconds. Missing measurements remain unknown.";
 
-            _history.Enqueue(new PerformanceSample(snapshot.CapturedAtUtc, snapshot.CpuPercent, memoryPercent, receive, send));
+            _history.Enqueue(new PerformanceSample(snapshot.CapturedAtUtc, snapshot.CpuPercent, memoryPercent, commitPercent,
+                snapshot.MemoryCommittedBytes, snapshot.MemoryCommitLimitBytes, receive, send));
             TrimHistory();
             UpdateRateGauges(receive, send);
             DrawHistory();
@@ -224,14 +240,16 @@ public sealed partial class PerformancePage : Page
             StatusDescription.Text = exception.Message.Length > 240 ? exception.Message[..240] : exception.Message;
             _cpuGauge.SetValue(null);
             _memoryGauge.SetValue(null);
+            _commitGauge.SetMetric(null, null);
             _receiveGauge.SetMetric(null, null);
             _sendGauge.SetMetric(null, null);
             MemorySummary.Text = "Physical memory totals are unavailable in this sample";
+            CommitSummary.Text = "System commit counters unavailable in this sample";
             ProcessCount.Text = "—";
             ConnectionCount.Text = "—";
             UptimeValue.Text = "—";
             Processes.Clear();
-            _history.Enqueue(new PerformanceSample(DateTimeOffset.UtcNow, null, null, null, null));
+            _history.Enqueue(new PerformanceSample(DateTimeOffset.UtcNow, null, null, null, null, null, null, null));
             TrimHistory();
             DrawHistory();
             DrawNetworkHistory();
@@ -342,8 +360,9 @@ public sealed partial class PerformancePage : Page
         var samples = _history.ToArray();
         DrawSeries(samples.Select(sample => sample.Cpu).ToArray(), width, height, insetX, insetY, Color.FromArgb(255, 80, 219, 241));
         DrawSeries(samples.Select(sample => sample.Memory).ToArray(), width, height, insetX, insetY, Color.FromArgb(255, 180, 122, 248));
+        DrawSeries(samples.Select(sample => sample.CommitPercent).ToArray(), width, height, insetX, insetY, Color.FromArgb(255, 255, 174, 92));
         ExportButton.IsEnabled = samples.Length > 0 && !_exportInFlight;
-        HistoryEmpty.Visibility = samples.Any(sample => sample.Cpu.HasValue || sample.Memory.HasValue)
+        HistoryEmpty.Visibility = samples.Any(sample => sample.Cpu.HasValue || sample.Memory.HasValue || sample.CommitPercent.HasValue)
             ? Microsoft.UI.Xaml.Visibility.Collapsed : Microsoft.UI.Xaml.Visibility.Visible;
     }
 
@@ -460,7 +479,8 @@ public sealed partial class PerformancePage : Page
         }
     }
 
-    private sealed record PerformanceSample(DateTimeOffset CapturedAtUtc, double? Cpu, double? Memory, long? Receive, long? Send);
+    private sealed record PerformanceSample(DateTimeOffset CapturedAtUtc, double? Cpu, double? Memory, double? CommitPercent,
+        ulong? CommittedBytes, ulong? CommitLimitBytes, long? Receive, long? Send);
     private sealed record SystemVolumeReading(double? UsagePercent, string? DisplayValue, string Value, string Detail);
 }
 
