@@ -1,5 +1,16 @@
 # Downpour Next changelog
 
+## v0.1.14 — Performance telemetry and gauges
+
+- Expanded Monitoring > Performance with six live gauges: CPU, physical memory, system commit, OS-volume usage, combined active-adapter receive, and send. Added commit history and committed/limit fields to bounded CSV export.
+- Added service-side per-process CPU percentages from cumulative CPU-time deltas. Values normalize to total logical-processor capacity, remain unknown on first/inaccessible samples, and reset on process start-time changes to avoid PID-reuse carryover.
+- System-wide commit uses Windows `GetPerformanceInfo`; page counts convert to bytes with the reported page size. The UI does not treat process-limited paging-file counters as system-wide.
+- Fixed dashboard, network, and Performance chart crashes caused by sharing a WinUI `PointCollection`; clarified graph units, time direction, missing-data gaps, and current-sample markers. System-volume metadata now reads off the UI dispatcher.
+- Corrected the updater's embedded current version to 0.1.14 so the new package no longer reports itself as an older install.
+- Release build: 0 warnings/errors; 117 tests passed. Portable build is self-contained and unsigned; this does not complete v29 parity. Per-core CPU, physical disk I/O, pagefile storage usage, GPU/thermal/power readings, and native Performance/save-picker click-through remain open.
+- Package: `DownpourNext-win-x64-0.1.14.zip` (size and SHA-256 recorded after GitHub upload).
+- Download [v0.1.14](https://github.com/christiand0797/downpour-next/releases/tag/v0.1.14).
+
 ## v0.1.13 — static PE file inspector
 
 - Wired the Scanner route to a working user-selected local file inspector for `.exe`, `.dll`, and `.sys` files up to 256 MiB.
