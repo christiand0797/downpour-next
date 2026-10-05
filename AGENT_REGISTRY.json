@@ -5,10 +5,10 @@
     {
       "id": "codex-primary",
       "role": "primary",
-      "taskId": "DN-010",
+      "taskId": "DN-006",
       "status": "active",
-      "heartbeatUtc": "2026-10-04T22:08:00Z",
-      "notes": "v0.1.10 update button/source is pushed; portable package published and locally smoke-checked. Finishing release docs/push, then continue feature-parity slices. Unsigned release digest is not publisher authentication; UI interaction and failure-recovery click-through remain open."
+      "heartbeatUtc": "2026-10-05T00:38:00Z",
+      "notes": "DN-006 local software inventory and KEV product-name candidate slice implemented; strict candidate-only semantics documented. Release build clean, 105 tests pass. Publishing v0.1.11 and portable package next; continue threat/vulnerability parity after checkpoint."
     },
     {
       "id": "v29_action_map",

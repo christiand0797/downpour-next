@@ -1,5 +1,7 @@
 # Downpour Next TODO
 
+- Active DN-006 slice implements local installed-software inventory and cautious CISA KEV product-name candidates in Vulnerabilities. It reads only uninstall-key display metadata, uses bounded user-only IPC, excludes generic/vendor-only matches, and requires vendor evidence plus an end-of-name product phrase. Candidate rows are explicitly not vulnerability verdicts. Release build clean; 105 tests pass. Remaining: native page click-through, clean-install service pipe smoke, and full affected-version/NVD/CPE work. See [`docs/THREAT_INTELLIGENCE.md`](docs/THREAT_INTELLIGENCE.md).
+
 This checklist tracks current implementation state; the detailed order, dependencies, and acceptance criteria are in [`WORK_QUEUE.json`](WORK_QUEUE.json).
 
 ## 2026-10-04 continuation checkpoint

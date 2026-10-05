@@ -16,7 +16,7 @@ This project aims to preserve every Downpour v29 capability and improve its usab
 
 - Native desktop shell, route registry, dark visual system, rain and crescent motif.
 - Service host runs in observe-only mode.
-- Threat Intelligence has a real bounded CISA KEV fetch/search slice; broader feeds, cache, signatures, local product correlation, and vulnerability scanning are still unported.
+- Threat Intelligence has bounded CISA KEV fetch/cache/search, explicit single-CVE EPSS, and local registry-name candidate review. Affected-version verification, NVD/CVSS/CPE, broader feeds, signatures, Sigma/YARA, and scanning are still unported.
 - Define versioned contracts and a supported Windows / .NET release baseline.
 
 ### 1. Observe and inventory
@@ -28,7 +28,7 @@ This project aims to preserve every Downpour v29 capability and improve its usab
 
 ### 2. Detection and triage
 
-- Port threat ingestion, suspicious process/network analysis, ransomware behavior, vulnerability checks, and intelligence feeds. CISA KEV and an explicit single-CVE FIRST EPSS enrichment path are connected; local asset matching, NVD/CVSS/CPE, bulk EPSS, additional threat feeds, and Sigma/YARA remain outstanding.
+- Port threat ingestion, suspicious process/network analysis, ransomware behavior, vulnerability checks, and intelligence feeds. CISA KEV, an explicit single-CVE FIRST EPSS enrichment path, and cautious registry-name candidate review are connected; affected-version analysis, NVD/CVSS/CPE, bulk EPSS, additional threat feeds, and Sigma/YARA remain outstanding.
 - Extend the first alert slice with broader cross-source grouping, investigation timeline/evidence, and the full v29 alert lifecycle while preserving the current local review-state audit. The UI and schema-v2 metadata-only export include two explicitly limited time-proximity patterns over up to 512 validated alerts; this is not a complete correlated case timeline/evidence bundle.
 - Preserve offline behavior and validate feed integrity / cache expiration.
 

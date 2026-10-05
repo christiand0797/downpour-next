@@ -44,6 +44,16 @@ public sealed record WindowsServiceInventorySnapshot(
     IReadOnlyList<WindowsServiceInventoryEntry> Services,
     IReadOnlyList<string> Warnings);
 
+public sealed record InstalledSoftwareEntry(string Name, string Version, string Publisher, string RegistryScope);
+
+public sealed record InstalledSoftwareSnapshot(
+    int SchemaVersion,
+    DateTimeOffset CapturedAtUtc,
+    string CollectionStatus,
+    int TotalCount,
+    IReadOnlyList<InstalledSoftwareEntry> Software,
+    IReadOnlyList<string> Warnings);
+
 public sealed record NetworkInterfaceEntry(
     string Name,
     string Description,

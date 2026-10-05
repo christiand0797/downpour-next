@@ -140,8 +140,23 @@
         "Sigma/YARA behavior compatibility documented",
         "Cache age and source integrity visible"
       ],
-      "notes": "Partial implementation: fixed-host CISA KEV HTTPS fetch, redirects disabled, 15s/12MiB/10k bounds, strict CVE/date/field validation, duplicate rejection, searchable Intel UI, and versioned atomic local cache with SHA-256 corruption detection, 24h stale label, and 7-day maximum age. Four cache tests cover round-trip, tampering, expiry, and invalid input. Remaining: source-signature strategy, additional feeds, local product matching, EPSS/NVD correlation, and Sigma/YARA compatibility. See docs/THREAT_INTELLIGENCE.md.Active continuation: add an explicit, per-CVE FIRST EPSS lookup for entries already present in validated CISA KEV; do not bulk-query the full catalog. Validate fixed HTTPS host, redirects, CVE identifier, response size/schema, score range/date, timeout, and show score as population-level 30-day estimate rather than device vulnerability verdict. Document source attribution and limitations.Implemented explicit per-CVE FIRST EPSS enrichment in Intel UI. It sends one selected CISA KEV CVE only after the user clicks, verifies fixed HTTPS host/path with redirects disabled, caps at 10 seconds/64 KiB, strictly parses one matching CVE and 0..1 probability/percentile/date, and reuses a matching score in memory for 24h. UI labels EPSS as a population-level 30-day estimate, not asset exposure. Live API sample via curl confirmed the documented current JSON fields. Release build/test pending after documentation: 87 focused/full tests previously passed; full solution build clean.",
-      "files": "src/Downpour.Core/EpssClient.cssrc/Downpour.Desktop/Pages/IntelPage.xamlsrc/Downpour.Desktop/Pages/IntelPage.xaml.cstests/Downpour.Tests/EpssClientTests.csdocs/THREAT_INTELLIGENCE.md"
+      "notes": "Current DN-006 slice implemented locally: bounded read-only registry inventory, current-user-restricted output-only pipe/client, and cautious local CISA KEV candidate matching wired into Vulnerabilities. Match requires vendor evidence and a meaningful product phrase at the end of the application name; excludes generic/vendor-only products. Candidate-only wording and limitations documented; no install paths/uninstall commands or changes. Release build and 105 tests pass. Next: publish v0.1.11, then continue threat/vulnerability parity (affected versions, NVD/CPE, rules/feed coverage). Native route click-through and a clean-install service pipe check remain.",
+      "files": [
+        "src/Downpour.Contracts/ServiceHealthSnapshot.cs",
+        "src/Downpour.Service/Program.cs",
+        "src/Downpour.Service/InstalledSoftwareInventoryProvider.cs",
+        "src/Downpour.Service/InstalledSoftwareInventoryPipeWorker.cs",
+        "src/Downpour.Core/InstalledSoftwareInventoryClient.cs",
+        "src/Downpour.Core/KevSoftwareMatchEngine.cs",
+        "src/Downpour.Desktop/Pages/VulnerabilitiesPage.xaml",
+        "src/Downpour.Desktop/Pages/VulnerabilitiesPage.xaml.cs",
+        "src/Downpour.Desktop/MainWindow.xaml.cs",
+        "tests/Downpour.Tests/InstalledSoftwareInventoryTests.cs",
+        "tests/Downpour.Tests/KevSoftwareMatchEngineTests.cs",
+        "docs/THREAT_INTELLIGENCE.md",
+        "docs/SECURITY_MODEL.md",
+        "docs/FEATURE_PARITY.md"
+      ]
     },
     {
       "id": "DN-007",
