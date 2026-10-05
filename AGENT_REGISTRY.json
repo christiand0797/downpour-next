@@ -5,10 +5,10 @@
     {
       "id": "codex-primary",
       "role": "primary",
-      "taskId": "DN-006",
+      "taskId": "DN-010",
       "status": "active",
-      "heartbeatUtc": "2026-10-05T00:44:00Z",
-      "notes": "DN-006 local software inventory and KEV product-name candidate slice implemented and released in v0.1.11. Release build clean, 105 tests pass, portable startup and service lifecycle smoke passed. Next continue threat/vulnerability parity; native UI click-through remains manual."
+      "heartbeatUtc": "2026-10-05T00:59:00Z",
+      "notes": "Investigating user-reported in-app update rollback. Root cause found: path containment rejects every package destination when BaseDirectory has trailing slash; update helper also runs from the executable it tries to replace. Building a standalone single-file helper, safe relative-path check, retry cleanup, and regression tests; target release v0.1.12."
     },
     {
       "id": "v29_action_map",

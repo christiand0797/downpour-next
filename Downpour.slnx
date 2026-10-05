@@ -4,6 +4,7 @@
     <Project Path="src/Downpour.Core/Downpour.Core.csproj" />
     <Project Path="src/Downpour.Desktop/Downpour.Desktop.csproj" />
     <Project Path="src/Downpour.Service/Downpour.Service.csproj" />
+    <Project Path="src/Downpour.UpdateHelper/Downpour.UpdateHelper.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Downpour.Tests/Downpour.Tests.csproj" />

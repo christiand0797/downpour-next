@@ -206,15 +206,19 @@
         "Service lifecycle and least privilege documented",
         "Upgrade, rollback, uninstall, and data recovery checked"
       ],
-      "notes": "Portable updater shipped in v0.1.10. GitHub repo is public by explicit user authorization. Dashboard button checks pinned latest stable release, validates exact asset/type/tag and GitHub digest, downloads/extracts within strict bounds, rejects traversal/reparse paths, hashes staged files, waits for desktop/bundled service shutdown, applies with best-effort per-file rollback, and restarts. Release build 0 warnings/errors; 97 tests pass; packaged startup/graceful-close smoke passed. ZIP: DownpourNext-win-x64-0.1.10.zip (156,615,827 bytes), SHA-256 FA9F4A17BD953BB53CD8D5F60F81A604DE12D88A50F66A76D0F1635E7396B7FA, source commit 23d44e7. Remaining: native button click-through, failure/recovery injection on clean Windows install, independent signed update provenance, signed installer/rollback/uninstall.",
+      "notes": "Portable updater shipped in v0.1.10 and v0.1.11, but user-reported laptop update ended in rollback. Root-cause review found the update helper was the running desktop executable and the containment check concatenated a second separator to a BaseDirectory path; the first caused an immediate failure, and replacing a running executable is not a valid Windows apply design. Current fix replaces this with a standalone single-file helper copied outside the install tree, canonical relative-path containment, visible detailed errors, and retry cleanup for safely validated failed staging. Source/build/tests are in progress for v0.1.12. Existing v0.1.10/v0.1.11 installs require a one-time manual overlay/extract of v0.1.12 because their embedded helper cannot self-replace safely. Then in-app updates use the standalone helper. Still required: end-to-end .11-to-.12 local apply, clean install update and rollback tests, independent signed update provenance, signed installer/rollback/uninstall.",
       "files": [
         "src/Downpour.Core/ReleaseUpdateClient.cs",
         "src/Downpour.Desktop/PortableUpdateInstaller.cs",
         "src/Downpour.Desktop/App.xaml.cs",
+        "src/Downpour.UpdateHelper/Downpour.UpdateHelper.csproj",
+        "src/Downpour.UpdateHelper/Program.cs",
+        "src/Downpour.Core/UpdatePathPolicy.cs",
         "src/Downpour.Desktop/Pages/HomePage.xaml",
         "src/Downpour.Desktop/Pages/HomePage.xaml.cs",
         "Start-Downpour-Next.cmd",
         "tests/Downpour.Tests/ReleaseUpdateClientTests.cs",
+        "tests/Downpour.Tests/UpdatePathPolicyTests.cs",
         "docs/UPDATES.md",
         "docs/SECURITY_MODEL.md",
         "docs/BUILD_WINDOWS.md"

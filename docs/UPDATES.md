@@ -15,6 +15,12 @@ The action is user initiated; there is no background download or silent automati
 - The repository must permit anonymous access to latest release metadata and assets for other users to update without GitHub credentials. A private repository returns an unavailable result. No credentials or GitHub token are embedded or read from the machine.
 - Updating is supported only for the extracted self-contained Windows x64 portable folder. It is not an installer, does not register a Windows service, and does not migrate package-owned user files.
 
+## Update rollback incident (v0.1.10–v0.1.11)
+
+The user reported that an update on a second computer displayed the generic rollback dialog. Source review found two apply defects: the app base path can end in a directory separator, so appending another separator made the package containment check reject every destination; and the old helper ran as `Downpour.Desktop.exe` while trying to replace that same executable. A corrected updater uses a standalone single-file helper copied to `%LOCALAPPDATA%\DownpourNext\update-helper`, canonical relative-path containment, detailed error text, and local error logging. The standalone helper is included in v0.1.12 onward.
+
+The v0.1.10 and v0.1.11 updater cannot safely update itself. Install v0.1.12 once by extracting its ZIP over the existing portable folder while Downpour is closed, or into a fresh folder; then launch the new `Downpour.Desktop.exe` and retry in-app updates. User data under `%LOCALAPPDATA%\DownpourNext` remains separate. A failed staged update from the old versions can leave `.downpour-update`; v0.1.12 clears it only after checking the reserved tree contains no reparse points. If you continue to see the rollback dialog, read `%LOCALAPPDATA%\DownpourNext\updates\last-update-error.txt` and share its contents when requesting help.
+
 ## Verification
 
 `ReleaseUpdateClientTests` covers fixed repository and asset validation, stable-release/version rules, duplicate metadata rejection, digest verification, untrusted redirect rejection, archive traversal rejection, and required executable extraction. Still required before calling the updater production-ready: publisher code signing or a separately authenticated signed manifest, full native UI click-through, failure-injection for locked files/restart rollback, and test from a clean public download on another Windows account.

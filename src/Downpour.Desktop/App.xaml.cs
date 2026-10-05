@@ -55,11 +55,6 @@ public partial class App : Application
     /// <param name="args">Details about the launch request and process.</param>
     protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
     {
-        if (PortableUpdateInstaller.TryApplyAtStartup(Environment.GetCommandLineArgs()))
-        {
-            Exit();
-            return;
-        }
         _window = new MainWindow();
         var sensorService = new SensorServiceProcess(message => SensorServiceStatusHint = message);
         _sensorService = sensorService;
