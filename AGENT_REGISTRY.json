@@ -7,8 +7,8 @@
       "role": "primary",
       "taskId": "DN-006",
       "status": "active",
-      "heartbeatUtc": "2026-10-05T00:38:00Z",
-      "notes": "DN-006 local software inventory and KEV product-name candidate slice implemented; strict candidate-only semantics documented. Release build clean, 105 tests pass. Publishing v0.1.11 and portable package next; continue threat/vulnerability parity after checkpoint."
+      "heartbeatUtc": "2026-10-05T00:44:00Z",
+      "notes": "DN-006 local software inventory and KEV product-name candidate slice implemented and released in v0.1.11. Release build clean, 105 tests pass, portable startup and service lifecycle smoke passed. Next continue threat/vulnerability parity; native UI click-through remains manual."
     },
     {
       "id": "v29_action_map",

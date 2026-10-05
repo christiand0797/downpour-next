@@ -1,6 +1,6 @@
 # Downpour Next TODO
 
-- Active DN-006 slice implements local installed-software inventory and cautious CISA KEV product-name candidates in Vulnerabilities. It reads only uninstall-key display metadata, uses bounded user-only IPC, excludes generic/vendor-only matches, and requires vendor evidence plus an end-of-name product phrase. Candidate rows are explicitly not vulnerability verdicts. Release build clean; 105 tests pass. Remaining: native page click-through, clean-install service pipe smoke, and full affected-version/NVD/CPE work. See [`docs/THREAT_INTELLIGENCE.md`](docs/THREAT_INTELLIGENCE.md).
+- DN-006 installed-software inventory and cautious CISA KEV product-name candidates are implemented and released in [v0.1.11](https://github.com/christiand0797/downpour-next/releases/tag/v0.1.11), source commit `e7ac54f`. Reads only uninstall-key display metadata, uses bounded current-user pipe IPC, and candidate-only semantics; it does not determine affected versions or vulnerability status. Build is clean, 105 tests pass, GitHub's digest matches the locally built archive, and package startup/service shutdown pass. Remaining: native page click-through, clean-install pipe smoke, and affected-version/NVD/CPE parity. See [`docs/THREAT_INTELLIGENCE.md`](docs/THREAT_INTELLIGENCE.md).
 
 This checklist tracks current implementation state; the detailed order, dependencies, and acceptance criteria are in [`WORK_QUEUE.json`](WORK_QUEUE.json).
 

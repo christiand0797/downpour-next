@@ -140,7 +140,7 @@
         "Sigma/YARA behavior compatibility documented",
         "Cache age and source integrity visible"
       ],
-      "notes": "Current DN-006 slice implemented locally: bounded read-only registry inventory, current-user-restricted output-only pipe/client, and cautious local CISA KEV candidate matching wired into Vulnerabilities. Match requires vendor evidence and a meaningful product phrase at the end of the application name; excludes generic/vendor-only products. Candidate-only wording and limitations documented; no install paths/uninstall commands or changes. Release build and 105 tests pass. Next: publish v0.1.11, then continue threat/vulnerability parity (affected versions, NVD/CPE, rules/feed coverage). Native route click-through and a clean-install service pipe check remain.",
+      "notes": "Current DN-006 slice implemented and published in v0.1.11 from source commit e7ac54f: bounded read-only registry inventory, current-user-restricted output-only pipe/client, and cautious CISA KEV name candidates wired into Vulnerabilities. Match requires vendor evidence and meaningful terminal product phrase; excludes generic/vendor-only products. Candidate-only wording and limitations documented; no install paths/uninstall commands or changes. Release build and 105 tests pass. Next: continue threat/vulnerability parity (affected versions, NVD/CPE, rules/feed coverage). Native route click-through and clean-install pipe check remain.",
       "files": [
         "src/Downpour.Contracts/ServiceHealthSnapshot.cs",
         "src/Downpour.Service/Program.cs",

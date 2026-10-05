@@ -1,5 +1,14 @@
 # Downpour Next changelog
 
+## v0.1.11 — local software inventory and KEV candidate review
+
+- Added a working Vulnerabilities route with bounded machine/current-user uninstall-key inventory and explicit software refresh/search.
+- Added cautious local name candidates from the CISA KEV catalog; generic/vendor-only names and non-terminal product phrases are excluded. Rows are clearly leads only because the catalog match does not prove the installed product/version is affected.
+- Inventory reads only display name/version/publisher and the SystemComponent filter flag. It does not collect paths/uninstall commands or modify the system; a bounded current-user-restricted output-only pipe feeds the desktop.
+- Release build: 0 warnings/errors; 105 tests passed. Packaged desktop/service startup and graceful shutdown smoke check passed. Native page click-through remains manual.
+- Package: `DownpourNext-win-x64-0.1.11.zip` (156,671,185 bytes); SHA-256 `F6745C6FBFA45736D7575F93326B838429430F288588D6E2DB0B56BBD7E8855B`.
+- Download [v0.1.11](https://github.com/christiand0797/downpour-next/releases/tag/v0.1.11). Unsigned portable build; GitHub's digest is not a publisher signature. See [`THREAT_INTELLIGENCE.md`](THREAT_INTELLIGENCE.md).
+
 ## v0.1.10 — one-click portable updates
 
 - Added a dashboard **Update Downpour** control beside the online/offline sensor status. It checks the latest stable release from the fixed public Downpour Next repository and stages a newer version for app restart.
