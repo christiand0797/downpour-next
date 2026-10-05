@@ -5,10 +5,10 @@
     {
       "id": "codex-primary",
       "role": "primary",
-      "taskId": "DN-010",
+      "taskId": "DN-013",
       "status": "active",
-      "heartbeatUtc": "2026-10-05T01:05:00Z",
-      "notes": "User-reported update rollback fixed and v0.1.12 published. Cause: path containment check mishandled trailing separator; old helper attempted to replace its own executable. Standalone helper implemented, 107 tests pass, full disposable v0.1.11-to-v0.1.12 apply/relaunch/hash check passes. Next resume DN-006 threat/vulnerability parity; laptop native click-through remains manual."
+      "heartbeatUtc": "2026-10-05T01:12:00Z",
+      "notes": "DN-010 update rollback fixed and v0.1.12 published; end-to-end local update passes. Current slice DN-013 implements a bounded user-selected PE inspector (SHA-256 and metadata only, not a malware verdict); finish parser/provider/page tests, push source, then package v0.1.13."
     },
     {
       "id": "v29_action_map",

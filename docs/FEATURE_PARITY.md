@@ -28,7 +28,7 @@ This project aims to preserve every Downpour v29 capability and improve its usab
 
 ### 2. Detection and triage
 
-- Port threat ingestion, suspicious process/network analysis, ransomware behavior, vulnerability checks, and intelligence feeds. CISA KEV, an explicit single-CVE FIRST EPSS enrichment path, and cautious registry-name candidate review are connected; affected-version analysis, NVD/CVSS/CPE, bulk EPSS, additional threat feeds, and Sigma/YARA remain outstanding.
+- Port threat ingestion, suspicious process/network analysis, ransomware behavior, vulnerability checks, and intelligence feeds. CISA KEV, explicit single-CVE FIRST EPSS enrichment, cautious registry-name candidates, and a one-file PE metadata/hash inspector are connected. The inspector does not detect malware or validate signatures; affected-version analysis, NVD/CVSS/CPE, bulk EPSS, additional threat feeds, Sigma/YARA, and recursive file scanning remain outstanding.
 - Extend the first alert slice with broader cross-source grouping, investigation timeline/evidence, and the full v29 alert lifecycle while preserving the current local review-state audit. The UI and schema-v2 metadata-only export include two explicitly limited time-proximity patterns over up to 512 validated alerts; this is not a complete correlated case timeline/evidence bundle.
 - Preserve offline behavior and validate feed integrity / cache expiration.
 

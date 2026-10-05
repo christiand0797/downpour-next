@@ -362,6 +362,8 @@ public sealed partial class MainWindow : Window
             NavFrame.Navigate(typeof(IntelPage));
         else if (capability.RouteId.Equals("vulnerabilities", StringComparison.OrdinalIgnoreCase))
             NavFrame.Navigate(typeof(VulnerabilitiesPage));
+        else if (capability.RouteId.Equals("scanner", StringComparison.OrdinalIgnoreCase))
+            NavFrame.Navigate(typeof(ScannerPage));
         else if (capability.RouteId.Equals("settings", StringComparison.OrdinalIgnoreCase))
             NavFrame.Navigate(typeof(SettingsPage));
         else
@@ -395,6 +397,7 @@ public sealed partial class MainWindow : Window
         if (routeId is null && args.Content is AlertsPage) routeId = "alerts";
         if (routeId is null && args.Content is IntelPage) routeId = "intel";
         if (routeId is null && args.Content is VulnerabilitiesPage) routeId = "vulnerabilities";
+        if (routeId is null && args.Content is ScannerPage) routeId = "scanner";
         if (routeId is null && args.Content is SettingsPage) routeId = "settings";
 
         if (routeId is null || !_routeItems.TryGetValue(routeId, out var item)) return;

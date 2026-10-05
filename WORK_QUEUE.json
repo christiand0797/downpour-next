@@ -258,6 +258,30 @@
         "Audit each stage and test denial, interruption, reboot-needed, and recovery cases",
         "Never install, update, reinstall, or remove automatically"
       ]
+    },
+    {
+      "id": "DN-013",
+      "title": "Port safe on-demand file inspection and scanning",
+      "status": "in_progress",
+      "priority": "high",
+      "acceptance": [
+        "One user-selected local EXE/DLL/SYS file can be hashed and structurally inspected without execution",
+        "Input bytes, PE offsets, sections, memory use, and UI work are bounded",
+        "Certificate presence is not represented as signature verification and metadata is not represented as a malware verdict",
+        "Malformed and oversized file fixtures pass parser tests",
+        "Document what full v29/YARA/Defender scan parity still requires"
+      ],
+      "files": [
+        "src/Downpour.Core/StaticFileInspector.cs",
+        "src/Downpour.Desktop/Pages/ScannerPage.xaml",
+        "src/Downpour.Desktop/Pages/ScannerPage.xaml.cs",
+        "src/Downpour.Desktop/MainWindow.xaml.cs",
+        "capabilities.json",
+        "tests/Downpour.Tests/StaticFileInspectorTests.cs",
+        "docs/FILE_INSPECTOR.md",
+        "docs/FEATURE_PARITY.md"
+      ],
+      "notes": "Current slice wires Scanner navigation to a one-file static PE inspector. The code hashes at most 256 MiB, bounds PE headers/96 sections, and reports architecture/timestamp/section flags/certificate-table presence. It does not detect threats, verify trust, upload, execute, or remediate. Release build and 112 tests currently pass; follow with package smoke and v0.1.13 release. Full scan, YARA/Defender, recursive scope, and native picker click-through remain open."
     }
   ]
 }
