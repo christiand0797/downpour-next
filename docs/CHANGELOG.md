@@ -8,7 +8,7 @@
 - Fixed dashboard, network, and Performance chart crashes caused by sharing a WinUI `PointCollection`; clarified graph units, time direction, missing-data gaps, and current-sample markers. System-volume metadata now reads off the UI dispatcher.
 - Corrected the updater's embedded current version to 0.1.14 so the new package no longer reports itself as an older install.
 - Release build: 0 warnings/errors; 117 tests passed. Portable build is self-contained and unsigned; this does not complete v29 parity. Per-core CPU, physical disk I/O, pagefile storage usage, GPU/thermal/power readings, and native Performance/save-picker click-through remain open.
-- Package: `DownpourNext-win-x64-0.1.14.zip` (size and SHA-256 recorded after GitHub upload).
+- Package: `DownpourNext-win-x64-0.1.14.zip` (196,796,799 bytes); SHA-256 `B5C723A9DC15FEDA679BA735731369BB29ED54C8BA7F78A218D3B560EE7C3272`. GitHub's uploaded asset digest and size match the local package.
 - Download [v0.1.14](https://github.com/christiand0797/downpour-next/releases/tag/v0.1.14).
 
 ## v0.1.13 — static PE file inspector
