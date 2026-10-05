@@ -157,7 +157,7 @@ public sealed partial class NetworkPage : Page
         HistoryChart.Children.Clear();
         var width = HistoryChart.ActualWidth;
         var height = HistoryChart.ActualHeight;
-        if (width <= 1 || height <= 1) return;
+        if (!double.IsFinite(width) || !double.IsFinite(height) || width <= 1 || height <= 1) return;
 
         var values = _history.ToArray();
         for (var level = 1; level <= 3; level++)
@@ -187,6 +187,7 @@ public sealed partial class NetworkPage : Page
             const double inset = 4;
             var x = inset + (width - inset * 2) * index / Math.Max(1, values.Length - 1);
             var y = inset + (height - inset * 2) * (1 - Math.Clamp(value / max, 0, 1));
+            if (!double.IsFinite(x) || !double.IsFinite(y)) { AddSegment(); continue; }
             segment.Add(new Windows.Foundation.Point(x, y));
         }
         AddSegment();

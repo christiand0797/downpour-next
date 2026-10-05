@@ -209,8 +209,8 @@ public sealed partial class HomePage : Page
         if (ResourceChart is null) return;
         var width = ResourceChart.ActualWidth;
         var height = ResourceChart.ActualHeight;
+        if (!double.IsFinite(width) || !double.IsFinite(height) || width <= 1 || height <= 1) return;
         ResourceChart.Children.Clear();
-        if (width <= 0 || height <= 0) return;
 
         const double insetX = 38;
         const double insetY = 7;
@@ -271,6 +271,7 @@ public sealed partial class HomePage : Page
 
             var x = insetX + (width - insetX - 8) * index / Math.Max(1, samples.Length - 1);
             var y = insetY + (height - insetY * 2) * (1 - Math.Clamp(value.Value, 0, 100) / 100d);
+            if (!double.IsFinite(x) || !double.IsFinite(y)) { AddSegment(); continue; }
             segment.Add(new Point(x, y));
         }
         AddSegment();

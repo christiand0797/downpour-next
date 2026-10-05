@@ -377,7 +377,7 @@ public sealed partial class PerformancePage : Page
         HistoryChart.Children.Clear();
         var width = HistoryChart.ActualWidth;
         var height = HistoryChart.ActualHeight;
-        if (width <= 1 || height <= 1) return;
+        if (!double.IsFinite(width) || !double.IsFinite(height) || width <= 1 || height <= 1) return;
         const double insetX = 38;
         const double insetY = 7;
         for (var level = 0; level <= 4; level++)
@@ -413,7 +413,7 @@ public sealed partial class PerformancePage : Page
         NetworkHistoryChart.Children.Clear();
         var width = NetworkHistoryChart.ActualWidth;
         var height = NetworkHistoryChart.ActualHeight;
-        if (width <= 1 || height <= 1) return;
+        if (!double.IsFinite(width) || !double.IsFinite(height) || width <= 1 || height <= 1) return;
         var samples = _history.ToArray();
         var peak = samples.SelectMany(sample => new[] { sample.Receive, sample.Send })
             .Where(rate => rate.HasValue).Select(rate => (double)rate!.Value).DefaultIfEmpty(0).Max();
@@ -440,7 +440,7 @@ public sealed partial class PerformancePage : Page
         DiskHistoryChart.Children.Clear();
         var width = DiskHistoryChart.ActualWidth;
         var height = DiskHistoryChart.ActualHeight;
-        if (width <= 1 || height <= 1) return;
+        if (!double.IsFinite(width) || !double.IsFinite(height) || width <= 1 || height <= 1) return;
         var samples = _history.ToArray();
         var peak = samples.SelectMany(sample => new[] { sample.DiskRead, sample.DiskWrite })
             .Where(rate => rate.HasValue).Select(rate => (double)rate!.Value).DefaultIfEmpty(0).Max();
@@ -468,6 +468,7 @@ public sealed partial class PerformancePage : Page
             if (values[index] is not { } value) { AddSegment(); continue; }
             var x = insetX + (width - insetX - 8) * index / Math.Max(1, values.Length - 1);
             var y = insetY + (height - insetY * 2) * (1 - Math.Clamp(value / scale, 0, 1));
+            if (!double.IsFinite(x) || !double.IsFinite(y)) { AddSegment(); continue; }
             segment.Add(new Point(x, y));
         }
         AddSegment();
@@ -508,6 +509,7 @@ public sealed partial class PerformancePage : Page
             if (values[index] is not { } value) { AddSegment(); continue; }
             var x = insetX + (width - insetX - 8) * index / Math.Max(1, values.Length - 1);
             var y = insetY + (height - insetY * 2) * (1 - Math.Clamp(value, 0, 100) / 100d);
+            if (!double.IsFinite(x) || !double.IsFinite(y)) { AddSegment(); continue; }
             segment.Add(new Point(x, y));
         }
         AddSegment();
