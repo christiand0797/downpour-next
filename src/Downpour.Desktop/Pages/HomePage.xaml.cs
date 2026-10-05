@@ -6,6 +6,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using Microsoft.UI.Xaml.Shapes;
+using Microsoft.UI.Text;
 using Windows.Foundation;
 using Windows.UI;
 
@@ -20,14 +21,6 @@ public sealed partial class HomePage : Page
     private bool _updateRequestInFlight;
     private CircularGauge? _cpuGauge;
     private CircularGauge? _memoryGauge;
-
-    public ObservableCollection<MetricCard> Metrics { get; } =
-    [
-        new("Processes observed", "—", "Waiting for the local service"),
-        new("Active TCP connections", "—", "Waiting for network telemetry"),
-        new("Last snapshot", "—", "No current service data"),
-        new("Sensor mode", "—", "Service status unavailable")
-    ];
 
     public ObservableCollection<DashboardProcessRow> Processes { get; } = [];
 
@@ -129,10 +122,8 @@ public sealed partial class HomePage : Page
                 SensorDot.Fill = new SolidColorBrush(Color.FromArgb(255, 255, 180, 85));
                 _cpuGauge?.SetValue(null);
                 _memoryGauge?.SetValue(null);
-                Metrics[0] = new("Processes observed", "—", "Service connection unavailable");
-                Metrics[1] = new("Active TCP connections", "—", "Service connection unavailable");
-                Metrics[2] = new("Last snapshot", "—", "No current service data");
-                Metrics[3] = new("Sensor mode", "Offline", "No current measurements");
+                SetMetricCards("—", "Service connection unavailable", "—", "Service connection unavailable",
+                    "—", "No current service data", "Offline", "No current measurements");
                 Processes.Clear();
                 ResourceChart.Children.Clear();
                 ChartEmpty.Text = _history.Count > 0 ? "Service unavailable · awaiting a new sample" : "Awaiting live samples from Downpour.Service";
@@ -151,10 +142,10 @@ public sealed partial class HomePage : Page
             _cpuGauge?.SetValue(snapshot.CpuPercent);
             _memoryGauge?.SetValue(memoryPercent);
 
-            Metrics[0] = new("Processes observed", snapshot.ProcessCount.ToString("N0"), "Current Windows process snapshot");
-            Metrics[1] = new("Active TCP connections", snapshot.ActiveTcpConnections?.ToString("N0") ?? "—", "Current connection count");
-            Metrics[2] = new("Last snapshot", captured.ToString("HH:mm:ss"), captured.ToString("MMM d · h:mm:ss tt"));
-            Metrics[3] = new("Sensor mode", "Observe only", "No system-changing actions enabled");
+            SetMetricCards(snapshot.ProcessCount.ToString("N0"), "Current Windows process snapshot",
+                snapshot.ActiveTcpConnections?.ToString("N0") ?? "—", "Current connection count",
+                captured.ToString("HH:mm:ss"), captured.ToString("MMM d · h:mm:ss tt"),
+                "Observe only", "No system-changing actions enabled");
 
             _history.Enqueue(new ResourceSample(snapshot.CpuPercent, memoryPercent));
             while (_history.Count > 60) _history.Dequeue();
@@ -172,10 +163,42 @@ public sealed partial class HomePage : Page
                     share));
             }
         }
+        catch (Exception exception)
+        {
+            // The snapshot pipe can fail while the UI is starting or a service restarts.
+            // Keep the app usable and never leave old data presented as a live sample.
+            SensorHeadline.Text = "Downpour is running · current sensor sample unavailable";
+            SensorDescription.Text = $"{App.SensorServiceStatusHint} {exception.GetType().Name}: {(exception.Message.Length > 180 ? exception.Message[..180] : exception.Message)}";
+            SensorBadge.Text = "SAMPLE UNAVAILABLE";
+            SensorDot.Fill = new SolidColorBrush(Color.FromArgb(255, 255, 180, 85));
+            _cpuGauge?.SetValue(null);
+            _memoryGauge?.SetValue(null);
+            SetMetricCards("—", "Current sample unavailable", "—", "Current sample unavailable",
+                "—", "No current service data", "Unknown", "Current sample unavailable");
+            Processes.Clear();
+            _history.Enqueue(new ResourceSample(null, null));
+            while (_history.Count > 60) _history.Dequeue();
+            DrawResourceChart();
+            ChartEmpty.Text = "Sample unavailable · waiting for current telemetry";
+            ChartEmpty.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+        }
         finally
         {
             _snapshotRequestInFlight = false;
         }
+    }
+
+    private void SetMetricCards(string processValue, string processDetail, string tcpValue, string tcpDetail,
+        string snapshotValue, string snapshotDetail, string modeValue, string modeDetail)
+    {
+        ProcessMetricValue.Text = processValue;
+        ProcessMetricDetail.Text = processDetail;
+        TcpMetricValue.Text = tcpValue;
+        TcpMetricDetail.Text = tcpDetail;
+        SnapshotMetricValue.Text = snapshotValue;
+        SnapshotMetricDetail.Text = snapshotDetail;
+        SensorModeMetricValue.Text = modeValue;
+        SensorModeMetricDetail.Text = modeDetail;
     }
 
     private void ResourceChartHost_SizeChanged(object sender, Microsoft.UI.Xaml.SizeChangedEventArgs e) => DrawResourceChart();
@@ -188,15 +211,31 @@ public sealed partial class HomePage : Page
         ResourceChart.Children.Clear();
         if (width <= 0 || height <= 0) return;
 
-        const double insetX = 12;
+        const double insetX = 38;
         const double insetY = 7;
+        for (var index = 0; index <= 4; index++)
+        {
+            var y = insetY + (height - insetY * 2) * index / 4;
+            var axisLabel = new TextBlock
+            {
+                Text = $"{100 - index * 25}%",
+                Width = 31,
+                Height = 14,
+                FontSize = 9,
+                Foreground = new SolidColorBrush(Color.FromArgb(190, 164, 184, 199)),
+                HorizontalTextAlignment = Microsoft.UI.Xaml.TextAlignment.Right
+            };
+            ResourceChart.Children.Add(axisLabel);
+            Canvas.SetLeft(axisLabel, 0);
+            Canvas.SetTop(axisLabel, Math.Clamp(y - 7, 0, Math.Max(0, height - 14)));
+        }
         for (var index = 0; index <= 4; index++)
         {
             var y = insetY + (height - insetY * 2) * index / 4;
             var guide = new Line
             {
                 X1 = insetX,
-                X2 = Math.Max(insetX, width - insetX),
+                X2 = Math.Max(insetX, width - 8),
                 Y1 = y,
                 Y2 = y,
                 StrokeThickness = 1,
@@ -229,7 +268,7 @@ public sealed partial class HomePage : Page
                 continue;
             }
 
-            var x = insetX + (width - insetX * 2) * index / Math.Max(1, samples.Length - 1);
+            var x = insetX + (width - insetX - 8) * index / Math.Max(1, samples.Length - 1);
             var y = insetY + (height - insetY * 2) * (1 - Math.Clamp(value.Value, 0, 100) / 100d);
             segment.Add(new Point(x, y));
         }
@@ -239,41 +278,47 @@ public sealed partial class HomePage : Page
         {
             if (segment.Count >= 2)
             {
-                var points = new PointCollection();
-                foreach (var point in segment) points.Add(point);
                 ResourceChart.Children.Add(new Polyline
                 {
-                    Points = points,
+                    Points = CopyPoints(),
+                    Stroke = new SolidColorBrush(Color.FromArgb(30, color.R, color.G, color.B)),
+                    StrokeThickness = 8,
+                    StrokeLineJoin = PenLineJoin.Round
+                });
+                ResourceChart.Children.Add(new Polyline
+                {
+                    Points = CopyPoints(),
                     Stroke = new SolidColorBrush(color),
-                    StrokeThickness = 2.2,
+                    StrokeThickness = 2,
                     StrokeLineJoin = PenLineJoin.Round
                 });
             }
-            else if (segment.Count == 1)
+            // A single bright endpoint marks only the newest real sample; null gaps are
+            // never bridged or presented as current data.
+            if (segment.Count > 0 && segment[^1].X >= width - 8.1)
             {
-                var point = segment[0];
-                ResourceChart.Children.Add(new Ellipse
-                {
-                    Width = 5,
-                    Height = 5,
-                    Fill = new SolidColorBrush(color)
-                });
-                var marker = ResourceChart.Children[ResourceChart.Children.Count - 1];
-                Canvas.SetLeft(marker, point.X - 2.5);
-                Canvas.SetTop(marker, point.Y - 2.5);
+                AddMarker(segment[^1], 12, Color.FromArgb(35, color.R, color.G, color.B));
+                AddMarker(segment[^1], 5, color);
             }
+            else if (segment.Count == 1) AddMarker(segment[0], 5, color);
             segment.Clear();
         }
-    }
-}
 
-public sealed class MetricCard
-{
-    public MetricCard() { }
-    public MetricCard(string label, string value, string detail) => (Label, Value, Detail) = (label, value, detail);
-    public string Label { get; set; } = "";
-    public string Value { get; set; } = "";
-    public string Detail { get; set; } = "";
+        PointCollection CopyPoints()
+        {
+            var points = new PointCollection();
+            foreach (var point in segment) points.Add(point);
+            return points;
+        }
+
+        void AddMarker(Point point, double size, Color fill)
+        {
+            var marker = new Ellipse { Width = size, Height = size, Fill = new SolidColorBrush(fill) };
+            ResourceChart.Children.Add(marker);
+            Canvas.SetLeft(marker, point.X - size / 2);
+            Canvas.SetTop(marker, point.Y - size / 2);
+        }
+    }
 }
 
 public sealed class DashboardProcessRow

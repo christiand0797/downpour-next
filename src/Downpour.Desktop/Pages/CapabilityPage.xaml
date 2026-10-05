@@ -12,7 +12,7 @@
                 <TextBlock x:Name="TitleLabel" Style="{StaticResource TitleTextBlockStyle}" />
                 <TextBlock x:Name="DescriptionLabel" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
             </StackPanel>
-            <Border Padding="22" CornerRadius="12" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+            <Border Padding="22" CornerRadius="12" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource DownpourStrokeBrush}" BorderThickness="1">
                 <StackPanel Spacing="12">
                     <StackPanel Orientation="Horizontal" Spacing="10">
                         <FontIcon x:Name="StatusIcon" FontSize="18" />
@@ -22,7 +22,7 @@
                     <TextBlock x:Name="SourceLabel" FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" TextWrapping="Wrap" />
                 </StackPanel>
             </Border>
-            <Border Padding="22" CornerRadius="12" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+            <Border Padding="22" CornerRadius="12" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource DownpourStrokeBrush}" BorderThickness="1">
                 <StackPanel Spacing="10">
                     <TextBlock FontSize="17" FontWeight="SemiBold" Text="Porting plan" />
                     <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="1. Map this screen to the original capability and its data contracts." TextWrapping="Wrap" />

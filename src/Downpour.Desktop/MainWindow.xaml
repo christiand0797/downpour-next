@@ -14,7 +14,7 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <Image Grid.RowSpan="2" Source="ms-appx:///Assets/StormBackdrop.png" Stretch="UniformToFill" Opacity="0.86" IsHitTestVisible="False" />
-        <Border Grid.RowSpan="2" Background="#3D040A16" IsHitTestVisible="False" />
+        <Border Grid.RowSpan="2" Background="#67040A16" IsHitTestVisible="False" />
         <Image Grid.RowSpan="2" Source="ms-appx:///Assets/CrescentMoon.png" Width="210" Height="200"
                HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,48,260,0" Opacity="0.9"
                Stretch="Uniform" IsHitTestVisible="False" />
@@ -27,8 +27,8 @@
         </TitleBar>
         <NavigationView x:Name="NavView" Grid.Row="1" IsBackButtonVisible="Collapsed"
                         IsPaneToggleButtonVisible="False" IsSettingsVisible="False"
-                        PaneDisplayMode="LeftCompact" SelectionChanged="NavView_SelectionChanged"
-                        Background="Transparent">
+                        PaneDisplayMode="Left" OpenPaneLength="252" SelectionChanged="NavView_SelectionChanged"
+                        SizeChanged="NavView_SizeChanged" Background="Transparent">
             <NavigationView.MenuItems />
             <Frame x:Name="NavFrame" Background="Transparent" />
         </NavigationView>

@@ -25,7 +25,7 @@
         </Grid>
         <ListView x:Name="ProcessList" Grid.Row="2" ItemsSource="{x:Bind Processes}" SelectionMode="None" IsItemClickEnabled="False">
             <ListView.Header>
-                <Grid Padding="14,10" ColumnSpacing="12" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                <Grid Padding="14,10" ColumnSpacing="12" Background="{StaticResource DownpourSurfaceElevatedBrush}">
                     <Grid.ColumnDefinitions><ColumnDefinition Width="70" /><ColumnDefinition Width="2*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="90" /></Grid.ColumnDefinitions>
                     <TextBlock FontWeight="SemiBold" Text="PID" />
                     <TextBlock Grid.Column="1" FontWeight="SemiBold" Text="PROCESS" />

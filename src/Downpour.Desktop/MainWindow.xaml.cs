@@ -322,21 +322,49 @@ public sealed partial class MainWindow : Window
 
     private void BuildNavigation()
     {
-        foreach (var group in _capabilities.GroupBy(capability => capability.Group))
+        var home = _capabilities.FirstOrDefault(capability => capability.RouteId.Equals("dashboard", StringComparison.OrdinalIgnoreCase));
+        if (home is not null) AddRouteItem(NavView.MenuItems, home);
+
+        NavView.MenuItems.Add(new NavigationViewItemHeader { Content = "WORKSPACE" });
+        var groupIcons = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            NavView.MenuItems.Add(new NavigationViewItemHeader { Content = group.Key });
-            foreach (var capability in group)
+            ["Triage"] = "E7BA",
+            ["Monitoring"] = "E9D9",
+            ["Protection"] = "E72E",
+            ["Analysis"] = "E721",
+            ["Forensics"] = "E8A5",
+            ["Operations"] = "E713"
+        };
+
+        foreach (var group in _capabilities.Where(capability => !capability.RouteId.Equals("dashboard", StringComparison.OrdinalIgnoreCase))
+                     .GroupBy(capability => capability.Group))
+        {
+            var groupItem = new NavigationViewItem
             {
-                var item = new NavigationViewItem
+                Content = group.Key,
+                Icon = new FontIcon
                 {
-                    Content = capability.Title,
-                    Tag = capability.RouteId,
-                    Icon = new FontIcon { Glyph = char.ConvertFromUtf32(int.Parse(capability.Icon, NumberStyles.HexNumber, CultureInfo.InvariantCulture)) }
-                };
-                _routeItems.Add(capability.RouteId, item);
-                NavView.MenuItems.Add(item);
-            }
+                    Glyph = char.ConvertFromUtf32(int.Parse(groupIcons.GetValueOrDefault(group.Key, "E8A5"), NumberStyles.HexNumber, CultureInfo.InvariantCulture))
+                },
+                IsExpanded = group.Key.Equals("Monitoring", StringComparison.OrdinalIgnoreCase)
+            };
+            foreach (var capability in group) AddRouteItem(groupItem.MenuItems, capability);
+            NavView.MenuItems.Add(groupItem);
         }
+    }
+
+    private void AddRouteItem(IList<object> menuItems, CapabilityDefinition capability)
+    {
+        var routeId = capability.RouteId.Trim();
+        if (routeId.Length == 0 || _routeItems.ContainsKey(routeId)) return;
+        var item = new NavigationViewItem
+        {
+            Content = capability.Title,
+            Tag = routeId,
+            Icon = new FontIcon { Glyph = char.ConvertFromUtf32(int.Parse(capability.Icon, NumberStyles.HexNumber, CultureInfo.InvariantCulture)) }
+        };
+        _routeItems.Add(routeId, item);
+        menuItems.Add(item);
     }
 
     private void Navigate(CapabilityDefinition capability)
@@ -354,6 +382,8 @@ public sealed partial class MainWindow : Window
             NavFrame.Navigate(typeof(ServicesPage));
         else if (capability.RouteId.Equals("network", StringComparison.OrdinalIgnoreCase))
             NavFrame.Navigate(typeof(NetworkPage));
+        else if (capability.RouteId.Equals("performance", StringComparison.OrdinalIgnoreCase))
+            NavFrame.Navigate(typeof(PerformancePage));
         else if (capability.RouteId.Equals("security-events", StringComparison.OrdinalIgnoreCase))
             NavFrame.Navigate(typeof(SecurityEventsPage));
         else if (capability.RouteId.Equals("alerts", StringComparison.OrdinalIgnoreCase))
@@ -370,7 +400,20 @@ public sealed partial class MainWindow : Window
             NavFrame.Navigate(typeof(CapabilityPage), capability);
     }
 
-    private void TitleBar_PaneToggleRequested(TitleBar sender, object args) => NavView.IsPaneOpen = !NavView.IsPaneOpen;
+    private void TitleBar_PaneToggleRequested(TitleBar sender, object args)
+    {
+        NavView.IsPaneOpen = !NavView.IsPaneOpen;
+        UpdateNavigationContentWidth();
+    }
+
+    private void NavView_SizeChanged(object sender, SizeChangedEventArgs e) => UpdateNavigationContentWidth();
+
+    private void UpdateNavigationContentWidth()
+    {
+        var paneWidth = NavView.IsPaneOpen ? NavView.OpenPaneLength : NavView.CompactPaneLength;
+        var contentWidth = Math.Max(0, NavView.ActualWidth - paneWidth);
+        if (contentWidth > 0 && Math.Abs(NavFrame.Width - contentWidth) > 0.5) NavFrame.Width = contentWidth;
+    }
 
     private void TitleBar_BackRequested(TitleBar sender, object args)
     {
@@ -393,6 +436,7 @@ public sealed partial class MainWindow : Window
             : args.Content is DriverPage ? "drivers"
             : args.Content is ServicesPage ? "services"
             : args.Content is NetworkPage ? "network"
+            : args.Content is PerformancePage ? "performance"
             : args.Content is SecurityEventsPage ? "security-events" : null;
         if (routeId is null && args.Content is AlertsPage) routeId = "alerts";
         if (routeId is null && args.Content is IntelPage) routeId = "intel";

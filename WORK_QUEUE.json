@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-04",
+  "updatedAt": "2026-10-05",
   "tasks": [
     {
       "id": "DN-001",
@@ -44,7 +44,7 @@
         "Navigation selection stays synchronized with back navigation",
         "Narrow and high-DPI layouts remain usable"
       ],
-      "notes": "Dashboard has a clear landscape, separate crescent overlay, 280 animated rain drops, aurora, stars, lightning, CPU/memory gauges/history, and a rain mode control. Process telemetry exposes up to 512 accessible rows by memory with bounded names/payload and visible total-versus-shown count; PID 0 is excluded. Desktop EXE auto-start and graceful owned-service shutdown are smoke-verified. UI distinguishes app-running from service-offline and labels a live local snapshot ONLINE. Release build: 0 warnings/errors; 22 tests pass. Remaining: native Settings/navigation click-through and narrow/high-DPI layout review."
+      "notes": "Dashboard has a clear landscape, separate crescent overlay, 280 animated rain drops, aurora, stars, lightning, CPU/memory gauges/history, and rain mode control. Process telemetry exposes up to 512 accessible rows by memory with bounded names/payload and total-versus-shown count; PID 0 is excluded. Desktop EXE auto-start and graceful owned-service shutdown are smoke-verified. DN-002 visual pass groups routes into six labeled sections, ignores duplicate route IDs, expands Monitoring, adds shared neon surface tokens, improves panel contrast and responsive dashboard fact cards. This slice aligns gauge progress to an exact arc geometry, corrects chart axis semantics, and gives CPU/memory/network series subtle glow and current-sample markers while preserving null gaps. Release solution build: 0 warnings/errors. Remaining: rebuild/capture packaged UI, native route click-through, narrow/high-DPI layout, and Settings click-through."
     },
     {
       "id": "DN-003",
@@ -282,6 +282,33 @@
         "docs/FEATURE_PARITY.md"
       ],
       "notes": "One-file static PE inspector is shipped in v0.1.13 from source e3fb605. Hashes at most 256 MiB, bounds PE headers/96 sections, and reports architecture/timestamp/section flags/certificate-table presence. It does not detect threats, verify trust, upload, execute, or remediate. Release build 0 warnings/errors; 112 tests pass; package hash verified and desktop/service launch/shutdown smoke passed. Full v29 scan, YARA/Defender, recursive scope, and native file-picker click-through remain open."
+    },
+    {
+      "id": "DN-014",
+      "title": "Implement accurate performance graphs and gauges",
+      "status": "in_progress",
+      "priority": "high",
+      "files": [
+        "src/Downpour.Desktop/CircularGauge.cs",
+        "src/Downpour.Desktop/Pages/HomePage.xaml",
+        "src/Downpour.Desktop/Pages/HomePage.xaml.cs",
+        "src/Downpour.Desktop/Pages/NetworkPage.xaml",
+        "src/Downpour.Desktop/Pages/NetworkPage.xaml.cs",
+        "src/Downpour.Desktop/Pages/PerformancePage.xaml",
+        "src/Downpour.Desktop/Pages/PerformancePage.xaml.cs",
+        "src/Downpour.Desktop/MainWindow.xaml.cs",
+        "capabilities.json",
+        "docs/UI_POLISH.md",
+        "docs/FEATURE_PARITY.md"
+      ],
+      "acceptance": [
+        "Circular gauge fill starts at 12 o'clock and follows the track exactly for partial, full, null, and boundary values",
+        "Performance route displays live CPU/memory, bounded history with truthful gaps, and current process working-set data",
+        "Charts identify units and time direction; no missing samples are interpolated",
+        "Unsupported GPU, temperature, disk-I/O, and per-process CPU values are explicitly unavailable",
+        "Release build passes and the local portable package launches"
+      ],
+      "notes": "Implemented sampled-circle 12 o'clock gauge arcs and the live Performance route. It shows CPU, physical memory, OS-volume usage, and combined active-adapter RX/TX gauges; two-minute CPU/memory/network graphs; logical processor, process, TCP connection, and uptime summaries; system-volume used/free/total; ten largest working sets with thread counts; refresh/pause; and bounded CSV export. Volume metadata is read off the UI dispatcher. Chart PointCollections are independent to prevent the observed native WinUI crash. Release build passes 0 warnings/errors. Remaining v29 parity: per-core/per-process CPU and history, disk read/write I/O, pagefile/commit, filtering/sorting, configurable interval/thresholds; GPU and thermal sources are hardware dependent. Keep unsupported data visibly unknown. Portable republish and native route click-through remain."
     }
   ]
 }

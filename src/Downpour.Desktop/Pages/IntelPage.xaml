@@ -12,7 +12,7 @@
                 <TextBlock Text="Threat Intelligence" Style="{StaticResource TitleTextBlockStyle}" />
                 <TextBlock Text="Known exploited vulnerabilities from CISA. Feed entries are advisory intelligence; they do not trigger scans or system changes." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
             </StackPanel>
-            <Border Padding="18" CornerRadius="12" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+            <Border Padding="18" CornerRadius="12" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource DownpourStrokeBrush}" BorderThickness="1">
                 <Grid ColumnSpacing="16" RowSpacing="12">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -34,7 +34,7 @@
                 <TextBox x:Name="SearchBox" PlaceholderText="Search CVE, vendor, product, or vulnerability" TextChanged="SearchBox_TextChanged" />
                 <TextBlock x:Name="ResultCount" Grid.Column="1" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
             </Grid>
-            <Border Padding="0" CornerRadius="12" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+            <Border Padding="0" CornerRadius="12" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource DownpourStrokeBrush}" BorderThickness="1">
                 <Grid>
                     <ListView x:Name="EntryList" ItemsSource="{x:Bind VisibleEntries}" SelectionMode="Single" IsItemClickEnabled="True" ItemClick="EntryList_ItemClick" MaxHeight="620">
                         <ListView.ItemTemplate>

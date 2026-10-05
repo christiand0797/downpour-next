@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-04",
+  "updatedAt": "2026-10-05",
   "agents": [
     {
       "id": "codex-primary",
       "role": "primary",
-      "taskId": "DN-013",
+      "taskId": "DN-014",
       "status": "active",
-      "heartbeatUtc": "2026-10-05T01:20:00Z",
-      "notes": "DN-013 static PE inspector implemented and released in v0.1.13 (source e3fb605). Release build clean, 112 tests pass, local package hash and desktop/service launch/shutdown verified. Scope is bounded metadata/hash, not detection. Next resume complete v29 scanner parity and other remaining routes; native file-picker interaction remains manual."
+      "heartbeatUtc": "2026-10-05T02:46:14Z",
+      "notes": "DN-014 performance/UI slice active. Exact sampled-circle gauge arcs and labeled gap-aware dashboard/network/Performance plots are in place. Performance includes CPU/memory/OS-volume/RX/TX gauges, CPU/memory/network history, process/TCP/uptime/volume summaries, largest working sets, refresh/pause, and bounded CSV. System-volume metadata now reads off the UI dispatcher. The WinUI PointCollection sharing crash is fixed. Release build passed before this last async-read edit; rebuild and republish, verify package startup and route, then push. v29 parity remains open for per-core/per-process CPU, disk I/O, pagefile/commit, sorting/filtering, thresholds, and GPU/thermal hardware sources."
     },
     {
       "id": "v29_action_map",

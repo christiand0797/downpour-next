@@ -165,6 +165,7 @@ public sealed partial class NetworkPage : Page
         }
 
         var max = Math.Max(1024, values.SelectMany(point => new[] { point.Receive, point.Send }).Where(value => value.HasValue).Select(value => (double)value!.Value).DefaultIfEmpty(0).Max());
+        HistoryScale.Text = $"Peak {FormatRate((long)Math.Min(max, long.MaxValue))}";
         DrawSeries(values.Select(point => point.Receive).ToArray(), width, height, max, Color.FromArgb(255, 80, 219, 241));
         DrawSeries(values.Select(point => point.Send).ToArray(), width, height, max, Color.FromArgb(255, 180, 122, 248));
     }
@@ -180,8 +181,9 @@ public sealed partial class NetworkPage : Page
                 continue;
             }
 
-            var x = values.Length <= 1 ? width : index * width / (values.Length - 1);
-            var y = height - 4 - (Math.Clamp(value / max, 0, 1) * (height - 8));
+            const double inset = 4;
+            var x = inset + (width - inset * 2) * index / Math.Max(1, values.Length - 1);
+            var y = inset + (height - inset * 2) * (1 - Math.Clamp(value / max, 0, 1));
             segment.Add(new Windows.Foundation.Point(x, y));
         }
         AddSegment();
@@ -190,24 +192,45 @@ public sealed partial class NetworkPage : Page
         {
             if (segment.Count >= 2)
             {
+                var glowPoints = new PointCollection();
+                foreach (var point in segment) glowPoints.Add(point);
                 var line = new Polyline
                 {
-                    Points = new PointCollection(),
+                    Points = glowPoints,
+                    Stroke = new SolidColorBrush(Color.FromArgb(30, color.R, color.G, color.B)),
+                    StrokeThickness = 8,
+                    StrokeLineJoin = PenLineJoin.Round
+                };
+                HistoryChart.Children.Add(line);
+                var crispPoints = new PointCollection();
+                foreach (var point in segment) crispPoints.Add(point);
+                var crisp = new Polyline
+                {
+                    Points = crispPoints,
                     Stroke = new SolidColorBrush(color),
                     StrokeThickness = 2,
                     StrokeLineJoin = PenLineJoin.Round
                 };
-                foreach (var point in segment) line.Points.Add(point);
-                HistoryChart.Children.Add(line);
+                HistoryChart.Children.Add(crisp);
+            }
+            if (segment.Count > 0 && values.Length > 0 && segment[^1].X >= width - 4.1)
+            {
+                AddMarker(segment[^1], 12, Color.FromArgb(36, color.R, color.G, color.B));
+                AddMarker(segment[^1], 5, color);
             }
             else if (segment.Count == 1)
             {
-                var point = segment[0];
-                HistoryChart.Children.Add(new Ellipse { Width = 4, Height = 4, Fill = new SolidColorBrush(color), Margin = new Microsoft.UI.Xaml.Thickness(-2) });
-                Canvas.SetLeft(HistoryChart.Children[^1], point.X);
-                Canvas.SetTop(HistoryChart.Children[^1], point.Y);
+                AddMarker(segment[0], 5, color);
             }
             segment.Clear();
+        }
+
+        void AddMarker(Windows.Foundation.Point point, double size, Color fill)
+        {
+            var marker = new Ellipse { Width = size, Height = size, Fill = new SolidColorBrush(fill) };
+            HistoryChart.Children.Add(marker);
+            Canvas.SetLeft(marker, point.X - size / 2);
+            Canvas.SetTop(marker, point.Y - size / 2);
         }
     }
 

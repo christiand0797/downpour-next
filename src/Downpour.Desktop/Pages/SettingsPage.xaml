@@ -12,7 +12,7 @@
                 <TextBlock Text="Settings" Style="{StaticResource TitleTextBlockStyle}" />
                 <TextBlock Text="A single place for Downpour preferences. Choices are stored locally for this Windows user." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
             </StackPanel>
-            <Border Padding="18" CornerRadius="12" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+            <Border Padding="18" CornerRadius="12" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource DownpourStrokeBrush}" BorderThickness="1">
                 <StackPanel Spacing="14">
                     <StackPanel Spacing="4">
                         <TextBlock Text="Appearance &amp; motion" FontSize="18" FontWeight="SemiBold" />
@@ -36,14 +36,14 @@
                     <TextBlock x:Name="SaveState" Text="" FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
                 </StackPanel>
             </Border>
-            <Border Padding="18" CornerRadius="12" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+            <Border Padding="18" CornerRadius="12" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource DownpourStrokeBrush}" BorderThickness="1">
                 <StackPanel Spacing="8">
                     <TextBlock Text="Privacy &amp; data" FontSize="18" FontWeight="SemiBold" />
                     <TextBlock Text="This build stores only the visual preferences above in the current user's app settings. No usage analytics, clipboard data, browser data, command lines, or file contents are collected." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                     <TextBlock Text="Threat Intelligence contacts the fixed CISA endpoint only when you open that route or choose Refresh. The current prototype does not persist downloaded feed data." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                 </StackPanel>
             </Border>
-            <Border Padding="18" CornerRadius="12" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+            <Border Padding="18" CornerRadius="12" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource DownpourStrokeBrush}" BorderThickness="1">
                 <StackPanel Spacing="8">
                     <TextBlock Text="Scanning &amp; protection" FontSize="18" FontWeight="SemiBold" />
                     <TextBlock Text="System-changing actions remain disabled. A durable operation journal is initialized by the service, but it does not authorize or perform changes. Quarantine, firewall changes, hardening, and driver package actions need an isolated service identity, verified consent, audit failure handling, and tested recovery before controls are enabled." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
