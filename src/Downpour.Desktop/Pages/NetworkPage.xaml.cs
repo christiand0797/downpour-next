@@ -196,26 +196,7 @@ public sealed partial class NetworkPage : Page
         {
             if (segment.Count >= 2)
             {
-                var glowPoints = new PointCollection();
-                foreach (var point in segment) glowPoints.Add(point);
-                var line = new Polyline
-                {
-                    Points = glowPoints,
-                    Stroke = new SolidColorBrush(Color.FromArgb(30, color.R, color.G, color.B)),
-                    StrokeThickness = 8,
-                    StrokeLineJoin = PenLineJoin.Round
-                };
-                HistoryChart.Children.Add(line);
-                var crispPoints = new PointCollection();
-                foreach (var point in segment) crispPoints.Add(point);
-                var crisp = new Polyline
-                {
-                    Points = crispPoints,
-                    Stroke = new SolidColorBrush(color),
-                    StrokeThickness = 2,
-                    StrokeLineJoin = PenLineJoin.Round
-                };
-                HistoryChart.Children.Add(crisp);
+                ChartLineRenderer.Add(HistoryChart, segment, color);
             }
             if (segment.Count > 0 && values.Length > 0 && segment[^1].X >= width - 4.1)
             {

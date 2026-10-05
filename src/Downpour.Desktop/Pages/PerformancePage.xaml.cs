@@ -477,11 +477,7 @@ public sealed partial class PerformancePage : Page
         {
             if (segment.Count >= 2)
             {
-                var glow = new PointCollection();
-                var crisp = new PointCollection();
-                foreach (var point in segment) { glow.Add(point); crisp.Add(point); }
-                chart.Children.Add(new Polyline { Points = glow, Stroke = new SolidColorBrush(Color.FromArgb(28, color.R, color.G, color.B)), StrokeThickness = 8, StrokeLineJoin = PenLineJoin.Round });
-                chart.Children.Add(new Polyline { Points = crisp, Stroke = new SolidColorBrush(color), StrokeThickness = 2, StrokeLineJoin = PenLineJoin.Round });
+                ChartLineRenderer.Add(chart, segment, color);
             }
             if (segment.Count > 0 && values.Length > 0 && segment[^1].X >= width - 8.1)
             {
@@ -518,12 +514,7 @@ public sealed partial class PerformancePage : Page
         {
             if (segment.Count >= 2)
             {
-                var glowPoints = new PointCollection();
-                foreach (var point in segment) glowPoints.Add(point);
-                var crispPoints = new PointCollection();
-                foreach (var point in segment) crispPoints.Add(point);
-                HistoryChart.Children.Add(new Polyline { Points = glowPoints, Stroke = new SolidColorBrush(Color.FromArgb(28, color.R, color.G, color.B)), StrokeThickness = 8, StrokeLineJoin = PenLineJoin.Round });
-                HistoryChart.Children.Add(new Polyline { Points = crispPoints, Stroke = new SolidColorBrush(color), StrokeThickness = 2, StrokeLineJoin = PenLineJoin.Round });
+                ChartLineRenderer.Add(HistoryChart, segment, color);
             }
             if (segment.Count > 0 && values.Length > 0 && segment[^1].X >= width - 8.1)
             {

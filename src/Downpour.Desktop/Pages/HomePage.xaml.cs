@@ -278,23 +278,7 @@ public sealed partial class HomePage : Page
 
         void AddSegment()
         {
-            if (segment.Count >= 2)
-            {
-                ResourceChart.Children.Add(new Polyline
-                {
-                    Points = CopyPoints(),
-                    Stroke = new SolidColorBrush(Color.FromArgb(30, color.R, color.G, color.B)),
-                    StrokeThickness = 8,
-                    StrokeLineJoin = PenLineJoin.Round
-                });
-                ResourceChart.Children.Add(new Polyline
-                {
-                    Points = CopyPoints(),
-                    Stroke = new SolidColorBrush(color),
-                    StrokeThickness = 2,
-                    StrokeLineJoin = PenLineJoin.Round
-                });
-            }
+            if (segment.Count >= 2) ChartLineRenderer.Add(ResourceChart, segment, color);
             // A single bright endpoint marks only the newest real sample; null gaps are
             // never bridged or presented as current data.
             if (segment.Count > 0 && segment[^1].X >= width - 8.1)
@@ -304,13 +288,6 @@ public sealed partial class HomePage : Page
             }
             else if (segment.Count == 1) AddMarker(segment[0], 5, color);
             segment.Clear();
-        }
-
-        PointCollection CopyPoints()
-        {
-            var points = new PointCollection();
-            foreach (var point in segment) points.Add(point);
-            return points;
         }
 
         void AddMarker(Point point, double size, Color fill)
