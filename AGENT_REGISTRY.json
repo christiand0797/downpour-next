@@ -7,8 +7,8 @@
       "role": "primary",
       "taskId": "DN-010",
       "status": "active",
-      "heartbeatUtc": "2026-10-04T22:01:59Z",
-      "notes": "Updater code/docs and tests implemented. Public repository access verified after user approval. Release build 0 warnings/errors, 97 tests pass. Self-contained v0.1.10 ZIP built (hash FA9F4A17BD953BB53CD8D5F60F81A604DE12D88A50F66A76D0F1635E7396B7FA); packaged app and owned-service graceful close smoke passed. Updating docs, pushing, and publishing package."
+      "heartbeatUtc": "2026-10-04T22:08:00Z",
+      "notes": "v0.1.10 update button/source is pushed; portable package published and locally smoke-checked. Finishing release docs/push, then continue feature-parity slices. Unsigned release digest is not publisher authentication; UI interaction and failure-recovery click-through remain open."
     },
     {
       "id": "v29_action_map",

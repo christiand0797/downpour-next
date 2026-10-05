@@ -1,5 +1,23 @@
 # Downpour Next changelog
 
+## v0.1.10 — one-click portable updates
+
+- Added a dashboard **Update Downpour** control beside the online/offline sensor status. It checks the latest stable release from the fixed public Downpour Next repository and stages a newer version for app restart.
+- The updater validates repository/tag/asset/type and GitHub-published SHA-256, restricts redirects, bounds download/archive size, rejects traversal/reparse entries, hashes staged files, waits for the desktop and bundled service to exit, uses best-effort backup rollback, and restarts.
+- Both portable launchers start the desktop directly so the desktop owns and shuts down its bundled sensor service during updates. User state remains in `%LOCALAPPDATA%\DownpourNext`.
+- Release build: 0 warnings/errors; 97 tests passed. Packaged desktop startup and graceful shutdown smoke check passed; native update-button click-through remains manual.
+- Package: `DownpourNext-win-x64-0.1.10.zip` (156,615,827 bytes); SHA-256 `FA9F4A17BD953BB53CD8D5F60F81A604DE12D88A50F66A76D0F1635E7396B7FA`.
+- Download [v0.1.10](https://github.com/christiand0797/downpour-next/releases/tag/v0.1.10). Unsigned portable development build; GitHub's digest is not a publisher signature. See [`UPDATES.md`](UPDATES.md).
+
+## v0.1.9 — on-demand EPSS enrichment
+
+- Added a user-triggered single-CVE FIRST EPSS lookup from selected CISA KEV rows; it sends only that public CVE ID and does not bulk-upload/download the catalog.
+- Fixed HTTPS host/path with redirects disabled, 10s deadline, 64 KiB response cap, strict JSON/identifier/value/date validation, and 24h in-memory reuse. UI shows probability, percentile, score date, and retrieval time.
+- The page states that EPSS is a population-level 30-day estimate, not confirmation that this device has affected software. Local product matching and NVD/CVSS/CPE remain outstanding.
+- Release build: 0 warnings/errors; 87 tests passed. A live read-only API sample matched the parser contract.
+- Package: `DownpourNext-win-x64-0.1.9.zip`; SHA-256 `F89088E619E048ADAF762DA25E25299EC5A2E362B7D6B8523C3A32F3623BAB96`.
+- Download from [GitHub Releases](https://github.com/christiand0797/downpour-next/releases/tag/v0.1.9). Unsigned portable test build; not full v29 parity.
+
 ## v0.1.8 — bounded Windows event push subscriptions
 
 - Added future-event subscriptions for the fixed Windows Event Log allow-list, alongside the existing 15-second polling fallback.
