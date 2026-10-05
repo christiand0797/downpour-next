@@ -8,7 +8,7 @@
       "taskId": "DN-014",
       "status": "active",
       "heartbeatUtc": "2026-10-05T03:21:57Z",
-      "notes": "DN-014 follow-on adds system-wide commit usage/limit via documented GetPerformanceInfo counters, six Performance gauges, commit history and CSV fields. Fresh desktop/service package matches self-contained staging; app starts and bundled service child is running. Serial Release build passes with 0 warnings/errors; 117 tests pass including commit page-count bounds, pair validation, and live provider capture. This commit-meter slice is not yet pushed. Next: per-core CPU, physical disk I/O, pagefile storage metrics, Performance-page native click-through; preserve unknown/unavailable states."
+      "notes": "DN-014 system-wide commit usage/limit slice is source commit d82fb04. Uses documented GetPerformanceInfo counters, six Performance gauges, commit history and CSV fields. Fresh desktop/service package matches self-contained staging; app starts and bundled service child is running. Serial Release build passes with 0 warnings/errors; 117 tests pass including commit page-count bounds, pair validation, and live provider capture. GitHub push and new release artifact remain pending. Next: per-core CPU, physical disk I/O, pagefile storage metrics, Performance-page native click-through; preserve unknown/unavailable states."
     },
     {
       "id": "v29_action_map",
