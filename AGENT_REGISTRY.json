@@ -7,8 +7,8 @@
       "role": "primary",
       "taskId": "DN-014",
       "status": "active",
-      "heartbeatUtc": "2026-10-05T02:46:14Z",
-      "notes": "DN-014 performance/UI slice active. Exact sampled-circle gauge arcs and labeled gap-aware dashboard/network/Performance plots are in place. Performance includes CPU/memory/OS-volume/RX/TX gauges, CPU/memory/network history, process/TCP/uptime/volume summaries, largest working sets, refresh/pause, and bounded CSV. System-volume metadata now reads off the UI dispatcher. The WinUI PointCollection sharing crash is fixed. Release build passed before this last async-read edit; rebuild and republish, verify package startup and route, then push. v29 parity remains open for per-core/per-process CPU, disk I/O, pagefile/commit, sorting/filtering, thresholds, and GPU/thermal hardware sources."
+      "heartbeatUtc": "2026-10-05T02:52:00Z",
+      "notes": "DN-014 slice source commit 2b88cff is ready for push. Release build passed with 0 warnings/errors and all 112 tests passed. Local portable folder rebuilt (769 files); desktop/service/helper hashes match fresh publish staging; desktop launched and auto-started its service. Dashboard screenshot is artifacts/desktop-downpour-latest.png. Performance route and save-picker click-through remain manual. Next: continue with true v29 telemetry parity, starting with per-core/per-process CPU deltas; keep unsupported readings unknown."
     },
     {
       "id": "v29_action_map",
