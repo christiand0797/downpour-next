@@ -8,7 +8,7 @@ public sealed record ServiceHealthSnapshot(
     IReadOnlyList<string> ConnectedSensors,
     IReadOnlyList<string> Warnings);
 
-public sealed record ProcessSnapshot(int ProcessId, string Name, long WorkingSetBytes, int ThreadCount);
+public sealed record ProcessSnapshot(int ProcessId, string Name, long WorkingSetBytes, int ThreadCount, double? CpuPercent = null);
 
 public sealed record SystemHealthSnapshot(
     int SchemaVersion,

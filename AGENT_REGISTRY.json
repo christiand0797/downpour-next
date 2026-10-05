@@ -8,7 +8,7 @@
       "taskId": "DN-014",
       "status": "active",
       "heartbeatUtc": "2026-10-05T02:52:00Z",
-      "notes": "DN-014 slice source commit 2b88cff is ready for push. Release build passed with 0 warnings/errors and all 112 tests passed. Local portable folder rebuilt (769 files); desktop/service/helper hashes match fresh publish staging; desktop launched and auto-started its service. Dashboard screenshot is artifacts/desktop-downpour-latest.png. Performance route and save-picker click-through remain manual. Next: continue with true v29 telemetry parity, starting with per-core/per-process CPU deltas; keep unsupported readings unknown."
+      "notes": "DN-014 follow-on adds real service-side per-process CPU deltas (normalized across logical processor capacity, resets on process start-time/PID reuse, null on first/inaccessible sample), client validation, and Process/Performance readouts. Release serial build passed (0 warnings/errors); 115 tests pass including the live two-sample provider test. Fresh desktop/service publishes copied to local portable package and packaged app/service startup was confirmed. Native Performance-route/save-picker click-through remains. Next: add per-core CPU, disk I/O, and pagefile telemetry with bounded contracts and source tests; keep unsupported readings unknown."
     },
     {
       "id": "v29_action_map",

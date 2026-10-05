@@ -26,26 +26,28 @@
         <ListView x:Name="ProcessList" Grid.Row="2" ItemsSource="{x:Bind Processes}" SelectionMode="None" IsItemClickEnabled="False">
             <ListView.Header>
                 <Grid Padding="14,10" ColumnSpacing="12" Background="{StaticResource DownpourSurfaceElevatedBrush}">
-                    <Grid.ColumnDefinitions><ColumnDefinition Width="70" /><ColumnDefinition Width="2*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="90" /></Grid.ColumnDefinitions>
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="70" /><ColumnDefinition Width="2*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="90" /><ColumnDefinition Width="90" /></Grid.ColumnDefinitions>
                     <TextBlock FontWeight="SemiBold" Text="PID" />
                     <TextBlock Grid.Column="1" FontWeight="SemiBold" Text="PROCESS" />
                     <TextBlock Grid.Column="2" FontWeight="SemiBold" Text="WORKING SET" />
                     <TextBlock Grid.Column="3" FontWeight="SemiBold" Text="THREADS" />
+                    <TextBlock Grid.Column="4" FontWeight="SemiBold" Text="CPU" />
                 </Grid>
             </ListView.Header>
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <Grid Padding="14,9" ColumnSpacing="12">
-                        <Grid.ColumnDefinitions><ColumnDefinition Width="70" /><ColumnDefinition Width="2*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="90" /></Grid.ColumnDefinitions>
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="70" /><ColumnDefinition Width="2*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="90" /><ColumnDefinition Width="90" /></Grid.ColumnDefinitions>
                         <TextBlock Text="{Binding ProcessId}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         <TextBlock Grid.Column="1" Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
                         <TextBlock Grid.Column="2" Text="{Binding MemoryDisplay}" />
                         <TextBlock Grid.Column="3" Text="{Binding ThreadCount}" />
+                        <TextBlock Grid.Column="4" Text="{Binding CpuDisplay}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>
             <ListView.Footer>
-                <TextBlock Padding="14,12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Read-only snapshot of up to the 512 largest processes by working set. The total count includes entries outside this display limit. Command lines, handles, and response actions are not collected." TextWrapping="Wrap" />
+                <TextBlock Padding="14,12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Read-only snapshot of up to the 512 largest processes by working set. CPU is normalized to total logical-processor capacity; it is unknown on the first sample or when Windows denies access. The total count includes entries outside this display limit. Command lines, handles, and response actions are not collected." TextWrapping="Wrap" />
             </ListView.Footer>
         </ListView>
     </Grid>

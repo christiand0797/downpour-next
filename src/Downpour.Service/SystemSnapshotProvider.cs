@@ -12,12 +12,16 @@ public sealed class SystemSnapshotProvider
     private ulong? _previousIdle;
     private ulong? _previousKernel;
     private ulong? _previousUser;
+    private Dictionary<int, ProcessCpuSample> _previousProcessCpu = [];
 
     public SystemHealthSnapshot Capture()
     {
         var warnings = new List<string>();
         var processCount = 0;
         var processes = new List<ProcessSnapshot>();
+        var currentProcessCpu = new Dictionary<int, ProcessCpuSample>();
+        var capturedTimestamp = Stopwatch.GetTimestamp();
+        var processorCount = Math.Max(1, Environment.ProcessorCount);
         try
         {
             var running = Process.GetProcesses();
@@ -29,11 +33,29 @@ public sealed class SystemSnapshotProvider
                     var processId = process.Id;
                     if (processId <= 0) continue;
                     var processName = process.ProcessName;
+                    double? processCpuPercent = null;
+                    try
+                    {
+                        var cpuTicks = process.TotalProcessorTime.Ticks;
+                        var startTimeTicks = process.StartTime.ToUniversalTime().Ticks;
+                        var current = new ProcessCpuSample(cpuTicks, startTimeTicks, capturedTimestamp);
+                        if (_previousProcessCpu.TryGetValue(processId, out var previous) && previous.StartTimeUtcTicks == startTimeTicks)
+                        {
+                            var elapsed = Stopwatch.GetElapsedTime(previous.CapturedTimestamp, capturedTimestamp);
+                            processCpuPercent = CalculateProcessCpuPercent(previous.CpuTimeTicks, cpuTicks, elapsed, processorCount);
+                        }
+                        currentProcessCpu[processId] = current;
+                    }
+                    catch (Exception exception) when (exception is InvalidOperationException or System.ComponentModel.Win32Exception or NotSupportedException or UnauthorizedAccessException or ArgumentException)
+                    {
+                        // Per-process CPU is optional; inaccessible or exiting processes remain unknown.
+                    }
                     processes.Add(new ProcessSnapshot(
                         processId,
                         processName[..Math.Min(processName.Length, MaximumProcessNameLength)],
                         process.WorkingSet64,
-                        process.Threads.Count));
+                        process.Threads.Count,
+                        processCpuPercent));
                 }
                 catch (Exception exception) when (exception is InvalidOperationException or System.ComponentModel.Win32Exception or NotSupportedException)
                 {
@@ -49,6 +71,7 @@ public sealed class SystemSnapshotProvider
         {
             warnings.Add("Process inventory is temporarily unavailable.");
         }
+        _previousProcessCpu = currentProcessCpu;
 
         var memoryTotal = 0UL;
         var memoryAvailable = 0UL;
@@ -109,6 +132,16 @@ public sealed class SystemSnapshotProvider
         if (totalDelta == 0 || idleDelta > totalDelta) return null;
         return Math.Round((totalDelta - idleDelta) * 100d / totalDelta, 1);
     }
+
+    internal static double? CalculateProcessCpuPercent(long previousCpuTicks, long currentCpuTicks, TimeSpan elapsed, int processorCount)
+    {
+        if (previousCpuTicks < 0 || currentCpuTicks < previousCpuTicks || elapsed <= TimeSpan.Zero || processorCount <= 0) return null;
+        var availableCpuTicks = elapsed.Ticks * (double)processorCount;
+        if (availableCpuTicks <= 0) return null;
+        return Math.Round(Math.Clamp((currentCpuTicks - previousCpuTicks) * 100d / availableCpuTicks, 0, 100), 1);
+    }
+
+    private sealed record ProcessCpuSample(long CpuTimeTicks, long StartTimeUtcTicks, long CapturedTimestamp);
 
     private static ulong ToUInt64(SystemFileTime value) => ((ulong)value.High << 32) | value.Low;
 

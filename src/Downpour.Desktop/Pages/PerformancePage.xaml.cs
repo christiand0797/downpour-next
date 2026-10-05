@@ -212,7 +212,7 @@ public sealed partial class PerformancePage : Page
             {
                 var share = largest > 0 ? Math.Clamp(process.WorkingSetBytes * 100d / largest, 0, 100) : 0;
                 Processes.Add(new PerformanceProcessRow(process.Name,
-                    $"PID {process.ProcessId} · {FormatBytes(process.WorkingSetBytes)} · {process.ThreadCount:N0} threads", share));
+                    $"PID {process.ProcessId} · {FormatBytes(process.WorkingSetBytes)} · {process.ThreadCount:N0} threads · CPU {FormatCpu(process.CpuPercent)}", share));
             }
             ProcessWindowLabel.Text = $"TOP {rows.Length:N0} · {snapshot.TopProcesses.Count:N0} AVAILABLE";
         }
@@ -261,6 +261,8 @@ public sealed partial class PerformancePage : Page
     }
 
     private static string FormatRate(long bytesPerSecond) => $"{FormatBytes(bytesPerSecond)}/s";
+
+    private static string FormatCpu(double? percent) => percent is { } value ? $"{value:0.0}%" : "—";
 
     private static string FormatUptime(TimeSpan uptime) => uptime.TotalDays >= 1
         ? $"{(int)uptime.TotalDays}d {uptime.Hours:00}:{uptime.Minutes:00}"

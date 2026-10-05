@@ -68,7 +68,8 @@ public sealed partial class ProcessPage : Page
                 process.ProcessId,
                 process.Name,
                 process.WorkingSetBytes,
-                process.ThreadCount)).ToArray();
+                process.ThreadCount,
+                process.CpuPercent)).ToArray();
             _totalProcessCount = snapshot.ProcessCount;
             _hasSnapshot = true;
             SnapshotStatus.Text = $"Observe-only · {snapshot.ProcessCount:N0} processes on this device · refreshed {snapshot.CapturedAtUtc.ToLocalTime():T}";
@@ -111,12 +112,14 @@ public sealed partial class ProcessPage : Page
 public sealed class ProcessRow
 {
     public ProcessRow() { }
-    public ProcessRow(int processId, string name, long workingSetBytes, int threadCount) =>
-        (ProcessId, Name, WorkingSetBytes, ThreadCount) = (processId, name, workingSetBytes, threadCount);
+    public ProcessRow(int processId, string name, long workingSetBytes, int threadCount, double? cpuPercent = null) =>
+        (ProcessId, Name, WorkingSetBytes, ThreadCount, CpuPercent) = (processId, name, workingSetBytes, threadCount, cpuPercent);
 
     public int ProcessId { get; set; }
     public string Name { get; set; } = "";
     public long WorkingSetBytes { get; set; }
     public int ThreadCount { get; set; }
+    public double? CpuPercent { get; set; }
+    public string CpuDisplay => CpuPercent is { } value ? $"{value:0.0}%" : "—";
     public string MemoryDisplay => $"{WorkingSetBytes / 1024d / 1024d:0.0} MB";
 }

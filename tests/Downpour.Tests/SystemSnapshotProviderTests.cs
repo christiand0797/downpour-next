@@ -1,4 +1,5 @@
 using Downpour.Service;
+using System.Diagnostics;
 
 namespace Downpour.Tests;
 
@@ -51,5 +52,45 @@ public sealed class SystemSnapshotProviderTests
         Assert.True(Downpour.Core.SystemSnapshotClient.IsValidSnapshot(snapshot));
         Assert.False(Downpour.Core.SystemSnapshotClient.IsValidSnapshot(snapshot with { TopProcesses = [.. rows, row with { ProcessId = 513 }] }));
         Assert.False(Downpour.Core.SystemSnapshotClient.IsValidSnapshot(snapshot with { TopProcesses = [row with { Name = new string('x', 129) }] }));
+    }
+
+    [Fact]
+    public void ProcessCpuPercentUsesTotalMachineCapacityAndRejectsInvalidDeltas()
+    {
+        var oneCoreSecond = TimeSpan.TicksPerSecond;
+
+        Assert.Equal(25, SystemSnapshotProvider.CalculateProcessCpuPercent(0, oneCoreSecond, TimeSpan.FromSeconds(1), 4));
+        Assert.Equal(100, SystemSnapshotProvider.CalculateProcessCpuPercent(0, oneCoreSecond * 4, TimeSpan.FromSeconds(1), 4));
+        Assert.Null(SystemSnapshotProvider.CalculateProcessCpuPercent(10, 9, TimeSpan.FromSeconds(1), 4));
+        Assert.Null(SystemSnapshotProvider.CalculateProcessCpuPercent(0, 10, TimeSpan.Zero, 4));
+        Assert.Null(SystemSnapshotProvider.CalculateProcessCpuPercent(0, 10, TimeSpan.FromSeconds(1), 0));
+    }
+
+    [Fact]
+    public void CaptureReportsProcessCpuAfterASecondAccessibleSample()
+    {
+        var provider = new SystemSnapshotProvider();
+        _ = provider.Capture();
+        var start = Stopwatch.GetTimestamp();
+        while (Stopwatch.GetElapsedTime(start) < TimeSpan.FromMilliseconds(180))
+            _ = Math.Sqrt(Stopwatch.GetTimestamp());
+
+        var current = provider.Capture().TopProcesses.Single(process => process.ProcessId == Environment.ProcessId);
+
+        Assert.NotNull(current.CpuPercent);
+        Assert.InRange(current.CpuPercent.Value, 0, 100);
+    }
+
+    [Fact]
+    public void ClientSnapshotValidationRejectsOutOfRangePerProcessCpu()
+    {
+        var valid = new Downpour.Contracts.SystemHealthSnapshot(1, DateTimeOffset.UtcNow, 1, 50, 1024, 512, 2,
+            [new Downpour.Contracts.ProcessSnapshot(10, "safe", 128, 1, 8.5)], []);
+
+        Assert.True(Downpour.Core.SystemSnapshotClient.IsValidSnapshot(valid));
+        Assert.False(Downpour.Core.SystemSnapshotClient.IsValidSnapshot(valid with
+        {
+            TopProcesses = [valid.TopProcesses[0] with { CpuPercent = 100.1 }]
+        }));
     }
 }

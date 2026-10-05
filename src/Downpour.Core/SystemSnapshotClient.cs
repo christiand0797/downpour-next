@@ -56,6 +56,6 @@ public sealed class SystemSnapshotClient
         snapshot.ActiveTcpConnections is null or >= 0 &&
         snapshot.TopProcesses is { Count: <= 512 } && snapshot.ProcessCount >= snapshot.TopProcesses.Count && snapshot.Warnings is { Count: <= 64 } &&
         snapshot.TopProcesses.All(process => process is not null && process.ProcessId > 0 && process.Name is { Length: > 0 and <= 128 } && !process.Name.Any(char.IsControl) &&
-            process.WorkingSetBytes >= 0 && process.ThreadCount >= 0) &&
+            process.WorkingSetBytes >= 0 && process.ThreadCount >= 0 && process.CpuPercent is null or (>= 0 and <= 100)) &&
         snapshot.Warnings.All(warning => warning is not null && warning.Length <= 512);
 }
