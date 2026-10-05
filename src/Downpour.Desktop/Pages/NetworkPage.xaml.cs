@@ -67,8 +67,8 @@ public sealed partial class NetworkPage : Page
                 ReceiveRate.Text = "—";
                 SendRate.Text = "—";
                 ConnectionCount.Text = "—";
-                Interfaces.Clear();
-                Connections.Clear();
+                CollectionReconciler.Apply(Interfaces, Array.Empty<NetworkInterfaceRow>(), row => row.Name, (_, _) => { });
+                CollectionReconciler.Apply(Connections, Array.Empty<NetworkConnectionRow>(), row => row.Key, (_, _) => { });
                 _history.Enqueue(new NetworkPoint(null, null));
                 TrimHistory();
                 DrawHistory();
@@ -87,24 +87,27 @@ public sealed partial class NetworkPage : Page
                 ? "Interface totals and active TCP endpoints are collected locally. Throughput uses counter deltas."
                 : string.Join(" ", snapshot.Warnings);
 
-            Interfaces.Clear();
-            foreach (var row in snapshot.Interfaces.OrderByDescending(row => row.Status == "Up").ThenBy(row => row.Name, StringComparer.OrdinalIgnoreCase))
-            {
-                Interfaces.Add(new NetworkInterfaceRow(
+            var interfaceRows = snapshot.Interfaces.OrderByDescending(row => row.Status == "Up").ThenBy(row => row.Name, StringComparer.OrdinalIgnoreCase)
+                .Select(row => new NetworkInterfaceRow(
                     row.Name,
                     $"{row.Description} · received {row.TotalReceivedBytes:N0} B · sent {row.TotalSentBytes:N0} B",
                     row.Status,
                     row.ReceiveBytesPerSecond is { } rx ? FormatRate(rx) : "↓  —",
                     row.SendBytesPerSecond is { } tx ? FormatRate(tx) : "↑  —",
                     row.TotalReceivedBytes is >= 0 ? FormatBytes(row.TotalReceivedBytes) : "—",
-                    row.TotalSentBytes is >= 0 ? FormatBytes(row.TotalSentBytes) : "—"));
-            }
-
-            Connections.Clear();
-            foreach (var row in snapshot.Connections)
+                    row.TotalSentBytes is >= 0 ? FormatBytes(row.TotalSentBytes) : "—")).ToArray();
+            CollectionReconciler.Apply(Interfaces, interfaceRows, row => row.Name, (current, incoming) =>
             {
-                Connections.Add(new NetworkConnectionRow(row.LocalEndpoint, row.RemoteEndpoint, row.State));
-            }
+                current.Detail = incoming.Detail;
+                current.Status = incoming.Status;
+                current.ReceiveRate = incoming.ReceiveRate;
+                current.SendRate = incoming.SendRate;
+                current.ReceivedTotal = incoming.ReceivedTotal;
+                current.SentTotal = incoming.SentTotal;
+            });
+
+            var connectionRows = snapshot.Connections.Select(row => new NetworkConnectionRow(row.LocalEndpoint, row.RemoteEndpoint, row.State)).ToArray();
+            CollectionReconciler.Apply(Connections, connectionRows, row => row.Key, (current, incoming) => current.State = incoming.State);
             ConnectionEmpty.Visibility = Connections.Count == 0 ? Microsoft.UI.Xaml.Visibility.Visible : Microsoft.UI.Xaml.Visibility.Collapsed;
             ConnectionFootnote.Text = snapshot.TotalConnectionCount > snapshot.Connections.Count
                 ? $"SHOWING {snapshot.Connections.Count:N0} OF {snapshot.TotalConnectionCount:N0}"
@@ -237,25 +240,41 @@ public sealed partial class NetworkPage : Page
     private sealed record NetworkPoint(long? Receive, long? Send);
 }
 
-public sealed class NetworkInterfaceRow(string name, string detail, string status, string receiveRate, string sendRate, string receivedTotal, string sentTotal)
+public sealed class NetworkInterfaceRow : ObservableRow
 {
-    public string Name { get; } = name;
-    public string Detail { get; } = detail;
-    public string Status { get; } = status;
-    public string ReceiveRate { get; } = receiveRate;
-    public string SendRate { get; } = sendRate;
-    public string ReceivedTotal { get; } = receivedTotal;
-    public string SentTotal { get; } = sentTotal;
+    private string _name = "";
+    private string _detail = "";
+    private string _status = "";
+    private string _receiveRate = "";
+    private string _sendRate = "";
+    private string _receivedTotal = "";
+    private string _sentTotal = "";
+
+    public NetworkInterfaceRow() { }
+    public NetworkInterfaceRow(string name, string detail, string status, string receiveRate, string sendRate, string receivedTotal, string sentTotal) =>
+        (_name, _detail, _status, _receiveRate, _sendRate, _receivedTotal, _sentTotal) = (name, detail, status, receiveRate, sendRate, receivedTotal, sentTotal);
+
+    public string Name { get => _name; set => SetProperty(ref _name, value); }
+    public string Detail { get => _detail; set => SetProperty(ref _detail, value); }
+    public string Status { get => _status; set => SetProperty(ref _status, value); }
+    public string ReceiveRate { get => _receiveRate; set => SetProperty(ref _receiveRate, value); }
+    public string SendRate { get => _sendRate; set => SetProperty(ref _sendRate, value); }
+    public string ReceivedTotal { get => _receivedTotal; set => SetProperty(ref _receivedTotal, value); }
+    public string SentTotal { get => _sentTotal; set => SetProperty(ref _sentTotal, value); }
 }
 
-public sealed class NetworkConnectionRow
+public sealed class NetworkConnectionRow : ObservableRow
 {
+    private string _localEndpoint = "";
+    private string _remoteEndpoint = "";
+    private string _state = "";
     public NetworkConnectionRow() { }
 
     public NetworkConnectionRow(string localEndpoint, string remoteEndpoint, string state) =>
-        (LocalEndpoint, RemoteEndpoint, State) = (localEndpoint, remoteEndpoint, state);
+        (_localEndpoint, _remoteEndpoint, _state) = (localEndpoint, remoteEndpoint, state);
 
-    public string LocalEndpoint { get; set; } = "";
-    public string RemoteEndpoint { get; set; } = "";
-    public string State { get; set; } = "";
+    public string Key => $"{LocalEndpoint}\u001f{RemoteEndpoint}";
+    public string LocalEndpoint { get => _localEndpoint; set => SetProperty(ref _localEndpoint, value); }
+    public string RemoteEndpoint { get => _remoteEndpoint; set => SetProperty(ref _remoteEndpoint, value); }
+    public string State { get => _state; set => SetProperty(ref _state, value); }
 }

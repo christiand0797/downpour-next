@@ -19,6 +19,7 @@ public sealed class CircularGauge : UserControl
     private readonly Ellipse _fullProgressRing;
     private readonly TextBlock _valueText;
     private double? _value;
+    private string? _displayValue;
 
     public CircularGauge(string caption, Color accent)
     {
@@ -81,8 +82,12 @@ public sealed class CircularGauge : UserControl
 
     public void SetMetric(double? normalizedPercent, string? displayValue)
     {
-        _value = normalizedPercent is { } measured && double.IsFinite(measured) ? Math.Clamp(measured, 0, 100) : null;
-        _valueText.Text = _value is null || string.IsNullOrWhiteSpace(displayValue) ? "—" : displayValue;
+        double? nextValue = normalizedPercent is { } measured && double.IsFinite(measured) ? Math.Clamp(measured, 0, 100) : null;
+        var nextDisplay = nextValue is null || string.IsNullOrWhiteSpace(displayValue) ? "—" : displayValue;
+        if (_value == nextValue && _valueText.Text == nextDisplay) return;
+        _value = nextValue;
+        _displayValue = nextDisplay;
+        _valueText.Text = _displayValue;
         _valueText.FontSize = _valueText.Text.Length > 5 ? 15 : _valueText.Text.Length > 4 ? 18 : 25;
         UpdateArc();
     }

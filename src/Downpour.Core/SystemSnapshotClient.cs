@@ -55,6 +55,7 @@ public sealed class SystemSnapshotClient
         snapshot.MemoryAvailableBytes <= snapshot.MemoryTotalBytes &&
         (snapshot.MemoryCommitLimitBytes is null && snapshot.MemoryCommittedBytes is null ||
          snapshot.MemoryCommitLimitBytes is { } commitLimit && snapshot.MemoryCommittedBytes is { } committed && committed <= commitLimit) &&
+        snapshot.DiskReadBytesPerSecond is null or >= 0 && snapshot.DiskWriteBytesPerSecond is null or >= 0 &&
         snapshot.ActiveTcpConnections is null or >= 0 &&
         snapshot.TopProcesses is { Count: <= 512 } && snapshot.ProcessCount >= snapshot.TopProcesses.Count && snapshot.Warnings is { Count: <= 64 } &&
         snapshot.TopProcesses.All(process => process is not null && process.ProcessId > 0 && process.Name is { Length: > 0 and <= 128 } && !process.Name.Any(char.IsControl) &&

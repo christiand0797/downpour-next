@@ -1,5 +1,13 @@
 # Downpour Next changelog
 
+## v0.1.15 — Disk telemetry and stable refresh updates
+
+- Added locale-independent Windows PhysicalDisk total read/write byte-rate counters, with unknown values during warm-up and when counters are unavailable.
+- Added dedicated physical-disk read/write gauges, two-minute history, bounded CSV columns, and snapshot validation for nonnegative disk rates.
+- Updated live process, network adapter, TCP connection, and Performance lists in place by stable ID to prevent full-list flashing during refresh. Unchanged gauge values no longer regenerate their ring geometry.
+- Dashboard retains the last chart while the sensor is offline and labels its availability state.
+- Release build and all 118 tests are pending in the isolated pushed-source tree; portable package and release metadata will be recorded after verification.
+
 ## v0.1.14 — Performance telemetry and gauges
 
 - Expanded Monitoring > Performance with six live gauges: CPU, physical memory, system commit, OS-volume usage, combined active-adapter receive, and send. Added commit history and committed/limit fields to bounded CSV export.

@@ -94,8 +94,13 @@ public sealed partial class ProcessPage : Page
             ? _allProcesses
             : _allProcesses.Where(process => process.Name.Contains(query, StringComparison.OrdinalIgnoreCase) ||
                 process.ProcessId.ToString().Contains(query, StringComparison.OrdinalIgnoreCase)).ToArray();
-        Processes.Clear();
-        foreach (var process in visible) Processes.Add(process);
+        CollectionReconciler.Apply(Processes, visible.ToArray(), process => process.ProcessId, (current, incoming) =>
+        {
+            current.Name = incoming.Name;
+            current.WorkingSetBytes = incoming.WorkingSetBytes;
+            current.ThreadCount = incoming.ThreadCount;
+            current.CpuPercent = incoming.CpuPercent;
+        });
         if (ProcessCount is not null)
         {
             ProcessCount.Text = string.IsNullOrWhiteSpace(query)
@@ -109,17 +114,31 @@ public sealed partial class ProcessPage : Page
     private void ProcessSearch_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args) => ApplyFilter();
 }
 
-public sealed class ProcessRow
+public sealed class ProcessRow : ObservableRow
 {
+    private int _processId;
+    private string _name = "";
+    private long _workingSetBytes;
+    private int _threadCount;
+    private double? _cpuPercent;
+
     public ProcessRow() { }
     public ProcessRow(int processId, string name, long workingSetBytes, int threadCount, double? cpuPercent = null) =>
-        (ProcessId, Name, WorkingSetBytes, ThreadCount, CpuPercent) = (processId, name, workingSetBytes, threadCount, cpuPercent);
+        (_processId, _name, _workingSetBytes, _threadCount, _cpuPercent) = (processId, name, workingSetBytes, threadCount, cpuPercent);
 
-    public int ProcessId { get; set; }
-    public string Name { get; set; } = "";
-    public long WorkingSetBytes { get; set; }
-    public int ThreadCount { get; set; }
-    public double? CpuPercent { get; set; }
+    public int ProcessId { get => _processId; set => SetProperty(ref _processId, value); }
+    public string Name { get => _name; set => SetProperty(ref _name, value); }
+    public long WorkingSetBytes
+    {
+        get => _workingSetBytes;
+        set { if (SetProperty(ref _workingSetBytes, value)) RaisePropertyChanged(nameof(MemoryDisplay)); }
+    }
+    public int ThreadCount { get => _threadCount; set => SetProperty(ref _threadCount, value); }
+    public double? CpuPercent
+    {
+        get => _cpuPercent;
+        set { if (SetProperty(ref _cpuPercent, value)) RaisePropertyChanged(nameof(CpuDisplay)); }
+    }
     public string CpuDisplay => CpuPercent is { } value ? $"{value:0.0}%" : "—";
     public string MemoryDisplay => $"{WorkingSetBytes / 1024d / 1024d:0.0} MB";
 }

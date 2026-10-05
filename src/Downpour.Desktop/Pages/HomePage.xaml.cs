@@ -124,8 +124,7 @@ public sealed partial class HomePage : Page
                 _memoryGauge?.SetValue(null);
                 SetMetricCards("—", "Service connection unavailable", "—", "Service connection unavailable",
                     "—", "No current service data", "Offline", "No current measurements");
-                Processes.Clear();
-                ResourceChart.Children.Clear();
+                CollectionReconciler.Apply(Processes, Array.Empty<DashboardProcessRow>(), row => row.ProcessId, (_, _) => { });
                 ChartEmpty.Text = _history.Count > 0 ? "Service unavailable · awaiting a new sample" : "Awaiting live samples from Downpour.Service";
                 ChartEmpty.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
                 return;
@@ -151,17 +150,19 @@ public sealed partial class HomePage : Page
             while (_history.Count > 60) _history.Dequeue();
             DrawResourceChart();
 
-            Processes.Clear();
             var dashboardProcesses = snapshot.TopProcesses.Take(8).ToArray();
             var largestWorkingSet = dashboardProcesses.Length > 0 ? dashboardProcesses.Max(process => process.WorkingSetBytes) : 0;
-            foreach (var process in dashboardProcesses)
+            var dashboardRows = dashboardProcesses.Select(process => new DashboardProcessRow(
+                process.ProcessId,
+                process.Name,
+                $"PID {process.ProcessId}  ·  {process.WorkingSetBytes / 1024d / 1024d:0} MB  ·  {process.ThreadCount} threads",
+                largestWorkingSet > 0 ? Math.Clamp(process.WorkingSetBytes * 100d / largestWorkingSet, 0, 100) : 0)).ToArray();
+            CollectionReconciler.Apply(Processes, dashboardRows, row => row.ProcessId, (current, incoming) =>
             {
-                var share = largestWorkingSet > 0 ? Math.Clamp(process.WorkingSetBytes * 100d / largestWorkingSet, 0, 100) : 0;
-                Processes.Add(new DashboardProcessRow(
-                    process.Name,
-                    $"PID {process.ProcessId}  ·  {process.WorkingSetBytes / 1024d / 1024d:0} MB  ·  {process.ThreadCount} threads",
-                    share));
-            }
+                current.Name = incoming.Name;
+                current.Detail = incoming.Detail;
+                current.MemoryShare = incoming.MemoryShare;
+            });
         }
         catch (Exception exception)
         {
@@ -175,7 +176,7 @@ public sealed partial class HomePage : Page
             _memoryGauge?.SetValue(null);
             SetMetricCards("—", "Current sample unavailable", "—", "Current sample unavailable",
                 "—", "No current service data", "Unknown", "Current sample unavailable");
-            Processes.Clear();
+            CollectionReconciler.Apply(Processes, Array.Empty<DashboardProcessRow>(), row => row.ProcessId, (_, _) => { });
             _history.Enqueue(new ResourceSample(null, null));
             while (_history.Count > 60) _history.Dequeue();
             DrawResourceChart();
@@ -321,13 +322,20 @@ public sealed partial class HomePage : Page
     }
 }
 
-public sealed class DashboardProcessRow
+public sealed class DashboardProcessRow : ObservableRow
 {
+    private int _processId;
+    private string _name = "";
+    private string _detail = "";
+    private double _memoryShare;
+
     public DashboardProcessRow() { }
-    public DashboardProcessRow(string name, string detail, double memoryShare) => (Name, Detail, MemoryShare) = (name, detail, memoryShare);
-    public string Name { get; set; } = "";
-    public string Detail { get; set; } = "";
-    public double MemoryShare { get; set; }
+    public DashboardProcessRow(int processId, string name, string detail, double memoryShare) =>
+        (_processId, _name, _detail, _memoryShare) = (processId, name, detail, memoryShare);
+    public int ProcessId { get => _processId; set => SetProperty(ref _processId, value); }
+    public string Name { get => _name; set => SetProperty(ref _name, value); }
+    public string Detail { get => _detail; set => SetProperty(ref _detail, value); }
+    public double MemoryShare { get => _memoryShare; set => SetProperty(ref _memoryShare, value); }
 }
 
 internal sealed record ResourceSample(double? CpuPercent, double? MemoryPercent);

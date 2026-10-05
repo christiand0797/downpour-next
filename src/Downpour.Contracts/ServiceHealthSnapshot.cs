@@ -21,7 +21,9 @@ public sealed record SystemHealthSnapshot(
     IReadOnlyList<ProcessSnapshot> TopProcesses,
     IReadOnlyList<string> Warnings,
     ulong? MemoryCommitLimitBytes = null,
-    ulong? MemoryCommittedBytes = null);
+    ulong? MemoryCommittedBytes = null,
+    long? DiskReadBytesPerSecond = null,
+    long? DiskWriteBytesPerSecond = null);
 
 public sealed record DriverInventoryEntry(string Name, string ImagePath, bool IsUnderSystemDrivers, bool IsInUserWritableLocation);
 

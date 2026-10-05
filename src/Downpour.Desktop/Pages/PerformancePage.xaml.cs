@@ -27,6 +27,8 @@ public sealed partial class PerformancePage : Page
     private readonly CircularGauge _diskGauge;
     private readonly CircularGauge _receiveGauge;
     private readonly CircularGauge _sendGauge;
+    private readonly CircularGauge _diskReadGauge;
+    private readonly CircularGauge _diskWriteGauge;
     private bool _requestInFlight;
     private bool _samplingPaused;
     private bool _exportInFlight;
@@ -42,12 +44,16 @@ public sealed partial class PerformancePage : Page
         _diskGauge = new CircularGauge("OS DISK", Color.FromArgb(255, 255, 176, 94));
         _receiveGauge = new CircularGauge("RX / s", Color.FromArgb(255, 80, 219, 241));
         _sendGauge = new CircularGauge("TX / s", Color.FromArgb(255, 180, 122, 248));
+        _diskReadGauge = new CircularGauge("DISK READ", Color.FromArgb(255, 255, 174, 92));
+        _diskWriteGauge = new CircularGauge("DISK WRITE", Color.FromArgb(255, 180, 122, 248));
         AddGauge(_cpuGauge, 0, 0);
         AddGauge(_memoryGauge, 1, 0);
         AddGauge(_diskGauge, 2, 0);
         AddGauge(_receiveGauge, 0, 1);
         AddGauge(_sendGauge, 1, 1);
         AddGauge(_commitGauge, 2, 1);
+        AddGauge(_diskReadGauge, 0, 2);
+        AddGauge(_diskWriteGauge, 1, 2);
         CpuCount.Text = Environment.ProcessorCount.ToString("N0");
         CpuDetail.Text = "Logical processors · Windows reports topology only";
         _timer = DispatcherQueue.GetForCurrentThread().CreateTimer();
@@ -116,7 +122,7 @@ public sealed partial class PerformancePage : Page
                 return;
             }
 
-            var csv = new System.Text.StringBuilder("captured_at_local,cpu_percent,memory_percent,commit_percent,committed_bytes,commit_limit_bytes,receive_bytes_per_second,send_bytes_per_second\r\n");
+            var csv = new System.Text.StringBuilder("captured_at_local,cpu_percent,memory_percent,commit_percent,committed_bytes,commit_limit_bytes,receive_bytes_per_second,send_bytes_per_second,disk_read_bytes_per_second,disk_write_bytes_per_second\r\n");
             foreach (var sample in samples)
             {
                 csv.Append(sample.CapturedAtUtc.ToLocalTime().ToString("O"))
@@ -127,6 +133,8 @@ public sealed partial class PerformancePage : Page
                     .Append(',').Append(sample.CommitLimitBytes?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "")
                     .Append(',').Append(sample.Receive?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "")
                     .Append(',').Append(sample.Send?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "")
+                    .Append(',').Append(sample.DiskRead?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "")
+                    .Append(',').Append(sample.DiskWrite?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "")
                     .Append("\r\n");
             }
             await FileIO.WriteTextAsync(file, csv.ToString());
@@ -173,16 +181,20 @@ public sealed partial class PerformancePage : Page
                 _commitGauge.SetMetric(null, null);
                 _receiveGauge.SetMetric(null, null);
                 _sendGauge.SetMetric(null, null);
+                _diskReadGauge.SetMetric(null, null);
+                _diskWriteGauge.SetMetric(null, null);
                 MemorySummary.Text = "Physical memory totals are unavailable with the sensor offline";
                 CommitSummary.Text = "System commit counters unavailable";
+                DiskIoSummary.Text = "Physical disk counters unavailable with the sensor offline";
                 ProcessCount.Text = "—";
                 ConnectionCount.Text = "—";
                 UptimeValue.Text = FormatUptime(TimeSpan.FromMilliseconds(Math.Max(0, Environment.TickCount64)));
-                Processes.Clear();
-                _history.Enqueue(new PerformanceSample(DateTimeOffset.UtcNow, null, null, null, null, null, null, null));
+                CollectionReconciler.Apply(Processes, Array.Empty<PerformanceProcessRow>(), row => row.ProcessId, (_, _) => { });
+                _history.Enqueue(new PerformanceSample(DateTimeOffset.UtcNow, null, null, null, null, null, null, null, null, null));
                 TrimHistory();
                 DrawHistory();
                 DrawNetworkHistory();
+                DrawDiskHistory();
                 return;
             }
 
@@ -209,27 +221,36 @@ public sealed partial class PerformancePage : Page
             var activeInterfaces = network?.Interfaces.Where(row => row.Status == "Up").ToArray() ?? [];
             var receive = network is null ? null : SumRates(activeInterfaces.Select(row => row.ReceiveBytesPerSecond));
             var send = network is null ? null : SumRates(activeInterfaces.Select(row => row.SendBytesPerSecond));
+            var diskRead = snapshot.DiskReadBytesPerSecond;
+            var diskWrite = snapshot.DiskWriteBytesPerSecond;
             ConnectionCount.Text = network?.TotalConnectionCount.ToString("N0") ?? "—";
             StatusDescription.Text = network is null
-                ? "System CPU/memory and volume readings are local. Adapter rates and connection totals are unavailable in this sample."
-                : "CPU, physical memory, system commit, volume, adapter rates, and process inventory update locally every three seconds. Missing measurements remain unknown.";
+                ? "CPU/memory, commit, volume, and physical-disk readings are local. Adapter rates and connection totals are unavailable in this sample."
+                : "CPU, memory, commit, volume, physical-disk throughput, adapter rates, and process inventory update locally every three seconds. Missing measurements remain unknown.";
+            DiskIoSummary.Text = diskRead is { } readBytes && diskWrite is { } writeBytes
+                ? $"All physical disks · read {FormatRate(readBytes)} · write {FormatRate(writeBytes)}"
+                : "All physical disks · Windows counters are warming up or unavailable";
 
             _history.Enqueue(new PerformanceSample(snapshot.CapturedAtUtc, snapshot.CpuPercent, memoryPercent, commitPercent,
-                snapshot.MemoryCommittedBytes, snapshot.MemoryCommitLimitBytes, receive, send));
+                snapshot.MemoryCommittedBytes, snapshot.MemoryCommitLimitBytes, receive, send, diskRead, diskWrite));
             TrimHistory();
             UpdateRateGauges(receive, send);
+            UpdateDiskGauges(diskRead, diskWrite);
             DrawHistory();
             DrawNetworkHistory();
+            DrawDiskHistory();
 
-            Processes.Clear();
             var rows = snapshot.TopProcesses.Take(10).ToArray();
             var largest = rows.Length == 0 ? 0 : rows.Max(process => process.WorkingSetBytes);
-            foreach (var process in rows)
+            var processRows = rows.Select(process => new PerformanceProcessRow(process.ProcessId, process.Name,
+                $"PID {process.ProcessId} · {FormatBytes(process.WorkingSetBytes)} · {process.ThreadCount:N0} threads · CPU {FormatCpu(process.CpuPercent)}",
+                largest > 0 ? Math.Clamp(process.WorkingSetBytes * 100d / largest, 0, 100) : 0)).ToArray();
+            CollectionReconciler.Apply(Processes, processRows, row => row.ProcessId, (current, incoming) =>
             {
-                var share = largest > 0 ? Math.Clamp(process.WorkingSetBytes * 100d / largest, 0, 100) : 0;
-                Processes.Add(new PerformanceProcessRow(process.Name,
-                    $"PID {process.ProcessId} · {FormatBytes(process.WorkingSetBytes)} · {process.ThreadCount:N0} threads · CPU {FormatCpu(process.CpuPercent)}", share));
-            }
+                current.Name = incoming.Name;
+                current.Detail = incoming.Detail;
+                current.MemoryShare = incoming.MemoryShare;
+            });
             ProcessWindowLabel.Text = $"TOP {rows.Length:N0} · {snapshot.TopProcesses.Count:N0} AVAILABLE";
         }
         catch (Exception exception)
@@ -243,16 +264,20 @@ public sealed partial class PerformancePage : Page
             _commitGauge.SetMetric(null, null);
             _receiveGauge.SetMetric(null, null);
             _sendGauge.SetMetric(null, null);
+            _diskReadGauge.SetMetric(null, null);
+            _diskWriteGauge.SetMetric(null, null);
             MemorySummary.Text = "Physical memory totals are unavailable in this sample";
             CommitSummary.Text = "System commit counters unavailable in this sample";
+            DiskIoSummary.Text = "Physical disk counters unavailable in this sample";
             ProcessCount.Text = "—";
             ConnectionCount.Text = "—";
             UptimeValue.Text = "—";
-            Processes.Clear();
-            _history.Enqueue(new PerformanceSample(DateTimeOffset.UtcNow, null, null, null, null, null, null, null));
+            CollectionReconciler.Apply(Processes, Array.Empty<PerformanceProcessRow>(), row => row.ProcessId, (_, _) => { });
+            _history.Enqueue(new PerformanceSample(DateTimeOffset.UtcNow, null, null, null, null, null, null, null, null, null));
             TrimHistory();
             DrawHistory();
             DrawNetworkHistory();
+            DrawDiskHistory();
         }
         finally
         {
@@ -321,6 +346,20 @@ public sealed partial class PerformancePage : Page
             : "Waiting for two adapter samples";
     }
 
+    private void UpdateDiskGauges(long? read, long? write)
+    {
+        var recentPeak = _history.SelectMany(sample => new[] { sample.DiskRead, sample.DiskWrite })
+            .Where(rate => rate.HasValue).Select(rate => (double)rate!.Value).DefaultIfEmpty(0).Max();
+        var scale = Math.Max(1024 * 1024d, recentPeak);
+        _diskReadGauge.SetMetric(read is { } rx ? Math.Clamp(rx * 100d / scale, 0, 100) : null,
+            read is { } readValue ? FormatRate(readValue) : null);
+        _diskWriteGauge.SetMetric(write is { } tx ? Math.Clamp(tx * 100d / scale, 0, 100) : null,
+            write is { } writeValue ? FormatRate(writeValue) : null);
+        DiskChartScale.Text = recentPeak > 0
+            ? $"Recent peak {FormatRate((long)Math.Min(recentPeak, long.MaxValue))} · gauge rings scale to the rolling 2-minute peak"
+            : "Waiting for valid PhysicalDisk counter samples";
+    }
+
     private void TrimHistory()
     {
         while (_history.Count > HistoryLimit) _history.Dequeue();
@@ -329,6 +368,8 @@ public sealed partial class PerformancePage : Page
     private void HistoryHost_SizeChanged(object sender, Microsoft.UI.Xaml.SizeChangedEventArgs e) => DrawHistory();
 
     private void NetworkHistoryHost_SizeChanged(object sender, Microsoft.UI.Xaml.SizeChangedEventArgs e) => DrawNetworkHistory();
+
+    private void DiskHistoryHost_SizeChanged(object sender, Microsoft.UI.Xaml.SizeChangedEventArgs e) => DrawDiskHistory();
 
     private void DrawHistory()
     {
@@ -389,11 +430,37 @@ public sealed partial class PerformancePage : Page
             Canvas.SetLeft(label, 0);
             Canvas.SetTop(label, Math.Clamp(y - 6, 0, Math.Max(0, height - 12)));
         }
-        DrawRateSeries(samples.Select(sample => sample.Receive).ToArray(), width, height, scale, insetX, insetY, Color.FromArgb(255, 80, 219, 241));
-        DrawRateSeries(samples.Select(sample => sample.Send).ToArray(), width, height, scale, insetX, insetY, Color.FromArgb(255, 180, 122, 248));
+        DrawRateSeries(NetworkHistoryChart, samples.Select(sample => sample.Receive).ToArray(), width, height, scale, insetX, insetY, Color.FromArgb(255, 80, 219, 241));
+        DrawRateSeries(NetworkHistoryChart, samples.Select(sample => sample.Send).ToArray(), width, height, scale, insetX, insetY, Color.FromArgb(255, 180, 122, 248));
     }
 
-    private void DrawRateSeries(long?[] values, double width, double height, double scale, double insetX, double insetY, Color color)
+    private void DrawDiskHistory()
+    {
+        if (DiskHistoryChart is null) return;
+        DiskHistoryChart.Children.Clear();
+        var width = DiskHistoryChart.ActualWidth;
+        var height = DiskHistoryChart.ActualHeight;
+        if (width <= 1 || height <= 1) return;
+        var samples = _history.ToArray();
+        var peak = samples.SelectMany(sample => new[] { sample.DiskRead, sample.DiskWrite })
+            .Where(rate => rate.HasValue).Select(rate => (double)rate!.Value).DefaultIfEmpty(0).Max();
+        var scale = Math.Max(1024, peak);
+        const double insetX = 60;
+        const double insetY = 6;
+        for (var level = 0; level <= 4; level++)
+        {
+            var y = insetY + (height - insetY * 2) * level / 4;
+            DiskHistoryChart.Children.Add(new Line { X1 = insetX, X2 = width - 8, Y1 = y, Y2 = y, Stroke = new SolidColorBrush(Color.FromArgb(36, 190, 220, 242)), StrokeThickness = 1 });
+            var label = new TextBlock { Text = FormatRate((long)Math.Min(scale * (4 - level) / 4d, long.MaxValue)), Width = 54, Height = 12, FontSize = 8, Foreground = new SolidColorBrush(Color.FromArgb(170, 164, 184, 199)), HorizontalTextAlignment = Microsoft.UI.Xaml.TextAlignment.Right };
+            DiskHistoryChart.Children.Add(label);
+            Canvas.SetLeft(label, 0);
+            Canvas.SetTop(label, Math.Clamp(y - 6, 0, Math.Max(0, height - 12)));
+        }
+        DrawRateSeries(DiskHistoryChart, samples.Select(sample => sample.DiskRead).ToArray(), width, height, scale, insetX, insetY, Color.FromArgb(255, 255, 174, 92));
+        DrawRateSeries(DiskHistoryChart, samples.Select(sample => sample.DiskWrite).ToArray(), width, height, scale, insetX, insetY, Color.FromArgb(255, 180, 122, 248));
+    }
+
+    private void DrawRateSeries(Canvas chart, long?[] values, double width, double height, double scale, double insetX, double insetY, Color color)
     {
         var segment = new List<Point>();
         for (var index = 0; index < values.Length; index++)
@@ -412,8 +479,8 @@ public sealed partial class PerformancePage : Page
                 var glow = new PointCollection();
                 var crisp = new PointCollection();
                 foreach (var point in segment) { glow.Add(point); crisp.Add(point); }
-                NetworkHistoryChart.Children.Add(new Polyline { Points = glow, Stroke = new SolidColorBrush(Color.FromArgb(28, color.R, color.G, color.B)), StrokeThickness = 8, StrokeLineJoin = PenLineJoin.Round });
-                NetworkHistoryChart.Children.Add(new Polyline { Points = crisp, Stroke = new SolidColorBrush(color), StrokeThickness = 2, StrokeLineJoin = PenLineJoin.Round });
+                chart.Children.Add(new Polyline { Points = glow, Stroke = new SolidColorBrush(Color.FromArgb(28, color.R, color.G, color.B)), StrokeThickness = 8, StrokeLineJoin = PenLineJoin.Round });
+                chart.Children.Add(new Polyline { Points = crisp, Stroke = new SolidColorBrush(color), StrokeThickness = 2, StrokeLineJoin = PenLineJoin.Round });
             }
             if (segment.Count > 0 && values.Length > 0 && segment[^1].X >= width - 8.1)
             {
@@ -427,7 +494,7 @@ public sealed partial class PerformancePage : Page
         void AddMarker(Point point, double size, Color fill)
         {
             var marker = new Ellipse { Width = size, Height = size, Fill = new SolidColorBrush(fill) };
-            NetworkHistoryChart.Children.Add(marker);
+            chart.Children.Add(marker);
             Canvas.SetLeft(marker, point.X - size / 2);
             Canvas.SetTop(marker, point.Y - size / 2);
         }
@@ -480,13 +547,22 @@ public sealed partial class PerformancePage : Page
     }
 
     private sealed record PerformanceSample(DateTimeOffset CapturedAtUtc, double? Cpu, double? Memory, double? CommitPercent,
-        ulong? CommittedBytes, ulong? CommitLimitBytes, long? Receive, long? Send);
+        ulong? CommittedBytes, ulong? CommitLimitBytes, long? Receive, long? Send, long? DiskRead, long? DiskWrite);
     private sealed record SystemVolumeReading(double? UsagePercent, string? DisplayValue, string Value, string Detail);
 }
 
-public sealed class PerformanceProcessRow(string name, string detail, double memoryShare)
+public sealed class PerformanceProcessRow : ObservableRow
 {
-    public string Name { get; } = name;
-    public string Detail { get; } = detail;
-    public double MemoryShare { get; } = memoryShare;
+    private string _name = "";
+    private string _detail = "";
+    private double _memoryShare;
+
+    public PerformanceProcessRow() { }
+    public PerformanceProcessRow(int processId, string name, string detail, double memoryShare) =>
+        (ProcessId, _name, _detail, _memoryShare) = (processId, name, detail, memoryShare);
+
+    public int ProcessId { get; set; }
+    public string Name { get => _name; set => SetProperty(ref _name, value); }
+    public string Detail { get => _detail; set => SetProperty(ref _detail, value); }
+    public double MemoryShare { get => _memoryShare; set => SetProperty(ref _memoryShare, value); }
 }

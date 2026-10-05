@@ -5,7 +5,7 @@ using Downpour.Contracts;
 
 namespace Downpour.Service;
 
-public sealed class SystemSnapshotProvider
+public sealed class SystemSnapshotProvider : IDisposable
 {
     public const int MaximumProcessRows = 512;
     public const int MaximumProcessNameLength = 128;
@@ -13,6 +13,7 @@ public sealed class SystemSnapshotProvider
     private ulong? _previousKernel;
     private ulong? _previousUser;
     private Dictionary<int, ProcessCpuSample> _previousProcessCpu = [];
+    private readonly PhysicalDiskCounterReader _diskCounters = new();
 
     public SystemHealthSnapshot Capture()
     {
@@ -90,6 +91,10 @@ public sealed class SystemSnapshotProvider
         if (commitLimitBytes is null || committedBytes is null)
             warnings.Add("System-wide memory commit counters are unavailable.");
 
+        var (diskReadBytesPerSecond, diskWriteBytesPerSecond) = _diskCounters.Read();
+        if (diskReadBytesPerSecond is null || diskWriteBytesPerSecond is null)
+            warnings.Add("Physical disk throughput counters are warming up or unavailable.");
+
         int? activeConnections = null;
         try
         {
@@ -112,8 +117,12 @@ public sealed class SystemSnapshotProvider
             processes.OrderByDescending(process => process.WorkingSetBytes).Take(MaximumProcessRows).ToArray(),
             warnings,
             commitLimitBytes,
-            committedBytes);
+            committedBytes,
+            diskReadBytesPerSecond,
+            diskWriteBytesPerSecond);
     }
+
+    public void Dispose() => _diskCounters.Dispose();
 
     private static (ulong? LimitBytes, ulong? CommittedBytes) ReadSystemCommitUsage()
     {

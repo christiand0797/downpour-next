@@ -29,6 +29,8 @@ public sealed class SystemSnapshotProviderTests
             Assert.InRange<ulong>(committed, 0, commitLimit);
         else
             Assert.Contains(snapshot.Warnings, warning => warning.Contains("commit counters", StringComparison.OrdinalIgnoreCase));
+        Assert.True(snapshot.DiskReadBytesPerSecond is null or >= 0);
+        Assert.True(snapshot.DiskWriteBytesPerSecond is null or >= 0);
     }
 
     [Fact]
@@ -44,6 +46,8 @@ public sealed class SystemSnapshotProviderTests
         Assert.False(Downpour.Core.SystemSnapshotClient.IsValidSnapshot(wrongSchema));
         Assert.False(Downpour.Core.SystemSnapshotClient.IsValidSnapshot(impossibleCpu));
         Assert.False(Downpour.Core.SystemSnapshotClient.IsValidSnapshot(badMemory));
+        Assert.False(Downpour.Core.SystemSnapshotClient.IsValidSnapshot(valid with { DiskReadBytesPerSecond = -1 }));
+        Assert.False(Downpour.Core.SystemSnapshotClient.IsValidSnapshot(valid with { DiskWriteBytesPerSecond = -1 }));
     }
 
     [Fact]
@@ -83,6 +87,19 @@ public sealed class SystemSnapshotProviderTests
 
         Assert.NotNull(current.CpuPercent);
         Assert.InRange(current.CpuPercent.Value, 0, 100);
+    }
+
+    [Fact]
+    public void PhysicalDiskCountersRemainUnknownOrReturnNonnegativeRates()
+    {
+        using var provider = new SystemSnapshotProvider();
+        _ = provider.Capture();
+        Thread.Sleep(TimeSpan.FromMilliseconds(1100));
+
+        var snapshot = provider.Capture();
+
+        Assert.True(snapshot.DiskReadBytesPerSecond is null or >= 0);
+        Assert.True(snapshot.DiskWriteBytesPerSecond is null or >= 0);
     }
 
     [Fact]
