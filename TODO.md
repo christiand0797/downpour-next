@@ -1,5 +1,15 @@
 # Downpour Next TODO
 
+## 2026-10-06 parity audit checkpoint (DN-015, claude-parity-audit)
+
+- Compared v29 (`downpour_consolidated`) against this repo. See [`docs/V29_PARITY_AUDIT.md`](docs/V29_PARITY_AUDIT.md). By feature count Downpour Next is roughly 15-20% of v29. 24 of 38 routes are placeholders, and no response actions are enabled.
+- New [`parity-checklist.json`](parity-checklist.json) lists the parity gate: 205 route workflows and 22 non-route features. `source-modules.json` now has 129 entries (42 wired modules added, 19 dead-in-v29 modules marked orphaned).
+- Committed and pushed all previously uncommitted agent work as-is: Sigma/AMSI/Sysmon, action broker and quarantine stubs, NVD, URLhaus/Abuse.ch, driver packages, timeline page, performance. It has **not been reviewed**.
+- Fixed all build warnings. Also fixed a crash risk in `MalwareBazaarRow.HashesDisplay`, which sliced short or empty hashes. `dotnet build -c Debug --no-incremental`: 0 warnings/errors. `dotnet test`: 191 passed.
+- Repaired invalid `AGENT_REGISTRY.json`. Reopened DN-009, which had been marked completed after only the inventory was done. Added DN-015 (done) and DN-016..DN-027.
+- **Found a bug, now queued as DN-016:** driver package signature verification runs WinVerifyTrust on catalog-signed `.inf` files, so legitimate drivers show "Verification failed".
+- Next agent: follow [`docs/AGENT_HANDOFF.md`](docs/AGENT_HANDOFF.md).
+
 - DN-014 Performance/gauge work is in progress. Circular gauge progress follows its exact track; dashboard/network charts label units and time direction, mark current readings, and preserve gaps. Performance has six live gauges (CPU, physical memory, system commit, OS volume, receive, send), CPU/memory/commit/network histories, process/thread and TCP counts, uptime, volume free/used/total, largest working sets, per-process CPU, refresh/pause controls, and bounded CSV. System-wide commit uses GetPerformanceInfo; system-volume reads run off the UI dispatcher. Release build: 0 warnings/errors; 117 tests pass, including live provider counter coverage. Updated local portable package hashes match fresh staging; desktop launched and bundled service child was confirmed. Next: native Performance/save-picker click-through, per-core CPU, physical disk I/O, pagefile storage usage, sorting/filtering, and thresholds. GPU/thermal/power readings need supported sources. See [`docs/UI_POLISH.md`](docs/UI_POLISH.md).
 - Stable [v0.1.14](https://github.com/christiand0797/downpour-next/releases/tag/v0.1.14) is published for laptop testing. `DownpourNext-win-x64-0.1.14.zip`: 196,796,799 bytes, SHA-256 `B5C723A9DC15FEDA679BA735731369BB29ED54C8BA7F78A218D3B560EE7C3272`; GitHub asset digest matches. Source checkpoint `1750c70` fixes the embedded current version to 0.1.14. This remains unsigned and incomplete v29 parity.
 - DN-002 dashboard UI refresh: grouped route sections, duplicate route suppression, stronger storm-overlay contrast, shared neon surface tokens, and responsive metric cards are implemented. Native route/narrow-high-DPI verification remains.

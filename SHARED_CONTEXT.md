@@ -1,11 +1,22 @@
 # Downpour Next shared context
 
-**Updated:** 2026-10-05 (America/Denver; Performance and graph/gauge slice in progress, v0.1.13 remains latest release)
+**Updated:** 2026-10-06 (DN-015 parity audit complete; all pending work committed and pushed; next agent instructions in `docs/AGENT_HANDOFF.md`)
 
 **Repository:** public [christiand0797/downpour-next](https://github.com/christiand0797/downpour-next)
 **Local path:** `C:\Users\purpl\Desktop\downpour v2`  
 **Branch:** `main`  
 **Latest source checkpoint:** `1750c70 Prepare v0.1.14 performance release` on `main`. Stable [v0.1.14](https://github.com/christiand0797/downpour-next/releases/tag/v0.1.14) is published with `DownpourNext-win-x64-0.1.14.zip`, size 196,796,799 bytes, SHA-256 `B5C723A9DC15FEDA679BA735731369BB29ED54C8BA7F78A218D3B560EE7C3272`; the anonymous GitHub release API reports the same digest and size. The ZIP contains 769 entries. The ignored local `DownpourNext-Portable/` folder contains the current v0.1.14 package plus two legacy README extras; desktop/service/updater-helper executable hashes match fresh self-contained staging. Serial Release build: 0 warnings/errors; 117 tests pass, including per-process CPU delta and system-wide commit counter coverage. Current package desktop launched and its bundled service child was confirmed running. Dashboard screenshot: `artifacts/desktop-downpour-latest.png`. Native Performance navigation/save-picker click-through remains pending. v0.1.12's full disposable v0.1.11 update apply/hash/relaunch check passed. The user authorized public repo visibility for anonymous updates. Releases remain unsigned, portable, and not a full parity claim.
+
+## 2026-10-06 parity audit checkpoint (DN-015, claude-parity-audit)
+
+- Compared v29 (`downpour_consolidated`) against this repo. See [`docs/V29_PARITY_AUDIT.md`](docs/V29_PARITY_AUDIT.md). By feature count Downpour Next is roughly 15-20% of v29. 24 of 38 routes are placeholders, and no response actions are enabled.
+- New [`parity-checklist.json`](parity-checklist.json) lists the parity gate: 205 route workflows and 22 non-route features. `source-modules.json` now has 129 entries (42 wired modules added, 19 dead-in-v29 modules marked orphaned).
+- Committed and pushed all previously uncommitted agent work as-is: Sigma/AMSI/Sysmon, action broker and quarantine stubs, NVD, URLhaus/Abuse.ch, driver packages, timeline page, performance. It has **not been reviewed**.
+- Fixed all build warnings. Also fixed a crash risk in `MalwareBazaarRow.HashesDisplay`, which sliced short or empty hashes. `dotnet build -c Debug --no-incremental`: 0 warnings/errors. `dotnet test`: 191 passed.
+- Repaired invalid `AGENT_REGISTRY.json`. Reopened DN-009, which had been marked completed after only the inventory was done. Added DN-015 (done) and DN-016..DN-027.
+- **Found a bug, now queued as DN-016:** driver package signature verification runs WinVerifyTrust on catalog-signed `.inf` files, so legitimate drivers show "Verification failed".
+- Next agent: follow [`docs/AGENT_HANDOFF.md`](docs/AGENT_HANDOFF.md).
+
 
 DN-013 delivers the Scanner route's one-file static PE inspector in v0.1.13. It computes streaming SHA-256 and parses bounded architecture, timestamp, section and certificate-table metadata. It does not execute, upload, persist, detect malware, or verify certificate trust. `docs/FILE_INSPECTOR.md` records scope and limits. Full Release build is clean and 112 tests pass. Remaining: native file picker click-through, full v29/YARA/Defender scan parity, recursive scan support, and genuine detection engines.
 
@@ -80,6 +91,7 @@ Check: Dashboard should show an `ONLINE` observe-only connection and live system
 1. Verify the Settings route opens and saves preferences in a native interactive click-through; continue native route/layout review, especially responsive width on narrow windows.
 2. Continue DN-002 native route/layout review, especially the Settings click-through and narrow/high-DPI widths.
 3. Ingest additional independently allow-listed feeds and correlate with local software inventory.
+4. DN-008 action broker: implement actual quarantine file move with encrypted storage, add UI consent dialog integration, and complete denial/timeout/race/recovery tests. See `docs/ACTION_BROKER.md`.
 4. Finish the wider DN-005 parity work: v29 source/rule mapping, cross-source alert correlation, push event subscriptions, Sigma/AMSI analysis, Sysmon/ETW, and investigation/export flows.
 6. Define a signed installer and dedicated restricted service identity before creating any action IPC. The current portable service runs as the interactive user and must remain observe-only.
 7. Implement quarantine/restore only after client authentication, explicit consent, protected storage, audit-failure handling, and verifiable recovery are in place.

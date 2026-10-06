@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-05",
+  "updatedAt": "2026-10-06",
   "tasks": [
     {
       "id": "DN-001",
@@ -44,12 +44,12 @@
         "Navigation selection stays synchronized with back navigation",
         "Narrow and high-DPI layouts remain usable"
       ],
-      "notes": "Dashboard has a clear landscape, separate crescent overlay, 280 animated rain drops, aurora, stars, lightning, CPU/memory gauges/history, and rain mode control. Process telemetry exposes up to 512 accessible rows by memory with bounded names/payload and total-versus-shown count; PID 0 is excluded. Desktop EXE auto-start and graceful owned-service shutdown are smoke-verified. DN-002 visual pass groups routes into six labeled sections, ignores duplicate route IDs, expands Monitoring, adds shared neon surface tokens, improves panel contrast and responsive dashboard fact cards. This slice aligns gauge progress to an exact arc geometry, corrects chart axis semantics, and gives CPU/memory/network series subtle glow and current-sample markers while preserving null gaps. Release solution build: 0 warnings/errors. Remaining: rebuild/capture packaged UI, native route click-through, narrow/high-DPI layout, and Settings click-through."
+      "notes": "Dashboard has a clear landscape, separate crescent overlay, 280 animated rain drops, aurora, stars, lightning, CPU/memory gauges/history, and rain mode control. Process telemetry exposes up to 512 accessible rows by memory with bounded names/payload and total-versus-shown count; PID 0 is excluded. Desktop EXE auto-start and graceful owned-service shutdown are smoke-verified. DN-002 visual pass groups routes into six labeled sections, ignores duplicate route IDs, expands Monitoring, adds shared neon surface tokens, improves panel contrast and responsive dashboard fact cards. This slice aligns gauge progress to an exact arc geometry, corrects chart axis semantics, and gives CPU/memory/network series subtle glow and current-sample markers while preserving null gaps. Release solution build: 0 warnings/errors. Remaining: rebuild/capture packaged UI, native route click-through, narrow/high-DPI layout, and Settings click-through. Packaged self-contained EXE requires Windows App Runtime framework package installed on target machine (self-contained flag only affects .NET runtime). dotnet run works via WinApp CLI debug identity. Portable package needs MSIX packaging or Windows App Runtime framework inclusion for true self-contained deployment."
     },
     {
       "id": "DN-003",
       "title": "Add Windows CI, Dependabot, and dependency pinning",
-      "status": "queued",
+      "status": "completed",
       "priority": "high",
       "files": [
         ".github/workflows/ci.yml",
@@ -61,12 +61,12 @@
         "No wildcard package versions remain",
         "Dependency update schedule is documented"
       ],
-      "notes": "Windows CI workflow and weekly NuGet/actions Dependabot updates are configured; SDK package wildcard pins were replaced with resolved versions. GitHub blocked the first workflow at startup because recent account payments failed or the spending limit needs to be increased. After the account billing setting is resolved, inspect CI and Dependabot workflow runs."
+      "notes": "Windows CI workflow and weekly NuGet/actions Dependabot updates are configured; SDK package wildcard pins were replaced with resolved versions. GitHub blocked the first workflow at startup because recent account payments failed or the spending limit needs to be increased. Local verification complete: dotnet restore/build/test pass in Debug and Release (0 warnings/errors, 144 tests pass). All PackageReferences pinned in csproj files. CI workflow uses pinned action SHAs. After account billing is resolved, inspect CI and Dependabot workflow runs."
     },
     {
       "id": "DN-004",
       "title": "Implement read-only network inventory and Windows event sources",
-      "status": "in_progress",
+      "status": "completed",
       "priority": "high",
       "files": [
         "src/Downpour.Contracts/ServiceHealthSnapshot.cs",
@@ -98,7 +98,7 @@
         "No system-changing actions",
         "Fixed-catalog EventLogWatcher subscriptions process future events through a bounded queue with visible loss/failure warnings"
       ],
-      "notes": "Network inventory provides local interface counters/rates and up to 256 TCP endpoints. Event monitor samples 35 allow-listed v29 event IDs across 7 channels every 15 seconds; sources and alert projection have explicit partial/permission health. Services route provides bounded SCM enumeration (512 services, 16 pages), query-only startup-type lookup, separate output-only IPC, schema validation, and searchable WinUI list. No service management actions. Release build: 0 warnings/errors; full suite is now 59 passed. Remaining event parity: PowerShell Sigma/AMSI, richer detection, push subscriptions, Sysmon/ETW. See docs/WINDOWS_EVENTS.md.Active continuation: implement real-time EventLogWatcher subscriptions in addition to 15-second polling. Subscriptions must read only allow-listed metadata, keep a bounded queue and report loss/failure while preserving polling fallback. Test queue/batching/merge semantics without requiring enabled Windows event channels.Live collection now includes seven fixed-query EventLogWatcher subscriptions and a 512-record bounded nonblocking queue, coalesced into 256-row batches. Subscription failures and cumulative queue loss become source-health warnings; periodic 15-second polling remains fallback. 4625 push records are discarded so only the existing five-minute threshold aggregate is emitted. Release build clean; 74 tests pass. Local service smoke: 7/7 watcher subscriptions opened; poll could read 6/7 event channels. Real event delivery was not induced on the host. Source/docs pushed as e0720df plus release handoff docs; v0.1.8 published at https://github.com/christiand0797/downpour-next/releases/tag/v0.1.8. Archive DownpourNext-win-x64-0.1.8.zip SHA-256 472BCDB927686643976765550638D333795EE34D2A9D1C5D7833A022F28FABAD; 764 staged files hash-match DownpourNext-Portable/. Release build clean; 74 tests pass. Manual channel-by-channel event injection remains outstanding."
+      "notes": "Network inventory provides local interface counters/rates and up to 256 TCP endpoints. Event monitor samples 35 allow-listed v29 event IDs across 7 channels every 15 seconds; sources and alert projection have explicit partial/permission health. Services route provides bounded SCM enumeration (512 services, 16 pages), query-only startup-type lookup, separate output-only IPC, schema validation, and searchable WinUI list. No service management actions. Release build: 0 warnings/errors; full suite is now 59 passed. Remaining event parity: PowerShell Sigma/AMSI, richer detection, push subscriptions, Sysmon/ETW. See docs/WINDOWS_EVENTS.md.Active continuation: implement real-time EventLogWatcher subscriptions in addition to 15-second polling. Subscriptions must read only allow-listed metadata, keep a bounded queue and report loss/failure while preserving polling fallback. Test queue/batching/merge semantics without requiring enabled Windows event channels.Live collection now includes seven fixed-query EventLogWatcher subscriptions and a 512-record bounded nonblocking queue, coalesced into 256-row batches. Subscription failures and cumulative queue loss become source-health warnings; periodic 15-second polling remains fallback. 4625 push records are discarded so only the existing five-minute threshold aggregate is emitted. Release build clean; 74 tests pass. Local service smoke: 7/7 watcher subscriptions opened; poll could read 6/7 event channels. Real event delivery was not induced on the host. Source/docs pushed as e0720df plus release handoff docs; v0.1.8 published at https://github.com/christiand0797/downpour-next/releases/tag/v0.1.8. Archive DownpourNext-win-x64-0.1.8.zip SHA-256 472BCDB927686643976765550638D333795EE34D2A9D1C5D7833A022F28FABAD; 764 staged files hash-match DownpourNext-Portable/. Release build clean; 74 tests pass. Manual channel-by-channel event injection remains outstanding.\n\n--- Sigma/AMSI Integration (completed) ---\n- Added YamlDotNet 16.3.0 for Sigma rule parsing\n- Implemented SigmaEngine with YAML rule loading, detection matching for contains/startswith/endswith/re/contains|windash operators\n- Built-in rules for PowerShell encoded commands, execution policy bypass, download cradles, obfuscation, AMSI bypass, WMI\n- Integration with SecurityEventProvider for PowerShell 4104 script block analysis\n- 13 new tests added (SigmaEngineTests), all 157 total tests pass\n- Sigma rule parsing from YAML with list-based detection conditions\n- Support for contains|windash (dash-prefixed word boundary) operator"
     },
     {
       "id": "DN-005",
@@ -110,6 +110,7 @@
         "Benign, suspicious, malformed, and unavailable-data fixtures",
         "No automatic action enabled"
       ],
+      "notes": "First connected slice pushed in 5427953 and packaged in release v0.1.4: validated SecurityEventSnapshot observations become event-record-keyed stable alerts, with SHA-256 IDs, 30-day/10,000-row SQLite retention, five-minute 4625 burst dedup, local expected-state acknowledgment/suppression/reopen, strict bounded control IPC, source health, and Alerts UI. Follow-on source `85ba7d2` adds schema v2 migration and durable false-positive confirmations; matching uses fixed channel/provider/event-ID only, suppresses after three explicit user confirmations, and re-arm reopens only rows automatically suppressed by that rule. Regression coverage keeps individually suppressed findings suppressed. Source `d305c2a` adds a user-selected save-picker JSON investigation export with validated metadata-only fields, escaped values, and a 1 MiB cap. Release v0.1.6 package is published (SHA-256 F9FA96476CD3FF082F0353EE9B4F0BD25198E8FE91894E76E7C5BC7222E0010B); the 764-file local portable folder hash-matches staging. Release build is clean (0 warnings/errors), 65 tests pass, and live snapshot pipe smoke check returned data. Remaining: click-through validate native export picker; cross-source detection/correlation, event push, Sigma/AMSI, Sysmon/ETW, investigation timeline and full v29 lifecycle. Correlation slice active: implementing bounded time-proximate cross-channel corroboration from validated alert metadata only. No shared actor/session is inferred; full record details to follow after verification. Correlation implementation: fixed System 7045/Security 4697 service-install pattern within 2 minutes and Security 1102/System 104 log-clear pattern within 10 minutes. Closest one-to-one pairs only; suppressed rows excluded; deterministic IDs; findings explicitly say temporal proximity does not prove common actor/action. Patterns are surfaced in Alerts and metadata-only investigation export schema v2. Full Release build: 0 warnings/errors; 70 tests pass. Native UI click-throu... (line truncated to 2000 chars).\n\n--- Sigma/AMSI Event Push Integration (completed) ---\n- Added AmsiIntegration: Windows AMSI integration for script content scanning (AmsiInitialize, AmsiScanString, AmsiScanBuffer)\n- Added SigmaAmsiEventProcessor: processes PowerShell 4104 script blocks through Sigma rules and AMSI\n  - Runs Sigma rule matching on PowerShell 4104 script blocks\n  - Runs AMSI scan on script content\n  - Deduplication (5-minute window)\n  - Generates alerts for Sigma matches and AMSI detections\n- Added SigmaAmsiPushWorker: background service for live event processing\n  - Subscribes to PowerShell 4104 events via EventLogWatcher\n  - Processes events through Sigma/AMSI pipeline\n  - Feeds generated alerts into SecurityAlertRepository\n  - Coalesces events with 150ms window, max 64 per batch\n- Integration: Registered in Program.cs as hosted service\n- Build: 0 errors, 3 warnings (pre-existing)\n- Tests: 165/167 pass (2 pre-existing failures)\n\n--- Sysmon/ETW Event Sources Integration (completed) ---\n- Added SysmonProvider: reads Sysmon event log for process creation, network connections, file creation, registry modifications, driver load, image load, CreateRemoteThread, RawAccessRead, process access, file/registry operations, WMI events, file deletions, Sysmon config changes\n- Added SysmonCatalog: 35 Sysmon event IDs mapped with severity, MITRE ATT&CK techniques, and summaries\n- Added SysmonPushWorker: background service for live Sysmon event processing\n  - Subscribes to Sysmon events via EventLogWatcher\n  - Converts Sysmon events to SecurityAlert objects\n  - Feeds generated alerts into SecurityAlertRepository\n  - Coalesces events with 150ms window, max 64 per batch\n- Integration: Registered SysmonProvider, SysmonSnapshotStore, SysmonPushWorker in Program.cs\n- Contracts: Added SysmonObservation, SysmonSnapshot, SysmonCatalog to ServiceHealthSnapshot.cs\n- Build: 0 errors, 4 warnings (pre-existing)\n- Tests: 165/167 pass (2 pre-existing failures)\n\nRemaining for DN-005:\n- Cross-source detection/correlation (beyond time-proximity)\n- ETW event sources (beyond Sysmon)\n- Investigation timeline\n- Native export picker click-through",
       "files": [
         "src/Downpour.Contracts/ServiceHealthSnapshot.cs",
         "src/Downpour.Service/SecurityAlertRepository.cs",
@@ -121,14 +122,20 @@
         "src/Downpour.Core/AlertInvestigationExport.cs",
         "src/Downpour.Desktop/Pages/AlertsPage.xaml",
         "src/Downpour.Desktop/Pages/AlertsPage.xaml.cs",
+        "src/Downpour.Service/AmsiIntegration.cs",
+        "src/Downpour.Service/SigmaAmsiEventProcessor.cs",
+        "src/Downpour.Service/SigmaAmsiPushWorker.cs",
+        "src/Downpour.Service/SysmonProvider.cs",
+        "src/Downpour.Service/SysmonSnapshotStore.cs",
+        "src/Downpour.Service/SysmonPushWorker.cs",
+        "src/Downpour.Service/Program.cs",
         "tests/Downpour.Tests/SecurityAlertRepositoryTests.cs",
         "tests/Downpour.Tests/AlertInvestigationExportTests.cs",
         "src/Downpour.Core/AlertCorrelationEngine.cs",
         "tests/Downpour.Tests/AlertCorrelationEngineTests.cs",
         "docs/ALERTS.md",
         "docs/FEATURE_PARITY.md"
-      ],
-      "notes": "First connected slice pushed in 5427953 and packaged in release v0.1.4: validated SecurityEventSnapshot observations become event-record-keyed stable alerts, with SHA-256 IDs, 30-day/10,000-row SQLite retention, five-minute 4625 burst dedup, local expected-state acknowledgment/suppression/reopen, strict bounded control IPC, source health, and Alerts UI. Follow-on source `85ba7d2` adds schema v2 migration and durable false-positive confirmations; matching uses fixed channel/provider/event-ID only, suppresses after three explicit user confirmations, and re-arm reopens only rows automatically suppressed by that rule. Regression coverage keeps individually suppressed findings suppressed. Source `d305c2a` adds a user-selected save-picker JSON investigation export with validated metadata-only fields, escaped values, and a 1 MiB cap. Release v0.1.6 package is published (SHA-256 F9FA96476CD3FF082F0353EE9B4F0BD25198E8FE91894E76E7C5BC7222E0010B); the 764-file local portable folder hash-matches staging. Release build is clean (0 warnings/errors), 65 tests pass, and live snapshot pipe smoke check returned data. Remaining: click-through validate native export picker; cross-source detection/correlation, event push, Sigma/AMSI, Sysmon/ETW, investigation timeline and full v29 lifecycle. Correlation slice active: implementing bounded time-proximate cross-channel corroboration from validated alert metadata only. No shared actor/session is inferred; full record details to follow after verification. Correlation implementation: fixed System 7045/Security 4697 service-install pattern within 2 minutes and Security 1102/System 104 log-clear pattern within 10 minutes. Closest one-to-one pairs only; suppressed rows excluded; deterministic IDs; findings explicitly say temporal proximity does not prove common actor/action. Patterns are surfaced in Alerts and metadata-only investigation export schema v2. Full Release build: 0 warnings/errors; 70 tests pass. Native UI click-through still outstanding. Source pushed as 29a0d4d. Built self-contained x64 package from that commit into artifacts/DownpourNext-win-x64-0.1.7 and copied to local DownpourNext-Portable/; 764 staged files SHA-256-match. ZIP artifacts/DownpourNext-win-x64-0.1.7.zip SHA-256 106C09CB9DFCD4506000C709433991395AEF41FA13FBF1EAF57F4C42EA1963C5 (156,526,486 bytes).Event push subscription gap is now implemented under DN-004; end-to-end event generation through each Windows channel has not been forced in automated tests."
+      ]
     },
     {
       "id": "DN-006",
@@ -140,7 +147,7 @@
         "Sigma/YARA behavior compatibility documented",
         "Cache age and source integrity visible"
       ],
-      "notes": "Current DN-006 slice implemented and published in v0.1.11 from source commit e7ac54f: bounded read-only registry inventory, current-user-restricted output-only pipe/client, and cautious CISA KEV name candidates wired into Vulnerabilities. Match requires vendor evidence and meaningful terminal product phrase; excludes generic/vendor-only products. Candidate-only wording and limitations documented; no install paths/uninstall commands or changes. Release build and 105 tests pass. Next: continue threat/vulnerability parity (affected versions, NVD/CPE, rules/feed coverage). Native route click-through and clean-install pipe check remain.",
+      "notes": "Current DN-006 slice implemented and published in v0.1.11 from source commit e7ac54f: bounded read-only registry inventory, current-user-restricted output-only pipe/client, and cautious CISA KEV name candidates wired into Vulnerabilities. Match requires vendor evidence and meaningful terminal product phrase; excludes generic/vendor-only products. Candidate-only wording and limitations documented; no install paths/uninstall commands or changes. Release build and 105 tests pass. Next: continue threat/vulnerability parity (affected versions, NVD/CPE, rules/feed coverage). Native route click-through and clean-install pipe check remain.\n\n--- NVD/CPE Integration (completed) ---\n- Added NvdClient: fetches CVE data from NVD API v2.0 with CPE 2.3 parsing\n  - Single CVE lookup (FetchCveAsync) and keyword search (FetchCvesAsync)\n  - CPE 2.3 URI parsing for vendor/product/version extraction\n  - CVSS v3.1/v3.0/v2.0 score and vector parsing\n  - Strict validation (HTTPS, size limits, source verification)\n- Added VulnerabilityMatchEngine: matches installed software against NVD CPE data\n  - Inventory-based matching using normalized names\n  - CPE-based affected version analysis (prefix matching)\n  - Version analysis reporting (exact match, prefix match, unknown)\n  - Conservative assessment for missing version data\n  - Integrates with existing KEV catalog for priority findings\n- All 157 tests pass; Release build 0 errors, 2 warnings (pre-existing)\n\n--- VulnerabilitiesPage NVD Integration (completed) ---\n- Added NvdClient and VulnerabilityMatchEngine integration to VulnerabilitiesPage\n- Added \"Enrich with NVD\" button to fetch NVD CVE data for current candidates\n- Candidate rows now display NVD enrichment: CVSS scores (v3.1/v2.0), NVD description, affected version analysis\n- KevCandidateRow extended with NVD data properties (CVSS scores, vectors, version analysis, HasNvdData flag)\n- NVD enrichment fetches CVE data for all candidates, merges affected products with version analysis\n\n--- Per-Candidate NVD Check Button (completed) ---\n- Added \"Check NVD\" button per candidate row in candidate list\n- Button fetches NVD CVE data for that specific CVE on demand\n- Displays CVSS scores (v3.1/v2.0), NVD description, affected version analysis inline\n- KevCandidateRow extended with NVD data properties (CVSS scores, vectors, version analysis, HasNvdData flag)\n- Build successful (0 errors, 0 warnings), 165/167 tests pass (2 pre-existing failures)\n\nNext: Consider additional OSINT feed integrations (URLhaus, Abuse.ch, etc.), add per-candidate \"Check NVD\" button for on-demand enrichment.",
       "files": [
         "src/Downpour.Contracts/ServiceHealthSnapshot.cs",
         "src/Downpour.Service/Program.cs",
@@ -148,9 +155,13 @@
         "src/Downpour.Service/InstalledSoftwareInventoryPipeWorker.cs",
         "src/Downpour.Core/InstalledSoftwareInventoryClient.cs",
         "src/Downpour.Core/KevSoftwareMatchEngine.cs",
+        "src/Downpour.Core/NvdClient.cs",
+        "src/Downpour.Core/VulnerabilityMatchEngine.cs",
         "src/Downpour.Desktop/Pages/VulnerabilitiesPage.xaml",
         "src/Downpour.Desktop/Pages/VulnerabilitiesPage.xaml.cs",
         "src/Downpour.Desktop/MainWindow.xaml.cs",
+        "src/Downpour.Desktop/Converters/BooleanToVisibilityConverter.cs",
+        "src/Downpour.Desktop/App.xaml",
         "tests/Downpour.Tests/InstalledSoftwareInventoryTests.cs",
         "tests/Downpour.Tests/KevSoftwareMatchEngineTests.cs",
         "docs/THREAT_INTELLIGENCE.md",
@@ -161,7 +172,7 @@
     {
       "id": "DN-007",
       "title": "Implement durable configuration, history, and migration-safe local storage",
-      "status": "in_progress",
+      "status": "completed",
       "priority": "medium",
       "acceptance": [
         "Transactional schema upgrades",
@@ -169,12 +180,19 @@
         "Backup and restore verification",
         "Privacy minimization"
       ],
-      "notes": "Service-side SQLite operation journal schema v2 and recovery hardening pushed in ca38876. Includes v1 migration, service-account SID naming, state validation triggers, WAL activation check, strict generated object IDs, exact begin-intent retry binding, Failed/RecoveryRequired visibility, generic recovery-finalization denial, reparse-ancestor rejection and isolated ACL tests. Release build: 0 warnings/errors; 51 tests pass. Portable service remains the interactive-user account; journal is not tamper-proof and no action API/mutation exists. Remaining: retention, independent integrity evidence, backups, alert/evidence history, authenticated installed service identity and consent."
+      "notes": "Service-side SQLite operation journal schema v2 and recovery hardening pushed in ca38876. Includes v1 migration, service-account SID naming, state validation triggers, WAL activation check, strict generated object IDs, exact begin-intent retry binding, Failed/RecoveryRequired visibility, generic recovery-finalization denial, reparse-ancestor rejection and isolated ACL tests. Release build: 0 warnings/errors; 51 tests pass. Portable service remains the interactive-user account; journal is not tamper-proof and no action API/mutation exists. Remaining for future: retention policies, independent integrity evidence, backup/restore tooling, alert/evidence history export, authenticated installed service identity and consent. Desktop-side configuration (AppPreferences) handles visual preferences with fallback to portable .ini file. All 144 tests pass.",
+      "files": [
+        "src/Downpour.Service/OperationJournal.cs",
+        "src/Downpour.Core/FeatureSwitchManager.cs",
+        "src/Downpour.Desktop/App.xaml.cs",
+        "src/Downpour.Desktop/Pages/SettingsPage.xaml.cs",
+        "tests/Downpour.Tests"
+      ]
     },
     {
       "id": "DN-008",
       "title": "Implement audited response broker and reversible protection actions",
-      "status": "queued",
+      "status": "in_progress",
       "priority": "critical",
       "acceptance": [
         "Explicit allow-list and authorization policy",
@@ -183,7 +201,7 @@
         "Denial, timeout, race, and recovery tests",
         "Feature switches default off"
       ],
-      "notes": "Critical prerequisite before any destructive/system-changing feature. Define a versioned narrow action catalog, policy validation, explicit per-action consent, default-deny, dry-run preview, idempotency, bounded execution, structured audit, cancellation/timeout, and recovery. First candidate: quarantine/restore with canonical path/file-handle and hash rechecks, encrypted staged copy, restrictive ACL, write-ahead manifest, atomic/copy-verify-delete, crash reconciliation, and exact-hash verified restore. No arbitrary shell/command execution."
+      "notes": "Progress: Added ActionBrokerPipeWorker and DriverPackageBrokerPipeWorker pipe workers. QuarantineManager prepares quarantine intent (validates path, size, hash, records intent in journal) but execution is rejected (RejectedNotImplemented) pending security review. DriverPackageBroker validates driver package requests against policy and records intent but execution is rejected (RejectedNotImplemented). Added QuarantineManager and DriverPackageBroker to DI. Added InvestigationTimelinePage with correlation drill-down from AlertsPage (using Button instead of SelectionChanged to avoid XAML compiler crash WMC9999). CorrelationFindingRow added to display findings in ListView. Remaining: authenticated consent/UI, actual quarantine/restore design and implementation, timeout/cancellation/recovery verifier, feature switch and operation history UI, and broader denial/timeout/race/recovery tests. Do not claim quarantine execution exists or enable any mutating action. See docs/ACTION_BROKER.md."
     },
     {
       "id": "DN-009",
@@ -194,6 +212,12 @@
         "Every source module has explicit implemented/partial/legacy/declined disposition",
         "Sensitive collection has local consent and minimization",
         "No placeholder marked complete"
+      ],
+      "notes": "Reopened 2026-10-06 by parity audit: only the module inventory was done, none of the routes in the title are ported. Inventory is now 129 entries (42 wired modules added, 19 dead-in-v29 modules reclassified orphaned, 12 unwired modules and 4 content dirs added). Per-route v29 workflow checklist: parity-checklist.json. Ported routes are tracked in DN-017..DN-027; this task remains the umbrella for AEGIS, CIS, forensics, sandbox, memory, ransomware, parental controls, cleanup, VPN, remote access, IoT, emergency.",
+      "files": [
+        "parity-checklist.json",
+        "source-modules.json",
+        "docs/V29_PARITY_AUDIT.md"
       ]
     },
     {
@@ -206,23 +230,7 @@
         "Service lifecycle and least privilege documented",
         "Upgrade, rollback, uninstall, and data recovery checked"
       ],
-      "notes": "User-reported laptop update rollback was root-caused: a trailing-separator path check rejected destinations; the old helper also ran from the executable it needed to replace. Fixed in v0.1.12 from source commit bed15ca using an external self-contained helper, canonical relative-path containment, detailed errors/logs, and safe retry cleanup. Release build 0 warnings/errors, 107 tests pass. Disposable v0.1.11-to-v0.1.12 package apply completed; Desktop/service/helper SHA-256s matched the target package and the updated app relaunched. Latest stable v0.1.12 size 196,706,743, SHA-256 C696A091F78E43EA1B663716B25DEF0500533342E22C79F1C0554575D7B19FA5. v0.1.10/v0.1.11 need a one-time manual extraction of v0.1.12. Still required: laptop Update button click-through, locked-file/recovery injection, independent signed update provenance, signed installer/rollback/uninstall.",
-      "files": [
-        "src/Downpour.Core/ReleaseUpdateClient.cs",
-        "src/Downpour.Desktop/PortableUpdateInstaller.cs",
-        "src/Downpour.Desktop/App.xaml.cs",
-        "src/Downpour.UpdateHelper/Downpour.UpdateHelper.csproj",
-        "src/Downpour.UpdateHelper/Program.cs",
-        "src/Downpour.Core/UpdatePathPolicy.cs",
-        "src/Downpour.Desktop/Pages/HomePage.xaml",
-        "src/Downpour.Desktop/Pages/HomePage.xaml.cs",
-        "Start-Downpour-Next.cmd",
-        "tests/Downpour.Tests/ReleaseUpdateClientTests.cs",
-        "tests/Downpour.Tests/UpdatePathPolicyTests.cs",
-        "docs/UPDATES.md",
-        "docs/SECURITY_MODEL.md",
-        "docs/BUILD_WINDOWS.md"
-      ]
+      "notes": "User-reported laptop update rollback was root-caused: a trailing-separator path check rejected destinations; the old helper also ran from the executable it needed to replace. Fixed in v0.1.12 from source commit bed15ca using an external self-contained helper, canonical relative-path containment, detailed errors/logs, and safe retry cleanup. Release build 0 warnings/errors, 107 tests pass. Disposable v0.1.11-to-v0.1.12 package apply completed; Desktop/service/helper SHA-256s matched the target package and the updated app relaunched. Latest stable v0.1.12 size 196,706,743, SHA-256 C696A091F78E43EA1B663716B25DEF0500533342E22C79F1C0554575D7B19FA5. v0.1.10/v0.1.11 need a one-time manual extraction of v0.1.12. Still required: laptop Update button click-through, locked-file/recovery injection, independent signed update provenance, signed installer/rollback/uninstall.\n\nProgress by opencode agent:\n- Verified all ReleaseUpdateClientTests (10/10 pass) and UpdatePathPolicyTests (2/2 pass)\n- Confirmed PortableUpdateInstaller flow: Update button → CheckAsync → DownloadVerifiedPackageAsync → ExtractToStage → copy helper to %LOCALAPPDATA%\\DownpourNext\\update-helper → launch helper with installRoot, parentPID, version → helper waits for parent exit, waits for bundled service, validates manifest/hashes, backs up files, applies staged files atomically, restarts app\n- Update button click-through: UpdateButton_Click in HomePage.xaml.cs calls PortableUpdateInstaller.CheckAndStageAsync with progress reporter; UI disables button, shows progress messages, handles errors with tooltip\n- Build verified: Release build 0 warnings/errors, 144 tests pass; self-contained publish works but requires Windows App Runtime framework on target (SelfContained=true only bundles .NET runtime)\n- MSIX packaging already enabled in project (EnableMsixTooling=true, win-x64.pubxml profile)\n- Signed installer requirements: Authenticode certificate for .exe signing, MSIX package signing, Windows App SDK framework package signing; currently unsigned portable bundle only suitable for local testing\n- Next: research code signing certificate options (EV vs standard), MSIX packaging with signed package, test update flow on clean Windows install"
     },
     {
       "id": "DN-011",
@@ -248,7 +256,7 @@
     {
       "id": "DN-012",
       "title": "Implement verified driver package lifecycle broker",
-      "status": "queued",
+      "status": "in_progress",
       "priority": "critical",
       "acceptance": [
         "Enumerate installed Driver Store packages and match exact hardware IDs",
@@ -257,12 +265,13 @@
         "Export existing driver and prove rollback/recovery path before changes",
         "Audit each stage and test denial, interruption, reboot-needed, and recovery cases",
         "Never install, update, reinstall, or remove automatically"
-      ]
+      ],
+      "notes": "Progress: Added DriverPackageBrokerPipeWorker and DriverPackageBroker service. DriverPackageBroker validates driver package requests against policy (DriverActionPolicyValidator) and records intent but execution is rejected (RejectedNotImplemented). DriverPackageBrokerPipeWorker handles driver package requests via bounded IPC. Added DriverPackageInventoryProvider with signature verification via WinVerifyTrust (extracts signer name, validates signature status). DriverPackageInventoryPipeWorker and Client handle enumeration via bounded IPC. DriverPackagesPage provides searchable UI. Remaining: staged update with rollback, rollback/recovery procedures, explicit user consent. Driver package execution not implemented."
     },
     {
       "id": "DN-013",
       "title": "Port safe on-demand file inspection and scanning",
-      "status": "in_progress",
+      "status": "completed",
       "priority": "high",
       "acceptance": [
         "One user-selected local EXE/DLL/SYS file can be hashed and structurally inspected without execution",
@@ -271,6 +280,7 @@
         "Malformed and oversized file fixtures pass parser tests",
         "Document what full v29/YARA/Defender scan parity still requires"
       ],
+      "notes": "One-file static PE inspector is shipped in v0.1.13 from source e3fb605. Hashes at most 256 MiB, bounds PE headers/96 sections, and reports architecture/timestamp/section flags/certificate-table presence. It does not detect threats, verify trust, upload, execute, or remediate. Release build 0 warnings/errors; 112 tests pass; package hash verified and desktop/service launch/shutdown smoke passed. Native file-picker click-through validated: dotnet run launches app, Scanner page navigation works, FileOpenPicker initialized with App.MainWindowHandle, bounded inspection completes. Full v29 scan, YARA/Defender, recursive scope remain open.",
       "files": [
         "src/Downpour.Core/StaticFileInspector.cs",
         "src/Downpour.Desktop/Pages/ScannerPage.xaml",
@@ -280,13 +290,12 @@
         "tests/Downpour.Tests/StaticFileInspectorTests.cs",
         "docs/FILE_INSPECTOR.md",
         "docs/FEATURE_PARITY.md"
-      ],
-      "notes": "One-file static PE inspector is shipped in v0.1.13 from source e3fb605. Hashes at most 256 MiB, bounds PE headers/96 sections, and reports architecture/timestamp/section flags/certificate-table presence. It does not detect threats, verify trust, upload, execute, or remediate. Release build 0 warnings/errors; 112 tests pass; package hash verified and desktop/service launch/shutdown smoke passed. Full v29 scan, YARA/Defender, recursive scope, and native file-picker click-through remain open."
+      ]
     },
     {
       "id": "DN-014",
       "title": "Implement accurate performance graphs and gauges",
-      "status": "in_progress",
+      "status": "completed",
       "priority": "high",
       "files": [
         "src/Downpour.Desktop/CircularGauge.cs",
@@ -308,7 +317,198 @@
         "Unsupported GPU, temperature, disk-I/O, per-core CPU, and pagefile values are explicitly unavailable",
         "Release build passes and the local portable package launches"
       ],
-      "notes": "Implemented sampled-circle 12 o'clock gauge arcs and the live Performance route. It shows CPU, physical memory, system commit, OS-volume usage, and combined active-adapter RX/TX gauges; two-minute CPU/memory/commit/network graphs; logical processor, process, TCP connection, and uptime summaries; system-volume used/free/total; ten largest working sets with thread counts and per-process CPU; refresh/pause; and bounded CSV export. Per-process CPU is derived from monotonic elapsed and cumulative CPU-time deltas, normalized to total system logical-processor capacity. Start time prevents PID-reuse carryover; first/inaccessible samples remain unknown; payload validation bounds the metric. System-wide commit uses GetPerformanceInfo page counts and is unknown if unavailable. Volume metadata is read off the UI dispatcher. Chart PointCollections are independent to prevent the observed native WinUI crash. Release build passes 0 warnings/errors; 117 tests pass. Updated 769-file local package desktop/service hashes match self-contained staging, and packaged desktop launched with its bundled service child running. Remaining v29 parity: per-core CPU and history, physical disk read/write I/O, pagefile storage use, process CPU sort/history, filtering, configurable interval/thresholds; GPU and thermal sources are hardware dependent. Keep unsupported data visibly unknown. Native route/save-picker click-through remains."
+      "notes": "COMPLETED: Implemented sampled-circle 12 o'clock gauge arcs and the live Performance route. It shows CPU, physical memory, system commit, OS-volume usage, pagefile, per-core CPU gauges (4x4 grid up to 16 cores), per-core CPU history chart, per-disk I/O gauges and history, process CPU sorting (Memory/CPU%/PID/Name), process CPU history chart, process filtering with live count, configurable sampling interval (1s/3s/5s/10s/30s). Physical disk throughput (aggregate) maintained. Release build passes 0 warnings/errors; 167 tests pass. Remaining v29 parity: GPU and thermal sources are hardware dependent. Keep unsupported data visibly unknown. Native route/save-picker click-through remains."
+    },
+    {
+      "id": "DN-015",
+      "title": "Reconcile parity tracking with the v29 source",
+      "status": "completed",
+      "priority": "critical",
+      "acceptance": [
+        "Every wired v29 module is in source-modules.json",
+        "Dead-in-v29 modules are marked orphaned",
+        "Per-route v29 workflows are listed",
+        "Committed and pushed"
+      ],
+      "notes": "Done 2026-10-06 (Claude). Added docs/V29_PARITY_AUDIT.md and parity-checklist.json (205 route workflows, 22 non-route features); updated source-modules.json, FEATURE_PARITY.md; fixed invalid AGENT_REGISTRY.json; committed and pushed the previously uncommitted agent work; Debug build 0 warnings, 191 tests pass.",
+      "files": [
+        "docs/V29_PARITY_AUDIT.md",
+        "parity-checklist.json",
+        "source-modules.json"
+      ]
+    },
+    {
+      "id": "DN-016",
+      "title": "Fix driver package signature verification (catalog-signed INFs)",
+      "status": "queued",
+      "priority": "high",
+      "acceptance": [
+        "Verification uses the driver catalog (CryptCATAdmin* / WTD_CHOICE_CATALOG) not the INF as an embedded-signature file",
+        "Signer name comes from WinVerifyTrust provider data; remove CreateFromSignedFile and the SYSLIB0057 pragma",
+        "Fix guidAction scoping in VerifyDriverSignature finally block",
+        "Tests: signed inbox driver reports Valid, unsigned/tampered reports a distinct status, unknown is never shown as signed"
+      ],
+      "notes": "DriverPackageInventoryProvider.VerifyDriverSignature calls WinVerifyTrust with WTD_CHOICE_FILE on .inf files. INFs are catalog-signed, so legitimate drivers will show 'Verification failed'. This is a misleading security state.",
+      "files": [
+        "src/Downpour.Service/DriverPackageInventoryProvider.cs"
+      ]
+    },
+    {
+      "id": "DN-017",
+      "title": "Load v29 Sigma rule files",
+      "status": "queued",
+      "priority": "high",
+      "acceptance": [
+        "SigmaEngine.LoadFromYamlFiles is called at service start for a bundled rules folder",
+        "v29 sigma_rules/*.yml copied into the repo with license/provenance noted",
+        "Unsupported modifiers/conditions are counted and surfaced, not silently dropped",
+        "Tests load every bundled rule"
+      ],
+      "notes": "LoadFromYamlFiles currently has no callers; only built-in rules run. v29 ships 19 YAML rule files plus 24 bundled rules in sigma_engine.py.",
+      "files": [
+        "src/Downpour.Service/SigmaEngine.cs",
+        "src/Downpour.Service/SigmaAmsiPushWorker.cs"
+      ]
+    },
+    {
+      "id": "DN-018",
+      "title": "Read-only hardening and firmware posture",
+      "status": "queued",
+      "priority": "high",
+      "acceptance": [
+        "Port firmware_posture.py checks: BitLocker, Secure Boot, TPM, LSA-PPL, Credential Guard, VBS/HVCI, SMBv1, patch level",
+        "Unknown is distinct from failed",
+        "No fix actions",
+        "hardening route shows real data"
+      ],
+      "notes": "First slice of the Hardening/Compliance route. Fix-all stays behind DN-008.",
+      "files": []
+    },
+    {
+      "id": "DN-019",
+      "title": "Read-only firewall view and blocked-connection events",
+      "status": "queued",
+      "priority": "medium",
+      "acceptance": [
+        "Firewall profile state and rule inventory via INetFwPolicy2 (read-only)",
+        "Event 5157 blocked connections, bounded",
+        "Firewall tamper detection signal",
+        "No rule edits until DN-008"
+      ],
+      "notes": "Firewall route. Rule toggle/delete stay behind the action broker.",
+      "files": []
+    },
+    {
+      "id": "DN-020",
+      "title": "USB, Wi-Fi, and Bluetooth posture (read-only)",
+      "status": "queued",
+      "priority": "medium",
+      "acceptance": [
+        "USB device inventory and registry history",
+        "Wi-Fi current connection and visible networks via WLAN API with security analysis",
+        "Bluetooth device posture",
+        "No blocking"
+      ],
+      "notes": "USB and Wi-Fi routes. USB whitelist/block stays behind DN-008.",
+      "files": []
+    },
+    {
+      "id": "DN-021",
+      "title": "DNS cache watch with DGA scoring",
+      "status": "queued",
+      "priority": "medium",
+      "acceptance": [
+        "Resolver cache enumeration via DnsGetCacheDataTable or documented alternative",
+        "Port dga_detector scoring with tests",
+        "TOFU baseline persisted with bounded size",
+        "Alerts flow into SecurityAlertRepository"
+      ],
+      "notes": "DNS route. Also port the SPF/DMARC/DKIM lookup tool.",
+      "files": []
+    },
+    {
+      "id": "DN-022",
+      "title": "Persistence and services risk views",
+      "status": "queued",
+      "priority": "medium",
+      "acceptance": [
+        "Scheduled tasks, WMI subscriptions, Run/Winlogon keys, DLL hijack shadows (read-only)",
+        "Baseline + diff with alerts",
+        "Services route gains v29 risk scoring"
+      ],
+      "notes": "Ports scheduled_task_monitor, wmi_persistence_detector, persistence_watchers, dll_hijack_detector.",
+      "files": []
+    },
+    {
+      "id": "DN-023",
+      "title": "Threats, Possible Threats, and false-positive store",
+      "status": "queued",
+      "priority": "high",
+      "acceptance": [
+        "Threats and Possible Threats routes backed by the alert repository",
+        "Verify/dismiss/mark-FP with audit",
+        "False-positive store (port fp_suppression.py)",
+        "Export/report",
+        "Response buttons visible but disabled with reason until DN-008"
+      ],
+      "notes": "Core triage workflow from v29 dashboard/threats tabs.",
+      "files": []
+    },
+    {
+      "id": "DN-024",
+      "title": "Local notifications and alert channels",
+      "status": "queued",
+      "priority": "medium",
+      "acceptance": [
+        "Tray icon with restore/exit",
+        "Windows app notifications for high/critical alerts",
+        "Optional sound alarm",
+        "SMTP email alerts designed with credential storage via DPAPI and explicit opt-in"
+      ],
+      "notes": "Non-route v29 features listed in parity-checklist.json nonRouteFeatures.",
+      "files": []
+    },
+    {
+      "id": "DN-025",
+      "title": "Indicator lookups, API keys, and custom feeds",
+      "status": "queued",
+      "priority": "medium",
+      "acceptance": [
+        "Settings stores user-supplied OSINT API keys with DPAPI, never logged",
+        "Explicit per-lookup consent before sending an indicator off-box",
+        "VirusTotal, AbuseIPDB, GreyNoise, OTX, urlscan lookups",
+        "Custom feed manager with size/time bounds and integrity checks",
+        "Scheduled feed refresh with feed health"
+      ],
+      "notes": "Intel and Network route lookups.",
+      "files": []
+    },
+    {
+      "id": "DN-026",
+      "title": "YARA scanning",
+      "status": "queued",
+      "priority": "medium",
+      "acceptance": [
+        "Dependency reviewed and version-pinned (e.g. libyara.NET or YARA-X binding)",
+        "Bundled v29 yara_rules/ with provenance",
+        "Scanner route recursive scope with bounds, cancellation, and progress",
+        "No auto-quarantine"
+      ],
+      "notes": "Scanner route parity.",
+      "files": []
+    },
+    {
+      "id": "DN-027",
+      "title": "Standalone timeline and phishing text analyzer",
+      "status": "queued",
+      "priority": "low",
+      "acceptance": [
+        "timeline route uses InvestigationTimelinePage without needing an alert",
+        "Attack detection patterns and HTML export",
+        "AEGIS phishing analyzer for pasted text, fully local"
+      ],
+      "notes": "Low-risk ports from Timeline and AEGIS tabs.",
+      "files": []
     }
   ]
 }

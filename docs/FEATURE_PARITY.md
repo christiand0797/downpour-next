@@ -52,3 +52,22 @@ This project aims to preserve every Downpour v29 capability and improve its usab
 ## Future improvements after parity
 
 Potential improvements include customizable workspaces, richer correlation and investigation timelines, accessible keyboard-first operations, low-overhead shared sensors, policy simulation, signed rule packs, and explainable detection evidence. Each addition should preserve local control and avoid reducing coverage from Downpour's current feature set.
+
+## Source module disposition (reconciled 2026-10-06, DN-015)
+
+The DN-009 inventory of 71 modules undercounted v29. The 2026-10-06 audit ([`V29_PARITY_AUDIT.md`](V29_PARITY_AUDIT.md)) built a transitive import graph from `downpour_v29_titanium.py`. It added 42 wired modules that were missing, reclassified 19 modules that v29 never loads as `orphaned`, and added 12 unwired modules and 4 content directories (`sigma_rules/`, `yara_rules/`, `ultimate_threat_intel/`, `models/`).
+
+| migrationStatus | Count |
+|---|---|
+| in-progress | 3 |
+| planned | 89 |
+| orphaned | 34 |
+| legacy | 1 |
+| declined | 1 |
+| reference | 1 |
+
+**Total: 129 entries** in [`../source-modules.json`](../source-modules.json).
+
+Route status from [`../capabilities.json`](../capabilities.json): 38 routes, 1 `prototype`, 13 `in-progress`, 24 `planned`.
+
+**Parity gate:** [`../parity-checklist.json`](../parity-checklist.json) lists 205 v29 workflows per route and 22 non-route features (tray, notifications, alert channels, scheduled jobs, FP database, and more). Mark a route `implemented` only when every item in its checklist is done, declined with a documented reason, or explicitly blocked on a security review.

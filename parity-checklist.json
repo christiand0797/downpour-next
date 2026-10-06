@@ -1,0 +1,464 @@
+{
+  "schemaVersion": 1,
+  "generatedFrom": "docs/V29_PARITY_AUDIT.md (2026-10-06)",
+  "note": "Not loaded by the app (CapabilityRegistry rejects unknown members). A route may be marked implemented in capabilities.json only when every item here is done, declined with a documented reason, or explicitly blocked on a security review.",
+  "routes": {
+    "dashboard": {
+      "title": "Dashboard",
+      "currentStatus": "prototype",
+      "v29Workflows": [
+        "Live threat feed with right-click actions: block IP, VirusTotal, GeoIP, rDNS, copy IOC, kill, quarantine, dismiss",
+        "Security health grade (A+..F)",
+        "Engine control: START ALL ENGINES",
+        "Gaming status",
+        "Quick triage",
+        "Privacy score and Privacy Mode"
+      ]
+    },
+    "threats": {
+      "title": "Threats",
+      "currentStatus": "planned",
+      "v29Workflows": [
+        "Threat log with filter/sort/detail",
+        "AUTO remediation toggle",
+        "Remediate All / Remediate Selected",
+        "Quarantine selected",
+        "Kill process",
+        "Browser scan",
+        "Block IP",
+        "Isolate host",
+        "Mark false positive / FP blocklist",
+        "Dismiss / Clear all",
+        "Export and report"
+      ]
+    },
+    "remediation": {
+      "title": "Remediation",
+      "currentStatus": "planned",
+      "v29Workflows": [
+        "Remediation history",
+        "Auto-revert and revert selected",
+        "Export selected",
+        "Details pane"
+      ]
+    },
+    "possible-threats": {
+      "title": "Possible Threats",
+      "currentStatus": "planned",
+      "v29Workflows": [
+        "Awaiting-verification list",
+        "Verify and move to Threats",
+        "Dismiss",
+        "Investigate",
+        "Intel lookup",
+        "Copy details"
+      ]
+    },
+    "processes": {
+      "title": "Processes",
+      "currentStatus": "in-progress",
+      "v29Workflows": [
+        "Filterable process tree with detail",
+        "Process lineage tree",
+        "Watchlist",
+        "Check process IPs",
+        "Open file location",
+        "Copy info",
+        "Mitigate selected"
+      ]
+    },
+    "drivers": {
+      "title": "Drivers",
+      "currentStatus": "in-progress",
+      "v29Workflows": [
+        "Loaded driver inventory (new in Next)",
+        "Signature verification",
+        "BYOVD / new-driver monitor (persistence_watchers.py)"
+      ]
+    },
+    "driver-packages": {
+      "title": "Driver Packages",
+      "currentStatus": "in-progress",
+      "v29Workflows": [
+        "Driver Store package inventory (new in Next)",
+        "Staged update/removal with rollback (DN-012)"
+      ]
+    },
+    "network": {
+      "title": "Network",
+      "currentStatus": "in-progress",
+      "v29Workflows": [
+        "Connection table",
+        "Network alerts",
+        "Packet capture (admin)",
+        "Rogue DHCP check",
+        "Bandwidth meter",
+        "Block IP",
+        "Geolocate IP",
+        "OSINT lookups: AbuseIPDB, GreyNoise, Onyphe, Pulsedive",
+        "Port scan selected",
+        "Kill owning process"
+      ]
+    },
+    "security-events": {
+      "title": "Security Events",
+      "currentStatus": "in-progress",
+      "v29Workflows": [
+        "Fixed channel/ID event sampling",
+        "Push subscription",
+        "Sigma over 4104 script blocks",
+        "AMSI script-block analysis",
+        "Sysmon events",
+        "ETW monitor (etw_monitor.py)"
+      ]
+    },
+    "alerts": {
+      "title": "Alerts",
+      "currentStatus": "in-progress",
+      "v29Workflows": [
+        "Deduplicated alerts with triage state",
+        "Correlation patterns",
+        "Investigation timeline drill-down"
+      ]
+    },
+    "scanner": {
+      "title": "File Inspector",
+      "currentStatus": "in-progress",
+      "v29Workflows": [
+        "Scan with files/threats/clean counters",
+        "Scan log",
+        "Recursive scan scope",
+        "YARA scanning over yara_rules/ (34 files)",
+        "Hash/IOC matching",
+        "Verdicts and Defender integration",
+        "Static PE risk score (pe_analyzer.py)"
+      ]
+    },
+    "intel": {
+      "title": "Threat Intelligence",
+      "currentStatus": "in-progress",
+      "v29Workflows": [
+        "Check IP / hash / URL",
+        "Custom feed manager: add, fetch now, remove, import from file",
+        "Feed statistics",
+        "Scheduled feed update and feed health check",
+        "CISA KEV catalog",
+        "EPSS lookup",
+        "MISP / STIX-TAXII (disabled until configured)"
+      ]
+    },
+    "threat-intel": {
+      "title": "Threat Intel Feeds",
+      "currentStatus": "in-progress",
+      "v29Workflows": [
+        "URLhaus",
+        "Feodo Tracker",
+        "MalwareBazaar",
+        "SSL Blacklist"
+      ]
+    },
+    "vulnerabilities": {
+      "title": "Vulnerabilities",
+      "currentStatus": "in-progress",
+      "v29Workflows": [
+        "KEV tree with Windows/MS-only and 2024-2026 filters",
+        "CVE detail",
+        "Apply mitigation for CVE",
+        "Kernel integrity view",
+        "Linked threat graph",
+        "Zero-day vulnerability scanner: run full scan, FIX ALL (admin), live zero-day check",
+        "NVD/CVSS enrichment",
+        "Exploit-DB lookup (exploit_db.py)"
+      ]
+    },
+    "hardening": {
+      "title": "Hardening",
+      "currentStatus": "planned",
+      "v29Workflows": [
+        "System hardening analyzer and score",
+        "NSA checks (scheduled)",
+        "Fix log",
+        "Compliance score and reports",
+        "Firmware posture: BitLocker, Secure Boot, TPM, LSA-PPL, Credential Guard, VBS/HVCI, SMBv1, patch level"
+      ]
+    },
+    "performance": {
+      "title": "Performance",
+      "currentStatus": "in-progress",
+      "v29Workflows": [
+        "CPU/RAM/GPU/net/disk gauges",
+        "CPU temperature",
+        "Per-core CPU",
+        "Top processes: Kill, Analyze, Set Priority, Open file location",
+        "Interfaces and partitions",
+        "60-second history",
+        "Refresh interval selector",
+        "CSV export"
+      ]
+    },
+    "ransomware": {
+      "title": "Ransomware",
+      "currentStatus": "planned",
+      "v29Workflows": [
+        "Monitoring toggle",
+        "Protected directories management",
+        "Ransomware event log",
+        "File rollback",
+        "Canary files / honeytokens",
+        "Entropy detector",
+        "Shadow-copy deletion detection"
+      ]
+    },
+    "firewall": {
+      "title": "Firewall",
+      "currentStatus": "planned",
+      "v29Workflows": [
+        "Rule manager: filter by direction/action, search",
+        "Toggle rule",
+        "Delete rule",
+        "Copy rule name",
+        "Recent blocked connections (Event 5157)",
+        "Firewall tamper detection",
+        "Remove all Downpour rules (port_firewall_unblock.py, dry-run default)"
+      ]
+    },
+    "wifi": {
+      "title": "Wi-Fi",
+      "currentStatus": "planned",
+      "v29Workflows": [
+        "Current connection: SSID, signal, IP",
+        "Scan networks",
+        "Security analysis (wifi_security_intelligence.py)"
+      ]
+    },
+    "dns": {
+      "title": "DNS",
+      "currentStatus": "planned",
+      "v29Workflows": [
+        "DNS security center overview",
+        "Resolver cache watch with DGA scoring and TOFU baseline",
+        "DNS monitor loop",
+        "Email SPF/DMARC/DKIM check",
+        "DNS canary token"
+      ]
+    },
+    "aegis": {
+      "title": "Project AEGIS",
+      "currentStatus": "planned",
+      "v29Workflows": [
+        "Five active defence layers status",
+        "AEGIS live event log",
+        "Phishing analyzer for pasted text",
+        "Vault, memory defense, anti-debug, Tor router, WFP blocker, physical shield, TCP stack guard, ingestion engine"
+      ]
+    },
+    "memory": {
+      "title": "Memory",
+      "currentStatus": "planned",
+      "v29Workflows": [
+        "Auto-monitor toggle",
+        "Injection events (process_injection_detector.py)",
+        "Memory forensics"
+      ]
+    },
+    "forensics": {
+      "title": "Forensics",
+      "currentStatus": "planned",
+      "v29Workflows": [
+        "Collect evidence",
+        "Generate legal report (forensic_report.py)",
+        "FBI IC3 link",
+        "IR evidence collection"
+      ]
+    },
+    "hunt": {
+      "title": "Threat Hunt",
+      "currentStatus": "planned",
+      "v29Workflows": [
+        "Target/mode selection",
+        "Run and stop hunt",
+        "Findings and actions (LOLBAS, BYOVD, persistence)"
+      ]
+    },
+    "sandbox": {
+      "title": "Sandbox",
+      "currentStatus": "planned",
+      "v29Workflows": [
+        "Browse file",
+        "Timeout",
+        "Block network",
+        "Capture registry",
+        "Detonate",
+        "Static analysis only",
+        "Activity log and threat report"
+      ]
+    },
+    "services": {
+      "title": "Services",
+      "currentStatus": "in-progress",
+      "v29Workflows": [
+        "Service inventory",
+        "Smart services threat scanner with risk scoring",
+        "Show clean services filter"
+      ]
+    },
+    "usb": {
+      "title": "USB Devices",
+      "currentStatus": "planned",
+      "v29Workflows": [
+        "Device scan",
+        "USB history (registry)",
+        "Whitelist add/remove/save",
+        "Block device",
+        "Alert log",
+        "Monitor loop",
+        "Auto-scan on insert",
+        "Keystroke injection / BadUSB detection"
+      ]
+    },
+    "iot": {
+      "title": "IoT Devices",
+      "currentStatus": "planned",
+      "v29Workflows": [
+        "Device discovery",
+        "Device details",
+        "Botnet indicators (Mozi/Kimwolf)"
+      ]
+    },
+    "timeline": {
+      "title": "Timeline",
+      "currentStatus": "planned",
+      "v29Workflows": [
+        "Load events",
+        "Detect attacks",
+        "Export HTML",
+        "Quick filters and max events",
+        "Event detail",
+        "Standalone route (InvestigationTimelinePage currently only opens from Alerts)"
+      ]
+    },
+    "remote-access": {
+      "title": "Remote Access",
+      "currentStatus": "planned",
+      "v29Workflows": [
+        "Remote access exposure scan",
+        "Action log"
+      ]
+    },
+    "cleanup": {
+      "title": "Cleanup",
+      "currentStatus": "planned",
+      "v29Workflows": [
+        "Cache and temp",
+        "Duplicates",
+        "Large files",
+        "Empty folders",
+        "Startup items",
+        "Disk usage",
+        "Security cleanup",
+        "Preview before any deletion"
+      ]
+    },
+    "vpn": {
+      "title": "VPN",
+      "currentStatus": "planned",
+      "v29Workflows": [
+        "Server list with protocol/country/speed/source filters",
+        "Connect fastest",
+        "Kill switch",
+        "Import .ovpn",
+        "Public IP",
+        "Connectivity test",
+        "VPN log"
+      ]
+    },
+    "parental-controls": {
+      "title": "Parental Controls",
+      "currentStatus": "planned",
+      "v29Workflows": [
+        "Enable parental controls",
+        "Screen time limits",
+        "Web filtering",
+        "Activity log"
+      ]
+    },
+    "emergency": {
+      "title": "Emergency Response",
+      "currentStatus": "planned",
+      "v29Workflows": [
+        "Full emergency lockdown (panic)",
+        "Individual emergency actions",
+        "Emergency log"
+      ]
+    },
+    "defense": {
+      "title": "Defense Suite",
+      "currentStatus": "planned",
+      "v29Workflows": [
+        "Container in v29: Aegis layers, Ransomware, Hardening, Emergency sub-views",
+        "advanced_defense_suite.py watchers"
+      ]
+    },
+    "tools": {
+      "title": "Tools",
+      "currentStatus": "planned",
+      "v29Workflows": [
+        "Container in v29: Remote, VPN, Parental, Emergency, Cleanup, USB, IoT, Services, Settings sub-views"
+      ]
+    },
+    "settings": {
+      "title": "Settings",
+      "currentStatus": "in-progress",
+      "v29Workflows": [
+        "Weather visuals and rain intensity",
+        "OSINT API keys",
+        "Revert all changes made by Downpour",
+        "TPM/BitLocker/Secure Boot bypass toggle",
+        "Thread workers",
+        "SMTP email alerts with test",
+        "Sound alarm on critical",
+        "USB control: auto-scan, block unknown, whitelist",
+        "Zero Trust score",
+        "Deploy DNS canary token",
+        "Dark-web leak check",
+        "Pwned password check",
+        "Collect IR evidence"
+      ]
+    },
+    "cognitive-immune-system": {
+      "title": "Cognitive Immune System",
+      "currentStatus": "planned",
+      "v29Workflows": [
+        "CIS status and detector statistics",
+        "Adversarial red teamer toggle",
+        "Threat evolution predictor toggle",
+        "Semantic integrity verifier toggle",
+        "Refresh stats"
+      ]
+    }
+  },
+  "nonRouteFeatures": [
+    "System tray icon (minimize/restore/toggle)",
+    "Toast notifications",
+    "Email alerts (SMTP)",
+    "Sound alarm",
+    "Floating widget",
+    "Rain overlay window",
+    "XInput gamepad controller",
+    "Gaming protection monitor",
+    "Adaptive load / resource throttling loop",
+    "Heartbeat and tamper status pill (self-protection)",
+    "Scheduled jobs: feed update, feed health, NSA check, intel auto loop, scan re-analysis, rootkit scan, DNS monitor, USB monitor, Wi-Fi refresh, bandwidth",
+    "ThreatLearningEngine background model training (models/)",
+    "FalsePositiveDB and fp_suppression.py",
+    "KnownThreats database",
+    "RootkitDetector, BootkitDetector, PortScanDetector, AdvancedPersistentThreatDetector",
+    "History database (Database class)",
+    "Child process guard (Job Object containment)",
+    "sensor_hub.py unified sensor fan-out",
+    "native_probes.py de-PowerShell probes",
+    "Process mitigation policies (process_mitigation.py)",
+    "Signature-bound trust validation (trust_check.py)",
+    "Auto-updater (done in Next: ReleaseUpdateClient/UpdateHelper)"
+  ]
+}

@@ -4,28 +4,28 @@
     "module": "downpour_v29_titanium.py",
     "description": "Main application file (51,800+ lines). Contains GUI, controller, and integrates all subsystems.",
     "sourceStatus": "Active (Core)",
-    "migrationStatus": "planned"
+    "migrationStatus": "in-progress"
   },
   {
     "family": "Core Engines & Detection Modules",
     "module": "advanced_threat_engine.py",
     "description": "Primary threat detection framework and correlation logic.",
-    "sourceStatus": "Active",
-    "migrationStatus": "planned"
+    "sourceStatus": "Not reachable from v29 main (2026-10-06 audit); confirm intent before porting",
+    "migrationStatus": "orphaned"
   },
   {
     "family": "Core Engines & Detection Modules",
     "module": "advanced_threat_analyzer.py",
     "description": "In-depth file and process behavior analysis.",
-    "sourceStatus": "Active",
-    "migrationStatus": "planned"
+    "sourceStatus": "Not reachable from v29 main (2026-10-06 audit); confirm intent before porting",
+    "migrationStatus": "orphaned"
   },
   {
     "family": "Core Engines & Detection Modules",
     "module": "threat_detection_engine.py",
     "description": "Signature and heuristic based threat detection routing.",
-    "sourceStatus": "Active",
-    "migrationStatus": "planned"
+    "sourceStatus": "Not reachable from v29 main (2026-10-06 audit); confirm intent before porting",
+    "migrationStatus": "orphaned"
   },
   {
     "family": "Core Engines & Detection Modules",
@@ -45,22 +45,22 @@
     "family": "Core Engines & Detection Modules",
     "module": "ai_security_engine.py",
     "description": "ML-powered anomaly detection and KEV correlation.",
-    "sourceStatus": "Active",
-    "migrationStatus": "planned"
+    "sourceStatus": "Not reachable from v29 main (2026-10-06 audit); confirm intent before porting",
+    "migrationStatus": "orphaned"
   },
   {
     "family": "Core Engines & Detection Modules",
     "module": "ml_behavioral_analyzer.py",
     "description": "Behavioral baselining and anomaly scoring using sklearn.",
-    "sourceStatus": "Active",
-    "migrationStatus": "planned"
+    "sourceStatus": "Not reachable from v29 main (2026-10-06 audit); confirm intent before porting",
+    "migrationStatus": "orphaned"
   },
   {
     "family": "Core Engines & Detection Modules",
     "module": "ml_optimization_engine.py",
     "description": "Optimization for machine learning inference and training tasks.",
-    "sourceStatus": "Active",
-    "migrationStatus": "planned"
+    "sourceStatus": "Not reachable from v29 main (2026-10-06 audit); confirm intent before porting",
+    "migrationStatus": "orphaned"
   },
   {
     "family": "Core Engines & Detection Modules",
@@ -73,8 +73,8 @@
     "family": "Core Engines & Detection Modules",
     "module": "behavioral_analyzer.py",
     "description": "Base behavioral analytics functions (often superseded by ML variants).",
-    "sourceStatus": "Legacy/Active",
-    "migrationStatus": "planned"
+    "sourceStatus": "Not reachable from v29 main (2026-10-06 audit); confirm intent before porting",
+    "migrationStatus": "orphaned"
   },
   {
     "family": "Core Engines & Detection Modules",
@@ -199,15 +199,15 @@
     "family": "Core Engines & Detection Modules",
     "module": "ioc_scanner.py",
     "description": "Aho-Corasick multi-pattern IOC matching.",
-    "sourceStatus": "Active (available for scan paths)",
-    "migrationStatus": "planned"
+    "sourceStatus": "Not reachable from v29 main (2026-10-06 audit); confirm intent before porting",
+    "migrationStatus": "orphaned"
   },
   {
     "family": "Threat Intelligence & Remediation",
     "module": "threat_intelligence.py",
     "description": "Legacy 11-source threat-intelligence downloader (not wired into the main app).",
     "sourceStatus": "Legacy",
-    "migrationStatus": "planned"
+    "migrationStatus": "legacy"
   },
   {
     "family": "Threat Intelligence & Remediation",
@@ -276,22 +276,22 @@
     "family": "Monitors & Sensors",
     "module": "advanced_hardware_monitor.py",
     "description": "CPU, RAM, Disk, and GPU telemetry extraction.",
-    "sourceStatus": "Active",
-    "migrationStatus": "planned"
+    "sourceStatus": "Not reachable from v29 main (2026-10-06 audit); confirm intent before porting",
+    "migrationStatus": "orphaned"
   },
   {
     "family": "Monitors & Sensors",
     "module": "hardware_monitor_enhanced.py",
     "description": "Enhanced hardware telemetry, thermal limits, and real-time load stats.",
-    "sourceStatus": "Active",
-    "migrationStatus": "planned"
+    "sourceStatus": "Not reachable from v29 main (2026-10-06 audit); confirm intent before porting",
+    "migrationStatus": "orphaned"
   },
   {
     "family": "Monitors & Sensors",
     "module": "enhanced_hardware_integration.py",
     "description": "Deep hardware integration logic for telemetry.",
-    "sourceStatus": "Active",
-    "migrationStatus": "planned"
+    "sourceStatus": "Not reachable from v29 main (2026-10-06 audit); confirm intent before porting",
+    "migrationStatus": "orphaned"
   },
   {
     "family": "Monitors & Sensors",
@@ -326,21 +326,21 @@
     "module": "browser_protection.py",
     "description": "Extension audit, history analysis (consolidated inline into main app v29.30).",
     "sourceStatus": "Reference",
-    "migrationStatus": "planned"
+    "migrationStatus": "reference"
   },
   {
     "family": "Scanners & Profilers",
     "module": "email_security.py",
     "description": "Phishing/malware email detection heuristics.",
-    "sourceStatus": "Active",
-    "migrationStatus": "planned"
+    "sourceStatus": "Not reachable from v29 main (2026-10-06 audit); confirm intent before porting",
+    "migrationStatus": "orphaned"
   },
   {
     "family": "Scanners & Profilers",
     "module": "advanced_device_profiler.py",
     "description": "Device/privilege profiler (evasion/bypass-capability oriented).",
     "sourceStatus": "Declined for wiring",
-    "migrationStatus": "planned"
+    "migrationStatus": "declined"
   },
   {
     "family": "Scanners & Profilers",
@@ -374,8 +374,8 @@
     "family": "Hardening & System Integration",
     "module": "defender_enhancer.py",
     "description": "Enhances Defender capabilities via registry/powershell policies.",
-    "sourceStatus": "Active",
-    "migrationStatus": "planned"
+    "sourceStatus": "Not reachable from v29 main (2026-10-06 audit); confirm intent before porting",
+    "migrationStatus": "orphaned"
   },
   {
     "family": "Hardening & System Integration",
@@ -402,29 +402,29 @@
     "family": "Utilities, Memory, & Dashboard",
     "module": "enhanced_security_dashboard.py",
     "description": "Dashboard metric aggregation and visual components.",
-    "sourceStatus": "Active",
-    "migrationStatus": "planned"
+    "sourceStatus": "Not reachable from v29 main (2026-10-06 audit); confirm intent before porting",
+    "migrationStatus": "orphaned"
   },
   {
     "family": "Utilities, Memory, & Dashboard",
     "module": "enhanced_ui_components.py",
     "description": "Custom Tkinter widgets (gauges, sparks, graphs).",
-    "sourceStatus": "Active",
-    "migrationStatus": "planned"
+    "sourceStatus": "Not reachable from v29 main (2026-10-06 audit); confirm intent before porting",
+    "migrationStatus": "orphaned"
   },
   {
     "family": "Utilities, Memory, & Dashboard",
     "module": "adaptive_security_bypass.py",
     "description": "Adaptive rule generation for bypassing known obfuscation.",
-    "sourceStatus": "Active",
-    "migrationStatus": "planned"
+    "sourceStatus": "Not reachable from v29 main (2026-10-06 audit); confirm intent before porting",
+    "migrationStatus": "orphaned"
   },
   {
     "family": "Utilities, Memory, & Dashboard",
     "module": "device_adaptation_engine.py",
     "description": "Adjusts scan intensity based on available hardware resources.",
-    "sourceStatus": "Active",
-    "migrationStatus": "planned"
+    "sourceStatus": "Not reachable from v29 main (2026-10-06 audit); confirm intent before porting",
+    "migrationStatus": "orphaned"
   },
   {
     "family": "Utilities, Memory, & Dashboard",
@@ -444,8 +444,8 @@
     "family": "Utilities, Memory, & Dashboard",
     "module": "backup_verifier.py",
     "description": "Verifies integrity of critical system files/backups.",
-    "sourceStatus": "Active",
-    "migrationStatus": "planned"
+    "sourceStatus": "Not reachable from v29 main (2026-10-06 audit); confirm intent before porting",
+    "migrationStatus": "orphaned"
   },
   {
     "family": "Utilities, Memory, & Dashboard",
@@ -455,18 +455,18 @@
     "migrationStatus": "planned"
   },
   {
-    "family": "Utilities, Memory, & Dashboard",
+    "family": "Scanners & Profilers",
     "module": "advanced_file_analyzer.py",
     "description": "Standalone file analysis tool (34.6 KB).",
     "sourceStatus": "Orphaned",
-    "migrationStatus": "planned"
+    "migrationStatus": "orphaned"
   },
   {
-    "family": "Utilities, Memory, & Dashboard",
+    "family": "Scanners & Profilers",
     "module": "advanced_gauge_system.py",
     "description": "Alternative gauge rendering (37.5 KB).",
     "sourceStatus": "Orphaned",
-    "migrationStatus": "planned"
+    "migrationStatus": "orphaned"
   },
   {
     "family": "Utilities, Memory, & Dashboard",
@@ -487,12 +487,418 @@
     "module": "file_sandbox.py",
     "description": "File sandboxing (2.1 KB).",
     "sourceStatus": "Orphaned",
-    "migrationStatus": "planned"
+    "migrationStatus": "orphaned"
   },
   {
     "family": "Utilities, Memory, & Dashboard",
     "module": "gpu_detector_fix.py",
     "description": "GPU detection fix utility (9.0 KB).",
+    "sourceStatus": "Not reachable from v29 main (2026-10-06 audit); confirm intent before porting",
+    "migrationStatus": "orphaned"
+  },
+  {
+    "family": "Detection Monitors",
+    "module": "amsi_bypass_detector.py",
+    "description": "AMSI Bypass Detector",
+    "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Detection Monitors",
+    "module": "anti_forensics_detector.py",
+    "description": "Anti-Forensics Detector",
+    "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Detection Monitors",
+    "module": "beacon_detector.py",
+    "description": "C2 Beacon Detector",
+    "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Detection Monitors",
+    "module": "bluetooth_security_monitor.py",
+    "description": "Bluetooth Security Monitor",
+    "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Detection Monitors",
+    "module": "browser_security_monitor.py",
+    "description": "Browser Security Monitor",
+    "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Detection Monitors",
+    "module": "clipboard_monitor.py",
+    "description": "Clipboard Security Monitor",
+    "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Detection Monitors",
+    "module": "code_integrity.py",
+    "description": "CODE INTEGRITY — v29.43f (audit §8.4)",
+    "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Detection Monitors",
+    "module": "credential_guard_monitor.py",
+    "description": "Credential Guard & VBS Integrity Monitor",
+    "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Detection Monitors",
+    "module": "data_exfiltration_monitor.py",
+    "description": "Data Exfiltration Monitor",
+    "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Detection Monitors",
+    "module": "dll_hijack_detector.py",
+    "description": "DLL Search Order Hijack Detector",
+    "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Detection Monitors",
+    "module": "dpapi_monitor.py",
+    "description": "DPAPI Credential Theft Monitor",
+    "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Detection Monitors",
+    "module": "entropy_ransomware_detector.py",
+    "description": "Hierarchical Entropy Disruption (HED) Ransomware Detector",
+    "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Detection Monitors",
+    "module": "etw_monitor.py",
+    "description": "ETW (Event Tracing for Windows) Security Monitor",
+    "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Detection Monitors",
+    "module": "firewall_tamper_detector.py",
+    "description": "Firewall Tamper Detector",
+    "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Detection Monitors",
+    "module": "gaming_protection_monitor.py",
+    "description": "Gaming Protection Monitor",
+    "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Detection Monitors",
+    "module": "keystroke_injection_detector.py",
+    "description": "Keystroke Injection / BadUSB Detector",
+    "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Detection Monitors",
+    "module": "lateral_movement_detector.py",
+    "description": "Lateral Movement Detector",
+    "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Detection Monitors",
+    "module": "named_pipe_monitor.py",
+    "description": "Named Pipe Security Monitor",
+    "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Detection Monitors",
+    "module": "network_share_monitor.py",
+    "description": "Network Share Monitor",
+    "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Detection Monitors",
+    "module": "process_injection_detector.py",
+    "description": "Process Injection Detector",
+    "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Detection Monitors",
+    "module": "scheduled_task_monitor.py",
+    "description": "Scheduled Task Persistence Monitor",
+    "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Detection Monitors",
+    "module": "shadow_copy_detector.py",
+    "description": "Shadow Copy Deletion Detector",
+    "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Detection Monitors",
+    "module": "shadow_copy_monitor.py",
+    "description": "Shadow Copy / VSS Tampering Monitor",
+    "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Detection Monitors",
+    "module": "tls_certificate_monitor.py",
+    "description": "TLS Certificate Anomaly Monitor",
+    "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Detection Monitors",
+    "module": "wmi_persistence_detector.py",
+    "description": "WMI Persistence Detector",
+    "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Detection Monitors",
+    "module": "wifi_security_intelligence.py",
+    "description": "WiFi Security Intelligence Module",
+    "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Core Engines & Detection Modules",
+    "module": "advanced_defense_suite.py",
+    "description": "ADVANCED DEFENSE SUITE — v29.62",
+    "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Core Engines & Detection Modules",
+    "module": "cognitive_immune_system.py",
+    "description": "Cognitive Immune System: adversarial red teamer, threat evolution predictor, semantic integrity verifier (CIS tab).",
+    "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Core Engines & Detection Modules",
+    "module": "sensor_hub.py",
+    "description": "sensor_hub.py - Unified Sensor Hub (TASK-018)",
+    "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Core Engines & Detection Modules",
+    "module": "native_probes.py",
+    "description": "NATIVE PROBES — v29.60 \"de-PowerShell\" layer",
+    "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Core Engines & Detection Modules",
+    "module": "yara_rules_manager.py",
+    "description": "YARA Rules Manager - Enhanced with 100DaysOfYARA 2025 Community Rules",
+    "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Core Engines & Detection Modules",
+    "module": "fp_suppression.py",
+    "description": "FP Suppression Module — Shared false-positive auto-suppression logic.",
+    "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Core Engines & Detection Modules",
+    "module": "trust_check.py",
+    "description": "trust_check.py - Signature-bound trust validation (TASK-015)",
+    "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Core Engines & Detection Modules",
+    "module": "process_mitigation.py",
+    "description": "PROCESS MITIGATION — v29.44 (audit §8.4, improvement catalog P0 #3)",
+    "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Threat Intelligence & Remediation",
+    "module": "cisa_kev.py",
+    "description": "CISA KEV CLIENT — fallback module for the guarded import chain (v29.60)",
+    "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Threat Intelligence & Remediation",
+    "module": "kev_checker.py",
+    "description": "KEV CHECKER — CISA Known Exploited Vulnerabilities integration (v29.60)",
+    "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Threat Intelligence & Remediation",
+    "module": "exploit_db.py",
+    "description": "Exploit-DB Integration Module for Downpour v29",
+    "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Threat Intelligence & Remediation",
+    "module": "feed_transport.py",
+    "description": "Safe transport helpers for user-configured threat-feed previews.",
+    "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Threat Intelligence & Remediation",
+    "module": "quarantine_core.py",
+    "description": "quarantine_core.py - Unified Quarantine Service (TASK-016)",
+    "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Threat Intelligence & Remediation",
+    "module": "forensic_report.py",
+    "description": "FORENSIC EVIDENCE COLLECTOR + LEGAL REPORT GENERATOR — v29.59",
+    "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Utilities, Memory, & Dashboard",
+    "module": "downpour_cleanup_module.py",
+    "description": "Cleanup Center engine: cache/temp, duplicates, large files, empty folders, startup items, disk usage, security cleanup with preview.",
+    "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Utilities, Memory, & Dashboard",
+    "module": "downpour_updater.py",
+    "description": "Downpour Auto-Updater Module",
+    "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Unwired v29 Modules",
+    "module": "ad_attack_detector.py",
+    "description": "Active Directory & Kerberos Attack Detector",
+    "sourceStatus": "Not reachable from v29 main (2026-10-06 audit)",
+    "migrationStatus": "orphaned"
+  },
+  {
+    "family": "Unwired v29 Modules",
+    "module": "boot_integrity_monitor.py",
+    "description": "Boot & MBR Integrity Monitor",
+    "sourceStatus": "Not reachable from v29 main (2026-10-06 audit)",
+    "migrationStatus": "orphaned"
+  },
+  {
+    "family": "Unwired v29 Modules",
+    "module": "com_hijack_detector.py",
+    "description": "COM Object Hijack Detector",
+    "sourceStatus": "Not reachable from v29 main (2026-10-06 audit)",
+    "migrationStatus": "orphaned"
+  },
+  {
+    "family": "Unwired v29 Modules",
+    "module": "dark_web_intel.py",
+    "description": "Downpour Security Application - Dark Web OSINT Intelligence Module",
+    "sourceStatus": "Not reachable from v29 main (2026-10-06 audit)",
+    "migrationStatus": "orphaned"
+  },
+  {
+    "family": "Unwired v29 Modules",
+    "module": "dns_security_monitor.py",
+    "description": "DNS Security Monitor",
+    "sourceStatus": "Not reachable from v29 main (2026-10-06 audit)",
+    "migrationStatus": "orphaned"
+  },
+  {
+    "family": "Unwired v29 Modules",
+    "module": "history_manager.py",
+    "description": "Persistent History/Version Control System for Downpour v29",
+    "sourceStatus": "Not reachable from v29 main (2026-10-06 audit)",
+    "migrationStatus": "orphaned"
+  },
+  {
+    "family": "Unwired v29 Modules",
+    "module": "intel_cache.py",
+    "description": "Persistent Intelligence Cache Module for Downpour v29",
+    "sourceStatus": "Not reachable from v29 main (2026-10-06 audit)",
+    "migrationStatus": "orphaned"
+  },
+  {
+    "family": "Unwired v29 Modules",
+    "module": "print_spooler_monitor.py",
+    "description": "Print Spooler Attack Monitor",
+    "sourceStatus": "Not reachable from v29 main (2026-10-06 audit)",
+    "migrationStatus": "orphaned"
+  },
+  {
+    "family": "Unwired v29 Modules",
+    "module": "privilege_escalation_detector.py",
+    "description": "Privilege Escalation & UAC Bypass Detector",
+    "sourceStatus": "Not reachable from v29 main (2026-10-06 audit)",
+    "migrationStatus": "orphaned"
+  },
+  {
+    "family": "Unwired v29 Modules",
+    "module": "ransomware_canary.py",
+    "description": "Ransomware Canary File System",
+    "sourceStatus": "Not reachable from v29 main (2026-10-06 audit)",
+    "migrationStatus": "orphaned"
+  },
+  {
+    "family": "Unwired v29 Modules",
+    "module": "system_cleanup.py",
+    "description": "Standalone system cleanup utilities (superseded in v29 by downpour_cleanup_module.py).",
+    "sourceStatus": "Not reachable from v29 main (2026-10-06 audit)",
+    "migrationStatus": "orphaned"
+  },
+  {
+    "family": "Unwired v29 Modules",
+    "module": "token_manipulation_detector.py",
+    "description": "Token Manipulation & Impersonation Detector",
+    "sourceStatus": "Not reachable from v29 main (2026-10-06 audit)",
+    "migrationStatus": "orphaned"
+  },
+  {
+    "family": "Detection Content & Data",
+    "module": "sigma_rules/",
+    "description": "19 Sigma YAML rule files plus README; v29 loads these via sigma_engine.py. Downpour Next SigmaEngine.LoadFromYamlFiles exists but has no caller.",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Detection Content & Data",
+    "module": "yara_rules/",
+    "description": "34 YARA rule files consumed by yara_x_engine.py / yara_rules_manager.py.",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Detection Content & Data",
+    "module": "ultimate_threat_intel/",
+    "description": "Threat intel package (3 entries) wired from main.",
+    "sourceStatus": "Active",
+    "migrationStatus": "planned"
+  },
+  {
+    "family": "Detection Content & Data",
+    "module": "models/",
+    "description": "Persisted ML models used by ThreatLearningEngine background training.",
     "sourceStatus": "Active",
     "migrationStatus": "planned"
   }

@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-05",
+  "updatedAt": "2026-10-06",
   "agents": [
     {
       "id": "codex-primary",
       "role": "primary",
       "taskId": "DN-014",
-      "status": "active",
+      "status": "idle",
       "heartbeatUtc": "2026-10-05T03:33:40Z",
-      "notes": "DN-014 system commit and performance release are published. Code `d82fb04` adds system-wide GetPerformanceInfo counters/sixth gauge; `1750c70` fixes embedded version 0.1.14 and release notes. Stable release v0.1.14 asset digest/size match local ZIP. Serial Release build passes with 0 warnings/errors; all 117 tests pass. Local 769-entry package hashes match staging and desktop/service startup passed. Next: native Performance/save-picker click-through, per-core CPU, physical disk I/O and pagefile storage metrics; preserve unknown states and keep main feature status in-progress for incomplete v29 parity."
+      "notes": "DN-014 system commit and performance release are published. Code `d82fb04` adds system-wide GetPerformanceInfo counters/sixth gauge; `1750c70` fixes embedded version 0.1.14 and release notes. Stable release v0.1.14 asset digest/size match local ZIP. Serial Release build passes with 0 warnings/errors; all 117 tests pass. Local 769-entry package hashes match staging and desktop/service startup passed. Next: native Performance/save-picker click-through, per-core CPU, physical disk I/O and pagefile storage metrics; preserve unknown states and keep main feature status in-progress for incomplete v29 parity. [2026-10-06: marked idle by claude-parity-audit; agent ran out of usage. Its uncommitted work was committed as-is and pushed.]"
     },
     {
       "id": "v29_action_map",
@@ -17,6 +17,86 @@
       "status": "completed",
       "heartbeatUtc": "2026-10-04T16:13:00Z",
       "notes": "Completed bounded read-only Windows Services inventory for existing route. Debug build clean; 54 tests passed. No management actions or handoff edits."
+    },
+    {
+      "id": "action-broker-agent",
+      "role": "agent",
+      "taskId": "DN-012",
+      "status": "idle",
+      "heartbeatUtc": "2026-10-06T05:45:00Z",
+      "notes": "DN-008 action broker foundation remains idle with quarantine execution disabled (RejectedNotImplemented) pending security review. Switched to DN-012 (driver package lifecycle broker) which is critical priority and queued. Will design versioned driver broker contracts, policy validation, signature verification, rollback/recovery procedures, and explicit user consent. First candidate: driver package inventory, signature verification, staged update with rollback. DN-011 (read-only driver inventory) is completed and provides the foundation. [2026-10-06: marked idle by claude-parity-audit; agent ran out of usage. Its uncommitted work was committed as-is and pushed.]"
+    },
+    {
+      "id": "opencode-ci-agent",
+      "role": "agent",
+      "taskId": "DN-003",
+      "status": "idle",
+      "heartbeatUtc": "2026-10-05T18:30:00Z",
+      "notes": "DN-003 completed: CI workflow syntax validated, Dependabot configured for weekly NuGet/GitHub Actions updates, all PackageReferences pinned. Local Debug/Release builds pass with 0 warnings/errors, 144 tests pass. GitHub Actions blocked by account billing/spending limit; will need manual inspection when resolved."
+    },
+    {
+      "id": "opencode-ui-agent",
+      "role": "agent",
+      "taskId": "DN-002",
+      "status": "idle",
+      "heartbeatUtc": "2026-10-05T19:30:00Z",
+      "notes": "DN-002: validated packaged app behavior. Self-contained publish fails with REGDB_E_CLASSNOTREG (Windows App Runtime framework package not included - self-contained flag only affects .NET runtime). dotnet run works via WinApp CLI debug identity. Portable package needs MSIX packaging or Windows App Runtime framework inclusion. Native route click-through testing requires either MSIX package or installed Windows App Runtime on target."
+    },
+    {
+      "id": "opencode-port-agent",
+      "role": "agent",
+      "taskId": "DN-009",
+      "status": "idle",
+      "heartbeatUtc": "2026-10-05T21:00:00Z",
+      "notes": "DN-009 completed: inventoried all 71 v29 source modules, updated source-modules.json migrationStatus fields, documented disposition in FEATURE_PARITY.md. 3 in-progress, 61 planned, 1 legacy, 4 orphaned, 1 declined, 1 reference. Route status: 12 in-progress, 23 planned."
+    },
+    {
+      "id": "opencode-update-agent",
+      "role": "agent",
+      "taskId": "DN-010",
+      "status": "idle",
+      "heartbeatUtc": "2026-10-05T23:30:00Z",
+      "notes": "DN-010 progress: verified update flow code and tests (ReleaseUpdateClientTests 10/10, UpdatePathPolicyTests 2/2). Update button click-through path: HomePage.xaml.cs UpdateButton_Click → PortableUpdateInstaller.CheckAndStageAsync → ReleaseUpdateClient.CheckAsync/DownloadVerifiedPackageAsync → UpdateArchive.ExtractToStage → helper copied to %LOCALAPPDATA%\\DownpourNext\\update-helper → launch UpdateHelper with installRoot/parentPID/version → helper waits for parent & bundled service, validates manifest/hashes, backs up files, applies atomically, restarts app. Build clean (0 warnings/errors, 144 tests). Self-contained publish requires Windows App Runtime framework. MSIX packaging enabled (EnableMsixTooling=true). Next: code signing research (Authenticode cert for EXE, MSIX package signing), test on clean Windows install, locked-file failure injection."
+    },
+    {
+      "id": "opencode-scanner-agent",
+      "role": "agent",
+      "taskId": "DN-013",
+      "status": "idle",
+      "heartbeatUtc": "2026-10-05T23:00:00Z",
+      "notes": "DN-013 completed: native file-picker click-through validated. dotnet run launches app, Scanner page navigation works, FileOpenPicker initialized with App.MainWindowHandle, bounded inspection completes. All 5 StaticFileInspector tests pass. Core inspector shipped in v0.1.13 (256 MiB limit, 96 sections, architecture/timestamp/section flags/cert-table presence). Full v29 scan, YARA/Defender, recursive scope remain open."
+    },
+    {
+      "id": "opencode-storage-agent",
+      "role": "agent",
+      "taskId": "DN-007",
+      "status": "idle",
+      "heartbeatUtc": "2026-10-05T23:30:00Z",
+      "notes": "DN-007 completed: service-side SQLite journals (OperationJournal v2, SecurityAlertRepository v2) with transactional schema migrations, WAL mode, bounded object IDs, state validation. Desktop AppPreferences handles visual preferences with LocalSettings + portable .ini fallback. Privacy minimization maintained - no PII, command lines, file contents, or browser data collected. All 144 tests pass. Remaining future: retention policies, integrity evidence, backup/restore, service identity + consent."
+    },
+    {
+      "id": "opencode-events-agent",
+      "role": "agent",
+      "taskId": "DN-004",
+      "status": "idle",
+      "heartbeatUtc": "2026-10-06T01:00:00Z",
+      "notes": "DN-004 completed: Sigma/AMSI integration implemented. Added YamlDotNet for Sigma rule parsing, SigmaEngine with YAML rule loading, detection matching for contains/startswith/endswith/re/contains|windash operators. Built-in rules for PowerShell encoded commands, execution policy bypass, download cradles, obfuscation, AMSI bypass, WMI. Integration with SecurityEventProvider for PowerShell 4104 script block analysis. 13 new tests added (SigmaEngineTests), all 157 total tests pass. Sigma rule parsing from YAML with list-based detection conditions. Support for contains|windash (dash-prefixed word boundary) operator. Remaining: Sysmon/ETW event source parity."
+    },
+    {
+      "id": "opencode-threat-intel-agent",
+      "role": "agent",
+      "taskId": "DN-006",
+      "status": "idle",
+      "heartbeatUtc": "2026-10-06T14:00:00Z",
+      "notes": "DN-006 NVD/CPE integration completed. VulnerabilitiesPage UI integrated with NVD enrichment: added NvdClient, VulnerabilityMatchEngine, Enrich with NVD button, candidate rows display CVSS scores, NVD description, affected version analysis. Per-candidate \"Check NVD\" button added for on-demand NVD enrichment. KevCandidateRow extended with NVD data properties (CVSS scores, vectors, version analysis, HasNvdData flag). Build successful (0 errors, 0 warnings), 165/167 tests pass (2 pre-existing failures). Next: per-candidate \"Check NVD\" button for on-demand enrichment, additional OSINT feed integrations (URLhaus, Abuse.ch, etc.)."
+    },
+    {
+      "id": "claude-parity-audit",
+      "role": "agent",
+      "taskId": "DN-015",
+      "status": "idle",
+      "heartbeatUtc": "2026-10-06T18:00:00Z",
+      "notes": "DN-015 completed: v29 parity audit, inventory and checklist reconciliation, warning fixes, committed and pushed all pending work. Handoff in docs/AGENT_HANDOFF.md."
     }
   ]
 }
