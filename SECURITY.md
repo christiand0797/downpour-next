@@ -14,6 +14,15 @@ Downpour Next is security-sensitive software. The repository is public and does 
 - Actions require policy authorization, operator preview where appropriate, audit records, bounded execution, a safe failure path, and tested rollback where possible.
 - Dependencies and GitHub Actions are supply-chain inputs. Pin versions, review updates, keep secrets out of CI, and generate an SBOM before release.
 
+## User-approved data handling (2026-10-07)
+
+The repository owner made these decisions explicitly. Keep the stated limits when implementing or changing them.
+
+- **PowerShell script-block text (Event 4104 `ScriptBlockText`) for Sigma and AMSI: approved, on by default, with a Settings switch to turn it off.** The text is analyzed in the service's memory only. It must never be persisted, logged, exported, sent over IPC to the desktop, or included in alerts. Alerts carry only the rule name, severity, technique, and event record ID. Analyzed text is bounded in size. (WORK_QUEUE DN-029)
+- **Automatic threat-intelligence lookups for alert indicators: approved.** Indicators (public IP addresses, file hashes, domains) taken from alerts may be sent automatically to services you configure with your own API keys. Keys are stored with DPAPI for the current user and are never logged or exported. Private, loopback, and link-local addresses are never sent. Lookups are rate-limited and cached, every outbound lookup is recorded locally (service, indicator type, time), and a master switch turns lookups off. (DN-025)
+- **YARA: evaluate first.** No YARA dependency is added until a written comparison (license, maintenance, native-code provenance, signing) is reviewed. (DN-026)
+- **Response actions: design first.** The action broker threat model and policy are written for review before any system-changing action is enabled. (DN-008)
+
 ## Current threat model
 
 Assets include host telemetry, user settings, alert/evidence history, threat-feed state, rules/models, and any future quarantine contents. Threats include malicious local processes/users, malformed or spoofed IPC payloads, parser exploits, untrusted feeds/rules/files, dependency or update compromise, privilege escalation, denial of service, data disclosure, and unsafe automated remediation.

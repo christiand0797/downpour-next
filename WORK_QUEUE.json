@@ -201,7 +201,7 @@
         "Denial, timeout, race, and recovery tests",
         "Feature switches default off"
       ],
-      "notes": "Progress: Added ActionBrokerPipeWorker and DriverPackageBrokerPipeWorker pipe workers. QuarantineManager prepares quarantine intent (validates path, size, hash, records intent in journal) but execution is rejected (RejectedNotImplemented) pending security review. DriverPackageBroker validates driver package requests against policy and records intent but execution is rejected (RejectedNotImplemented). Added QuarantineManager and DriverPackageBroker to DI. Added InvestigationTimelinePage with correlation drill-down from AlertsPage (using Button instead of SelectionChanged to avoid XAML compiler crash WMC9999). CorrelationFindingRow added to display findings in ListView. Remaining: authenticated consent/UI, actual quarantine/restore design and implementation, timeout/cancellation/recovery verifier, feature switch and operation history UI, and broader denial/timeout/race/recovery tests. Do not claim quarantine execution exists or enable any mutating action. See docs/ACTION_BROKER.md."
+      "notes": "Progress: Added ActionBrokerPipeWorker and DriverPackageBrokerPipeWorker pipe workers. QuarantineManager prepares quarantine intent (validates path, size, hash, records intent in journal) but execution is rejected (RejectedNotImplemented) pending security review. DriverPackageBroker validates driver package requests against policy and records intent but execution is rejected (RejectedNotImplemented). Added QuarantineManager and DriverPackageBroker to DI. Added InvestigationTimelinePage with correlation drill-down from AlertsPage (using Button instead of SelectionChanged to avoid XAML compiler crash WMC9999). CorrelationFindingRow added to display findings in ListView. Remaining: authenticated consent/UI, actual quarantine/restore design and implementation, timeout/cancellation/recovery verifier, feature switch and operation history UI, and broader denial/timeout/race/recovery tests. Do not claim quarantine execution exists or enable any mutating action. See docs/ACTION_BROKER.md. | Owner decision: write the design and threat model for review first; enable nothing."
     },
     {
       "id": "DN-009",
@@ -522,7 +522,7 @@
         "Custom feed manager with size/time bounds and integrity checks",
         "Scheduled feed refresh with feed health"
       ],
-      "notes": "Intel and Network route lookups.",
+      "notes": "Intel and Network route lookups. | Owner decision: automatic lookups for alert indicators approved (SECURITY.md); sensor setting intelLookups exists, default on, inert until keys exist. Not implemented.",
       "files": []
     },
     {
@@ -536,7 +536,7 @@
         "Scanner route recursive scope with bounds, cancellation, and progress",
         "No auto-quarantine"
       ],
-      "notes": "Scanner route parity.",
+      "notes": "Scanner route parity. | Owner decision: evaluate and propose before adding a dependency.",
       "files": []
     },
     {
@@ -568,14 +568,14 @@
     {
       "id": "DN-029",
       "title": "DECISION NEEDED: collect PowerShell script-block text for Sigma/AMSI (local consent design)",
-      "status": "blocked",
+      "status": "in_progress",
       "priority": "high",
       "acceptance": [
         "User decides whether script-block (4104 ScriptBlockText) content may be read",
         "If yes: explicit opt-in in Settings, analysis in memory only, never persisted/exported (only rule title + record id stored), bounded size, documented in SECURITY.md",
         "If no: mark v29 Sigma-on-scripts and AMSI as declined in parity-checklist.json"
       ],
-      "notes": "AGENTS.md forbids collecting command lines or file contents without a scoped feature and a local consent flow. v29 scanned script blocks with Sigma and AMSI by default. Without this, the Sigma/AMSI pipeline (DN-017) cannot detect anything on live events. On this test machine AMSI also returns 0x80070103 (no provider registered; Malwarebytes and Defender both present).",
+      "notes": "AGENTS.md forbids collecting command lines or file contents without a scoped feature and a local consent flow. v29 scanned script blocks with Sigma and AMSI by default. Without this, the Sigma/AMSI pipeline (DN-017) cannot detect anything on live events. On this test machine AMSI also returns 0x80070103 (no provider registered; Malwarebytes and Defender both present). | 2026-10-07 owner decision: allow, ON by default (SECURITY.md). Implemented: SensorSettingsStore + allow-listed control pipe, ScriptBlockSource (4104 ScriptBlockText, 64K cap, service-internal type, subscribed only while enabled), worker rewritten, Settings toggle. TODO: unit tests for store/pipe parsing and a live 4104 end-to-end check.",
       "files": []
     }
   ]

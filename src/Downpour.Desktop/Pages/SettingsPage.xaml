@@ -69,9 +69,23 @@
                 </StackPanel>
             </Border>
             <Border Padding="18" CornerRadius="12" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource DownpourStrokeBrush}" BorderThickness="1">
+                <StackPanel Spacing="14">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Detection data" FontSize="18" FontWeight="SemiBold" />
+                        <TextBlock Text="What the local sensor service may read to detect threats. These settings are stored by the service." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                    </StackPanel>
+                    <Grid ColumnSpacing="16">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                        <StackPanel Spacing="2"><TextBlock Text="Analyze PowerShell script blocks" FontWeight="SemiBold" /><TextBlock Text="Read PowerShell script text (Event 4104) and check it with Sigma rules and AMSI. The text is analyzed in memory only and is never saved, exported, or shown; alerts keep only the rule name." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" /></StackPanel>
+                        <ToggleSwitch x:Name="ScriptBlockToggle" Grid.Column="1" IsOn="True" IsEnabled="False" OnContent="On" OffContent="Off" />
+                    </Grid>
+                    <TextBlock x:Name="SensorSettingsState" FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+            <Border Padding="18" CornerRadius="12" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource DownpourStrokeBrush}" BorderThickness="1">
                 <StackPanel Spacing="8">
                     <TextBlock Text="Privacy &amp; data" FontSize="18" FontWeight="SemiBold" />
-                    <TextBlock Text="This build stores only the preferences above in the current user's app settings. No usage analytics, clipboard data, browser data, command lines, or file contents are collected." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                    <TextBlock Text="This build stores only the preferences above in the current user's app settings. No usage analytics, clipboard data, browser data, command lines, or file contents are collected. PowerShell script text is analyzed in memory when the setting above is on, and is never stored." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                     <TextBlock Text="Threat Intelligence contacts the fixed CISA endpoint only when you open that route or choose Refresh. The current prototype does not persist downloaded feed data." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                 </StackPanel>
             </Border>

@@ -5,6 +5,7 @@ namespace Downpour_Desktop.Pages;
 
 public sealed partial class SettingsPage : Page
 {
+    private readonly Downpour.Core.SensorSettingsClient _sensorSettings = new();
     private bool _loading;
 
     public SettingsPage()
@@ -21,6 +22,44 @@ public sealed partial class SettingsPage : Page
         MinimizeToTrayToggle.Toggled += (_, _) => Save(() => AppPreferences.MinimizeToTray = MinimizeToTrayToggle.IsOn);
         SoundAlarmToggle.Toggled += (_, _) => Save(() => AppPreferences.SoundAlarmEnabled = SoundAlarmToggle.IsOn);
         SoundHighToggle.Toggled += (_, _) => Save(() => AppPreferences.SoundAlarmIncludesHigh = SoundHighToggle.IsOn);
+        ScriptBlockToggle.Toggled += async (_, _) => await SetSensorSettingAsync(Downpour.Contracts.SensorSettingKeys.ScriptBlockAnalysis, ScriptBlockToggle.IsOn);
+    }
+
+    private async Task LoadSensorSettingsAsync()
+    {
+        var response = await _sensorSettings.GetAsync();
+        if (response?.Settings is null)
+        {
+            await App.EnsureSensorServiceAsync();
+            response = await _sensorSettings.GetAsync();
+        }
+        _loading = true;
+        try
+        {
+            if (response?.Settings is { } settings)
+            {
+                ScriptBlockToggle.IsOn = settings.ScriptBlockAnalysis;
+                ScriptBlockToggle.IsEnabled = true;
+                SensorSettingsState.Text = "";
+            }
+            else
+            {
+                ScriptBlockToggle.IsEnabled = false;
+                SensorSettingsState.Text = "The sensor service is not reachable, so its settings cannot be shown or changed.";
+            }
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task SetSensorSettingAsync(string key, bool value)
+    {
+        if (_loading) return;
+        var response = await _sensorSettings.SetAsync(key, value);
+        SensorSettingsState.Text = response is { Accepted: true } ? "Saved by the sensor service." : "The sensor service did not save the change.";
+        if (response is not { Accepted: true }) await LoadSensorSettingsAsync();
     }
 
     private void Save(Action apply)
@@ -48,6 +87,7 @@ public sealed partial class SettingsPage : Page
             SoundHighToggle.IsOn = AppPreferences.SoundAlarmIncludesHigh;
             SoundHighToggle.IsEnabled = SoundAlarmToggle.IsOn;
             NotificationState.Text = App.NotificationsUnavailable ?? "";
+            _ = LoadSensorSettingsAsync();
         }
         finally
         {

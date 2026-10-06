@@ -56,7 +56,15 @@ public sealed class SigmaAmsiEventProcessor
         }
     }
 
-    /// <summary>Processes a security event observation through Sigma rules and AMSI.</summary>
+    /// <summary>Runs Sigma and AMSI over one script-block part. The text is used in memory only.</summary>
+    internal IReadOnlyList<SecurityAlert> ProcessScriptBlock(ScriptBlock block) =>
+        ProcessEvent(new SecurityEventObservation("Microsoft-Windows-PowerShell/Operational", "Microsoft-Windows-PowerShell", 4104,
+            block.RecordId, block.CreatedAtUtc, "LOW", "T1059.001", block.Text, 1));
+
+    /// <summary>
+    /// Processes a 4104 observation whose Summary carries script text. Observations from SecurityEventProvider are
+    /// metadata-only (Summary is the catalog text), so live analysis goes through <see cref="ProcessScriptBlock"/>.
+    /// </summary>
     /// <returns>Generated alerts, or empty if no matches.</returns>
     public IReadOnlyList<SecurityAlert> ProcessEvent(SecurityEventObservation observation)
     {
