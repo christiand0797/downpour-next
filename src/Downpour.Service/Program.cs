@@ -26,6 +26,7 @@ builder.Services.AddSingleton<FirewallInventoryProvider>();
 builder.Services.AddSingleton(PersistenceInventoryProvider.CreateForCurrentUser());
 builder.Services.AddSingleton<UsbInventoryProvider>();
 builder.Services.AddSingleton<WirelessInventoryProvider>();
+builder.Services.AddSingleton<RemoteAccessProvider>();
 builder.Services.AddHostedService<SnapshotPipeWorker>();
 builder.Services.AddHostedService<DriverInventoryPipeWorker>();
 builder.Services.AddHostedService<DriverPackageInventoryPipeWorker>();
@@ -48,6 +49,7 @@ builder.Services.AddHostedService<PersistenceInventoryPipeWorker>();
 builder.Services.AddHostedService<UsbInventoryPipeWorker>();
 builder.Services.AddHostedService<WirelessInventoryPipeWorker>();
 builder.Services.AddHostedService<SecurityFindingBridgeWorker>();
+builder.Services.AddHostedService<RemoteAccessPipeWorker>();
 
 var host = builder.Build();
 host.Run();

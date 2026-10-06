@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page x:Class="Downpour_Desktop.Pages.RemoteAccessPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      mc:Ignorable="d">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Padding="24,20,24,30" Spacing="14">
+            <Grid ColumnSpacing="16">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                <StackPanel Spacing="4">
+                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Foreground="#FF76DDF5" Text="DOWNPOUR  /  PROTECTION  /  REMOTE ACCESS" />
+                    <TextBlock Style="{StaticResource TitleTextBlockStyle}" FontSize="30" Text="Remote access" />
+                    <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Remote Desktop configuration, listening and connected remote-access ports with their owning processes, and running remote-access tools. Read-only." TextWrapping="Wrap" />
+                </StackPanel>
+                <Button Grid.Column="1" x:Name="RefreshButton" Content="Scan" Click="Refresh_Click" VerticalAlignment="Center" />
+            </Grid>
+
+            <Border Padding="14,11" CornerRadius="10" Background="#B9081220" BorderBrush="#423EC5D8" BorderThickness="1">
+                <StackPanel Spacing="3">
+                    <TextBlock x:Name="StatusHeadline" FontWeight="SemiBold" Text="Scanning" />
+                    <TextBlock x:Name="StatusDetail" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+
+            <StackPanel Spacing="6">
+                <TextBlock Text="FINDINGS" FontSize="11" FontWeight="SemiBold" CharacterSpacing="85" Foreground="#FF91AFC2" />
+                <ItemsControl ItemsSource="{x:Bind Findings}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Padding="10,6" ColumnSpacing="12">
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="80" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                <TextBlock Text="{Binding Severity}" FontSize="11" FontWeight="SemiBold" Foreground="{Binding Brush}" />
+                                <TextBlock Grid.Column="1" Text="{Binding Text}" FontSize="12" TextWrapping="Wrap" />
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <TextBlock x:Name="NoFindings" FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="No high-confidence remote-access findings." Visibility="Collapsed" />
+            </StackPanel>
+
+            <StackPanel Spacing="6">
+                <TextBlock Text="REMOTE-ACCESS PORTS (V29 VECTORS)" FontSize="11" FontWeight="SemiBold" CharacterSpacing="85" Foreground="#FF91AFC2" />
+                <ItemsControl ItemsSource="{x:Bind Exposures}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Padding="10,5" ColumnSpacing="12">
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="80" /><ColumnDefinition Width="90" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                <TextBlock Text="{Binding Risk}" FontSize="11" FontWeight="SemiBold" Foreground="{Binding Brush}" />
+                                <TextBlock Grid.Column="1" Text="{Binding Kind}" FontSize="11" />
+                                <TextBlock Grid.Column="2" Text="{Binding Text}" FontSize="12" TextWrapping="Wrap" />
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <TextBlock x:Name="NoExposures" FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="No listeners or connections on remote-access ports." Visibility="Collapsed" />
+            </StackPanel>
+
+            <StackPanel Spacing="6">
+                <TextBlock Text="REMOTE-ACCESS TOOLS RUNNING" FontSize="11" FontWeight="SemiBold" CharacterSpacing="85" Foreground="#FF91AFC2" />
+                <ItemsControl ItemsSource="{x:Bind Tools}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Padding="10,4" Text="{Binding}" FontSize="12" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <TextBlock x:Name="NoTools" FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="None of v29's remote-access tool names are running." Visibility="Collapsed" />
+            </StackPanel>
+
+            <TextBlock FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="View only. v29's block-IP and vector hardening actions need the audited action broker. Ports 8080, 8443, 5555 and 1234 appear in v29's reverse-shell list but are common for development servers and adb, so they are shown here without raising alerts." TextWrapping="Wrap" />
+        </StackPanel>
+    </ScrollViewer>
+</Page>
