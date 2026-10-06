@@ -42,6 +42,10 @@ The loader worked and its tests pass. One security fix followed: the default rul
 
 `SecurityFindingBridgeWorker`, `SecurityFindingMapper` and `SecurityFindingCatalog` (DN-023, commit 2d32837) are the shared way to put a sensor's findings into Threats / Possible Threats. To add a source: add a `Downpour/<Source>` constant to `SecurityFindingCatalog.Sources`, add a `From<Source>` mapper, and add one `Collect(...)` line to the bridge. antigravity-worker's USB/Wireless additions to these files were left uncommitted in the working tree for it to commit with DN-020.
 
+## Review of DN-020 (2026-10-07)
+
+The USB and Bluetooth parts are fine: they use the registry with ACL'd pipes. Wi-Fi ran `netsh.exe` and matched English labels, so it failed on localized Windows and spawned a subprocess (AGENTS.md: prefer documented APIs, no subprocess shells). It was replaced with the Native Wifi API in `WlanNative.cs` (commit a30f352). The contract and evaluator are unchanged. Do not reintroduce netsh parsing.
+
 ## Commit etiquette
 
 - Commit only the files you own or have just edited. Do not run `git add -A` while the other agent has uncommitted work.

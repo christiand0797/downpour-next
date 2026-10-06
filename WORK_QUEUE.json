@@ -426,7 +426,7 @@
         "Bluetooth device posture",
         "No blocking"
       ],
-      "notes": "Completed 2026-10-06 by antigravity-worker. USB: read-only removable drive inventory, autorun detection (.inf/.bat/.exe/.com), root suspicious executables/scripts (.scr/.pif/.bat/.cmd/.vbs/.js/.ps1), USBSTOR service state check, and USBSTOR/USB registry device history with BadUSB/Rubber Ducky/Flipper/Teensy signature analysis (T1091, T1200). Wi-Fi & Wireless: interface state, connected network, visible networks with SSID, BSSID, Signal%, Auth, Cipher, Channel, Evil Twin detection (T1557.002), weak/open auth warnings (T1040), suspicious SSID patterns, and attack tool OUIs (Hak5 00:13:37, spoofed OUIs). Bluetooth: paired device enumeration from BTHPORT registry with name decoding and suspicious device name analysis (T1011.001). Outbound-only named pipes Downpour.UsbInventory.v1 and Downpour.WirelessInventory.v1 with current-user ACL and client validation. Desktop UI routes 'usb' and 'wifi' implemented with live re-check. Posture findings bridged to SecurityAlertRepository for threat triage. 21 new unit tests (328/328 total pass); 0 build warnings/errors.",
+      "notes": "Completed 2026-10-06 by antigravity-worker. USB: read-only removable drive inventory, autorun detection (.inf/.bat/.exe/.com), root suspicious executables/scripts (.scr/.pif/.bat/.cmd/.vbs/.js/.ps1), USBSTOR service state check, and USBSTOR/USB registry device history with BadUSB/Rubber Ducky/Flipper/Teensy signature analysis (T1091, T1200). Wi-Fi & Wireless: interface state, connected network, visible networks with SSID, BSSID, Signal%, Auth, Cipher, Channel, Evil Twin detection (T1557.002), weak/open auth warnings (T1040), suspicious SSID patterns, and attack tool OUIs (Hak5 00:13:37, spoofed OUIs). Bluetooth: paired device enumeration from BTHPORT registry with name decoding and suspicious device name analysis (T1011.001). Outbound-only named pipes Downpour.UsbInventory.v1 and Downpour.WirelessInventory.v1 with current-user ACL and client validation. Desktop UI routes 'usb' and 'wifi' implemented with live re-check. Posture findings bridged to SecurityAlertRepository for threat triage. 21 new unit tests (328/328 total pass); 0 build warnings/errors. | 2026-10-07 claude-parity-audit (commit a30f352): Wi-Fi collection moved from netsh text parsing (English-only, subprocess) to the Native Wifi API.",
       "files": [
         "src/Downpour.Contracts/UsbInventory.cs",
         "src/Downpour.Contracts/WirelessInventory.cs",
@@ -499,7 +499,7 @@
     {
       "id": "DN-024",
       "title": "Local notifications and alert channels",
-      "status": "queued",
+      "status": "in_progress",
       "priority": "medium",
       "acceptance": [
         "Tray icon with restore/exit",
@@ -507,7 +507,7 @@
         "Optional sound alarm",
         "SMTP email alerts designed with credential storage via DPAPI and explicit opt-in"
       ],
-      "notes": "Non-route v29 features listed in parity-checklist.json nonRouteFeatures.",
+      "notes": "Non-route v29 features listed in parity-checklist.json nonRouteFeatures. | Claimed by claude-parity-audit 2026-10-07.",
       "files": []
     },
     {
@@ -555,14 +555,14 @@
     {
       "id": "DN-028",
       "title": "Services risk scoring (v29 Smart Services Threat Scanner)",
-      "status": "in_progress",
+      "status": "completed",
       "priority": "medium",
       "acceptance": [
         "Port v29 _build_services_tab risk rules with source line citations",
         "Unquoted service paths, user-writable binaries, unsigned binaries flagged",
         "Read-only; no start/stop/configure"
       ],
-      "notes": "Split from DN-022 on 2026-10-07. Services route currently lists state and startup type only. | Claimed by claude-parity-audit 2026-10-07.",
+      "notes": "Completed 2026-10-07 by claude-parity-audit (commit e0f9634). v29 SmartServicesScanner rules plus unquoted-path and writable-binary-folder checks (shared FileSystemExposure ACL helper); disabled services Low; drivers excluded from vector substrings. Fixed pre-existing bugs: QUERY_SERVICE_CONFIGW struct order (all startup types were garbage) and 512 cap that dropped services (now 2048; 763 here). Live: 6 High, 2 Medium, 3 Low. Remaining: binary signature verification.",
       "files": []
     }
   ]

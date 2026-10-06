@@ -93,10 +93,10 @@
     {
       "id": "claude-parity-audit",
       "role": "agent",
-      "taskId": "DN-028",
+      "taskId": "DN-024",
       "status": "active",
-      "heartbeatUtc": "2026-10-07T02:20:00Z",
-      "notes": "DN-016, DN-018, DN-019, DN-022, DN-023 completed. Working DN-028 (services risk scoring), then DN-024 (tray/notifications)."
+      "heartbeatUtc": "2026-10-07T03:10:00Z",
+      "notes": "Completed DN-016, 018, 019, 022, 023, 028; fixed DN-020 Wi-Fi to native API. Working DN-024 (tray icon, notifications, sound alarm)."
     },
     {
       "id": "antigravity-worker",
