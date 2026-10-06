@@ -10,13 +10,13 @@
             <StackPanel Spacing="5">
                 <TextBlock Text="ANALYSIS  /  DRIVER STORE  /  PACKAGE INVENTORY" Style="{StaticResource SubtitleTextBlockStyle}" />
                 <TextBlock Text="Driver packages" Style="{StaticResource TitleTextBlockStyle}" />
-                <TextBlock Text="Enumerates installed driver packages from the Windows Driver Store. Includes INF file, version, class, provider, hardware IDs, and signature status." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                <TextBlock Text="Installed driver packages bound to devices, plus unbound third-party (oem*.inf) packages, with catalog signature status." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
             </StackPanel>
 
             <Border Padding="14" CornerRadius="10" Background="#A80B1524" BorderBrush="#3D46C5D8" BorderThickness="1">
                 <StackPanel Spacing="8">
                     <TextBlock Text="Read-only enumeration of the Windows Driver Store" FontWeight="SemiBold" Foreground="#FFFFC76A" />
-                    <TextBlock Text="Lists driver packages with INF file, version, class, provider, hardware IDs, and signature status. No driver installation, update, or removal is performed. Signature verification uses WinVerifyTrust." FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                    <TextBlock Text="Lists driver packages with INF file, version, class, provider, hardware IDs, and signature status. No driver installation, update, or removal is performed. Signatures are verified against the Windows catalog database with WinVerifyTrust; revocation uses only cached data, so a revoked signer the system has not yet learned about can still appear valid. Unknown means verification could not run, not that the driver is unsigned." FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                 </StackPanel>
             </Border>
 
@@ -40,6 +40,7 @@
                                     <TextBlock Text="{Binding InfFile}" FontWeight="SemiBold" Foreground="#FF50DBF1" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" />
                                     <TextBlock Text="{Binding DriverClass}" FontSize="11" Foreground="#FFB47AF8" TextWrapping="Wrap" />
                                     <TextBlock Text="{Binding ProviderDisplay}" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" TextWrapping="Wrap" />
+                                    <TextBlock Text="{Binding HardwareId}" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" TextTrimming="CharacterEllipsis" />
                                     <TextBlock Text="{Binding VersionDateDisplay}" FontSize="10" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
                                     <TextBlock Text="{Binding SignatureDisplay}" FontSize="10" Foreground="{Binding SignatureBrush}" TextWrapping="Wrap" />
                                 </StackPanel>

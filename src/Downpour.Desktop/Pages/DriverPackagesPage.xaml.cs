@@ -12,6 +12,7 @@ namespace Downpour_Desktop.Pages;
 public sealed partial class DriverPackagesPage : Page
 {
     private readonly DriverPackageInventoryClient _client = new();
+    private IReadOnlyList<DriverPackageEntry> _packages = [];
     private bool _requestInFlight;
 
     public ObservableCollection<DriverPackageRow> VisiblePackages { get; } = [];
@@ -42,9 +43,12 @@ public sealed partial class DriverPackagesPage : Page
                 StatusText.Text = "Driver package inventory is unavailable.";
                 return;
             }
+            _packages = snapshot.Packages;
             var captured = snapshot.CapturedAtUtc.ToLocalTime();
             var warningText = snapshot.Warnings.Count == 0 ? "" : $" · {string.Join(" ", snapshot.Warnings)}";
-            StatusText.Text = $"{snapshot.PackageCount:N0} driver packages · captured {captured:HH:mm:ss}{warningText}";
+            var signed = snapshot.Packages.Count(package => package.IsSigned);
+            var unknown = snapshot.Packages.Count(package => package.SignatureStatus?.StartsWith("Unknown", StringComparison.Ordinal) == true);
+            StatusText.Text = $"{snapshot.PackageCount:N0} driver packages · {signed:N0} catalog-signed · {snapshot.PackageCount - signed - unknown:N0} unsigned or untrusted · {unknown:N0} unknown · captured {captured:HH:mm:ss}{warningText}";
             ApplyFilter();
         }
         catch (Exception ex)
@@ -61,23 +65,42 @@ public sealed partial class DriverPackagesPage : Page
     private void ApplyFilter()
     {
         var query = SearchBox?.Text?.Trim() ?? "";
+        var matches = _packages
+            .Where(package => query.Length == 0 || Matches(package, query))
+            .OrderBy(package => package.IsSigned)
+            .ThenBy(package => package.InfFile, StringComparer.OrdinalIgnoreCase)
+            .Select(package => new DriverPackageRow(package))
+            .ToArray();
         VisiblePackages.Clear();
-        // In a real implementation, we would filter from the client's cached data
-        // For now, just show all
+        foreach (var row in matches) VisiblePackages.Add(row);
+        PackageCount.Text = _packages.Count == 0 ? "" : $"{matches.Length:N0} of {_packages.Count:N0}";
+        EmptyState.Text = _packages.Count == 0 ? "Click 'Refresh driver store' to load data." : "No packages match the filter.";
         EmptyState.Visibility = VisiblePackages.Count == 0 ? Microsoft.UI.Xaml.Visibility.Visible : Microsoft.UI.Xaml.Visibility.Collapsed;
     }
+
+    private static bool Matches(DriverPackageEntry package, string query) =>
+        new[] { package.InfFile, package.OriginalInfFile, package.ProviderName, package.DriverClass, package.HardwareId, package.DriverVersion, package.SignerName ?? "", package.SignatureStatus ?? "" }
+            .Any(value => value.Contains(query, StringComparison.OrdinalIgnoreCase));
 }
 
 public sealed class DriverPackageRow
 {
     public DriverPackageEntry Entry { get; }
-    public string InfFile => Entry.InfFile;
+    public string InfFile => Entry.OriginalInfFile.Length > 0 && !Entry.OriginalInfFile.Equals(Entry.InfFile, StringComparison.OrdinalIgnoreCase)
+        ? $"{Entry.InfFile}  ({Entry.OriginalInfFile})"
+        : Entry.InfFile;
     public string DriverClass => Entry.DriverClass;
     public string ProviderDisplay => $"Provider: {Entry.ProviderName}";
     public string VersionDateDisplay => $"Version: {Entry.DriverVersion} · Date: {Entry.Date}";
     public string HardwareId => Entry.HardwareId;
-    public string SignatureDisplay => Entry.IsSigned ? $"Signed by {Entry.SignerName} · {Entry.SignatureStatus}" : "Not signed";
-    public SolidColorBrush SignatureBrush => Entry.IsSigned ? new SolidColorBrush(Microsoft.UI.Colors.LightGreen) : new SolidColorBrush(Microsoft.UI.Colors.OrangeRed);
+    public string SignatureDisplay => Entry.IsSigned
+        ? $"{Entry.SignatureStatus} · {Entry.SignerName ?? "signer unavailable"}"
+        : Entry.SignatureStatus ?? "Signature status unknown";
+    public SolidColorBrush SignatureBrush => new(Entry.IsSigned
+        ? Microsoft.UI.Colors.LightGreen
+        : Entry.SignatureStatus?.StartsWith("Unknown", StringComparison.Ordinal) != false
+            ? Microsoft.UI.Colors.Gold
+            : Microsoft.UI.Colors.OrangeRed);
 
     public DriverPackageRow(DriverPackageEntry entry)
     {
