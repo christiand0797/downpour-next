@@ -93,18 +93,18 @@
     {
       "id": "claude-parity-audit",
       "role": "agent",
-      "taskId": "DN-018",
+      "taskId": "DN-019",
       "status": "active",
-      "heartbeatUtc": "2026-10-06T23:20:00Z",
-      "notes": "DN-016 completed and committed. Now DN-018 (hardening/firmware posture), then DN-019, DN-022, DN-023. See docs/AGENT_COORDINATION.md."
+      "heartbeatUtc": "2026-10-06T23:55:00Z",
+      "notes": "DN-016 and DN-018 completed. Working DN-019 (firewall read-only view + Event 5157), then DN-022, DN-023."
     },
     {
       "id": "antigravity-worker",
       "role": "primary",
-      "taskId": "DN-016",
-      "status": "idle",
-      "heartbeatUtc": "2026-10-06T23:00:00Z",
-      "notes": "Handoff section 2 complete: verified import graph, documented settings/config (parity-checklist.json settings section), detection thresholds (docs/V29_DETECTION_THRESHOLDS.md), data stores (parity-checklist.json dataStores section), and right-click context menus. DN-016 already fixed: driver verification uses CatalogSignatureVerifier with WtdChoiceCatalog and CryptCATAdminAcquireContext2. Build: 0 warnings, 0 errors. Next safe task: DN-017 (load v29 Sigma rule files)."
+      "taskId": "DN-017",
+      "status": "active",
+      "heartbeatUtc": "2026-10-06T23:30:00Z",
+      "notes": "Claimed DN-017: Bundling v29 sigma_rules into repo, calling LoadFromYamlFiles at startup, surfacing unsupported rules, and adding test coverage."
     }
   ]
 }

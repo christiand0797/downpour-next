@@ -361,7 +361,7 @@
     {
       "id": "DN-017",
       "title": "Load v29 Sigma rule files",
-      "status": "queued",
+      "status": "in_progress",
       "priority": "high",
       "acceptance": [
         "SigmaEngine.LoadFromYamlFiles is called at service start for a bundled rules folder",
@@ -369,7 +369,7 @@
         "Unsupported modifiers/conditions are counted and surfaced, not silently dropped",
         "Tests load every bundled rule"
       ],
-      "notes": "LoadFromYamlFiles currently has no callers; only built-in rules run. v29 ships 19 YAML rule files plus 24 bundled rules in sigma_engine.py. | Assigned to antigravity-worker per docs/AGENT_COORDINATION.md.",
+      "notes": "Claimed by antigravity-worker: copying v29 sigma_rules/*.yml into repo, calling LoadFromYamlFiles at service startup, surfacing unsupported rules, and adding test coverage.",
       "files": [
         "src/Downpour.Service/SigmaEngine.cs",
         "src/Downpour.Service/SigmaAmsiPushWorker.cs"
@@ -378,7 +378,7 @@
     {
       "id": "DN-018",
       "title": "Read-only hardening and firmware posture",
-      "status": "in_progress",
+      "status": "completed",
       "priority": "high",
       "acceptance": [
         "Port firmware_posture.py checks: BitLocker, Secure Boot, TPM, LSA-PPL, Credential Guard, VBS/HVCI, SMBv1, patch level",
@@ -386,13 +386,17 @@
         "No fix actions",
         "hardening route shows real data"
       ],
-      "notes": "First slice of the Hardening/Compliance route. Fix-all stays behind DN-008. | Assigned to claude-parity-audit per docs/AGENT_COORDINATION.md.",
-      "files": []
+      "notes": "Completed 2026-10-06 by claude-parity-audit (commit 66a2742). Eight v29 firmware_posture checks via registry, TBS (Tbsi_GetDeviceInfo) and WMI (Win32_DeviceGuard; Win32_EncryptableVolume/Win32_Tpm only when elevated). Grading in Core/HardeningPostureEvaluator reproduces v29, with Credential Guard/HVCI preferring running state and TPM presence from TBS. Unknown never becomes a finding. Route 'hardening' is in-progress: NSA/STIG checks (_harden_analyze), compliance score, zero-day scanner and FIX ALL remain. Not yet bridged into the alert pipeline. 25 tests.",
+      "files": [
+        "src/Downpour.Core/HardeningPostureEvaluator.cs",
+        "src/Downpour.Service/HardeningPostureProvider.cs",
+        "src/Downpour.Desktop/Pages/HardeningPage.xaml"
+      ]
     },
     {
       "id": "DN-019",
       "title": "Read-only firewall view and blocked-connection events",
-      "status": "queued",
+      "status": "in_progress",
       "priority": "medium",
       "acceptance": [
         "Firewall profile state and rule inventory via INetFwPolicy2 (read-only)",
