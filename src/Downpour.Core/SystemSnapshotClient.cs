@@ -51,14 +51,16 @@ public sealed class SystemSnapshotClient
     public static bool IsValidSnapshot(SystemHealthSnapshot snapshot) =>
         snapshot.SchemaVersion == 1 && snapshot.CapturedAtUtc >= DateTimeOffset.UtcNow.AddMinutes(-10) &&
         snapshot.CapturedAtUtc <= DateTimeOffset.UtcNow.AddMinutes(1) && snapshot.ProcessCount >= 0 &&
-        snapshot.CpuPercent is null or (>= 0 and <= 100) &&
+        (snapshot.CpuPercent is null || (snapshot.CpuPercent >= 0 && snapshot.CpuPercent <= 100)) &&
         snapshot.MemoryAvailableBytes <= snapshot.MemoryTotalBytes &&
-        (snapshot.MemoryCommitLimitBytes is null && snapshot.MemoryCommittedBytes is null ||
-         snapshot.MemoryCommitLimitBytes is { } commitLimit && snapshot.MemoryCommittedBytes is { } committed && committed <= commitLimit) &&
-        snapshot.DiskReadBytesPerSecond is null or >= 0 && snapshot.DiskWriteBytesPerSecond is null or >= 0 &&
-        snapshot.ActiveTcpConnections is null or >= 0 &&
-        snapshot.TopProcesses is { Count: <= 512 } && snapshot.ProcessCount >= snapshot.TopProcesses.Count && snapshot.Warnings is { Count: <= 64 } &&
+        ((snapshot.MemoryCommitLimitBytes is null && snapshot.MemoryCommittedBytes is null) ||
+         (snapshot.MemoryCommitLimitBytes is { } commitLimit && snapshot.MemoryCommittedBytes is { } committed && committed <= commitLimit)) &&
+        (snapshot.DiskReadBytesPerSecond is null || snapshot.DiskReadBytesPerSecond >= 0) &&
+        (snapshot.DiskWriteBytesPerSecond is null || snapshot.DiskWriteBytesPerSecond >= 0) &&
+        (snapshot.ActiveTcpConnections is null || snapshot.ActiveTcpConnections >= 0) &&
+        (snapshot.TopProcesses is { Count: <= 512 } && snapshot.ProcessCount >= snapshot.TopProcesses.Count && snapshot.Warnings is { Count: <= 64 }) &&
         snapshot.TopProcesses.All(process => process is not null && process.ProcessId > 0 && process.Name is { Length: > 0 and <= 128 } && !process.Name.Any(char.IsControl) &&
-            process.WorkingSetBytes >= 0 && process.ThreadCount >= 0 && process.CpuPercent is null or (>= 0 and <= 100)) &&
+            process.WorkingSetBytes >= 0 && process.ThreadCount >= 0 && (process.CpuPercent is null || (process.CpuPercent >= 0 && process.CpuPercent <= 100))) &&
+        (snapshot.PerCoreCpuPercent is null || snapshot.PerCoreCpuPercent.All(c => c is null || (c >= 0 && c <= 100))) &&
         snapshot.Warnings.All(warning => warning is not null && warning.Length <= 512);
 }

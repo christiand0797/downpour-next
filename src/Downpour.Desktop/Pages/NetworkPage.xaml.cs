@@ -17,6 +17,9 @@ public sealed partial class NetworkPage : Page
     private readonly DispatcherQueueTimer _refreshTimer;
     private readonly Queue<NetworkPoint> _history = new();
     private bool _requestInFlight;
+    private ChartGrid? _historyGrid;
+    private ChartLineRenderer? _receiveSeries;
+    private ChartLineRenderer? _sendSeries;
 
     public ObservableCollection<NetworkInterfaceRow> Interfaces { get; } = [];
     public ObservableCollection<NetworkConnectionRow> Connections { get; } = [];
@@ -154,69 +157,36 @@ public sealed partial class NetworkPage : Page
     private void DrawHistory()
     {
         if (HistoryChart is null) return;
-        HistoryChart.Children.Clear();
         var width = HistoryChart.ActualWidth;
         var height = HistoryChart.ActualHeight;
         if (!double.IsFinite(width) || !double.IsFinite(height) || width <= 1 || height <= 1) return;
 
         var values = _history.ToArray();
-        for (var level = 1; level <= 3; level++)
-        {
-            var y = height * level / 4;
-            var line = new Line { X1 = 0, X2 = width, Y1 = y, Y2 = y, Stroke = new SolidColorBrush(Color.FromArgb(44, 161, 190, 211)), StrokeThickness = 1 };
-            HistoryChart.Children.Add(line);
-        }
+        _historyGrid ??= new ChartGrid(HistoryChart, 4, 4, 31, 14, 9,
+            Color.FromArgb(44, 161, 190, 211), Color.FromArgb(190, 164, 184, 199));
+        _receiveSeries ??= new ChartLineRenderer(HistoryChart, Color.FromArgb(255, 80, 219, 241));
+        _sendSeries ??= new ChartLineRenderer(HistoryChart, Color.FromArgb(255, 180, 122, 248));
+        _historyGrid.Update(width, height, ["", "", "", "", ""]);
 
         var max = Math.Max(1024, values.SelectMany(point => new[] { point.Receive, point.Send }).Where(value => value.HasValue).Select(value => (double)value!.Value).DefaultIfEmpty(0).Max());
         HistoryScale.Text = $"Peak {FormatRate((long)Math.Min(max, long.MaxValue))}";
-        DrawSeries(values.Select(point => point.Receive).ToArray(), width, height, max, Color.FromArgb(255, 80, 219, 241));
-        DrawSeries(values.Select(point => point.Send).ToArray(), width, height, max, Color.FromArgb(255, 180, 122, 248));
+        _receiveSeries.Update(MapSeries(values.Select(point => point.Receive).ToArray(), width, height, max), width - 4.1);
+        _sendSeries.Update(MapSeries(values.Select(point => point.Send).ToArray(), width, height, max), width - 4.1);
     }
 
-    private void DrawSeries(long?[] values, double width, double height, double max, Color color)
+    private static Windows.Foundation.Point?[] MapSeries(long?[] values, double width, double height, double max)
     {
-        var segment = new List<Windows.Foundation.Point>();
+        var points = new Windows.Foundation.Point?[values.Length];
         for (var index = 0; index < values.Length; index++)
         {
-            if (values[index] is not { } value)
-            {
-                AddSegment();
-                continue;
-            }
+            if (values[index] is not { } value) continue;
 
             const double inset = 4;
             var x = inset + (width - inset * 2) * index / Math.Max(1, values.Length - 1);
             var y = inset + (height - inset * 2) * (1 - Math.Clamp(value / max, 0, 1));
-            if (!double.IsFinite(x) || !double.IsFinite(y)) { AddSegment(); continue; }
-            segment.Add(new Windows.Foundation.Point(x, y));
+            if (double.IsFinite(x) && double.IsFinite(y)) points[index] = new Windows.Foundation.Point(x, y);
         }
-        AddSegment();
-
-        void AddSegment()
-        {
-            if (segment.Count >= 2)
-            {
-                ChartLineRenderer.Add(HistoryChart, segment, color);
-            }
-            if (segment.Count > 0 && values.Length > 0 && segment[^1].X >= width - 4.1)
-            {
-                AddMarker(segment[^1], 12, Color.FromArgb(36, color.R, color.G, color.B));
-                AddMarker(segment[^1], 5, color);
-            }
-            else if (segment.Count == 1)
-            {
-                AddMarker(segment[0], 5, color);
-            }
-            segment.Clear();
-        }
-
-        void AddMarker(Windows.Foundation.Point point, double size, Color fill)
-        {
-            var marker = new Ellipse { Width = size, Height = size, Fill = new SolidColorBrush(fill) };
-            HistoryChart.Children.Add(marker);
-            Canvas.SetLeft(marker, point.X - size / 2);
-            Canvas.SetTop(marker, point.Y - size / 2);
-        }
+        return points;
     }
 
     private sealed record NetworkPoint(long? Receive, long? Send);

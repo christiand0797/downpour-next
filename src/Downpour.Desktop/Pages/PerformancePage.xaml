@@ -21,8 +21,15 @@
                     </Border>
                     <StackPanel Orientation="Horizontal" Spacing="7" HorizontalAlignment="Right">
                         <Button x:Name="RefreshButton" Content="↻  Refresh" Click="Refresh_Click" ToolTipService.ToolTip="Request a fresh local system snapshot." />
-                        <Button x:Name="PauseButton" Content="Ⅱ  Pause" Click="Pause_Click" ToolTipService.ToolTip="Pause or resume automatic three-second sampling." />
+                        <Button x:Name="PauseButton" Content="Ⅱ  Pause" Click="Pause_Click" ToolTipService.ToolTip="Pause or resume automatic sampling." />
                         <Button x:Name="ExportButton" Content="⇩  Export CSV" Click="Export_Click" ToolTipService.ToolTip="Save the current bounded CPU, memory, commit, network, and disk history as CSV." />
+                        <ComboBox x:Name="IntervalCombo" Width="110" SelectionChanged="IntervalCombo_SelectionChanged" ToolTipService.ToolTip="Sampling interval">
+                            <ComboBoxItem Content="1 sec" Tag="1" />
+                            <ComboBoxItem Content="3 sec" Tag="3" IsSelected="True" />
+                            <ComboBoxItem Content="5 sec" Tag="5" />
+                            <ComboBoxItem Content="10 sec" Tag="10" />
+                            <ComboBoxItem Content="30 sec" Tag="30" />
+                        </ComboBox>
                     </StackPanel>
                 </StackPanel>
             </Grid>
@@ -37,7 +44,10 @@
             <Grid ColumnSpacing="14">
                 <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                 <Border Padding="14" CornerRadius="12" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource DownpourStrokeBrush}" BorderThickness="1">
-                    <StackPanel Spacing="8"><TextBlock FontSize="11" FontWeight="SemiBold" CharacterSpacing="120" Foreground="#FF91AFC2" Text="LIVE INSTRUMENTATION" HorizontalAlignment="Center" /><Grid x:Name="GaugeHost" ColumnSpacing="4" RowSpacing="2"><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions><Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions></Grid><TextBlock x:Name="MemorySummary" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Physical memory totals are unavailable" HorizontalAlignment="Center" TextWrapping="Wrap" /><TextBlock x:Name="CommitSummary" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="System commit counters unavailable" HorizontalAlignment="Center" TextWrapping="Wrap" /><TextBlock x:Name="DiskIoSummary" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Physical disk throughput is warming up" HorizontalAlignment="Center" TextWrapping="Wrap" /><TextBlock FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="OS-volume space, physical-disk I/O, and adapter rates are live readings" HorizontalAlignment="Center" TextWrapping="Wrap" /></StackPanel>
+                    <StackPanel Spacing="8"><TextBlock FontSize="11" FontWeight="SemiBold" CharacterSpacing="120" Foreground="#FF91AFC2" Text="LIVE INSTRUMENTATION" HorizontalAlignment="Center" /><Grid x:Name="GaugeHost" ColumnSpacing="4" RowSpacing="2"><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions><Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions></Grid><TextBlock x:Name="MemorySummary" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Physical memory totals are unavailable" HorizontalAlignment="Center" TextWrapping="Wrap" /><TextBlock x:Name="CommitSummary" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="System commit counters unavailable" HorizontalAlignment="Center" TextWrapping="Wrap" /><TextBlock x:Name="PageFileSummary" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Pagefile counters unavailable" HorizontalAlignment="Center" TextWrapping="Wrap" /><TextBlock x:Name="DiskIoSummary" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Physical disk throughput is warming up" HorizontalAlignment="Center" TextWrapping="Wrap" /><TextBlock FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="OS-volume space, physical-disk I/O, and adapter rates are live readings" HorizontalAlignment="Center" TextWrapping="Wrap" /></StackPanel>
+                </Border>
+                <Border Padding="14" CornerRadius="12" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource DownpourStrokeBrush}" BorderThickness="1" Margin="0,16,0,0">
+                    <StackPanel Spacing="8"><TextBlock FontSize="11" FontWeight="SemiBold" CharacterSpacing="120" Foreground="#FF91AFC2" Text="PER-CORE CPU" HorizontalAlignment="Center" /><Grid x:Name="PerCoreGaugeHost" ColumnSpacing="4" RowSpacing="2"><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions><Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions></Grid><TextBlock x:Name="PerCoreCpuDetail" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Per-core CPU utilization from Windows performance counters" HorizontalAlignment="Center" TextWrapping="Wrap" /></StackPanel>
                 </Border>
                 <Border Grid.Column="1" Padding="16,13" CornerRadius="12" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource DownpourStrokeBrush}" BorderThickness="1" SizeChanged="HistoryHost_SizeChanged">
                     <Grid RowSpacing="8"><Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="150" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
@@ -50,6 +60,16 @@
                     </Grid>
                 </Border>
             </Grid>
+
+            <Border Padding="16,13" CornerRadius="12" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource DownpourStrokeBrush}" BorderThickness="1" SizeChanged="PerCoreHistoryHost_SizeChanged">
+                <Grid RowSpacing="8"><Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="150" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                    <Grid ColumnSpacing="16"><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                        <StackPanel Spacing="2"><TextBlock FontSize="14" FontWeight="SemiBold" Text="Per-core CPU history" /><TextBlock FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Two-minute window · up to 16 logical processors" /></StackPanel>
+                    </Grid>
+                    <Grid Grid.Row="1"><Canvas x:Name="PerCoreHistoryChart" IsHitTestVisible="False" AutomationProperties.Name="Per-core CPU utilization history from zero to one hundred percent, sampled every three seconds. Gaps mean data was unavailable." /><TextBlock x:Name="PerCoreHistoryEmpty" Text="Waiting for live readings" Foreground="{ThemeResource TextFillColorTertiaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" /></Grid>
+                    <Grid Grid.Row="2"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><TextBlock Text="Oldest" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" /><TextBlock Grid.Column="1" Text="Samples every 3 seconds · per-core utilization" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" HorizontalAlignment="Center" /><TextBlock Grid.Column="2" Text="Now" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" /></Grid>
+                </Grid>
+            </Border>
 
             <Grid ColumnSpacing="10">
                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
@@ -76,11 +96,52 @@
                 </Grid>
             </Border>
 
+            <Border Padding="16,13" CornerRadius="12" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource DownpourStrokeBrush}" BorderThickness="1" SizeChanged="PerDiskHistoryHost_SizeChanged">
+                <Grid RowSpacing="8"><Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="118" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                    <Grid ColumnSpacing="16"><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                        <StackPanel Spacing="2"><TextBlock FontSize="14" FontWeight="SemiBold" Text="Per-disk I/O history" /><TextBlock FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Two-minute window · individual physical disks" /></StackPanel>
+                    </Grid>
+                    <Grid Grid.Row="1"><Canvas x:Name="PerDiskHistoryChart" IsHitTestVisible="False" AutomationProperties.Name="Per-disk read and write throughput history. Missing readings remain gaps." /><TextBlock x:Name="PerDiskHistoryEmpty" Text="Waiting for live readings" Foreground="{ThemeResource TextFillColorTertiaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" /></Grid>
+                    <Grid Grid.Row="2"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><TextBlock Text="Oldest" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" /><TextBlock Grid.Column="1" Text="Samples every 3 seconds · per-disk I/O" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" HorizontalAlignment="Center" /><TextBlock Grid.Column="2" Text="Now" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" /></Grid>
+                </Grid>
+            </Border>
+
+            <Border Padding="14" CornerRadius="12" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource DownpourStrokeBrush}" BorderThickness="1">
+                <StackPanel Spacing="8">
+                    <TextBlock FontSize="11" FontWeight="SemiBold" CharacterSpacing="120" Foreground="#FF91AFC2" Text="PER-DISK I/O" HorizontalAlignment="Center" />
+                    <Grid x:Name="PerDiskGaugeHost" ColumnSpacing="4" RowSpacing="2">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                    </Grid>
+                    <TextBlock x:Name="PerDiskDetail" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Per-disk read/write throughput from Windows PhysicalDisk counters" HorizontalAlignment="Center" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+
             <Grid ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><StackPanel Spacing="3"><TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Text="MEMORY PRESSURE" /><TextBlock FontSize="19" FontWeight="SemiBold" Text="Largest working sets" /></StackPanel><TextBlock Grid.Column="1" x:Name="ProcessWindowLabel" VerticalAlignment="Bottom" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="TOP 10 · CURRENT SAMPLE" /></Grid>
-            <ListView ItemsSource="{x:Bind Processes}" SelectionMode="None" IsItemClickEnabled="False" Background="{StaticResource DownpourSurfaceBrush}" MaxHeight="440">
+            <Grid ColumnSpacing="8" Margin="0,8,0,0">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                <ComboBox x:Name="ProcessSortCombo" Width="160" SelectionChanged="ProcessSortCombo_SelectionChanged" ToolTipService.ToolTip="Sort process list by selected metric">
+                    <ComboBoxItem Content="Memory (Working Set)" Tag="0" />
+                    <ComboBoxItem Content="CPU %" Tag="1" />
+                    <ComboBoxItem Content="PID" Tag="2" />
+                    <ComboBoxItem Content="Name" Tag="3" />
+                </ComboBox>
+            </Grid>
+            <TextBox x:Name="ProcessFilterBox" PlaceholderText="Filter processes by name, PID, or detail..." TextChanged="ProcessFilterBox_TextChanged" Margin="0,8,0,0" />
+            <ListView x:Name="ProcessList" ItemsSource="{x:Bind Processes}" SelectionMode="Single" IsItemClickEnabled="False" Background="{StaticResource DownpourSurfaceBrush}" MaxHeight="440" SelectionChanged="ProcessList_SelectionChanged">
                 <ListView.ItemTemplate><DataTemplate><Grid Padding="12,9" ColumnSpacing="14"><Grid.ColumnDefinitions><ColumnDefinition Width="30" /><ColumnDefinition Width="2*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><TextBlock Text="&#xE9D9;" FontFamily="Segoe MDL2 Assets" Foreground="#FF5DCAE5" VerticalAlignment="Center" /><TextBlock Grid.Column="1" Text="{Binding Name}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" /><ProgressBar Grid.Column="2" Height="5" Minimum="0" Maximum="100" Value="{Binding MemoryShare}" VerticalAlignment="Center" Foreground="#FF38CFE7" /><TextBlock Grid.Column="3" Text="{Binding Detail}" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" /></Grid></DataTemplate></ListView.ItemTemplate>
                 <ListView.Footer><TextBlock Padding="12,10" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Per-process CPU is normalized to total logical-processor capacity and remains unknown on the first sample or if access is denied. Physical disk throughput uses Windows PhysicalDisk(_Total) counters and may remain unknown if those counters are unavailable. Pagefile, per-core CPU, GPU, clocks, temperature, fan speed, and power are not currently collected." TextWrapping="Wrap" /></ListView.Footer>
             </ListView>
+
+            <Border Padding="16,13" CornerRadius="12" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource DownpourStrokeBrush}" BorderThickness="1" SizeChanged="ProcessCpuHistoryHost_SizeChanged">
+                <Grid RowSpacing="8"><Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="150" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                    <Grid ColumnSpacing="16"><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                        <StackPanel Spacing="2"><TextBlock FontSize="14" FontWeight="SemiBold" Text="Process CPU history" /><TextBlock x:Name="ProcessCpuHistoryTitle" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Select a process from the list to view CPU history" /></StackPanel>
+                    </Grid>
+                    <Grid Grid.Row="1"><Canvas x:Name="ProcessCpuHistoryChart" IsHitTestVisible="False" AutomationProperties.Name="Selected process CPU utilization history from zero to one hundred percent, sampled every three seconds." /><TextBlock x:Name="ProcessCpuHistoryEmpty" Text="Select a process to view CPU history" Foreground="{ThemeResource TextFillColorTertiaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" /></Grid>
+                    <Grid Grid.Row="2"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><TextBlock Text="Oldest" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" /><TextBlock Grid.Column="1" Text="Samples every 3 seconds · per-process CPU" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" HorizontalAlignment="Center" /><TextBlock Grid.Column="2" Text="Now" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" /></Grid>
+                </Grid>
+            </Border>
         </StackPanel>
     </ScrollViewer>
 </Page>

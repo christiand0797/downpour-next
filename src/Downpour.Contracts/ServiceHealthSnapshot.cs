@@ -23,7 +23,16 @@ public sealed record SystemHealthSnapshot(
     ulong? MemoryCommitLimitBytes = null,
     ulong? MemoryCommittedBytes = null,
     long? DiskReadBytesPerSecond = null,
-    long? DiskWriteBytesPerSecond = null);
+    long? DiskWriteBytesPerSecond = null,
+    IReadOnlyList<double?>? PerCoreCpuPercent = null,
+    ulong? PageFileTotalBytes = null,
+    ulong? PageFileAvailableBytes = null,
+    IReadOnlyList<PhysicalDiskSnapshot>? PhysicalDisks = null);
+
+public sealed record PhysicalDiskSnapshot(
+    string InstanceName,
+    long? ReadBytesPerSecond,
+    long? WriteBytesPerSecond);
 
 public sealed record DriverInventoryEntry(string Name, string ImagePath, bool IsUnderSystemDrivers, bool IsInUserWritableLocation);
 
@@ -184,3 +193,78 @@ public static class SecurityEventCatalog
 }
 
 public sealed record SecurityEventRule(string Severity, string Technique, string Summary);
+
+public sealed record SysmonObservation(
+    string LogName,
+    string Provider,
+    int EventId,
+    long? RecordId,
+    DateTimeOffset? CreatedAtUtc,
+    string Severity,
+    string Technique,
+    string Summary,
+    int Occurrences = 1);
+
+public sealed record SysmonSnapshot(
+    int SchemaVersion,
+    DateTimeOffset CapturedAtUtc,
+    IReadOnlyList<SysmonObservation> Events,
+    int SourcesQueried,
+    IReadOnlyList<string> Warnings);
+
+public static class SysmonCatalog
+{
+    private static readonly IReadOnlyDictionary<(string Log, int Id), SysmonRule> Rules =
+        new Dictionary<(string Log, int Id), SysmonRule>(new LogEventKeyComparer())
+        {
+            [("Microsoft-Windows-Sysmon/Operational", 1)] = new("CRITICAL", "T1543.003", "Process creation"),
+            [("Microsoft-Windows-Sysmon/Operational", 2)] = new("HIGH", "T1543.003", "File creation time modification"),
+            [("Microsoft-Windows-Sysmon/Operational", 3)] = new("HIGH", "T1070.004", "Network connection"),
+            [("Microsoft-Windows-Sysmon/Operational", 4)] = new("MEDIUM", "T1105", "File creation"),
+            [("Microsoft-Windows-Sysmon/Operational", 5)] = new("MEDIUM", "T1070.004", "Process termination"),
+            [("Microsoft-Windows-Sysmon/Operational", 6)] = new("MEDIUM", "T1105", "Driver load"),
+            [("Microsoft-Windows-Sysmon/Operational", 7)] = new("HIGH", "T1105", "Image load"),
+            [("Microsoft-Windows-Sysmon/Operational", 8)] = new("HIGH", "T1055", "CreateRemoteThread"),
+            [("Microsoft-Windows-Sysmon/Operational", 9)] = new("CRITICAL", "T1106", "RawAccessRead"),
+            [("Microsoft-Windows-Sysmon/Operational", 10)] = new("HIGH", "T1106", "Process access"),
+            [("Microsoft-Windows-Sysmon/Operational", 11)] = new("HIGH", "T1106", "File creation"),
+            [("Microsoft-Windows-Sysmon/Operational", 12)] = new("HIGH", "T1070.004", "File creation time modification"),
+            [("Microsoft-Windows-Sysmon/Operational", 13)] = new("HIGH", "T1106", "Registry creation/deletion"),
+            [("Microsoft-Windows-Sysmon/Operational", 14)] = new("HIGH", "T1106", "Registry value modification"),
+            [("Microsoft-Windows-Sysmon/Operational", 15)] = new("HIGH", "T1106", "File stream creation"),
+            [("Microsoft-Windows-Sysmon/Operational", 16)] = new("HIGH", "T1106", "Named pipe creation"),
+            [("Microsoft-Windows-Sysmon/Operational", 17)] = new("HIGH", "T1106", "WMI event filter"),
+            [("Microsoft-Windows-Sysmon/Operational", 18)] = new("HIGH", "T1106", "WMI event consumer"),
+            [("Microsoft-Windows-Sysmon/Operational", 19)] = new("HIGH", "T1106", "WMI filter to consumer binding"),
+            [("Microsoft-Windows-Sysmon/Operational", 20)] = new("HIGH", "T1106", "WMI event filter"),
+            [("Microsoft-Windows-Sysmon/Operational", 21)] = new("MEDIUM", "T1106", "File deletion"),
+            [("Microsoft-Windows-Sysmon/Operational", 22)] = new("HIGH", "T1106", "File deletion"),
+            [("Microsoft-Windows-Sysmon/Operational", 23)] = new("HIGH", "T1106", "File deletion"),
+            [("Microsoft-Windows-Sysmon/Operational", 24)] = new("HIGH", "T1106", "File deletion"),
+            [("Microsoft-Windows-Sysmon/Operational", 25)] = new("MEDIUM", "T1106", "File deletion"),
+            [("Microsoft-Windows-Sysmon/Operational", 26)] = new("MEDIUM", "T1106", "File deletion"),
+            [("Microsoft-Windows-Sysmon/Operational", 255)] = new("HIGH", "T1027", "Sysmon configuration state change"),
+            [("Microsoft-Windows-Sysmon/Operational", 256)] = new("HIGH", "T1027", "Sysmon configuration state change"),
+            [("Microsoft-Windows-Sysmon/Operational", 257)] = new("HIGH", "T1027", "Sysmon configuration state change"),
+            [("Microsoft-Windows-Sysmon/Operational", 258)] = new("HIGH", "T1027", "Sysmon configuration state change"),
+        };
+
+    public static IReadOnlyCollection<int> WatchedEventIds => Rules.Keys.Select(key => key.Id).Distinct().Order().ToArray();
+
+    public static IReadOnlyCollection<(string LogName, int EventId)> WatchedEvents =>
+        Rules.Keys.OrderBy(key => key.Log, StringComparer.OrdinalIgnoreCase).ThenBy(key => key.Id).ToArray();
+
+    public static bool TryGetRule(string logName, int eventId, out SysmonRule rule) =>
+        Rules.TryGetValue((logName, eventId), out rule!);
+
+    private sealed class LogEventKeyComparer : IEqualityComparer<(string Log, int Id)>
+    {
+        public bool Equals((string Log, int Id) x, (string Log, int Id) y) =>
+            x.Id == y.Id && StringComparer.OrdinalIgnoreCase.Equals(x.Log, y.Log);
+
+        public int GetHashCode((string Log, int Id) value) =>
+            HashCode.Combine(StringComparer.OrdinalIgnoreCase.GetHashCode(value.Log), value.Id);
+    }
+}
+
+public sealed record SysmonRule(string Severity, string Technique, string Summary);

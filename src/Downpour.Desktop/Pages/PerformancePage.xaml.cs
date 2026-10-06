@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using Downpour.Contracts;
 using Downpour.Core;
 using Microsoft.UI;
 using Microsoft.UI.Dispatching;
@@ -25,13 +26,41 @@ public sealed partial class PerformancePage : Page
     private readonly CircularGauge _memoryGauge;
     private readonly CircularGauge _commitGauge;
     private readonly CircularGauge _diskGauge;
+    private readonly CircularGauge _pageFileGauge;
     private readonly CircularGauge _receiveGauge;
     private readonly CircularGauge _sendGauge;
     private readonly CircularGauge _diskReadGauge;
     private readonly CircularGauge _diskWriteGauge;
+    private readonly List<CircularGauge> _perCoreGauges = [];
     private bool _requestInFlight;
     private bool _samplingPaused;
     private bool _exportInFlight;
+    private ChartGrid? _performanceGrid;
+    private ChartGrid? _networkGrid;
+    private ChartGrid? _diskGrid;
+    private ChartGrid? _perCoreHistoryGrid;
+    private ChartGrid? _perDiskHistoryGrid;
+    private ChartLineRenderer? _cpuSeries;
+    private ChartLineRenderer? _memorySeries;
+    private ChartLineRenderer? _commitSeries;
+    private ChartLineRenderer? _receiveSeries;
+    private ChartLineRenderer? _sendSeries;
+    private ChartLineRenderer? _diskReadSeries;
+    private ChartLineRenderer? _diskWriteSeries;
+    private readonly List<ChartLineRenderer> _perCoreHistorySeries = [];
+    private readonly List<Queue<double?>> _perCoreHistory = [];
+    private readonly List<CircularGauge> _perDiskReadGauges = [];
+    private readonly List<CircularGauge> _perDiskWriteGauges = [];
+    private readonly List<Queue<double?>> _perDiskReadHistory = [];
+    private readonly List<Queue<double?>> _perDiskWriteHistory = [];
+    private readonly List<ChartLineRenderer> _perDiskReadHistorySeries = [];
+    private readonly List<ChartLineRenderer> _perDiskWriteHistorySeries = [];
+    private readonly Dictionary<int, Queue<double?>> _processCpuHistory = [];
+    private readonly Dictionary<int, string> _processNames = [];
+    private int _processSortMode = 0; // 0=Memory, 1=CPU, 2=PID, 3=Name
+    private int? _selectedProcessPid = null;
+    private ChartGrid? _processCpuHistoryGrid;
+    private ChartLineRenderer? _processCpuHistorySeries;
 
     public ObservableCollection<PerformanceProcessRow> Processes { get; } = [];
 
@@ -42,6 +71,7 @@ public sealed partial class PerformancePage : Page
         _memoryGauge = new CircularGauge("MEMORY", Color.FromArgb(255, 178, 121, 248));
         _commitGauge = new CircularGauge("COMMIT", Color.FromArgb(255, 255, 174, 92));
         _diskGauge = new CircularGauge("OS DISK", Color.FromArgb(255, 255, 176, 94));
+        _pageFileGauge = new CircularGauge("PAGEFILE", Color.FromArgb(255, 180, 122, 248));
         _receiveGauge = new CircularGauge("RX / s", Color.FromArgb(255, 80, 219, 241));
         _sendGauge = new CircularGauge("TX / s", Color.FromArgb(255, 180, 122, 248));
         _diskReadGauge = new CircularGauge("DISK READ", Color.FromArgb(255, 255, 174, 92));
@@ -49,11 +79,58 @@ public sealed partial class PerformancePage : Page
         AddGauge(_cpuGauge, 0, 0);
         AddGauge(_memoryGauge, 1, 0);
         AddGauge(_diskGauge, 2, 0);
-        AddGauge(_receiveGauge, 0, 1);
-        AddGauge(_sendGauge, 1, 1);
-        AddGauge(_commitGauge, 2, 1);
-        AddGauge(_diskReadGauge, 0, 2);
-        AddGauge(_diskWriteGauge, 1, 2);
+        AddGauge(_pageFileGauge, 0, 1);
+        AddGauge(_receiveGauge, 1, 1);
+        AddGauge(_sendGauge, 2, 1);
+        AddGauge(_commitGauge, 0, 2);
+        AddGauge(_diskReadGauge, 1, 2);
+        AddGauge(_diskWriteGauge, 2, 2);
+
+        // Initialize per-core CPU gauges (up to 16 cores)
+        var coreCount = Environment.ProcessorCount;
+        for (int i = 0; i < coreCount; i++)
+        {
+            var gauge = new CircularGauge($"CORE {i}", Color.FromArgb(255, 80, 219, 241));
+            _perCoreGauges.Add(gauge);
+        }
+
+        // Add per-core gauges to the grid (4x4 layout)
+        for (int i = 0; i < _perCoreGauges.Count; i++)
+        {
+            var col = i % 4;
+            var row = i / 4;
+            PerCoreGaugeHost.Children.Add(_perCoreGauges[i]);
+            Grid.SetColumn(_perCoreGauges[i], col);
+            Grid.SetRow(_perCoreGauges[i], row);
+        }
+
+        // Initialize per-core history queues and colors
+        var coreColors = new[]
+        {
+            Color.FromArgb(255, 80, 219, 241),   // cyan
+            Color.FromArgb(255, 180, 122, 248),  // purple
+            Color.FromArgb(255, 255, 174, 92),   // amber
+            Color.FromArgb(255, 80, 240, 120),   // green
+            Color.FromArgb(255, 255, 100, 100),  // red
+            Color.FromArgb(255, 100, 200, 255),  // blue
+            Color.FromArgb(255, 255, 150, 200),  // pink
+            Color.FromArgb(255, 150, 255, 150),  // light green
+            Color.FromArgb(255, 200, 150, 255),  // light purple
+            Color.FromArgb(255, 255, 200, 100),  // orange
+            Color.FromArgb(255, 100, 255, 255),  // light cyan
+            Color.FromArgb(255, 255, 255, 150),  // yellow
+            Color.FromArgb(255, 180, 180, 255),  // lavender
+            Color.FromArgb(255, 255, 180, 180),  // peach
+            Color.FromArgb(255, 180, 255, 200),  // mint
+            Color.FromArgb(255, 220, 220, 220),  // gray
+        };
+        for (int i = 0; i < _perCoreGauges.Count; i++)
+        {
+            _perCoreHistory.Add(new Queue<double?>());
+            var series = new ChartLineRenderer(PerCoreHistoryChart, coreColors[i % coreColors.Length]);
+            _perCoreHistorySeries.Add(series);
+        }
+
         CpuCount.Text = Environment.ProcessorCount.ToString("N0");
         CpuDetail.Text = "Logical processors · Windows reports topology only";
         _timer = DispatcherQueue.GetForCurrentThread().CreateTimer();
@@ -61,6 +138,7 @@ public sealed partial class PerformancePage : Page
         _timer.IsRepeating = true;
         _timer.Tick += async (_, _) => await RefreshAsync();
         _timer.Start();
+        ProcessSortCombo.SelectedIndex = 0; // Default to Memory sort
         _ = RefreshAsync();
     }
 
@@ -98,6 +176,61 @@ public sealed partial class PerformancePage : Page
         StatusDescription.Text = _samplingPaused
             ? "Automatic sampling is paused. Use Refresh for a one-time current snapshot."
             : "CPU, memory, commit, and adapter rates update every three seconds. Missing readings remain visible as graph gaps.";
+    }
+
+    private void ProcessSortCombo_SelectionChanged(object sender, Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs e)
+    {
+        if (ProcessSortCombo?.SelectedItem is not ComboBoxItem item) return;
+        if (!int.TryParse(item.Tag?.ToString(), out var mode)) return;
+        _processSortMode = mode;
+        _ = RefreshAsync(); // Re-render with new sort
+    }
+
+    private void ProcessFilterBox_TextChanged(object sender, Microsoft.UI.Xaml.Controls.TextChangedEventArgs e)
+    {
+        ApplyProcessFilter();
+    }
+
+    private void ApplyProcessFilter()
+    {
+        var query = ProcessFilterBox?.Text?.Trim() ?? "";
+        int visibleCount = 0;
+        foreach (var row in Processes)
+        {
+            bool matches = query.Length == 0 ||
+                row.Name.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                row.Detail.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                row.ProcessId.ToString().Contains(query, StringComparison.OrdinalIgnoreCase);
+            row.Visibility = matches ? Microsoft.UI.Xaml.Visibility.Visible : Microsoft.UI.Xaml.Visibility.Collapsed;
+            if (matches) visibleCount++;
+        }
+        if (ProcessWindowLabel is not null && query.Length > 0)
+        {
+            var totalRows = Processes.Count;
+            ProcessWindowLabel.Text = $"SHOWING {visibleCount:N0} OF {totalRows:N0} (FILTERED)";
+        }
+    }
+
+    private void ProcessList_SelectionChanged(object sender, Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs e)
+    {
+        if (ProcessList?.SelectedItem is not PerformanceProcessRow row) return;
+        _selectedProcessPid = row.ProcessId;
+        if (_processNames.TryGetValue(row.ProcessId, out var name))
+        {
+            ProcessCpuHistoryTitle.Text = $"{name} (PID {row.ProcessId}) · CPU history";
+        }
+        DrawProcessCpuHistory();
+    }
+
+    private void IntervalCombo_SelectionChanged(object sender, Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs e)
+    {
+        if (IntervalCombo?.SelectedItem is not ComboBoxItem item) return;
+        if (!int.TryParse(item.Tag?.ToString(), out var seconds)) return;
+        _timer.Interval = TimeSpan.FromSeconds(seconds);
+        PauseButton.Content = _samplingPaused ? "▶  Resume" : $"Ⅱ  Pause ({seconds}s)";
+        ToolTipService.SetToolTip(PauseButton, _samplingPaused
+            ? "Resume automatic sampling."
+            : $"Pause automatic {seconds}-second sampling.");
     }
 
     private async void Export_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -179,12 +312,14 @@ public sealed partial class PerformancePage : Page
                 _cpuGauge.SetValue(null);
                 _memoryGauge.SetValue(null);
                 _commitGauge.SetMetric(null, null);
+                _pageFileGauge.SetMetric(null, null);
                 _receiveGauge.SetMetric(null, null);
                 _sendGauge.SetMetric(null, null);
                 _diskReadGauge.SetMetric(null, null);
                 _diskWriteGauge.SetMetric(null, null);
                 MemorySummary.Text = "Physical memory totals are unavailable with the sensor offline";
                 CommitSummary.Text = "System commit counters unavailable";
+                PageFileSummary.Text = "Pagefile counters unavailable";
                 DiskIoSummary.Text = "Physical disk counters unavailable with the sensor offline";
                 ProcessCount.Text = "—";
                 ConnectionCount.Text = "—";
@@ -210,10 +345,47 @@ public sealed partial class PerformancePage : Page
             _cpuGauge.SetValue(snapshot.CpuPercent);
             _memoryGauge.SetValue(memoryPercent);
             _commitGauge.SetMetric(commitPercent, commitPercent is { } commitValue ? $"{commitValue:0}%" : null);
+
+            // Update per-core CPU gauges
+            if (snapshot.PerCoreCpuPercent is { } perCore)
+            {
+                for (int i = 0; i < _perCoreGauges.Count && i < perCore.Count; i++)
+                {
+                    _perCoreGauges[i].SetValue(perCore[i]);
+                }
+                // Clear any extra gauges if fewer cores reported
+                for (int i = perCore.Count; i < _perCoreGauges.Count; i++)
+                {
+                    _perCoreGauges[i].SetValue(null);
+                }
+                PerCoreCpuDetail.Text = $"Per-core CPU utilization from Windows performance counters ({perCore.Count} cores reported)";
+            }
+            else
+            {
+                foreach (var gauge in _perCoreGauges)
+                {
+                    gauge.SetValue(null);
+                }
+                PerCoreCpuDetail.Text = "Per-core CPU utilization from Windows performance counters (unavailable)";
+            }
+
             MemorySummary.Text = $"Physical memory · {FormatBytes(usedBytes)} used · {FormatBytes(snapshot.MemoryAvailableBytes)} available · {FormatBytes(snapshot.MemoryTotalBytes)} total";
             CommitSummary.Text = snapshot.MemoryCommittedBytes is { } committedBytes && snapshot.MemoryCommitLimitBytes is { } limitBytes
                 ? $"System commit · {FormatBytes(committedBytes)} committed of {FormatBytes(limitBytes)} limit"
                 : "System-wide commit limit unavailable";
+            // Pagefile
+            if (snapshot.PageFileTotalBytes is { } pageFileTotal && pageFileTotal > 0 && snapshot.PageFileAvailableBytes is { } pageFileAvail)
+            {
+                var pageFileUsed = pageFileTotal - Math.Min(pageFileTotal, pageFileAvail);
+                var pageFilePercent = pageFileUsed * 100d / pageFileTotal;
+                _pageFileGauge.SetMetric(Math.Clamp(pageFilePercent, 0, 100), $"{pageFilePercent:0}%");
+                PageFileSummary.Text = $"Pagefile · {FormatBytes(pageFileUsed)} used · {FormatBytes(pageFileAvail)} available · {FormatBytes(pageFileTotal)} total";
+            }
+            else
+            {
+                _pageFileGauge.SetMetric(null, null);
+                PageFileSummary.Text = "Pagefile counters unavailable";
+            }
             ProcessCount.Text = snapshot.ProcessCount.ToString("N0");
             UptimeValue.Text = FormatUptime(TimeSpan.FromMilliseconds(Math.Max(0, Environment.TickCount64)));
             StatusHeadline.Text = $"Live system sample · captured {captured:HH:mm:ss}";
@@ -231,17 +403,81 @@ public sealed partial class PerformancePage : Page
                 ? $"All physical disks · read {FormatRate(readBytes)} · write {FormatRate(writeBytes)}"
                 : "All physical disks · Windows counters are warming up or unavailable";
 
+            // Initialize per-disk gauges on first snapshot with physical disks
+            if (snapshot.PhysicalDisks is { } physicalDisks && physicalDisks.Count > 0 && _perDiskReadGauges.Count == 0)
+            {
+                InitializePerDiskGauges(physicalDisks);
+            }
+
+            // Update per-disk gauges
+            if (snapshot.PhysicalDisks is { } disks)
+            {
+                UpdatePerDiskGauges(disks);
+            }
+
             _history.Enqueue(new PerformanceSample(snapshot.CapturedAtUtc, snapshot.CpuPercent, memoryPercent, commitPercent,
                 snapshot.MemoryCommittedBytes, snapshot.MemoryCommitLimitBytes, receive, send, diskRead, diskWrite));
             TrimHistory();
+
+            // Record per-core CPU history
+            var perCoreHistoryData = snapshot.PerCoreCpuPercent;
+            if (perCoreHistoryData is { } coreValues)
+            {
+                for (int i = 0; i < _perCoreHistory.Count && i < coreValues.Count; i++)
+                {
+                    var queue = _perCoreHistory[i];
+                    queue.Enqueue(coreValues[i]);
+                    while (queue.Count > HistoryLimit) queue.Dequeue();
+                }
+            }
+            else
+            {
+                for (int i = 0; i < _perCoreHistory.Count; i++)
+                {
+                    var queue = _perCoreHistory[i];
+                    queue.Enqueue(null);
+                    while (queue.Count > HistoryLimit) queue.Dequeue();
+                }
+            }
+
             UpdateRateGauges(receive, send);
             UpdateDiskGauges(diskRead, diskWrite);
             DrawHistory();
             DrawNetworkHistory();
             DrawDiskHistory();
+            DrawPerCoreHistory();
+            DrawPerDiskHistory();
+            DrawProcessCpuHistory();
 
-            var rows = snapshot.TopProcesses.Take(10).ToArray();
-            var largest = rows.Length == 0 ? 0 : rows.Max(process => process.WorkingSetBytes);
+            var topProcesses = snapshot.TopProcesses.Take(50).ToArray(); // Get more for sorting
+            var largest = topProcesses.Length == 0 ? 0 : topProcesses.Max(process => process.WorkingSetBytes);
+
+            // Track process CPU history
+            foreach (var process in topProcesses)
+            {
+                if (!_processCpuHistory.ContainsKey(process.ProcessId))
+                {
+                    _processCpuHistory[process.ProcessId] = new Queue<double?>();
+                }
+                var queue = _processCpuHistory[process.ProcessId];
+                queue.Enqueue(process.CpuPercent);
+                while (queue.Count > HistoryLimit) queue.Dequeue();
+                _processNames[process.ProcessId] = process.Name;
+            }
+
+            // Sort processes based on selected mode
+            var sortedProcesses = _processSortMode switch
+            {
+                1 => topProcesses.OrderByDescending(p => p.CpuPercent ?? -1).ToArray(), // CPU
+                2 => topProcesses.OrderBy(p => p.ProcessId).ToArray(), // PID
+                3 => topProcesses.OrderBy(p => p.Name, StringComparer.OrdinalIgnoreCase).ToArray(), // Name
+                _ => topProcesses.OrderByDescending(p => p.WorkingSetBytes).ToArray(), // Memory (default)
+            };
+
+            var filterQuery = ProcessFilterBox?.Text?.Trim() ?? "";
+            var showAll = filterQuery.Length > 0;
+            var limit = showAll ? 50 : 10;
+            var rows = sortedProcesses.Take(limit).ToArray();
             var processRows = rows.Select(process => new PerformanceProcessRow(process.ProcessId, process.Name,
                 $"PID {process.ProcessId} · {FormatBytes(process.WorkingSetBytes)} · {process.ThreadCount:N0} threads · CPU {FormatCpu(process.CpuPercent)}",
                 largest > 0 ? Math.Clamp(process.WorkingSetBytes * 100d / largest, 0, 100) : 0)).ToArray();
@@ -251,7 +487,10 @@ public sealed partial class PerformancePage : Page
                 current.Detail = incoming.Detail;
                 current.MemoryShare = incoming.MemoryShare;
             });
-            ProcessWindowLabel.Text = $"TOP {rows.Length:N0} · {snapshot.TopProcesses.Count:N0} AVAILABLE";
+            var visibleCount = processRows.Count(r => r.Visibility == Microsoft.UI.Xaml.Visibility.Visible);
+            ProcessWindowLabel.Text = filterQuery.Length > 0
+                ? $"SHOWING {visibleCount:N0} OF {rows.Length:N0} (FILTERED) · {snapshot.TopProcesses.Count:N0} AVAILABLE"
+                : $"TOP {rows.Length:N0} · {snapshot.TopProcesses.Count:N0} AVAILABLE";
         }
         catch (Exception exception)
         {
@@ -262,12 +501,14 @@ public sealed partial class PerformancePage : Page
             _cpuGauge.SetValue(null);
             _memoryGauge.SetValue(null);
             _commitGauge.SetMetric(null, null);
+            _pageFileGauge.SetMetric(null, null);
             _receiveGauge.SetMetric(null, null);
             _sendGauge.SetMetric(null, null);
             _diskReadGauge.SetMetric(null, null);
             _diskWriteGauge.SetMetric(null, null);
             MemorySummary.Text = "Physical memory totals are unavailable in this sample";
             CommitSummary.Text = "System commit counters unavailable in this sample";
+            PageFileSummary.Text = "Pagefile counters unavailable";
             DiskIoSummary.Text = "Physical disk counters unavailable in this sample";
             ProcessCount.Text = "—";
             ConnectionCount.Text = "—";
@@ -374,34 +615,21 @@ public sealed partial class PerformancePage : Page
     private void DrawHistory()
     {
         if (HistoryChart is null) return;
-        HistoryChart.Children.Clear();
         var width = HistoryChart.ActualWidth;
         var height = HistoryChart.ActualHeight;
         if (!double.IsFinite(width) || !double.IsFinite(height) || width <= 1 || height <= 1) return;
         const double insetX = 38;
         const double insetY = 7;
-        for (var level = 0; level <= 4; level++)
-        {
-            var y = insetY + (height - insetY * 2) * level / 4;
-            HistoryChart.Children.Add(new Line
-            {
-                X1 = insetX, X2 = width - 8, Y1 = y, Y2 = y,
-                Stroke = new SolidColorBrush(Color.FromArgb(38, 190, 220, 242)), StrokeThickness = 1
-            });
-            var label = new TextBlock
-            {
-                Text = $"{100 - level * 25}%", Width = 31, Height = 14,
-                FontSize = 9, Foreground = new SolidColorBrush(Color.FromArgb(190, 164, 184, 199)),
-                HorizontalTextAlignment = Microsoft.UI.Xaml.TextAlignment.Right
-            };
-            HistoryChart.Children.Add(label);
-            Canvas.SetLeft(label, 0);
-            Canvas.SetTop(label, Math.Clamp(y - 7, 0, Math.Max(0, height - 14)));
-        }
+        _performanceGrid ??= new ChartGrid(HistoryChart, insetX, insetY, 31, 14, 9,
+            Color.FromArgb(38, 190, 220, 242), Color.FromArgb(190, 164, 184, 199));
+        _cpuSeries ??= new ChartLineRenderer(HistoryChart, Color.FromArgb(255, 80, 219, 241));
+        _memorySeries ??= new ChartLineRenderer(HistoryChart, Color.FromArgb(255, 180, 122, 248));
+        _commitSeries ??= new ChartLineRenderer(HistoryChart, Color.FromArgb(255, 255, 174, 92));
+        _performanceGrid.Update(width, height, ["100%", "75%", "50%", "25%", "0%"]);
         var samples = _history.ToArray();
-        DrawSeries(samples.Select(sample => sample.Cpu).ToArray(), width, height, insetX, insetY, Color.FromArgb(255, 80, 219, 241));
-        DrawSeries(samples.Select(sample => sample.Memory).ToArray(), width, height, insetX, insetY, Color.FromArgb(255, 180, 122, 248));
-        DrawSeries(samples.Select(sample => sample.CommitPercent).ToArray(), width, height, insetX, insetY, Color.FromArgb(255, 255, 174, 92));
+        _cpuSeries.Update(MapSeries(samples.Select(sample => sample.Cpu).ToArray(), width, height, insetX, insetY), width - 8.1);
+        _memorySeries.Update(MapSeries(samples.Select(sample => sample.Memory).ToArray(), width, height, insetX, insetY), width - 8.1);
+        _commitSeries.Update(MapSeries(samples.Select(sample => sample.CommitPercent).ToArray(), width, height, insetX, insetY), width - 8.1);
         ExportButton.IsEnabled = samples.Length > 0 && !_exportInFlight;
         HistoryEmpty.Visibility = samples.Any(sample => sample.Cpu.HasValue || sample.Memory.HasValue || sample.CommitPercent.HasValue)
             ? Microsoft.UI.Xaml.Visibility.Collapsed : Microsoft.UI.Xaml.Visibility.Visible;
@@ -410,7 +638,6 @@ public sealed partial class PerformancePage : Page
     private void DrawNetworkHistory()
     {
         if (NetworkHistoryChart is null) return;
-        NetworkHistoryChart.Children.Clear();
         var width = NetworkHistoryChart.ActualWidth;
         var height = NetworkHistoryChart.ActualHeight;
         if (!double.IsFinite(width) || !double.IsFinite(height) || width <= 1 || height <= 1) return;
@@ -420,24 +647,19 @@ public sealed partial class PerformancePage : Page
         var scale = Math.Max(1024, peak);
         const double insetX = 60;
         const double insetY = 6;
-        for (var level = 0; level <= 4; level++)
-        {
-            var y = insetY + (height - insetY * 2) * level / 4;
-            var guide = new Line { X1 = insetX, X2 = width - 8, Y1 = y, Y2 = y, Stroke = new SolidColorBrush(Color.FromArgb(36, 190, 220, 242)), StrokeThickness = 1 };
-            NetworkHistoryChart.Children.Add(guide);
-            var label = new TextBlock { Text = FormatRate((long)Math.Min(scale * (4 - level) / 4d, long.MaxValue)), Width = 54, Height = 12, FontSize = 8, Foreground = new SolidColorBrush(Color.FromArgb(170, 164, 184, 199)), HorizontalTextAlignment = Microsoft.UI.Xaml.TextAlignment.Right };
-            NetworkHistoryChart.Children.Add(label);
-            Canvas.SetLeft(label, 0);
-            Canvas.SetTop(label, Math.Clamp(y - 6, 0, Math.Max(0, height - 12)));
-        }
-        DrawRateSeries(NetworkHistoryChart, samples.Select(sample => sample.Receive).ToArray(), width, height, scale, insetX, insetY, Color.FromArgb(255, 80, 219, 241));
-        DrawRateSeries(NetworkHistoryChart, samples.Select(sample => sample.Send).ToArray(), width, height, scale, insetX, insetY, Color.FromArgb(255, 180, 122, 248));
+        _networkGrid ??= new ChartGrid(NetworkHistoryChart, insetX, insetY, 54, 12, 8,
+            Color.FromArgb(36, 190, 220, 242), Color.FromArgb(170, 164, 184, 199));
+        _receiveSeries ??= new ChartLineRenderer(NetworkHistoryChart, Color.FromArgb(255, 80, 219, 241));
+        _sendSeries ??= new ChartLineRenderer(NetworkHistoryChart, Color.FromArgb(255, 180, 122, 248));
+        _networkGrid.Update(width, height, Enumerable.Range(0, 5)
+            .Select(level => FormatRate((long)Math.Min(scale * (4 - level) / 4d, long.MaxValue))).ToArray());
+        _receiveSeries.Update(MapRateSeries(samples.Select(sample => sample.Receive).ToArray(), width, height, scale, insetX, insetY), width - 8.1);
+        _sendSeries.Update(MapRateSeries(samples.Select(sample => sample.Send).ToArray(), width, height, scale, insetX, insetY), width - 8.1);
     }
 
     private void DrawDiskHistory()
     {
         if (DiskHistoryChart is null) return;
-        DiskHistoryChart.Children.Clear();
         var width = DiskHistoryChart.ActualWidth;
         var height = DiskHistoryChart.ActualHeight;
         if (!double.IsFinite(width) || !double.IsFinite(height) || width <= 1 || height <= 1) return;
@@ -447,96 +669,290 @@ public sealed partial class PerformancePage : Page
         var scale = Math.Max(1024, peak);
         const double insetX = 60;
         const double insetY = 6;
-        for (var level = 0; level <= 4; level++)
-        {
-            var y = insetY + (height - insetY * 2) * level / 4;
-            DiskHistoryChart.Children.Add(new Line { X1 = insetX, X2 = width - 8, Y1 = y, Y2 = y, Stroke = new SolidColorBrush(Color.FromArgb(36, 190, 220, 242)), StrokeThickness = 1 });
-            var label = new TextBlock { Text = FormatRate((long)Math.Min(scale * (4 - level) / 4d, long.MaxValue)), Width = 54, Height = 12, FontSize = 8, Foreground = new SolidColorBrush(Color.FromArgb(170, 164, 184, 199)), HorizontalTextAlignment = Microsoft.UI.Xaml.TextAlignment.Right };
-            DiskHistoryChart.Children.Add(label);
-            Canvas.SetLeft(label, 0);
-            Canvas.SetTop(label, Math.Clamp(y - 6, 0, Math.Max(0, height - 12)));
-        }
-        DrawRateSeries(DiskHistoryChart, samples.Select(sample => sample.DiskRead).ToArray(), width, height, scale, insetX, insetY, Color.FromArgb(255, 255, 174, 92));
-        DrawRateSeries(DiskHistoryChart, samples.Select(sample => sample.DiskWrite).ToArray(), width, height, scale, insetX, insetY, Color.FromArgb(255, 180, 122, 248));
+        _diskGrid ??= new ChartGrid(DiskHistoryChart, insetX, insetY, 54, 12, 8,
+            Color.FromArgb(36, 190, 220, 242), Color.FromArgb(170, 164, 184, 199));
+        _diskReadSeries ??= new ChartLineRenderer(DiskHistoryChart, Color.FromArgb(255, 255, 174, 92));
+        _diskWriteSeries ??= new ChartLineRenderer(DiskHistoryChart, Color.FromArgb(255, 180, 122, 248));
+        _diskGrid.Update(width, height, Enumerable.Range(0, 5)
+            .Select(level => FormatRate((long)Math.Min(scale * (4 - level) / 4d, long.MaxValue))).ToArray());
+        _diskReadSeries.Update(MapRateSeries(samples.Select(sample => sample.DiskRead).ToArray(), width, height, scale, insetX, insetY), width - 8.1);
+        _diskWriteSeries.Update(MapRateSeries(samples.Select(sample => sample.DiskWrite).ToArray(), width, height, scale, insetX, insetY), width - 8.1);
     }
 
-    private void DrawRateSeries(Canvas chart, long?[] values, double width, double height, double scale, double insetX, double insetY, Color color)
+    private static Point?[] MapRateSeries(long?[] values, double width, double height, double scale, double insetX, double insetY)
     {
-        var segment = new List<Point>();
+        var points = new Point?[values.Length];
         for (var index = 0; index < values.Length; index++)
         {
-            if (values[index] is not { } value) { AddSegment(); continue; }
+            if (values[index] is not { } value) continue;
             var x = insetX + (width - insetX - 8) * index / Math.Max(1, values.Length - 1);
             var y = insetY + (height - insetY * 2) * (1 - Math.Clamp(value / scale, 0, 1));
-            if (!double.IsFinite(x) || !double.IsFinite(y)) { AddSegment(); continue; }
-            segment.Add(new Point(x, y));
+            if (double.IsFinite(x) && double.IsFinite(y)) points[index] = new Point(x, y);
         }
-        AddSegment();
+        return points;
+    }
 
-        void AddSegment()
+    private static Point?[] MapSeries(double?[] values, double width, double height, double insetX, double insetY)
+    {
+        var points = new Point?[values.Length];
+        for (var index = 0; index < values.Length; index++)
         {
-            if (segment.Count >= 2)
-            {
-                ChartLineRenderer.Add(chart, segment, color);
-            }
-            if (segment.Count > 0 && values.Length > 0 && segment[^1].X >= width - 8.1)
-            {
-                AddMarker(segment[^1], 11, Color.FromArgb(38, color.R, color.G, color.B));
-                AddMarker(segment[^1], 4, color);
-            }
-            else if (segment.Count == 1) AddMarker(segment[0], 4, color);
-            segment.Clear();
+            if (values[index] is not { } value) continue;
+            var x = insetX + (width - insetX - 8) * index / Math.Max(1, values.Length - 1);
+            var y = insetY + (height - insetY * 2) * (1 - Math.Clamp(value, 0, 100) / 100d);
+            if (double.IsFinite(x) && double.IsFinite(y)) points[index] = new Point(x, y);
         }
+        return points;
+    }
 
-        void AddMarker(Point point, double size, Color fill)
+    private void DrawPerCoreHistory()
+    {
+        if (PerCoreHistoryChart is null) return;
+        var width = PerCoreHistoryChart.ActualWidth;
+        var height = PerCoreHistoryChart.ActualHeight;
+        if (!double.IsFinite(width) || !double.IsFinite(height) || width <= 1 || height <= 1) return;
+
+        const double insetX = 38;
+        const double insetY = 7;
+        _perCoreHistoryGrid ??= new ChartGrid(PerCoreHistoryChart, insetX, insetY, 31, 14, 9,
+            Color.FromArgb(38, 190, 220, 242), Color.FromArgb(190, 164, 184, 199));
+        _perCoreHistoryGrid.Update(width, height, ["100%", "75%", "50%", "25%", "0%"]);
+
+        bool hasData = false;
+        for (int i = 0; i < _perCoreHistory.Count; i++)
         {
-            var marker = new Ellipse { Width = size, Height = size, Fill = new SolidColorBrush(fill) };
-            chart.Children.Add(marker);
-            Canvas.SetLeft(marker, point.X - size / 2);
-            Canvas.SetTop(marker, point.Y - size / 2);
+            var queue = _perCoreHistory[i];
+            var values = queue.ToArray();
+            var points = MapSeries(values, width, height, insetX, insetY);
+            if (i < _perCoreHistorySeries.Count)
+            {
+                _perCoreHistorySeries[i].Update(points, width - 8.1);
+            }
+            if (!hasData && values.Any(v => v.HasValue)) hasData = true;
+        }
+        if (PerCoreHistoryEmpty is not null)
+        {
+            PerCoreHistoryEmpty.Visibility = hasData
+                ? Microsoft.UI.Xaml.Visibility.Collapsed : Microsoft.UI.Xaml.Visibility.Visible;
         }
     }
 
-    private void DrawSeries(double?[] values, double width, double height, double insetX, double insetY, Color color)
+    private void PerCoreHistoryHost_SizeChanged(object sender, Microsoft.UI.Xaml.SizeChangedEventArgs e) => DrawPerCoreHistory();
+
+    private void InitializePerDiskGauges(IReadOnlyList<PhysicalDiskSnapshot> disks)
     {
-        var segment = new List<Point>();
+        if (PerDiskGaugeHost is null || PerDiskHistoryChart is null) return;
+
+        var diskColors = new[]
+        {
+            Color.FromArgb(255, 80, 219, 241),   // cyan
+            Color.FromArgb(255, 180, 122, 248),  // purple
+            Color.FromArgb(255, 255, 174, 92),   // amber
+            Color.FromArgb(255, 80, 240, 120),   // green
+            Color.FromArgb(255, 255, 100, 100),  // red
+            Color.FromArgb(255, 100, 200, 255),  // blue
+            Color.FromArgb(255, 255, 150, 200),  // pink
+            Color.FromArgb(255, 150, 255, 150),  // light green
+        };
+
+        int diskIndex = 0;
+        foreach (var disk in disks)
+        {
+            if (string.Equals(disk.InstanceName, "_Total", StringComparison.OrdinalIgnoreCase)) continue;
+
+            var readGauge = new CircularGauge($"{disk.InstanceName} RD", diskColors[diskIndex % diskColors.Length]);
+            var writeGauge = new CircularGauge($"{disk.InstanceName} WR", diskColors[diskIndex % diskColors.Length]);
+            _perDiskReadGauges.Add(readGauge);
+            _perDiskWriteGauges.Add(writeGauge);
+            _perDiskReadHistory.Add(new Queue<double?>());
+            _perDiskWriteHistory.Add(new Queue<double?>());
+
+            var col = (diskIndex * 2) % 4;
+            var row = (diskIndex * 2) / 4;
+            PerDiskGaugeHost.Children.Add(readGauge);
+            Grid.SetColumn(readGauge, col);
+            Grid.SetRow(readGauge, row);
+            PerDiskGaugeHost.Children.Add(writeGauge);
+            Grid.SetColumn(writeGauge, col + 1);
+            Grid.SetRow(writeGauge, row);
+
+            var readSeries = new ChartLineRenderer(PerDiskHistoryChart, diskColors[diskIndex % diskColors.Length]);
+            var writeSeries = new ChartLineRenderer(PerDiskHistoryChart, Color.FromArgb(255, 
+                (byte)Math.Min(255, diskColors[diskIndex % diskColors.Length].R + 50),
+                (byte)Math.Min(255, diskColors[diskIndex % diskColors.Length].G + 50),
+                (byte)Math.Min(255, diskColors[diskIndex % diskColors.Length].B + 50)));
+            _perDiskReadHistorySeries.Add(readSeries);
+            _perDiskWriteHistorySeries.Add(writeSeries);
+
+            diskIndex++;
+        }
+    }
+
+    private void UpdatePerDiskGauges(IReadOnlyList<PhysicalDiskSnapshot> disks)
+    {
+        int diskIndex = 0;
+        double? maxRead = null;
+        double? maxWrite = null;
+
+        // First pass: find max values for scaling
+        foreach (var disk in disks)
+        {
+            if (string.Equals(disk.InstanceName, "_Total", StringComparison.OrdinalIgnoreCase)) continue;
+            if (disk.ReadBytesPerSecond is { } r && (maxRead is null || r > maxRead)) maxRead = r;
+            if (disk.WriteBytesPerSecond is { } w && (maxWrite is null || w > maxWrite)) maxWrite = w;
+        }
+
+        // Second pass: update gauges and record history
+        foreach (var disk in disks)
+        {
+            if (string.Equals(disk.InstanceName, "_Total", StringComparison.OrdinalIgnoreCase)) continue;
+
+            if (diskIndex < _perDiskReadGauges.Count)
+            {
+                double? readPercent = null;
+                double? writePercent = null;
+
+                if (maxRead.HasValue && maxRead > 0 && disk.ReadBytesPerSecond is { } readVal)
+                {
+                    readPercent = Math.Clamp(readVal * 100d / maxRead.Value, 0, 100);
+                }
+                if (maxWrite.HasValue && maxWrite > 0 && disk.WriteBytesPerSecond is { } writeVal)
+                {
+                    writePercent = Math.Clamp(writeVal * 100d / maxWrite.Value, 0, 100);
+                }
+
+                var readDisplay = disk.ReadBytesPerSecond is { } r ? FormatRate(r) : null;
+                var writeDisplay = disk.WriteBytesPerSecond is { } w ? FormatRate(w) : null;
+
+                _perDiskReadGauges[diskIndex].SetMetric(readPercent, readDisplay);
+                _perDiskWriteGauges[diskIndex].SetMetric(writePercent, writeDisplay);
+
+                // Record history
+                _perDiskReadHistory[diskIndex].Enqueue(disk.ReadBytesPerSecond);
+                _perDiskWriteHistory[diskIndex].Enqueue(disk.WriteBytesPerSecond);
+                while (_perDiskReadHistory[diskIndex].Count > HistoryLimit) _perDiskReadHistory[diskIndex].Dequeue();
+                while (_perDiskWriteHistory[diskIndex].Count > HistoryLimit) _perDiskWriteHistory[diskIndex].Dequeue();
+            }
+            diskIndex++;
+        }
+
+        // Clear extra gauges if fewer disks reported
+        for (int i = diskIndex; i < _perDiskReadGauges.Count; i++)
+        {
+            _perDiskReadGauges[i].SetValue(null);
+            _perDiskWriteGauges[i].SetValue(null);
+        }
+
+        var activeDiskCount = disks.Count(d => !string.Equals(d.InstanceName, "_Total", StringComparison.OrdinalIgnoreCase));
+        PerDiskDetail.Text = activeDiskCount > 0
+            ? $"Per-disk read/write throughput from Windows PhysicalDisk counters ({activeDiskCount} disks)"
+            : "Per-disk I/O unavailable";
+    }
+
+    private void DrawPerDiskHistory()
+    {
+        if (PerDiskHistoryChart is null) return;
+        var width = PerDiskHistoryChart.ActualWidth;
+        var height = PerDiskHistoryChart.ActualHeight;
+        if (!double.IsFinite(width) || !double.IsFinite(height) || width <= 1 || height <= 1) return;
+
+        const double insetX = 60;
+        const double insetY = 6;
+
+        // Calculate peak for scaling
+        double peak = 0;
+        for (int i = 0; i < _perDiskReadHistory.Count; i++)
+        {
+            var readValues = _perDiskReadHistory[i].ToArray();
+            var writeValues = _perDiskWriteHistory[i].ToArray();
+            var readPeak = readValues.Where(v => v.HasValue).Select(v => v!.Value).DefaultIfEmpty(0).Max();
+            var writePeak = writeValues.Where(v => v.HasValue).Select(v => v!.Value).DefaultIfEmpty(0).Max();
+            peak = Math.Max(peak, Math.Max(readPeak, writePeak));
+        }
+        var scale = Math.Max(1024, peak);
+
+        _perDiskHistoryGrid ??= new ChartGrid(PerDiskHistoryChart, insetX, insetY, 54, 12, 8,
+            Color.FromArgb(36, 190, 220, 242), Color.FromArgb(170, 164, 184, 199));
+        _perDiskHistoryGrid.Update(width, height, Enumerable.Range(0, 5)
+            .Select(level => FormatRate((long)Math.Min(scale * (4 - level) / 4d, long.MaxValue))).ToArray());
+
+        bool hasData = false;
+        for (int i = 0; i < _perDiskReadHistory.Count; i++)
+        {
+            if (i < _perDiskReadHistorySeries.Count)
+            {
+                var readValues = _perDiskReadHistory[i].ToArray();
+                var readPoints = MapRateSeries(readValues, width, height, scale, insetX, insetY);
+                _perDiskReadHistorySeries[i].Update(readPoints, width - 8.1);
+                if (readValues.Any(v => v.HasValue)) hasData = true;
+            }
+            if (i < _perDiskWriteHistorySeries.Count)
+            {
+                var writeValues = _perDiskWriteHistory[i].ToArray();
+                var writePoints = MapRateSeries(writeValues, width, height, scale, insetX, insetY);
+                _perDiskWriteHistorySeries[i].Update(writePoints, width - 8.1);
+                if (writeValues.Any(v => v.HasValue)) hasData = true;
+            }
+        }
+        if (PerDiskHistoryEmpty is not null)
+        {
+            PerDiskHistoryEmpty.Visibility = hasData
+                ? Microsoft.UI.Xaml.Visibility.Collapsed : Microsoft.UI.Xaml.Visibility.Visible;
+        }
+    }
+
+    private void PerDiskHistoryHost_SizeChanged(object sender, Microsoft.UI.Xaml.SizeChangedEventArgs e) => DrawPerDiskHistory();
+
+    private void DrawProcessCpuHistory()
+    {
+        if (ProcessCpuHistoryChart is null) return;
+        var width = ProcessCpuHistoryChart.ActualWidth;
+        var height = ProcessCpuHistoryChart.ActualHeight;
+        if (!double.IsFinite(width) || !double.IsFinite(height) || width <= 1 || height <= 1) return;
+
+        const double insetX = 38;
+        const double insetY = 7;
+
+        if (!_selectedProcessPid.HasValue || !_processCpuHistory.TryGetValue(_selectedProcessPid.Value, out var queue))
+        {
+            if (ProcessCpuHistoryEmpty is not null)
+                ProcessCpuHistoryEmpty.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+            if (ProcessCpuHistoryTitle is not null)
+                ProcessCpuHistoryTitle.Text = "Select a process from the list to view CPU history";
+            return;
+        }
+
+        var values = queue.ToArray();
+        var points = MapSeries(values, width, height, insetX, insetY);
+
+        _processCpuHistoryGrid ??= new ChartGrid(ProcessCpuHistoryChart, insetX, insetY, 31, 14, 9,
+            Color.FromArgb(38, 190, 220, 242), Color.FromArgb(190, 164, 184, 199));
+        _processCpuHistoryGrid.Update(width, height, ["100%", "75%", "50%", "25%", "0%"]);
+
+        _processCpuHistorySeries ??= new ChartLineRenderer(ProcessCpuHistoryChart, Color.FromArgb(255, 255, 174, 92));
+        _processCpuHistorySeries.Update(points, width - 8.1);
+
+        bool hasData = values.Any(v => v.HasValue);
+        if (ProcessCpuHistoryEmpty is not null)
+        {
+            ProcessCpuHistoryEmpty.Visibility = hasData
+                ? Microsoft.UI.Xaml.Visibility.Collapsed : Microsoft.UI.Xaml.Visibility.Visible;
+        }
+    }
+
+    private void ProcessCpuHistoryHost_SizeChanged(object sender, Microsoft.UI.Xaml.SizeChangedEventArgs e) => DrawProcessCpuHistory();
+
+    private static Point?[] MapRateSeries(double?[] values, double width, double height, double scale, double insetX, double insetY)
+    {
+        var points = new Point?[values.Length];
         for (var index = 0; index < values.Length; index++)
         {
-            if (values[index] is not { } value) { AddSegment(); continue; }
+            if (values[index] is not { } value) continue;
             var x = insetX + (width - insetX - 8) * index / Math.Max(1, values.Length - 1);
-            var y = insetY + (height - insetY * 2) * (1 - Math.Clamp(value, 0, 100) / 100d);
-            if (!double.IsFinite(x) || !double.IsFinite(y)) { AddSegment(); continue; }
-            segment.Add(new Point(x, y));
+            var y = insetY + (height - insetY * 2) * (1 - Math.Clamp(value / scale, 0, 1));
+            if (double.IsFinite(x) && double.IsFinite(y)) points[index] = new Point(x, y);
         }
-        AddSegment();
-
-        void AddSegment()
-        {
-            if (segment.Count >= 2)
-            {
-                ChartLineRenderer.Add(HistoryChart, segment, color);
-            }
-            if (segment.Count > 0 && values.Length > 0 && segment[^1].X >= width - 8.1)
-            {
-                var point = segment[^1];
-                AddMarker(point, 12, Color.FromArgb(40, color.R, color.G, color.B));
-                AddMarker(point, 5, color);
-            }
-            else if (segment.Count == 1)
-            {
-                var point = segment[0];
-                AddMarker(point, 5, color);
-            }
-            segment.Clear();
-        }
-
-        void AddMarker(Point point, double size, Color fill)
-        {
-            var marker = new Ellipse { Width = size, Height = size, Fill = new SolidColorBrush(fill) };
-            HistoryChart.Children.Add(marker);
-            Canvas.SetLeft(marker, point.X - size / 2);
-            Canvas.SetTop(marker, point.Y - size / 2);
-        }
+        return points;
     }
 
     private sealed record PerformanceSample(DateTimeOffset CapturedAtUtc, double? Cpu, double? Memory, double? CommitPercent,
@@ -546,16 +962,18 @@ public sealed partial class PerformancePage : Page
 
 public sealed class PerformanceProcessRow : ObservableRow
 {
+    private int _processId;
     private string _name = "";
     private string _detail = "";
     private double _memoryShare;
+    private Microsoft.UI.Xaml.Visibility _visibility = Microsoft.UI.Xaml.Visibility.Visible;
 
     public PerformanceProcessRow() { }
     public PerformanceProcessRow(int processId, string name, string detail, double memoryShare) =>
         (ProcessId, _name, _detail, _memoryShare) = (processId, name, detail, memoryShare);
-
-    public int ProcessId { get; set; }
+    public int ProcessId { get => _processId; set => SetProperty(ref _processId, value); }
     public string Name { get => _name; set => SetProperty(ref _name, value); }
     public string Detail { get => _detail; set => SetProperty(ref _detail, value); }
     public double MemoryShare { get => _memoryShare; set => SetProperty(ref _memoryShare, value); }
+    public Microsoft.UI.Xaml.Visibility Visibility { get => _visibility; set => SetProperty(ref _visibility, value); }
 }

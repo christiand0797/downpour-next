@@ -21,6 +21,9 @@ public sealed partial class HomePage : Page
     private bool _updateRequestInFlight;
     private CircularGauge? _cpuGauge;
     private CircularGauge? _memoryGauge;
+    private ChartGrid? _resourceGrid;
+    private ChartLineRenderer? _cpuSeries;
+    private ChartLineRenderer? _memorySeries;
 
     public ObservableCollection<DashboardProcessRow> Processes { get; } = [];
 
@@ -210,93 +213,33 @@ public sealed partial class HomePage : Page
         var width = ResourceChart.ActualWidth;
         var height = ResourceChart.ActualHeight;
         if (!double.IsFinite(width) || !double.IsFinite(height) || width <= 1 || height <= 1) return;
-        ResourceChart.Children.Clear();
-
         const double insetX = 38;
         const double insetY = 7;
-        for (var index = 0; index <= 4; index++)
-        {
-            var y = insetY + (height - insetY * 2) * index / 4;
-            var axisLabel = new TextBlock
-            {
-                Text = $"{100 - index * 25}%",
-                Width = 31,
-                Height = 14,
-                FontSize = 9,
-                Foreground = new SolidColorBrush(Color.FromArgb(190, 164, 184, 199)),
-                HorizontalTextAlignment = Microsoft.UI.Xaml.TextAlignment.Right
-            };
-            ResourceChart.Children.Add(axisLabel);
-            Canvas.SetLeft(axisLabel, 0);
-            Canvas.SetTop(axisLabel, Math.Clamp(y - 7, 0, Math.Max(0, height - 14)));
-        }
-        for (var index = 0; index <= 4; index++)
-        {
-            var y = insetY + (height - insetY * 2) * index / 4;
-            var guide = new Line
-            {
-                X1 = insetX,
-                X2 = Math.Max(insetX, width - 8),
-                Y1 = y,
-                Y2 = y,
-                StrokeThickness = 1,
-                Stroke = new SolidColorBrush(Color.FromArgb(38, 190, 220, 242))
-            };
-            ResourceChart.Children.Add(guide);
-        }
+        _resourceGrid ??= new ChartGrid(ResourceChart, insetX, insetY, 31, 14, 9,
+            Color.FromArgb(38, 190, 220, 242), Color.FromArgb(190, 164, 184, 199));
+        _cpuSeries ??= new ChartLineRenderer(ResourceChart, Color.FromArgb(255, 80, 219, 241));
+        _memorySeries ??= new ChartLineRenderer(ResourceChart, Color.FromArgb(255, 180, 122, 248));
+        _resourceGrid.Update(width, height, ["100%", "75%", "50%", "25%", "0%"]);
 
         var samples = _history.ToArray();
-        if (samples.Length >= 2)
-        {
-            DrawSeries(samples, sample => sample.CpuPercent, Color.FromArgb(255, 80, 219, 241), width, height, insetX, insetY);
-            DrawSeries(samples, sample => sample.MemoryPercent, Color.FromArgb(255, 180, 122, 248), width, height, insetX, insetY);
-        }
+        _cpuSeries.Update(MapSeries(samples.Select(sample => sample.CpuPercent).ToArray(), width, height, insetX, insetY), width - 8.1);
+        _memorySeries.Update(MapSeries(samples.Select(sample => sample.MemoryPercent).ToArray(), width, height, insetX, insetY), width - 8.1);
         ChartEmpty.Visibility = samples.Any(sample => sample.CpuPercent.HasValue || sample.MemoryPercent.HasValue)
             ? Microsoft.UI.Xaml.Visibility.Collapsed
             : Microsoft.UI.Xaml.Visibility.Visible;
     }
 
-    private void DrawSeries(ResourceSample[] samples, Func<ResourceSample, double?> selector, Color color,
-        double width, double height, double insetX, double insetY)
+    private static Point?[] MapSeries(double?[] values, double width, double height, double insetX, double insetY)
     {
-        var segment = new List<Point>();
-        for (var index = 0; index < samples.Length; index++)
+        var points = new Point?[values.Length];
+        for (var index = 0; index < values.Length; index++)
         {
-            var value = selector(samples[index]);
-            if (value is null)
-            {
-                AddSegment();
-                continue;
-            }
-
-            var x = insetX + (width - insetX - 8) * index / Math.Max(1, samples.Length - 1);
-            var y = insetY + (height - insetY * 2) * (1 - Math.Clamp(value.Value, 0, 100) / 100d);
-            if (!double.IsFinite(x) || !double.IsFinite(y)) { AddSegment(); continue; }
-            segment.Add(new Point(x, y));
+            if (values[index] is not { } value) continue;
+            var x = insetX + (width - insetX - 8) * index / Math.Max(1, values.Length - 1);
+            var y = insetY + (height - insetY * 2) * (1 - Math.Clamp(value, 0, 100) / 100d);
+            if (double.IsFinite(x) && double.IsFinite(y)) points[index] = new Point(x, y);
         }
-        AddSegment();
-
-        void AddSegment()
-        {
-            if (segment.Count >= 2) ChartLineRenderer.Add(ResourceChart, segment, color);
-            // A single bright endpoint marks only the newest real sample; null gaps are
-            // never bridged or presented as current data.
-            if (segment.Count > 0 && segment[^1].X >= width - 8.1)
-            {
-                AddMarker(segment[^1], 12, Color.FromArgb(35, color.R, color.G, color.B));
-                AddMarker(segment[^1], 5, color);
-            }
-            else if (segment.Count == 1) AddMarker(segment[0], 5, color);
-            segment.Clear();
-        }
-
-        void AddMarker(Point point, double size, Color fill)
-        {
-            var marker = new Ellipse { Width = size, Height = size, Fill = new SolidColorBrush(fill) };
-            ResourceChart.Children.Add(marker);
-            Canvas.SetLeft(marker, point.X - size / 2);
-            Canvas.SetTop(marker, point.Y - size / 2);
-        }
+        return points;
     }
 }
 

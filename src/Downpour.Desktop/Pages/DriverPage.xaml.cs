@@ -96,25 +96,45 @@ public sealed partial class DriverPage : Page
     private void ApplyFilter()
     {
         var query = DriverSearch?.Text?.Trim() ?? "";
-        Drivers.Clear();
-        foreach (var row in _allDrivers.Where(row => query.Length == 0 ||
-                     row.Name.Contains(query, StringComparison.OrdinalIgnoreCase) ||
-                     row.ImagePath.Contains(query, StringComparison.OrdinalIgnoreCase)))
-        {
-            Drivers.Add(row);
-        }
+        var filtered = _allDrivers.Where(row => query.Length == 0 ||
+                row.Name.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                row.ImagePath.Contains(query, StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+        CollectionReconciler.Apply(Drivers, filtered, row => row.Key,
+            (current, incoming) => current.UpdateFrom(incoming));
     }
 }
 
-public sealed class DriverRow
+public sealed class DriverRow : ObservableRow
 {
+    private string _name = "";
+    private string _imagePath = "";
+    private string _locationStatus = "";
+    private SolidColorBrush _statusBrush = new(Color.FromArgb(255, 201, 192, 157));
+
     public DriverRow() { }
 
     public DriverRow(string name, string imagePath, string locationStatus, SolidColorBrush statusBrush) =>
-        (Name, ImagePath, LocationStatus, StatusBrush) = (name, imagePath, locationStatus, statusBrush);
+        (_name, _imagePath, _locationStatus, _statusBrush) = (name, imagePath, locationStatus, statusBrush);
 
-    public string Name { get; set; } = "";
-    public string ImagePath { get; set; } = "";
-    public string LocationStatus { get; set; } = "";
-    public SolidColorBrush StatusBrush { get; set; } = new(Color.FromArgb(255, 201, 192, 157));
+    public string Key => $"{Name.ToUpperInvariant()}\0{ImagePath.ToUpperInvariant()}";
+    public string Name { get => _name; private set => SetProperty(ref _name, value); }
+    public string ImagePath { get => _imagePath; private set => SetProperty(ref _imagePath, value); }
+    public string LocationStatus { get => _locationStatus; private set => SetProperty(ref _locationStatus, value); }
+    public SolidColorBrush StatusBrush { get => _statusBrush; private set => SetBrush(ref _statusBrush, value); }
+
+    public void UpdateFrom(DriverRow incoming)
+    {
+        Name = incoming.Name;
+        ImagePath = incoming.ImagePath;
+        LocationStatus = incoming.LocationStatus;
+        StatusBrush = incoming.StatusBrush;
+    }
+
+    private void SetBrush(ref SolidColorBrush current, SolidColorBrush incoming)
+    {
+        if (current.Color == incoming.Color) return;
+        current = incoming;
+        RaisePropertyChanged(nameof(StatusBrush));
+    }
 }

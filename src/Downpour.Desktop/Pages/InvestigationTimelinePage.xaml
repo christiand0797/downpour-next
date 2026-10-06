@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page x:Class="Downpour_Desktop.Pages.InvestigationTimelinePage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      mc:Ignorable="d">
+    <Grid Padding="24,20,24,30" RowSpacing="14">
+        <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
+        <Grid ColumnSpacing="16">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+            <StackPanel Spacing="4">
+                <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Foreground="#FF76DDF5" Text="DOWNPOUR  /  TRIAGE  /  INVESTIGATION TIMELINE" />
+                <TextBlock Style="{StaticResource TitleTextBlockStyle}" FontSize="30" Text="Investigation timeline" />
+                <TextBlock x:Name="FindingTitle" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Select a correlation finding from the Alerts page" TextWrapping="Wrap" />
+            </StackPanel>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                <Button Content="Refresh" Click="Refresh_Click" />
+            </StackPanel>
+        </Grid>
+
+        <Border Grid.Row="1" Padding="14,11" CornerRadius="10" Background="#B9081220" BorderBrush="#423EC5D8" BorderThickness="1">
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                <FontIcon Glyph="&#xE7BA;" FontSize="20" Foreground="#FF60DBEE" VerticalAlignment="Center" />
+                <StackPanel Grid.Column="1" Spacing="3">
+                    <TextBlock x:Name="StatusHeadline" FontWeight="SemiBold" Text="Loading investigation details" />
+                    <TextBlock x:Name="StatusDetail" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Showing all alerts related to this correlation finding within the retention window." TextWrapping="Wrap" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="2" RowSpacing="10">
+            <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
+            <Border Padding="12,9" CornerRadius="8" Background="#9B111A2A" BorderBrush="#333EC5D8" BorderThickness="1">
+                <StackPanel Spacing="3">
+                    <TextBlock FontSize="10" FontWeight="SemiBold" CharacterSpacing="65" Foreground="#FF76DDF5" Text="FINDING DETAILS" />
+                    <TextBlock x:Name="FindingDetail" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Waiting for finding data." TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+            <Grid Grid.Row="1" ColumnSpacing="10">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="2*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                <TextBox x:Name="FilterBox" PlaceholderText="Filter timeline events..." TextChanged="FilterBox_TextChanged" />
+            </Grid>
+            <ListView x:Name="TimelineList" Grid.Row="2" ItemsSource="{x:Bind TimelineEvents}" SelectionMode="None" IsItemClickEnabled="False" Background="{StaticResource DownpourSurfaceBrush}">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Padding="12,9" ColumnSpacing="10">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="160" /><ColumnDefinition Width="80" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                            <TextBlock Text="{Binding TimeLocal}" FontFamily="Consolas" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="1" Text="{Binding Severity}" Foreground="{Binding SeverityBrush}" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" />
+                            <StackPanel Grid.Column="2" Spacing="3" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding Title}" FontSize="12" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                <TextBlock Text="{Binding Evidence}" FontSize="10" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                <Button Content="View Alert" ToolTipService.ToolTip="Open this alert in the Alerts page" Tag="{Binding AlertId}" Click="ViewAlert_Click" Padding="7,5" FontSize="10" />
+                            </StackPanel>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+                <ListView.Footer>
+                    <TextBlock x:Name="EmptyState" Padding="14" FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="No timeline events found for this finding." TextWrapping="Wrap" />
+                </ListView.Footer>
+            </ListView>
+        </Grid>
+
+        <TextBlock Grid.Row="3" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="The investigation timeline shows all alerts from the local store that are linked to this correlation finding by Alert ID. It includes both the primary evidence alerts and any related alerts within the same time window." TextWrapping="Wrap" />
+    </Grid>
+</Page>

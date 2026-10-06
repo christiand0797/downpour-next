@@ -115,8 +115,8 @@ public sealed partial class ServicesPage : Page
                 row.ServiceName.Contains(query, StringComparison.OrdinalIgnoreCase) ||
                 row.DisplayName.Contains(query, StringComparison.OrdinalIgnoreCase))
             .ToArray();
-        Services.Clear();
-        foreach (var row in filtered) Services.Add(row);
+        CollectionReconciler.Apply(Services, filtered, row => row.Key,
+            (current, incoming) => current.UpdateFrom(incoming));
 
         EmptyState.Visibility = Services.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         if (collectionStatus is not null)
@@ -129,18 +129,48 @@ public sealed partial class ServicesPage : Page
     }
 }
 
-public sealed class WindowsServiceRow(
-    string serviceName,
-    string displayName,
-    string state,
-    string startupType,
-    SolidColorBrush stateBrush,
-    SolidColorBrush startupBrush)
+public sealed class WindowsServiceRow : ObservableRow
 {
-    public string ServiceName { get; } = serviceName;
-    public string DisplayName { get; } = displayName;
-    public string State { get; } = state;
-    public string StartupType { get; } = startupType;
-    public SolidColorBrush StateBrush { get; } = stateBrush;
-    public SolidColorBrush StartupBrush { get; } = startupBrush;
+    private string _serviceName;
+    private string _displayName;
+    private string _state;
+    private string _startupType;
+    private SolidColorBrush _stateBrush;
+    private SolidColorBrush _startupBrush;
+
+    public WindowsServiceRow(string serviceName, string displayName, string state, string startupType,
+        SolidColorBrush stateBrush, SolidColorBrush startupBrush)
+    {
+        _serviceName = serviceName;
+        _displayName = displayName;
+        _state = state;
+        _startupType = startupType;
+        _stateBrush = stateBrush;
+        _startupBrush = startupBrush;
+    }
+
+    public string Key => ServiceName.ToUpperInvariant();
+    public string ServiceName { get => _serviceName; private set => SetProperty(ref _serviceName, value); }
+    public string DisplayName { get => _displayName; private set => SetProperty(ref _displayName, value); }
+    public string State { get => _state; private set => SetProperty(ref _state, value); }
+    public string StartupType { get => _startupType; private set => SetProperty(ref _startupType, value); }
+    public SolidColorBrush StateBrush { get => _stateBrush; private set => SetBrush(ref _stateBrush, value, nameof(StateBrush)); }
+    public SolidColorBrush StartupBrush { get => _startupBrush; private set => SetBrush(ref _startupBrush, value, nameof(StartupBrush)); }
+
+    public void UpdateFrom(WindowsServiceRow incoming)
+    {
+        ServiceName = incoming.ServiceName;
+        DisplayName = incoming.DisplayName;
+        State = incoming.State;
+        StartupType = incoming.StartupType;
+        StateBrush = incoming.StateBrush;
+        StartupBrush = incoming.StartupBrush;
+    }
+
+    private void SetBrush(ref SolidColorBrush current, SolidColorBrush incoming, string propertyName)
+    {
+        if (current.Color == incoming.Color) return;
+        current = incoming;
+        RaisePropertyChanged(propertyName);
+    }
 }

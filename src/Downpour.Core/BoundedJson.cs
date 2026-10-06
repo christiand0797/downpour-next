@@ -4,8 +4,8 @@ using Newtonsoft.Json.Linq;
 
 namespace Downpour.Core;
 
-/// <summary>Bounded JSON parsing for UI-side contracts and untrusted local IPC.</summary>
-internal static class BoundedJson
+/// <summary>Bounded JSON parsing and serialization for UI-side contracts and untrusted local IPC.</summary>
+public static class BoundedJson
 {
     public const int MaximumPayloadBytes = 1_048_576;
     private static readonly JsonSerializerSettings Settings = new()
@@ -50,6 +50,17 @@ internal static class BoundedJson
         {
             throw new JsonReaderException("The JSON payload is not valid UTF-8.", exception);
         }
+    }
+
+    public static byte[] Serialize<T>(T value)
+    {
+        using var stream = new MemoryStream();
+        using var writer = new StreamWriter(stream, new UTF8Encoding(false, true), 1024, true);
+        using var jsonWriter = new JsonTextWriter(writer) { CloseOutput = false };
+        var serializer = JsonSerializer.Create(Settings);
+        serializer.Serialize(jsonWriter, value);
+        jsonWriter.Flush();
+        return stream.ToArray();
     }
 
     public static JToken ParseStrict(JsonTextReader reader)

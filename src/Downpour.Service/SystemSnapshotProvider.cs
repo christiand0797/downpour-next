@@ -1,10 +1,12 @@
 using System.Diagnostics;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
+using System.Management;
 using Downpour.Contracts;
 
 namespace Downpour.Service;
 
+/// <summary>Reads system-wide performance counters and process inventory.</summary>
 public sealed class SystemSnapshotProvider : IDisposable
 {
     public const int MaximumProcessRows = 512;
@@ -76,11 +78,15 @@ public sealed class SystemSnapshotProvider : IDisposable
 
         var memoryTotal = 0UL;
         var memoryAvailable = 0UL;
+        ulong? pageFileTotal = null;
+        ulong? pageFileAvailable = null;
         var memory = new MemoryStatus { Length = (uint)Marshal.SizeOf<MemoryStatus>() };
         if (GlobalMemoryStatusEx(ref memory))
         {
             memoryTotal = memory.TotalPhysical;
             memoryAvailable = memory.AvailablePhysical;
+            pageFileTotal = memory.TotalPageFile > 0 ? memory.TotalPageFile : null;
+            pageFileAvailable = memory.AvailablePageFile > 0 ? memory.AvailablePageFile : null;
         }
         else
         {
@@ -91,7 +97,7 @@ public sealed class SystemSnapshotProvider : IDisposable
         if (commitLimitBytes is null || committedBytes is null)
             warnings.Add("System-wide memory commit counters are unavailable.");
 
-        var (diskReadBytesPerSecond, diskWriteBytesPerSecond) = _diskCounters.Read();
+        var (diskReadBytesPerSecond, diskWriteBytesPerSecond, physicalDisks) = _diskCounters.Read();
         if (diskReadBytesPerSecond is null || diskWriteBytesPerSecond is null)
             warnings.Add("Physical disk throughput counters are warming up or unavailable.");
 
@@ -106,6 +112,7 @@ public sealed class SystemSnapshotProvider : IDisposable
         }
 
         double? cpuPercent = ReadCpuPercent();
+        var perCoreCpu = ReadPerCoreCpuPercent();
         return new SystemHealthSnapshot(
             1,
             DateTimeOffset.UtcNow,
@@ -119,7 +126,11 @@ public sealed class SystemSnapshotProvider : IDisposable
             commitLimitBytes,
             committedBytes,
             diskReadBytesPerSecond,
-            diskWriteBytesPerSecond);
+            diskWriteBytesPerSecond,
+            perCoreCpu,
+            pageFileTotal,
+            pageFileAvailable,
+            physicalDisks);
     }
 
     public void Dispose() => _diskCounters.Dispose();
@@ -179,6 +190,27 @@ public sealed class SystemSnapshotProvider : IDisposable
     }
 
     private sealed record ProcessCpuSample(long CpuTimeTicks, long StartTimeUtcTicks, long CapturedTimestamp);
+
+    private static double?[]? ReadPerCoreCpuPercent()
+    {
+        try
+        {
+            using var searcher = new ManagementObjectSearcher("SELECT PercentProcessorTime FROM Win32_PerfFormattedData_PerfOS_Processor WHERE Name != '_Total'");
+            var results = new List<double?>();
+            foreach (ManagementObject obj in searcher.Get())
+            {
+                if (obj["PercentProcessorTime"] is not null && double.TryParse(obj["PercentProcessorTime"].ToString(), out var value))
+                {
+                    results.Add(Math.Round(value, 1));
+                }
+            }
+            return results.Count > 0 ? results.ToArray() : null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
 
     private static ulong ToUInt64(SystemFileTime value) => ((ulong)value.High << 32) | value.Low;
 

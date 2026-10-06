@@ -23,6 +23,7 @@ public sealed partial class AlertsPage : Page
     private bool _exportInFlight;
 
     public ObservableCollection<SecurityAlertRow> Alerts { get; } = [];
+    public ObservableCollection<CorrelationFindingRow> CorrelationFindings { get; } = [];
 
     public AlertsPage()
     {
@@ -105,7 +106,7 @@ public sealed partial class AlertsPage : Page
                 StatusDetail.Text = $"{App.SensorServiceStatusHint} No cached or substituted alert data is shown.";
                 _allAlerts = [];
                 _currentSnapshot = null;
-                CorrelationSummary.Text = "Unavailable until the local alert sensor returns a validated snapshot.";
+                CorrelationFindings.Clear();
                 ExportButton.IsEnabled = false;
                 AlertCount.Text = "ALERT STORE OFFLINE";
                 ApplyFilters();
@@ -117,11 +118,13 @@ public sealed partial class AlertsPage : Page
             ExportButton.IsEnabled = !_exportInFlight;
             _allAlerts = snapshot.Alerts;
             var correlated = AlertCorrelationEngine.Correlate(snapshot);
-            CorrelationSummary.Text = correlated.Count == 0
-                ? "No supported cross-channel patterns in the latest snapshot. Correlation uses only fixed event IDs and event timestamps."
-                : string.Join(Environment.NewLine, correlated.Take(3).Select(finding =>
-                    $"{finding.Severity} · {finding.Title} · {finding.EvidenceSummary}")) +
-                  (correlated.Count > 3 ? $"{Environment.NewLine}And {correlated.Count - 3:N0} more in the investigation export." : string.Empty);
+
+            CorrelationFindings.Clear();
+            foreach (var finding in correlated)
+            {
+                CorrelationFindings.Add(new CorrelationFindingRow(finding));
+            }
+
             var openCount = snapshot.Alerts.Count(alert => alert.State == "Open");
             StatusHeadline.Text = snapshot.Warnings.Count == 0
                 ? "Local security alert monitor connected"
@@ -227,6 +230,41 @@ public sealed partial class AlertsPage : Page
             alert.Occurrences == 1 ? "1 occurrence" : $"{alert.Occurrences:N0} occurrences",
             alert.State == "Open", alert.State == "Open", alert.State != "Open");
     }
+
+    private void CorrelationList_ViewTimeline_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: string correlationId }) return;
+        Frame.Navigate(typeof(InvestigationTimelinePage), correlationId);
+    }
+}
+
+public sealed class CorrelationFindingRow : ObservableRow
+{
+    private CorrelatedAlertFinding _finding;
+    private string _severity;
+    private SolidColorBrush _severityBrush;
+    private string _summary;
+
+    public CorrelationFindingRow(CorrelatedAlertFinding finding)
+    {
+        _finding = finding;
+        _severity = finding.Severity;
+        _severityBrush = finding.Severity switch
+        {
+            "CRITICAL" => new SolidColorBrush(Color.FromArgb(255, 255, 86, 121)),
+            "HIGH" => new SolidColorBrush(Color.FromArgb(255, 255, 167, 82)),
+            "MEDIUM" => new SolidColorBrush(Color.FromArgb(255, 255, 218, 119)),
+            _ => new SolidColorBrush(Color.FromArgb(255, 86, 210, 235))
+        };
+        _summary = finding.EvidenceSummary;
+    }
+
+    public CorrelatedAlertFinding Finding => _finding;
+    public string Title => _finding.Title;
+    public string Summary => _summary;
+    public string Severity => _severity;
+    public SolidColorBrush SeverityBrush => _severityBrush;
+    public string CorrelationId => _finding.CorrelationId;
 }
 
 public sealed class SecurityAlertRow(

@@ -17,8 +17,8 @@ public sealed partial class MainWindow : Window
     private readonly Dictionary<string, NavigationViewItem> _routeItems = new(StringComparer.OrdinalIgnoreCase);
     private readonly List<StormDrop> _rainDrops = [];
     private readonly List<Ellipse> _stars = [];
-    private readonly List<Polyline> _auroraBands = [];
-    private readonly List<Polyline> _lightningBolts = [];
+    private readonly List<List<Line>> _auroraBands = [];
+    private readonly List<Line> _lightningBolts = [];
     private readonly Random _random = new();
     private Microsoft.UI.Dispatching.DispatcherQueueTimer? _rainTimer;
     private Microsoft.UI.Dispatching.DispatcherQueueTimer? _starTimer;
@@ -194,36 +194,53 @@ public sealed partial class MainWindow : Window
         };
         for (var band = 0; band < colors.Length; band++)
         {
-            var polyline = new Polyline
+            var segments = new List<Line>(18);
+            var brush = new SolidColorBrush(colors[band]);
+            for (var segment = 0; segment < 18; segment++)
             {
-                Stroke = new SolidColorBrush(colors[band]),
-                StrokeThickness = 12 + band * 3,
-                StrokeLineJoin = PenLineJoin.Round,
-                Opacity = 0.035
-            };
-            _auroraBands.Add(polyline);
-            StormCanvas.Children.Add(polyline);
+                var line = new Line
+                {
+                    Stroke = brush,
+                    StrokeThickness = 12 + band * 3,
+                    StrokeStartLineCap = PenLineCap.Round,
+                    StrokeEndLineCap = PenLineCap.Round,
+                    Opacity = 0.035
+                };
+                segments.Add(line);
+                StormCanvas.Children.Add(line);
+            }
+            _auroraBands.Add(segments);
         }
         AnimateAurora(width, height);
     }
 
     private void AnimateAurora(double width, double? knownHeight = null)
     {
-        if (_auroraBands.Count == 0 || width <= 0) return;
+        if (_auroraBands.Count == 0 || !double.IsFinite(width) || width <= 0) return;
         var height = knownHeight ?? ShellRoot.ActualHeight;
+        if (!double.IsFinite(height) || height <= 0) return;
         _auroraPhase += 0.012;
         for (var band = 0; band < _auroraBands.Count; band++)
         {
-            var points = new PointCollection();
-            for (var point = 0; point <= 18; point++)
+            var segments = _auroraBands[band];
+            var previousX = 0d;
+            var previousY = height * (0.12 + band * 0.045)
+                + Math.Sin(_auroraPhase + band * 1.4) * (11 + band * 2);
+            for (var segment = 0; segment < segments.Count; segment++)
             {
-                var x = width * point / 18d;
+                var point = segment + 1;
+                var x = width * point / segments.Count;
                 var wave = Math.Sin(_auroraPhase + point * 0.43 + band * 1.4) * (11 + band * 2);
                 var y = height * (0.12 + band * 0.045) + wave;
-                points.Add(new Windows.Foundation.Point(x, y));
+                segments[segment].X1 = previousX;
+                segments[segment].Y1 = previousY;
+                segments[segment].X2 = x;
+                segments[segment].Y2 = y;
+                previousX = x;
+                previousY = y;
             }
-            _auroraBands[band].Points = points;
-            _auroraBands[band].Opacity = 0.035 + (Math.Sin(_auroraPhase * 0.7 + band) + 1) * 0.04;
+            var opacity = 0.035 + (Math.Sin(_auroraPhase * 0.7 + band) + 1) * 0.04;
+            foreach (var segment in segments) segment.Opacity = opacity;
         }
     }
 
@@ -234,7 +251,7 @@ public sealed partial class MainWindow : Window
         var startY = height * 0.035;
         var endY = height * (_random.NextDouble() * 0.08 + 0.19);
         var currentX = startX;
-        var points = new PointCollection { new(currentX, startY) };
+        var points = new List<Windows.Foundation.Point> { new(currentX, startY) };
         for (var index = 0; index < 9; index++)
         {
             currentX += (_random.NextDouble() - 0.5) * width * 0.035;
@@ -244,7 +261,7 @@ public sealed partial class MainWindow : Window
 
         if (_random.NextDouble() < 0.72)
         {
-            var branch = new PointCollection();
+            var branch = new List<Windows.Foundation.Point>();
             var startAt = Math.Clamp(_random.Next(3, points.Count - 1), 0, points.Count - 1);
             var branchStart = points[startAt];
             branch.Add(branchStart);
@@ -253,18 +270,28 @@ public sealed partial class MainWindow : Window
             AddBolt(branch, 1.3, 0.7);
         }
 
-        void AddBolt(PointCollection boltPoints, double thickness, double opacity)
+        void AddBolt(IReadOnlyList<Windows.Foundation.Point> boltPoints, double thickness, double opacity)
         {
-            var bolt = new Polyline
+            var brush = new SolidColorBrush(Color.FromArgb(255, 206, 241, 255));
+            for (var index = 1; index < boltPoints.Count; index++)
             {
-                Points = boltPoints,
-                Stroke = new SolidColorBrush(Color.FromArgb(255, 206, 241, 255)),
-                StrokeThickness = thickness,
-                StrokeLineJoin = PenLineJoin.Round,
-                Opacity = opacity
-            };
-            _lightningBolts.Add(bolt);
-            StormCanvas.Children.Add(bolt);
+                var start = boltPoints[index - 1];
+                var end = boltPoints[index];
+                var bolt = new Line
+                {
+                    X1 = start.X,
+                    Y1 = start.Y,
+                    X2 = end.X,
+                    Y2 = end.Y,
+                    Stroke = brush,
+                    StrokeThickness = thickness,
+                    StrokeStartLineCap = PenLineCap.Round,
+                    StrokeEndLineCap = PenLineCap.Round,
+                    Opacity = opacity
+                };
+                _lightningBolts.Add(bolt);
+                StormCanvas.Children.Add(bolt);
+            }
         }
     }
 
@@ -378,6 +405,8 @@ public sealed partial class MainWindow : Window
             NavFrame.Navigate(typeof(ProcessPage));
         else if (capability.RouteId.Equals("drivers", StringComparison.OrdinalIgnoreCase))
             NavFrame.Navigate(typeof(DriverPage));
+        else if (capability.RouteId.Equals("driver-packages", StringComparison.OrdinalIgnoreCase))
+            NavFrame.Navigate(typeof(DriverPackagesPage));
         else if (capability.RouteId.Equals("services", StringComparison.OrdinalIgnoreCase))
             NavFrame.Navigate(typeof(ServicesPage));
         else if (capability.RouteId.Equals("network", StringComparison.OrdinalIgnoreCase))
@@ -394,6 +423,8 @@ public sealed partial class MainWindow : Window
             NavFrame.Navigate(typeof(VulnerabilitiesPage));
         else if (capability.RouteId.Equals("scanner", StringComparison.OrdinalIgnoreCase))
             NavFrame.Navigate(typeof(ScannerPage));
+        else if (capability.RouteId.Equals("threat-intel", StringComparison.OrdinalIgnoreCase))
+            NavFrame.Navigate(typeof(ThreatIntelligencePage));
         else if (capability.RouteId.Equals("settings", StringComparison.OrdinalIgnoreCase))
             NavFrame.Navigate(typeof(SettingsPage));
         else
@@ -434,6 +465,7 @@ public sealed partial class MainWindow : Window
             : args.Content is HomePage ? "dashboard"
             : args.Content is ProcessPage ? "processes"
             : args.Content is DriverPage ? "drivers"
+            : args.Content is DriverPackagesPage ? "driver-packages"
             : args.Content is ServicesPage ? "services"
             : args.Content is NetworkPage ? "network"
             : args.Content is PerformancePage ? "performance"
@@ -442,6 +474,7 @@ public sealed partial class MainWindow : Window
         if (routeId is null && args.Content is IntelPage) routeId = "intel";
         if (routeId is null && args.Content is VulnerabilitiesPage) routeId = "vulnerabilities";
         if (routeId is null && args.Content is ScannerPage) routeId = "scanner";
+        if (routeId is null && args.Content is ThreatIntelligencePage) routeId = "threat-intel";
         if (routeId is null && args.Content is SettingsPage) routeId = "settings";
 
         if (routeId is null || !_routeItems.TryGetValue(routeId, out var item)) return;

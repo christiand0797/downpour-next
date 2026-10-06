@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
 using Downpour.Contracts;
 using Downpour.Core;
 using Microsoft.UI.Dispatching;
@@ -102,37 +103,98 @@ public sealed partial class SecurityEventsPage : Page
             .OrderByDescending(item => item.CreatedAtUtc)
             .ToArray();
 
-        Events.Clear();
-        foreach (var item in results)
-        {
-            var color = item.Severity switch
-            {
-                "CRITICAL" => Color.FromArgb(255, 255, 86, 121),
-                "HIGH" => Color.FromArgb(255, 255, 167, 82),
-                "MEDIUM" => Color.FromArgb(255, 255, 218, 119),
-                "LOW" => Color.FromArgb(255, 86, 210, 235),
-                _ => Color.FromArgb(255, 170, 183, 199)
-            };
-            Events.Add(new SecurityEventRow(
-                item.CreatedAtUtc?.ToLocalTime().ToString("MMM d HH:mm:ss") ?? "Time unavailable",
-                item.Severity,
-                new SolidColorBrush(color),
-                item.Summary,
-                $"{item.LogName} · {item.Provider} · record {item.RecordId?.ToString() ?? "unknown"}",
-                $"{item.EventId} · {item.Technique}"));
-        }
+        CollectionReconciler.Apply(Events, results.Select(ToRow).ToArray(), row => row.Key,
+            (current, incoming) => current.UpdateFrom(incoming));
 
         EventCount.Text = $"{Events.Count:N0} / {_observations.Count:N0} events";
         EmptyState.Visibility = Events.Count == 0 ? Microsoft.UI.Xaml.Visibility.Visible : Microsoft.UI.Xaml.Visibility.Collapsed;
     }
+
+    private static SecurityEventRow ToRow(SecurityEventObservation item)
+    {
+        var color = item.Severity switch
+        {
+            "CRITICAL" => Color.FromArgb(255, 255, 86, 121),
+            "HIGH" => Color.FromArgb(255, 255, 167, 82),
+            "MEDIUM" => Color.FromArgb(255, 255, 218, 119),
+            "LOW" => Color.FromArgb(255, 86, 210, 235),
+            _ => Color.FromArgb(255, 170, 183, 199)
+        };
+        var key = GetEventKey(item);
+        return new SecurityEventRow(key,
+            item.CreatedAtUtc?.ToLocalTime().ToString("MMM d HH:mm:ss") ?? "Time unavailable",
+            item.Severity,
+            new SolidColorBrush(color),
+            item.Summary,
+            $"{item.LogName} · {item.Provider} · record {item.RecordId?.ToString() ?? "unknown"}",
+            $"{item.EventId} · {item.Technique}");
+    }
+
+    private static string GetEventKey(SecurityEventObservation item)
+    {
+        if (item.EventId == 4625 && item.Occurrences > 1)
+        {
+            // The provider emits one rolling five-minute aggregate. Its latest record and timestamp
+            // change as failures arrive, but it remains the same summary row between refreshes.
+            return $"{item.LogName}\0{item.Provider}\0{item.EventId.ToString(CultureInfo.InvariantCulture)}\0failed-logon-burst";
+        }
+
+        if (item.RecordId is { } recordId)
+        {
+            return $"{item.LogName}\0{recordId.ToString(CultureInfo.InvariantCulture)}";
+        }
+
+        // When Windows does not provide a record id, use the immutable observation fields.
+        return string.Join('\0', item.LogName, item.Provider,
+            item.EventId.ToString(CultureInfo.InvariantCulture),
+            item.CreatedAtUtc?.UtcDateTime.Ticks.ToString(CultureInfo.InvariantCulture) ?? "time-unavailable",
+            item.Severity, item.Technique, item.Summary);
+    }
 }
 
-public sealed class SecurityEventRow(string time, string severity, SolidColorBrush severityBrush, string summary, string source, string technique)
+public sealed class SecurityEventRow : ObservableRow
 {
-    public string Time { get; } = time;
-    public string Severity { get; } = severity;
-    public SolidColorBrush SeverityBrush { get; } = severityBrush;
-    public string Summary { get; } = summary;
-    public string Source { get; } = source;
-    public string Technique { get; } = technique;
+    private string _time;
+    private string _severity;
+    private SolidColorBrush _severityBrush;
+    private string _summary;
+    private string _source;
+    private string _technique;
+
+    public SecurityEventRow(string key, string time, string severity, SolidColorBrush severityBrush,
+        string summary, string source, string technique)
+    {
+        Key = key;
+        _time = time;
+        _severity = severity;
+        _severityBrush = severityBrush;
+        _summary = summary;
+        _source = source;
+        _technique = technique;
+    }
+
+    public string Key { get; }
+    public string Time { get => _time; private set => SetProperty(ref _time, value); }
+    public string Severity { get => _severity; private set => SetProperty(ref _severity, value); }
+    public SolidColorBrush SeverityBrush { get => _severityBrush; private set => SetBrush(ref _severityBrush, value); }
+    public string Summary { get => _summary; private set => SetProperty(ref _summary, value); }
+    public string Source { get => _source; private set => SetProperty(ref _source, value); }
+    public string Technique { get => _technique; private set => SetProperty(ref _technique, value); }
+
+    public void UpdateFrom(SecurityEventRow incoming)
+    {
+        Time = incoming.Time;
+        Severity = incoming.Severity;
+        SeverityBrush = incoming.SeverityBrush;
+        Summary = incoming.Summary;
+        Source = incoming.Source;
+        Technique = incoming.Technique;
+    }
+
+    private void SetBrush(ref SolidColorBrush current, SolidColorBrush incoming)
+    {
+        if (current.Color == incoming.Color) return;
+        current = incoming;
+        RaisePropertyChanged(nameof(SeverityBrush));
+    }
 }

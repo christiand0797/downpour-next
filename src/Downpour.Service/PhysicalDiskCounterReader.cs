@@ -1,16 +1,17 @@
 using System.Runtime.InteropServices;
+using Downpour.Contracts;
 
 namespace Downpour.Service;
 
-/// <summary>Reads locale-independent Windows PhysicalDisk(_Total) throughput counters.</summary>
+/// <summary>Reads locale-independent Windows PhysicalDisk throughput counters.</summary>
 internal sealed class PhysicalDiskCounterReader : IDisposable
 {
     private const uint FormatDouble = 0x00000200;
     private const uint ValidData = 0;
     private const uint NewData = 1;
     private IntPtr _query;
-    private IntPtr _readCounter;
-    private IntPtr _writeCounter;
+    private readonly Dictionary<string, (IntPtr ReadCounter, IntPtr WriteCounter)> _diskCounters = new();
+    private readonly List<string> _diskInstances = new();
     private bool _initialized;
     private bool _disposed;
 
@@ -20,30 +21,95 @@ internal sealed class PhysicalDiskCounterReader : IDisposable
         try
         {
             if (PdhOpenQueryW(IntPtr.Zero, UIntPtr.Zero, out _query) != 0) return;
-            if (PdhAddEnglishCounterW(_query, @"\PhysicalDisk(_Total)\Disk Read Bytes/sec", UIntPtr.Zero, out _readCounter) != 0 ||
-                PdhAddEnglishCounterW(_query, @"\PhysicalDisk(_Total)\Disk Write Bytes/sec", UIntPtr.Zero, out _writeCounter) != 0)
-                Dispose();
+
+            // Enumerate physical disk instances - first call to get buffer sizes
+            uint counterBufferSize = 0;
+            uint instanceBufferSize = 0;
+            if (PdhEnumObjectItemsW(IntPtr.Zero, IntPtr.Zero, "PhysicalDisk", IntPtr.Zero, ref counterBufferSize, IntPtr.Zero, ref instanceBufferSize, 0, 0) != 0)
+            {
+                // Allocate buffers
+                var counterBuffer = Marshal.AllocHGlobal((int)counterBufferSize);
+                var instanceBuffer = Marshal.AllocHGlobal((int)instanceBufferSize);
+                try
+                {
+                    if (PdhEnumObjectItemsW(IntPtr.Zero, IntPtr.Zero, "PhysicalDisk", counterBuffer, ref counterBufferSize, instanceBuffer, ref instanceBufferSize, 0, 0) != 0)
+                    {
+                        Dispose();
+                        return;
+                    }
+
+                    // Parse the multi-sz string to get instances
+                    var instances = ParseMultiSz(instanceBuffer, instanceBufferSize);
+                    foreach (var instance in instances)
+                    {
+                        if (string.Equals(instance, "_Total", StringComparison.OrdinalIgnoreCase)) continue;
+                        var readPath = $@"\PhysicalDisk({instance})\Disk Read Bytes/sec";
+                        var writePath = $@"\PhysicalDisk({instance})\Disk Write Bytes/sec";
+                        if (PdhAddEnglishCounterW(_query, readPath, UIntPtr.Zero, out var readCounter) == 0 &&
+                            PdhAddEnglishCounterW(_query, writePath, UIntPtr.Zero, out var writeCounter) == 0)
+                        {
+                            _diskCounters[instance] = (readCounter, writeCounter);
+                            _diskInstances.Add(instance);
+                        }
+                    }
+
+                    // Also add _Total for aggregate
+                    if (PdhAddEnglishCounterW(_query, @"\PhysicalDisk(_Total)\Disk Read Bytes/sec", UIntPtr.Zero, out var totalReadCounter) == 0 &&
+                        PdhAddEnglishCounterW(_query, @"\PhysicalDisk(_Total)\Disk Write Bytes/sec", UIntPtr.Zero, out var totalWriteCounter) == 0)
+                    {
+                        _diskCounters["_Total"] = (totalReadCounter, totalWriteCounter);
+                        if (!_diskInstances.Contains("_Total")) _diskInstances.Insert(0, "_Total");
+                    }
+                }
+                finally
+                {
+                    Marshal.FreeHGlobal(counterBuffer);
+                    Marshal.FreeHGlobal(instanceBuffer);
+                }
+            }
         }
         catch (DllNotFoundException) { Dispose(); }
         catch (EntryPointNotFoundException) { Dispose(); }
     }
 
-    public (long? ReadBytesPerSecond, long? WriteBytesPerSecond) Read()
+    public (long? ReadBytesPerSecond, long? WriteBytesPerSecond, IReadOnlyList<PhysicalDiskSnapshot> PhysicalDisks) Read()
     {
-        if (_disposed || _query == IntPtr.Zero || _readCounter == IntPtr.Zero || _writeCounter == IntPtr.Zero)
-            return (null, null);
+        if (_disposed || _query == IntPtr.Zero)
+            return (null, null, Array.Empty<PhysicalDiskSnapshot>());
+
         try
         {
-            if (PdhCollectQueryData(_query) != 0) return (null, null);
+            if (PdhCollectQueryData(_query) != 0) return (null, null, Array.Empty<PhysicalDiskSnapshot>());
+
+            var disks = new List<PhysicalDiskSnapshot>();
+            long? totalRead = null;
+            long? totalWrite = null;
+
+            foreach (var instance in _diskInstances)
+            {
+                if (!_diskCounters.TryGetValue(instance, out var counters)) continue;
+
+                var read = ReadCounter(counters.ReadCounter);
+                var write = ReadCounter(counters.WriteCounter);
+                disks.Add(new PhysicalDiskSnapshot(instance, read, write));
+
+                if (string.Equals(instance, "_Total", StringComparison.OrdinalIgnoreCase))
+                {
+                    totalRead = read;
+                    totalWrite = write;
+                }
+            }
+
             if (!_initialized)
             {
                 _initialized = true;
-                return (null, null);
+                return (null, null, Array.Empty<PhysicalDiskSnapshot>());
             }
-            return (ReadCounter(_readCounter), ReadCounter(_writeCounter));
+
+            return (totalRead, totalWrite, disks);
         }
-        catch (DllNotFoundException) { Dispose(); return (null, null); }
-        catch (EntryPointNotFoundException) { Dispose(); return (null, null); }
+        catch (DllNotFoundException) { Dispose(); return (null, null, Array.Empty<PhysicalDiskSnapshot>()); }
+        catch (EntryPointNotFoundException) { Dispose(); return (null, null, Array.Empty<PhysicalDiskSnapshot>()); }
     }
 
     private static long? ReadCounter(IntPtr counter)
@@ -55,14 +121,42 @@ internal sealed class PhysicalDiskCounterReader : IDisposable
         return (long)Math.Round(value.DoubleValue, MidpointRounding.AwayFromZero);
     }
 
+    private static List<string> ParseMultiSz(IntPtr buffer, uint size)
+    {
+        var result = new List<string>();
+        var current = new System.Text.StringBuilder();
+        for (int i = 0; i < size; i += 2)
+        {
+            if (i + 1 >= size) break;
+            var c = Marshal.ReadInt16(buffer, i);
+            if (c == 0)
+            {
+                if (current.Length > 0)
+                {
+                    result.Add(current.ToString());
+                    current.Clear();
+                }
+                else
+                {
+                    break; // Double null terminates
+                }
+            }
+            else
+            {
+                current.Append((char)c);
+            }
+        }
+        return result;
+    }
+
     public void Dispose()
     {
         if (_disposed) return;
         _disposed = true;
         if (_query != IntPtr.Zero) PdhCloseQuery(_query);
         _query = IntPtr.Zero;
-        _readCounter = IntPtr.Zero;
-        _writeCounter = IntPtr.Zero;
+        _diskCounters.Clear();
+        _diskInstances.Clear();
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -86,4 +180,7 @@ internal sealed class PhysicalDiskCounterReader : IDisposable
 
     [DllImport("pdh.dll", EntryPoint = "PdhCloseQuery")]
     private static extern uint PdhCloseQuery(IntPtr query);
+
+    [DllImport("pdh.dll", CharSet = CharSet.Unicode, EntryPoint = "PdhEnumObjectItemsW")]
+    private static extern uint PdhEnumObjectItemsW(IntPtr dataSource, IntPtr machineName, string objectName, IntPtr counterBuffer, ref uint counterBufferSize, IntPtr instanceBuffer, ref uint instanceBufferSize, uint detailLevel, uint flags);
 }

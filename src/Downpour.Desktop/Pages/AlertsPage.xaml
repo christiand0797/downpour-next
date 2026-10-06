@@ -36,7 +36,26 @@
             <Border Padding="12,9" CornerRadius="8" Background="#9B111A2A" BorderBrush="#333EC5D8" BorderThickness="1">
                 <StackPanel Spacing="3">
                     <TextBlock FontSize="10" FontWeight="SemiBold" CharacterSpacing="65" Foreground="#FF76DDF5" Text="CROSS-CHANNEL PATTERNS · TIME PROXIMITY ONLY" />
-                    <TextBlock x:Name="CorrelationSummary" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Waiting for validated alert metadata." TextWrapping="Wrap" />
+                    <ListView x:Name="CorrelationList" ItemsSource="{x:Bind CorrelationFindings}" SelectionMode="None" IsItemClickEnabled="False" MaxHeight="160" Background="Transparent">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Border Padding="8,4" CornerRadius="4" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="#333EC5D8" BorderThickness="1">
+                                    <Grid ColumnSpacing="8">
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                                        <TextBlock Text="{Binding Severity}" Foreground="{Binding SeverityBrush}" FontSize="10" FontWeight="SemiBold" VerticalAlignment="Center" Padding="4,0" />
+                                        <StackPanel Grid.Column="1" Spacing="1">
+                                            <TextBlock Text="{Binding Title}" FontSize="11" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                            <TextBlock Text="{Binding Summary}" FontSize="10" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
+                                        </StackPanel>
+                                        <Button Grid.Column="2" Content="View timeline" ToolTipService.ToolTip="Open investigation timeline for this correlation" Tag="{Binding CorrelationId}" Click="CorrelationList_ViewTimeline_Click" FontSize="10" Padding="8,2" VerticalAlignment="Center" Foreground="#FF50DBF1" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                        <ListView.Footer>
+                            <TextBlock Padding="8,4" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="No cross-channel correlation findings in the current snapshot." TextWrapping="Wrap" />
+                        </ListView.Footer>
+                    </ListView>
                 </StackPanel>
             </Border>
             <Grid Grid.Row="1" ColumnSpacing="10">
