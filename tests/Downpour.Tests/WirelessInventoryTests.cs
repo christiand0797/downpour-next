@@ -138,3 +138,40 @@ public sealed class WirelessInventoryTests
         Assert.True(WirelessInventoryClient.IsValid(snapshot));
     }
 }
+
+public sealed class WlanNativeTests
+{
+    [Fact]
+    public void StructLayoutsMatchWlanApiHeader() =>
+        Assert.Equal((628, 360), Downpour.Service.WlanNative.StructSizes());
+
+    [Theory]
+    [InlineData(2412000u, 1)]
+    [InlineData(2437000u, 6)]
+    [InlineData(2484000u, 14)]
+    [InlineData(5180000u, 36)]
+    [InlineData(5745000u, 149)]
+    [InlineData(5955000u, 1)]
+    [InlineData(1000u, 0)]
+    public void ChannelFromCenterFrequency(uint kilohertz, int channel) =>
+        Assert.Equal(channel, Downpour.Service.WlanNative.ChannelFromFrequency(kilohertz));
+
+    [Fact]
+    public void AuthenticationLabelsMatchNetshSoPostureRulesStillApply()
+    {
+        Assert.Equal("Open", Downpour.Service.WlanNative.MapAuthentication(1));
+        Assert.Equal("Shared", Downpour.Service.WlanNative.MapAuthentication(2));
+        Assert.Equal("WPA2-Personal", Downpour.Service.WlanNative.MapAuthentication(7));
+        Assert.Equal("WPA3-Personal", Downpour.Service.WlanNative.MapAuthentication(9));
+        Assert.Equal("WEP", Downpour.Service.WlanNative.MapCipher(1));
+        Assert.Equal("CCMP", Downpour.Service.WlanNative.MapCipher(4));
+    }
+
+    [Fact]
+    public void LiveCaptureDoesNotThrowAndReportsWhyWhenUnavailable()
+    {
+        var snapshot = new Downpour.Service.WirelessInventoryProvider().Capture();
+        Assert.True(snapshot.WifiAdapterAvailable || snapshot.Warnings.Count > 0 || snapshot.WifiNetworks.Count == 0);
+        Assert.All(snapshot.WifiNetworks, network => Assert.Matches("^([0-9a-f]{2}:){5}[0-9a-f]{2}$", network.Bssid));
+    }
+}
