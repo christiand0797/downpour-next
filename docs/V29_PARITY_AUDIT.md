@@ -112,28 +112,40 @@ The safety posture is correct: `QuarantineManager` and `DriverPackageBroker` bot
 
 ### Step 1: Import graph verification
 Searched for `importlib`, `__import__`, `exec`, string-built module names, and plugin directories:
-
-- **Dynamic imports via `__import__`**: Found 25 matches in `downpour_v29_titanium.py`. All are inline standard library calls (`os.cpu_count()`, `threading.Lock()`, `time.time()`, `tkinter.messagebox`, `webbrowser`, `re`, `ctypes.windll`, `sys.platform`). No plugin-style dynamic loading.
-
-- **`revolutionary_enhancements`**: Imported at lines 674-680 with try/except fallback. Directory contains only type stubs (`__init__.pyi`). Comment at line 18985: "ultimate_threat_intel was a stub-only package". This is a placeholder/beta feature set, not active code.
-
-- **`ultimate_threat_intel`**: Referenced at lines 25624-25625 as an optional database. Directory contains only `__init__.py` and type stubs. Incomplete/stub feature.
-
-- **No string-built module names or plugin directory loading**: No patterns like `f"import {name}"` or `getattr(module, name)` for dynamic module loading beyond the standard library inline calls.
-
-**Conclusion**: The orphaned module list in `source-modules.json` is correct. No orphaned modules are dynamically loaded. The only "dynamic" imports are standard library calls for CPU counts, locks, and GUI callbacks, which do not represent missing dependencies.
+- **Dynamic imports via `__import__`**: Found 25 occurrences in `downpour_v29_titanium.py`. All are standard library utilities (`os.cpu_count()`, `threading.Lock()`, `time.time()`, `tkinter.messagebox`, `re`, `ctypes.windll`, `sys.platform`).
+- **Plugin directories**: `revolutionary_enhancements/` contains only `__init__.pyi` (type stubs). `ultimate_threat_intel/` defines `ThreatFeedRegistry` and `ThreatDatabase` and is already mapped in `source-modules.json` as `planned`.
+- **Orphaned modules**: Audited all 34 orphaned modules (`ioc_scanner.py`, `system_cleanup.py`, `advanced_threat_engine.py`, etc.). `ioc_scanner.py` is only named in docstrings/tests. `system_cleanup.py` is superseded by `downpour_cleanup_module.py`. None are dynamically loaded. The 34 modules remain legitimately orphaned.
 
 ### Step 2: Settings and config
-v29 uses `config.py` with a `ConfigManager` class and `config.json` on disk. Documented in parity-checklist.json as a `settings` section.
+Full schema, defaults, and consuming readers documented in `parity-checklist.json` under `settings`:
+- `runtimeConfig` (`config.py` / `config.json` via `ConfigManager` with Watchdog hot-reload and HMAC-SHA256 signature): 28 keys covering AI learning cycle, hardware intervals/thresholds, UI, GeoIP, feed update intervals, KEV/EPSS thresholds, YARA rules and vulnerability scanning.
+- `settingsIni` (`downpour_data/config/settings.ini` via Titanium `ConfigManager`): 8 sections (`general`, `scanning`, `network`, `modules`, `parental`, `intel`, `security`, `osint`) and 35 keys.
 
 ### Step 3: Detection thresholds and constants
-Documented in fixture-style notes in `docs/` per module family.
+Extracted all detection constants, IOC lists, scoring thresholds, and event IDs into three fixture reference docs in `docs/`:
+- [`docs/DETECTION_FIXTURES_CORE.md`](DETECTION_FIXTURES_CORE.md): C2 beacon jitter/CV (0.05/0.25), DGA entropy (>3.8) and linguistic metrics, LOLBins binaries & MITRE techniques, ransomware entropy delta (2.0) and high threshold (7.5), Kimwolf botnet ports/IOCs, AMSI return codes (>=32768) and regex patterns, PE section entropy (>7.2) and import risk scoring.
+- [`docs/DETECTION_FIXTURES_MONITORS.md`](DETECTION_FIXTURES_MONITORS.md): Process injection Windows API flags (`PAGE_EXECUTE_READWRITE`, `0x40`) and risk score (+60/+80), WMI persistence classes/Sysmon events (19, 20, 21), Task Scheduler events (106, 140, 141), DLL search order hijack vectors, AMSI memory patch bytes (`\xB8\x57\x00\x07\x80\xC3`), crypto wallet clipboard regexes, BadUSB typing rate (>800 cpm), Firewall event 5157.
+- [`docs/DETECTION_FIXTURES_SYSTEM_NETWORK.md`](DETECTION_FIXTURES_SYSTEM_NETWORK.md): Firmware posture registry/WMI evaluation criteria (BitLocker, Secure Boot, TPM 2.0, LSA-PPL, Credential Guard, HVCI, SMBv1), Sysmon events 1–26 MITRE map, DNS cache watch TOFU baseline and alert thresholds (70/85), RAT port mappings (4444, 4445, 5552, 1337).
 
 ### Step 4: Data stores
-Documented v29 on-disk stores and schemas. Downpour Next must decide which to migrate/import.
+Audited all SQLite databases and JSON stores under `downpour_data/`:
+- `titanium.db` (WAL mode): `malicious_urls` (108k), `malicious_ips` (425k), `malicious_hashes` (54k), `malicious_domains` (316k), `safe_files` (7), `threat_families` (27), `memory_injection_events` (205), `feed_status` (354), `quarantine`, `c2_detections`, etc.
+- `quarantine/quarantine.db`: 23 entries with path, hash, DACL/SACL, threat metadata, and corresponding JSON manifests `1.json`..`23.json`.
+- `ultimate_threat_intel.db`, `vulnerability_scanner.db` (1734 CVEs, 84k software rows, 606 exploit attempts, 20.5M pairs), `memory_forensics.db`, `threat_intel.db`, `threat_actors.db`.
+- Decision: Migrate quarantine metadata into Next's `QuarantineManager` for read-only visibility; re-query validated feeds using bounded clients rather than copying huge raw DB tables; capture fresh host-specific TOFU baselines rather than copying machine-specific v29 JSONs; discard volatile logs and temp files.
 
 ### Step 5: Right-click context menus
-Added workflows from `tk.Menu` / `add_command` per tab to parity-checklist.json.
+Extracted every `tk.Menu` and `<Button-3>` binding in `downpour_v29_titanium.py` and merged into `parity-checklist.json`:
+- Processes (`_proc_menu`: 11 actions including Suspend, Kill Tree, Quarantine, Network Isolate, Block All IPs, Clean Persistence, Dump Memory, Root Cause).
+- Remediation (`_rem_menu`: Revert, View Details, Export).
+- Possible Threats (`_pt_menu`: Verify & Move, Investigate, Dismiss, Intel Lookup, Copy Details).
+- Performance processes (`_proc_ctx_menu`: Analyze Task, Kill Task, Set Priority, Open Location).
+- Threats (`_thr_menu`: Remediate, Quarantine, Kill Process, Block IP, Mark FP, Dismiss, Copy Desc, Lookup Intel).
+- Network (`_net_menu`: Block IP, Intel Lookup, OSINT Stack, AbuseIPDB, Pulsedive, GreyNoise, Onyphe, Geo-Locate, Port Scan, Kill Process).
+- Threat Hunt (`_hunt_context_menu`: Kill, Quarantine, Secure Delete, Block IOC/IP, Deep YARA Analyze, Copy, Export, Remove).
+- Firewall (`_fw_menu`: Toggle Rule, Delete Rule, Copy Name).
+- USB (`_usb_menu`: Add Whitelist, Block Device, Copy ID).
+- Live Threat Feed (Dashboard): 8 actions.
 
 ## 7. Suggested next tasks (in order)
 

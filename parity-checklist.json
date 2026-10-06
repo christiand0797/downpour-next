@@ -101,7 +101,8 @@
         "Geolocate IP",
         "OSINT lookups: AbuseIPDB, GreyNoise, Onyphe, Pulsedive",
         "Port scan selected",
-        "Kill owning process"
+        "Kill owning process",
+        "Right-click: Block This IP, Lookup in Intel, OSINT Stack Lookup, AbuseIPDB Check, Pulsedive Check, GreyNoise Check, ONYPHE Check, Geo-Locate IP, Port Scan Host, Kill Connection Process"
       ]
     },
     "security-events": {
@@ -225,7 +226,8 @@
         "Copy rule name",
         "Recent blocked connections (Event 5157)",
         "Firewall tamper detection",
-        "Remove all Downpour rules (port_firewall_unblock.py, dry-run default)"
+        "Remove all Downpour rules (port_firewall_unblock.py, dry-run default)",
+        "Right-click: Toggle Enable/Disable, Delete Rule, Copy Rule Name"
       ]
     },
     "wifi": {
@@ -283,7 +285,8 @@
       "v29Workflows": [
         "Target/mode selection",
         "Run and stop hunt",
-        "Findings and actions (LOLBAS, BYOVD, persistence)"
+        "Findings and actions (LOLBAS, BYOVD, persistence)",
+        "Right-click: Kill Process, Quarantine File, Secure Delete File, Block IOC / IP, Deep YARA Analyze, Copy Path/IOC, Export All Findings, Remove from List"
       ]
     },
     "sandbox": {
@@ -319,7 +322,8 @@
         "Alert log",
         "Monitor loop",
         "Auto-scan on insert",
-        "Keystroke injection / BadUSB detection"
+        "Keystroke injection / BadUSB detection",
+        "Right-click: Add to Whitelist, Block This Device, Copy Device ID"
       ]
     },
     "iot": {
@@ -468,66 +472,150 @@
     "Auto-updater (done in Next: ReleaseUpdateClient/UpdateHelper)"
   ],
   "settings": {
-    "v29Config": {
+    "runtimeConfig": {
       "source": "config.py and config.json",
-      "manager": "ConfigManager class with hot-reload and tamper detection (HMAC-SHA256 signature)",
+      "manager": "ConfigManager class with hot-reload (Watchdog) and tamper detection (HMAC-SHA256 signature + DPAPI key)",
       "keys": {
-        "AI.LEARNING_CYCLE_SECONDS": 300,
-        "HARDWARE.UPDATE_INTERVAL": 0.5,
-        "HARDWARE.HISTORY_SIZE": 100,
-        "HARDWARE.SMOOTHING_FACTOR": 0.3,
-        "HARDWARE.ALERT_THRESHOLDS.CPU": 80.0,
-        "HARDWARE.ALERT_THRESHOLDS.MEMORY": 85.0,
-        "HARDWARE.ALERT_THRESHOLDS.DISK": 90.0,
-        "HARDWARE.ALERT_THRESHOLDS.TEMP": 75.0,
-        "UI.ASCII_ONLY": true,
-        "UI.PREFIX": "DOWNPOUR",
-        "GEOIP.PROVIDER": "ip-api",
-        "GEOIP.ENABLED": true,
-        "LOGGING.LEVEL": "INFO",
-        "FEEDS.threatfox.enabled": true,
-        "FEEDS.threatfox.update_interval": 900,
-        "FEEDS.urlhaus.enabled": true,
-        "FEEDS.urlhaus.update_interval": 900,
-        "FEEDS.phishtank.enabled": true,
-        "FEEDS.phishtank.update_interval": 900,
-        "FEEDS.emerging_threats.enabled": true,
-        "FEEDS.emerging_threats.update_interval": 900,
-        "KEV.ENABLED": true,
-        "KEV.UPDATE_INTERVAL_HOURS": 24,
-        "KEV.CRITICAL_THRESHOLD": 9.0,
-        "EPSS.ENABLED": true,
-        "EPSS.UPDATE_INTERVAL_HOURS": 24,
-        "EPSS.EXPLOIT_THRESHOLD": 0.5,
-        "YARA.ENABLED": true,
-        "YARA.RULES_PATH": "yara_rules",
-        "YARA.SCAN_TIMEOUT_SECONDS": 30,
-        "VULNERABILITY.SCAN_ON_STARTUP": true,
-        "VULNERABILITY.SCAN_INTERVAL_HOURS": 24,
-        "VULNERABILITY.ALERT_ON_CRITICAL": true
-      },
-      "nextStatus": "Partial - visual preferences implemented in AppPreferences, no security settings yet"
+        "AI.LEARNING_CYCLE_SECONDS": {"default": 300, "reads": "ThreatLearningEngine background model training loop"},
+        "HARDWARE.UPDATE_INTERVAL": {"default": 0.5, "reads": "Hardware telemetry collection and gauge refresh"},
+        "HARDWARE.HISTORY_SIZE": {"default": 100, "reads": "Hardware rolling history deque size"},
+        "HARDWARE.SMOOTHING_FACTOR": {"default": 0.3, "reads": "Exponential smoothing on hardware gauge deltas"},
+        "HARDWARE.ALERT_THRESHOLDS.CPU": {"default": 80.0, "reads": "CPU usage alert threshold check"},
+        "HARDWARE.ALERT_THRESHOLDS.MEMORY": {"default": 85.0, "reads": "RAM usage alert threshold check"},
+        "HARDWARE.ALERT_THRESHOLDS.DISK": {"default": 90.0, "reads": "Disk utilization alert threshold check"},
+        "HARDWARE.ALERT_THRESHOLDS.TEMP": {"default": 75.0, "reads": "Thermal sensor alert threshold check"},
+        "UI.ASCII_ONLY": {"default": true, "reads": "Console / terminal formatting wrappers"},
+        "UI.PREFIX": {"default": "DOWNPOUR", "reads": "UI header and alert log prefixes"},
+        "GEOIP.PROVIDER": {"default": "ip-api", "reads": "GeoIP lookup resolver"},
+        "GEOIP.ENABLED": {"default": true, "reads": "GeoIP resolution toggle in network views"},
+        "LOGGING.LEVEL": {"default": "INFO", "reads": "Application logging level"},
+        "FEEDS.threatfox": {"enabled": true, "update_interval": 900, "reads": "ThreatFox abuse.ch feed fetcher"},
+        "FEEDS.urlhaus": {"enabled": true, "update_interval": 900, "reads": "URLhaus abuse.ch feed fetcher"},
+        "FEEDS.phishtank": {"enabled": true, "update_interval": 3600, "reads": "PhishTank feed fetcher"},
+        "FEEDS.emerging_threats": {"enabled": true, "update_interval": 3600, "reads": "Emerging Threats IP blocklist fetcher"},
+        "KEV.ENABLED": {"default": true, "reads": "CISA KEV integration master toggle"},
+        "KEV.UPDATE_INTERVAL_HOURS": {"default": 24, "reads": "CISA KEV periodic catalog refresh timer"},
+        "KEV.CRITICAL_THRESHOLD": {"default": 9.0, "reads": "CISA KEV CVSS score filter threshold"},
+        "EPSS.ENABLED": {"default": true, "reads": "FIRST EPSS enrichment master toggle"},
+        "EPSS.UPDATE_INTERVAL_HOURS": {"default": 12, "reads": "EPSS score refresh timer"},
+        "EPSS.EXPLOIT_THRESHOLD": {"default": 0.5, "reads": "EPSS exploit probability cutoff for high-risk warnings"},
+        "YARA.ENABLED": {"default": true, "reads": "YARA scanner engine master toggle"},
+        "YARA.RULES_PATH": {"default": "yara_rules", "reads": "YARA rules directory location"},
+        "YARA.SCAN_TIMEOUT_SECONDS": {"default": 30, "reads": "Per-file YARA scan timeout"},
+        "VULNERABILITY.SCAN_ON_STARTUP": {"default": true, "reads": "Boot-time system vulnerability check"},
+        "VULNERABILITY.SCAN_INTERVAL_HOURS": {"default": 24, "reads": "Periodic vulnerability scan cycle"},
+        "VULNERABILITY.ALERT_ON_CRITICAL": {"default": true, "reads": "Bridge critical vulnerability discoveries to UI alerts"}
+      }
+    },
+    "settingsIni": {
+      "source": "downpour_data/config/settings.ini",
+      "manager": "ConfigManager class in downpour_v29_titanium.py (configparser.ConfigParser)",
+      "sections": {
+        "general": {
+          "minimize_to_tray": {"default": "true", "reads": "Tray icon minimize toggle"},
+          "start_minimized": {"default": "false", "reads": "Startup window show/hide state"},
+          "show_widget": {"default": "false", "reads": "Floating desktop widget visibility"},
+          "rain_intensity": {"default": "200", "reads": "Weather animation raindrop count"},
+          "lightning_freq": {"default": "0.012", "reads": "Lightning flash probability per animation tick"},
+          "worker_count": {"default": "12", "reads": "ThreadPoolExecutor background worker capacity"}
+        },
+        "scanning": {
+          "max_file_size_mb": {"default": "100", "reads": "Scanner skips files above this size"},
+          "max_depth": {"default": "20", "reads": "Directory recursion depth limit"},
+          "scan_archives": {"default": "true", "reads": "Inspection inside .zip/.tar archives toggle"}
+        },
+        "network": {
+          "port_scan_detection": {"default": "true", "reads": "SYN / connection burst port-scan detector"},
+          "block_suspicious": {"default": "false", "reads": "Auto-block suspicious outbound connections (safety off by default)"},
+          "connection_monitor": {"default": "true", "reads": "Active TCP connection polling loop"}
+        },
+        "modules": {
+          "real_time": {"default": "true", "reads": "Master switch for all background detection threads"},
+          "process_monitor": {"default": "true", "reads": "Process creation and memory watcher"},
+          "network_shield": {"default": "true", "reads": "Network adapter and connection watcher"},
+          "file_guardian": {"default": "true", "reads": "Filesystem watcher on sensitive directories"},
+          "threat_engine": {"default": "true", "reads": "Main detection and correlation engine loop"},
+          "anti_keylogger": {"default": "true", "reads": "SetWindowsHookEx and keyboard input monitor"},
+          "anti_rat": {"default": "true", "reads": "Known RAT port and backdoor connection monitor"},
+          "anti_surveillance": {"default": "true", "reads": "Webcam and microphone access monitor"},
+          "port_scan_detector": {"default": "true", "reads": "Local port scanning detector"},
+          "ai_analyzer": {"default": "true", "reads": "AI anomaly scoring engine"},
+          "c2_detector": {"default": "true", "reads": "C2 beacon interval / jitter detector"},
+          "parental_controls": {"default": "true", "reads": "Parental controls module activation"}
+        },
+        "parental": {
+          "enabled": {"default": "false", "reads": "Parental restriction enforcement toggle"},
+          "child_user": {"default": "", "reads": "Target Windows username for restriction application"},
+          "weekday_mins": {"default": "120", "reads": "Daily screen time limit Monday-Friday"},
+          "weekend_mins": {"default": "240", "reads": "Daily screen time limit Saturday-Sunday"},
+          "bedtime_start": {"default": "21:00", "reads": "Evening curfew lockdown start time"},
+          "bedtime_end": {"default": "07:00", "reads": "Morning curfew lockdown end time"},
+          "block_adult": {"default": "true", "reads": "Adult content DNS / web filtering toggle"},
+          "block_gambling": {"default": "true", "reads": "Gambling domains filtering toggle"},
+          "block_violence": {"default": "true", "reads": "Violence domains filtering toggle"}
+        },
+        "intel": {
+          "auto_update": {"default": "true", "reads": "Automatic threat intelligence feed refresh timer"},
+          "update_interval_hours": {"default": "1", "reads": "Interval between feed sync passes"}
+        },
+        "security": {
+          "bypass_tpm_bitlocker": {"default": "false", "reads": "Permit execution on non-TPM / unencrypted systems without warning"}
+        },
+        "osint": {
+          "abuseipdb_key": {"default": "", "reads": "AbuseIPDB API v2 authentication token"},
+          "talos_reputation": {"default": "true", "reads": "Cisco Talos reputation check toggle"},
+          "shodan_key": {"default": "", "reads": "Shodan API authentication key"},
+          "censys_enabled": {"default": "true", "reads": "Censys search integration toggle"},
+          "censys_api_id": {"default": "", "reads": "Censys API ID credential"},
+          "censys_secret": {"default": "", "reads": "Censys API secret credential"},
+          "pulsedive_key": {"default": "", "reads": "Pulsedive API key"},
+          "onyphe_key": {"default": "", "reads": "Onyphe OSINT API key"},
+          "emailrep_key": {"default": "", "reads": "EmailRep reputation API key"},
+          "greynoise_key": {"default": "", "reads": "GreyNoise community / enterprise API key"},
+          "urlscan_key": {"default": "", "reads": "urlscan.io API submission key"},
+          "netlas_key": {"default": "", "reads": "Netlas.io attack surface API key"},
+          "malwarebazaar_key": {"default": "", "reads": "MalwareBazaar Auth-Key"}
+        }
+      }
     }
   },
   "dataStores": {
     "v29DiskStores": {
       "downpour_data/": {
-        "titanium.db": "SQLite main database with WAL mode (titanium.db-shm, titanium.db-wal)",
-        "ultimate_threat_intel.db": "SQLite database for threat intelligence (unused stub)",
-        "quarantine/": "AES-GCM encrypted quarantine storage",
-        "ransomware_backups/": "File-level rollback backups for ransomware protection",
-        "honeytokens/": "Canary files for ransomware detection",
-        "snapshots/": "System state snapshots",
-        "models/": "Persisted ML models for ThreatLearningEngine",
-        "logs/": "Application logs",
-        "cache/": "Feed caches and temporary data",
-        "config/": "Configuration directory with settings.ini and tamper-protected config.json.sig/key",
-        "feed_manifests/": "HMAC-verified feed integrity manifests",
-        "context_shards/": "Sharded context persistence",
-        "*.json baselines": "Persistence baselines (code_integrity.json, persistence_baseline.json, dns_baseline.json, etc.) with .key files for HMAC protection"
+        "titanium.db": "SQLite main database (WAL mode). Tables: malicious_urls (108k), malicious_ips (425k), malicious_hashes (54k), malicious_domains (316k), safe_files, quarantine, threat_families (27), threat_history, process_behaviors, port_scan_events, rat_detections, surveillance_events, c2_detections, parental_log, ransomware_events, file_snapshots, rollback_operations, memory_injection_events (205), feed_status (354), canary_files, network_events, scan_history.",
+        "quarantine/quarantine.db": "SQLite quarantine database (23 entries). Columns: id, original_path, quarantine_path, file_hash, file_size, threat_type, threat_name, severity, quarantined_at, original_dacl, original_sacl, original_owner, created_time, modified_time, accessed_time, restored, restored_at, restore_verified.",
+        "ultimate_threat_intel.db": "SQLite database for aggregated indicators. Tables: indicators (value, indicator_type, category, subcategory, severity, confidence, source, description, tags, metadata, first_seen, last_seen), feed_status (feed_id, last_update, last_success, records_added, records_total, status).",
+        "vulnerability_scanner.db": "SQLite database for CVEs and installed software. Tables: vulnerabilities (1734 rows), software_inventory (84k rows), exploit_attempts (606 rows), system_vulnerabilities (20.5M pairs), kev_catalog (1695 rows), epss_scores, cwe_mapping, threat_actor_vulns, vulnerability_trends, patch_priority_queue.",
+        "memory_forensics.db": "SQLite database for memory analysis. Tables: memory_analysis (98 rows), injection_events, memory_snapshots.",
+        "threat_intel.db": "SQLite database for domain/hash intelligence. Tables: malicious_domains (10.4k rows), malware_hashes (5.6k rows), mitre_attack_techniques (858 rows), malicious_ips, malicious_urls, feed_updates.",
+        "threat_actors.db": "SQLite database for actor intelligence. Tables: threat_actors, actor_indicators, actor_malware, actor_cves.",
+        "baselines_json": [
+          "cisa_kev.json: Cached CISA KEV catalog (1.4 MB, 1200+ CVEs)",
+          "cis_immune_state.json: Cognitive Immune System detector statistics and memory (156 KB)",
+          "code_integrity.json: Signed SHA-256 baseline hashes for all Python modules (24 KB)",
+          "hosts_baseline.json: Hosts file baseline entries (2.9 MB)",
+          "dns_baseline.json: TOFU DNS resolver cache baseline (52 KB)",
+          "fw_rules_baseline.json: Windows Firewall rule baseline snapshot (8 KB)",
+          "persistence_baseline.json: Scheduled task and Run key baseline (11 KB)",
+          "service_binpath_baseline.json: Windows service binary path baseline (25 KB)",
+          "comhijack_baseline.json: COM registration CLSID baseline (1 KB)",
+          "exploitdb/exploitdb_index.json: Exploit-DB metadata and exploit index (25.7 MB)",
+          "honeytokens/canary_registry.json: Active canary files and verification hashes (56 KB)",
+          "quarantine/manifests/*.json: 23 individual JSON quarantine descriptor manifests matching quarantine.db"
+        ],
+        "models/": [
+          "model_anomaly.pkl: Scikit-learn anomaly detection model trained on benign system behavior",
+          "scaler.pkl: StandardScaler transformation for model_anomaly feature vectors"
+        ]
       },
-      "downpour_v27_data/": "Legacy v27 data directory (for migration)",
-      "nextDecision": "Downpour Next should migrate quarantine (if AES-GCM key recoverable), baseline fingerprints, and settings. titanium.db schema is not directly compatible with Next's operation journal. ML models are optional. Logs and cache can be recreated."
+      "downpour_v27_data/": "Legacy v27 data directory with prior version configuration and history.",
+      "nextDecision": {
+        "quarantine": "Migrate quarantine manifests (downpour_data/quarantine/) into Downpour Next QuarantineManager with read-only inspection first; restoration requires explicit user elevation and DN-008 broker.",
+        "threatIntelAndFeeds": "Do not copy raw 400k+ SQLite rows directly. Re-fetch validated feeds using Downpour Next's bounded clients (KevCatalogClient, FIRST EPSS, NVD Client, URLhaus, Abuse.ch) with strict schema validation and SHA-256 caching.",
+        "baselines": "TOFU (Trust On First Use) baselines must be captured freshly on the current Windows host via Service providers rather than copying machine-specific v29 JSONs.",
+        "settings": "Migrate relevant user OSINT API keys and display preferences into DPAPI-protected settings storage. Do not migrate bypass_tpm_bitlocker.",
+        "logsAndCache": "Discard legacy app.log, crash_fault.log, and downpour_tmp (4153 temp files). Downpour Next uses structured EventSource and SQLite OperationJournal v2."
+      }
     }
   }
 }
