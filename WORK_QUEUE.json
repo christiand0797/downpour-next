@@ -396,7 +396,7 @@
     {
       "id": "DN-019",
       "title": "Read-only firewall view and blocked-connection events",
-      "status": "in_progress",
+      "status": "completed",
       "priority": "medium",
       "acceptance": [
         "Firewall profile state and rule inventory via INetFwPolicy2 (read-only)",
@@ -404,8 +404,12 @@
         "Firewall tamper detection signal",
         "No rule edits until DN-008"
       ],
-      "notes": "Firewall route. Rule toggle/delete stay behind the action broker. | Assigned to claude-parity-audit per docs/AGENT_COORDINATION.md.",
-      "files": []
+      "notes": "Completed 2026-10-06 by claude-parity-audit (commit bf1a25d). Firewall route: profiles (on/off, default actions, active), 720-rule inventory via HNetCfg.FwPolicy2 IDispatch, MpsSvc state, Event 5157 (100 most recent; Access denied when unelevated). Findings (Core/FirewallRuleAnalyzer): service stopped, profile off, inbound allows on v29 SUSPICIOUS_ALLOW_PORTS with exact/range matching, allows for programs in Temp/Downloads/Public; program/service/package-scoped any-port rules are normal (package scope read from the local rule store because COM lacks PFN). Live result here: 6 findings, 2 v29 DOWNPOUR_* rules identified. Remaining: toggle/delete/remove-all-Downpour-rules (needs DN-008 broker), new-rule baseline diff alerts, alert-pipeline bridge. 31 tests; clean HEAD 0 warnings, 260 tests.",
+      "files": [
+        "src/Downpour.Core/FirewallRuleAnalyzer.cs",
+        "src/Downpour.Service/FirewallInventoryProvider.cs",
+        "src/Downpour.Desktop/Pages/FirewallPage.xaml"
+      ]
     },
     {
       "id": "DN-020",
@@ -438,7 +442,7 @@
     {
       "id": "DN-022",
       "title": "Persistence and services risk views",
-      "status": "queued",
+      "status": "in_progress",
       "priority": "medium",
       "acceptance": [
         "Scheduled tasks, WMI subscriptions, Run/Winlogon keys, DLL hijack shadows (read-only)",

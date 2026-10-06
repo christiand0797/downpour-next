@@ -93,10 +93,10 @@
     {
       "id": "claude-parity-audit",
       "role": "agent",
-      "taskId": "DN-019",
+      "taskId": "DN-022",
       "status": "active",
-      "heartbeatUtc": "2026-10-06T23:55:00Z",
-      "notes": "DN-016 and DN-018 completed. Working DN-019 (firewall read-only view + Event 5157), then DN-022, DN-023."
+      "heartbeatUtc": "2026-10-07T00:40:00Z",
+      "notes": "DN-016, DN-018, DN-019 completed. Working DN-022 (persistence + service risk views), then DN-023."
     },
     {
       "id": "antigravity-worker",
