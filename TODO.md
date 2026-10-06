@@ -1,6 +1,45 @@
 # Downpour Next TODO
 
-## 2026-10-06 DN-017: Bundled Sigma Rules & Enhanced Engine (antigravity-worker)
+## 2026-10-06 DN-020: USB, Wi-Fi, and Bluetooth Posture (antigravity-worker)
+
+**DN-020 completed:**
+- **USB Device Posture**: Implemented read-only removable drive enumeration (`DriveInfo.GetDrives()`), autorun file presence detection (`autorun.inf`, `autorun.bat`, `autorun.exe`, `autorun.com` - T1091), root suspicious executable/script pattern scan (`.scr`, `.pif`, `.bat`, `.cmd`, `.vbs`, `.js`, `.ps1`), `USBSTOR` service start state verification, and USB device history enumeration from `HKLM\SYSTEM\CurrentControlSet\Enum\USBSTOR` and `HKLM\SYSTEM\CurrentControlSet\Enum\USB` with BadUSB/attack-tool hardware pattern matching (Rubber Ducky, BadUSB, Flipper, Teensy, Maltronics, Bash Bunny, O.MG cable - T1200). Strictly read-only; no disk mutation, file renaming, or drive disconnection.
+- **Wireless & Wi-Fi Posture**: Implemented adapter state and connected SSID/BSSID query, visible network scan (`netsh wlan show networks mode=bssid` parser), Evil Twin detection (conflicting security configurations for the same SSID - T1557.002), weak/open authentication warnings (Open, WEP, Shared - T1040), suspicious SSID regex patterns, and attack tool MAC OUIs (Hak5 WiFi Pineapple `00:13:37`, spoofed OUIs `AA:BB:CC`, `00:11:22`, `DE:AD:BE`). Strictly read-only; no interface disconnection or deauth defense.
+- **Bluetooth Posture**: Paired device enumeration from `HKLM\SYSTEM\CurrentControlSet\Services\BTHPORT\Parameters\Devices` with UTF-8 byte array device name decoding and suspicious device name analysis (`flipper`, `ubertooth`, `bluehydra`, `scanner`, `sniffer`, `keylog`, `pineapple` - T1011.001); radio service state check.
+- **IPC & Security**: Exposed outbound-only named pipes `Downpour.UsbInventory.v1` and `Downpour.WirelessInventory.v1` with current-user ACL and recent-capture caching. Added client bounds validation in `UsbInventoryClient` and `WirelessInventoryClient`.
+- **Alert Pipeline Integration**: Integrated USB and Wireless posture findings into `SecurityFindingCatalog`, `SecurityFindingMapper` (`FromUsb`, `FromWireless`), and `SecurityFindingBridgeWorker` to flow findings into `SecurityAlertRepository` for unified threat triage.
+- **Desktop UI**: Implemented `UsbPage.xaml/.cs` (route `usb`) and `WifiPage.xaml/.cs` (route `wifi`) with live re-check, status banners, categorized lists, and security finding severity badges. Wired navigation in `MainWindow.xaml.cs` and marked `usb` and `wifi` as `in-progress` in `capabilities.json`.
+- **Testing**: Added 21 unit tests in `UsbInventoryTests` and `WirelessInventoryTests` covering all evaluators, attack patterns, client schema validations, and local provider captures. 328/328 total tests pass with 0 warnings/errors.
+
+**Files created/updated:**
+- `src/Downpour.Contracts/UsbInventory.cs`
+- `src/Downpour.Contracts/WirelessInventory.cs`
+- `src/Downpour.Contracts/SecurityFindings.cs`
+- `src/Downpour.Core/UsbPostureEvaluator.cs`
+- `src/Downpour.Core/UsbInventoryClient.cs`
+- `src/Downpour.Core/WirelessPostureEvaluator.cs`
+- `src/Downpour.Core/WirelessInventoryClient.cs`
+- `src/Downpour.Core/SecurityFindingMapper.cs`
+- `src/Downpour.Service/UsbInventoryProvider.cs`
+- `src/Downpour.Service/UsbInventoryPipeWorker.cs`
+- `src/Downpour.Service/WirelessInventoryProvider.cs`
+- `src/Downpour.Service/WirelessInventoryPipeWorker.cs`
+- `src/Downpour.Service/SecurityFindingBridgeWorker.cs`
+- `src/Downpour.Service/Program.cs`
+- `src/Downpour.Desktop/Pages/UsbPage.xaml`
+- `src/Downpour.Desktop/Pages/UsbPage.xaml.cs`
+- `src/Downpour.Desktop/Pages/WifiPage.xaml`
+- `src/Downpour.Desktop/Pages/WifiPage.xaml.cs`
+- `src/Downpour.Desktop/MainWindow.xaml.cs`
+- `capabilities.json`
+- `tests/Downpour.Tests/UsbInventoryTests.cs`
+- `tests/Downpour.Tests/WirelessInventoryTests.cs`
+- `WORK_QUEUE.json` (DN-020 completed, DN-021 claimed)
+- `AGENT_REGISTRY.json` (antigravity-worker active on DN-021)
+- `SHARED_CONTEXT.md` (updated)
+
+**Next safe task:** DN-021 (DNS cache watch with DGA scoring)
+
 
 **DN-017 completed:**
 - Copied all 19 YAML rule files (101 rules) from v29 into `src/Downpour.Service/sigma_rules/` with provenance and Detection Rule License 1.1 (DRL 1.1) documentation.

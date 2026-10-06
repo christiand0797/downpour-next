@@ -28,6 +28,16 @@ public static class SecurityFindingMapper
             // re-scan of the same item updates the existing alert instead of creating a duplicate.
             .Select(finding => Create(SecurityFindingCatalog.Persistence, finding.Category, finding.Severity, finding.Technique, finding.Summary, finding.Indicator));
 
+    public static IEnumerable<SecurityFindingObservation> FromUsb(UsbSnapshot snapshot) =>
+        snapshot.Findings
+            .Where(finding => SecurityFindingCatalog.Severities.Contains(finding.Severity))
+            .Select(finding => Create(SecurityFindingCatalog.Usb, "USB", finding.Severity, finding.Technique, finding.Summary, finding.Indicator));
+
+    public static IEnumerable<SecurityFindingObservation> FromWireless(WirelessSnapshot snapshot) =>
+        snapshot.Findings
+            .Where(finding => SecurityFindingCatalog.Severities.Contains(finding.Severity))
+            .Select(finding => Create(SecurityFindingCatalog.Wireless, "Wireless", finding.Severity, finding.Technique, finding.Summary, finding.Indicator));
+
     public static SecurityFindingObservation Create(string source, string category, string severity, string technique, string summary, string indicator) =>
         new(source, Bound(category, 128), severity, string.IsNullOrWhiteSpace(technique) ? "Posture" : Bound(technique, 32),
             Bound(Clean(summary), MaximumTitle), Bound(indicator, MaximumIndicator));

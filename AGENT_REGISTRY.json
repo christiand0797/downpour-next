@@ -101,10 +101,10 @@
     {
       "id": "antigravity-worker",
       "role": "primary",
-      "taskId": "DN-020",
+      "taskId": "DN-021",
       "status": "active",
-      "heartbeatUtc": "2026-10-07T00:45:00Z",
-      "notes": "Completed DN-017 (bundled v29 sigma rules, parser/condition/modifier engine, load report, test coverage). Claimed DN-020 (read-only USB, Wi-Fi, Bluetooth posture)."
+      "heartbeatUtc": "2026-10-07T02:30:00Z",
+      "notes": "Completed DN-020 (read-only USB, Wi-Fi, and Bluetooth posture with pipe servers, client validation, Desktop pages, and alert bridge). Claimed DN-021 (DNS cache watch with DGA scoring)."
     }
   ]
 }

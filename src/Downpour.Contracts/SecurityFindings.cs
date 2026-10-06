@@ -13,8 +13,10 @@ public static class SecurityFindingCatalog
     public const string Hardening = "Downpour/Hardening";
     public const string Firewall = "Downpour/Firewall";
     public const string Persistence = "Downpour/Persistence";
+    public const string Usb = "Downpour/Usb";
+    public const string Wireless = "Downpour/Wireless";
 
-    public static readonly IReadOnlySet<string> Sources = new HashSet<string>(StringComparer.Ordinal) { Hardening, Firewall, Persistence };
+    public static readonly IReadOnlySet<string> Sources = new HashSet<string>(StringComparer.Ordinal) { Hardening, Firewall, Persistence, Usb, Wireless };
     public static readonly IReadOnlySet<string> Severities = new HashSet<string>(StringComparer.Ordinal) { "CRITICAL", "HIGH", "MEDIUM", "LOW" };
 
     public static bool IsFinding(string logName) => Sources.Contains(logName);

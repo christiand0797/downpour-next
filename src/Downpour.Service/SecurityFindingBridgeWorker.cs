@@ -13,6 +13,8 @@ public sealed class SecurityFindingBridgeWorker(
     HardeningPostureProvider hardening,
     FirewallInventoryProvider firewall,
     PersistenceInventoryProvider persistence,
+    UsbInventoryProvider usb,
+    WirelessInventoryProvider wireless,
     ILogger<SecurityFindingBridgeWorker> logger) : BackgroundService
 {
     internal static readonly TimeSpan InitialDelay = TimeSpan.FromSeconds(30);
@@ -42,6 +44,8 @@ public sealed class SecurityFindingBridgeWorker(
         Collect("hardening", () => SecurityFindingMapper.FromHardening(hardening.Capture()), findings);
         Collect("firewall", () => SecurityFindingMapper.FromFirewall(firewall.Capture()), findings);
         Collect("persistence", () => SecurityFindingMapper.FromPersistence(persistence.Capture()), findings);
+        Collect("usb", () => SecurityFindingMapper.FromUsb(usb.Capture()), findings);
+        Collect("wireless", () => SecurityFindingMapper.FromWireless(wireless.Capture()), findings);
         var bounded = findings.Take(SecurityAlertRepository.MaximumFindingsPerIngest).ToArray();
         if (findings.Count > bounded.Length)
             logger.LogWarning("Finding bridge truncated {Total} findings to {Limit}.", findings.Count, bounded.Length);

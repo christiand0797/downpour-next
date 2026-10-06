@@ -418,7 +418,7 @@
     {
       "id": "DN-020",
       "title": "USB, Wi-Fi, and Bluetooth posture (read-only)",
-      "status": "in_progress",
+      "status": "completed",
       "priority": "medium",
       "acceptance": [
         "USB device inventory and registry history",
@@ -426,13 +426,30 @@
         "Bluetooth device posture",
         "No blocking"
       ],
-      "notes": "Claimed by antigravity-worker per docs/AGENT_COORDINATION.md: implementing read-only USB, Wi-Fi, and Bluetooth posture routes.",
-      "files": []
+      "notes": "Completed 2026-10-06 by antigravity-worker. USB: read-only removable drive inventory, autorun detection (.inf/.bat/.exe/.com), root suspicious executables/scripts (.scr/.pif/.bat/.cmd/.vbs/.js/.ps1), USBSTOR service state check, and USBSTOR/USB registry device history with BadUSB/Rubber Ducky/Flipper/Teensy signature analysis (T1091, T1200). Wi-Fi & Wireless: interface state, connected network, visible networks with SSID, BSSID, Signal%, Auth, Cipher, Channel, Evil Twin detection (T1557.002), weak/open auth warnings (T1040), suspicious SSID patterns, and attack tool OUIs (Hak5 00:13:37, spoofed OUIs). Bluetooth: paired device enumeration from BTHPORT registry with name decoding and suspicious device name analysis (T1011.001). Outbound-only named pipes Downpour.UsbInventory.v1 and Downpour.WirelessInventory.v1 with current-user ACL and client validation. Desktop UI routes 'usb' and 'wifi' implemented with live re-check. Posture findings bridged to SecurityAlertRepository for threat triage. 21 new unit tests (328/328 total pass); 0 build warnings/errors.",
+      "files": [
+        "src/Downpour.Contracts/UsbInventory.cs",
+        "src/Downpour.Contracts/WirelessInventory.cs",
+        "src/Downpour.Core/UsbPostureEvaluator.cs",
+        "src/Downpour.Core/UsbInventoryClient.cs",
+        "src/Downpour.Core/WirelessPostureEvaluator.cs",
+        "src/Downpour.Core/WirelessInventoryClient.cs",
+        "src/Downpour.Service/UsbInventoryProvider.cs",
+        "src/Downpour.Service/UsbInventoryPipeWorker.cs",
+        "src/Downpour.Service/WirelessInventoryProvider.cs",
+        "src/Downpour.Service/WirelessInventoryPipeWorker.cs",
+        "src/Downpour.Desktop/Pages/UsbPage.xaml",
+        "src/Downpour.Desktop/Pages/UsbPage.xaml.cs",
+        "src/Downpour.Desktop/Pages/WifiPage.xaml",
+        "src/Downpour.Desktop/Pages/WifiPage.xaml.cs",
+        "tests/Downpour.Tests/UsbInventoryTests.cs",
+        "tests/Downpour.Tests/WirelessInventoryTests.cs"
+      ]
     },
     {
       "id": "DN-021",
       "title": "DNS cache watch with DGA scoring",
-      "status": "queued",
+      "status": "in_progress",
       "priority": "medium",
       "acceptance": [
         "Resolver cache enumeration via DnsGetCacheDataTable or documented alternative",
@@ -440,7 +457,7 @@
         "TOFU baseline persisted with bounded size",
         "Alerts flow into SecurityAlertRepository"
       ],
-      "notes": "DNS route. Also port the SPF/DMARC/DKIM lookup tool. | Assigned to antigravity-worker per docs/AGENT_COORDINATION.md.",
+      "notes": "Claimed by antigravity-worker per docs/AGENT_COORDINATION.md: implementing DNS cache watch with DGA scoring.",
       "files": []
     },
     {

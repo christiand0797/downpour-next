@@ -433,6 +433,10 @@ public sealed partial class MainWindow : Window
             NavFrame.Navigate(typeof(FirewallPage));
         else if (capability.RouteId.Equals("hunt", StringComparison.OrdinalIgnoreCase))
             NavFrame.Navigate(typeof(PersistencePage));
+        else if (capability.RouteId.Equals("usb", StringComparison.OrdinalIgnoreCase))
+            NavFrame.Navigate(typeof(UsbPage));
+        else if (capability.RouteId.Equals("wifi", StringComparison.OrdinalIgnoreCase))
+            NavFrame.Navigate(typeof(WifiPage));
         else if (capability.RouteId.Equals("threats", StringComparison.OrdinalIgnoreCase))
             NavFrame.Navigate(typeof(TriagePage), TriagePage.ThreatsMode);
         else if (capability.RouteId.Equals("possible-threats", StringComparison.OrdinalIgnoreCase))
@@ -489,6 +493,8 @@ public sealed partial class MainWindow : Window
         if (routeId is null && args.Content is HardeningPage) routeId = "hardening";
         if (routeId is null && args.Content is FirewallPage) routeId = "firewall";
         if (routeId is null && args.Content is PersistencePage) routeId = "hunt";
+        if (routeId is null && args.Content is UsbPage) routeId = "usb";
+        if (routeId is null && args.Content is WifiPage) routeId = "wifi";
         if (routeId is null && args.Content is TriagePage) routeId = args.Parameter as string == TriagePage.PossibleMode ? "possible-threats" : "threats";
 
         if (routeId is null || !_routeItems.TryGetValue(routeId, out var item)) return;
