@@ -369,7 +369,7 @@
         "Unsupported modifiers/conditions are counted and surfaced, not silently dropped",
         "Tests load every bundled rule"
       ],
-      "notes": "Completed 2026-10-06 by antigravity-worker. Copied all 19 YAML rule files (101 rules) from v29 into src/Downpour.Service/sigma_rules/ with provenance and Detection Rule License 1.1 (DRL 1.1) documentation. Included rule assets in Downpour.Service and Downpour.Tests output builds. Enhanced SigmaEngine to evaluate field-bound modifiers (CommandLine|contains, Image|endswith, ScriptBlockText|contains, CommandLine|re, ParentImage|endswith, CommandLine|contains|all) and robust conditions (1 of sel*, 1 of selection_*, all of sel*, selection and not filter, and boolean expressions). Unsupported modifiers and conditions are counted and surfaced via SigmaLoadReport rather than silently dropped. Wired bundled rule loading into SigmaAmsiEventProcessor at startup with warning logs for any unsupported syntax. Added comprehensive unit tests for bundled rule loading (all 101 rules valid), unsupported modifier/condition reporting, process multi-condition evaluation, script block detection, and PowerShell 4104 alert integration. Solution builds cleanly with 0 warnings/errors; all 268 tests pass.",
+      "notes": "Completed 2026-10-06 by antigravity-worker. Copied all 19 YAML rule files (101 rules) from v29 into src/Downpour.Service/sigma_rules/ with provenance and Detection Rule License 1.1 (DRL 1.1) documentation. Included rule assets in Downpour.Service and Downpour.Tests output builds. Enhanced SigmaEngine to evaluate field-bound modifiers (CommandLine|contains, Image|endswith, ScriptBlockText|contains, CommandLine|re, ParentImage|endswith, CommandLine|contains|all) and robust conditions (1 of sel*, 1 of selection_*, all of sel*, selection and not filter, and boolean expressions). Unsupported modifiers and conditions are counted and surfaced via SigmaLoadReport rather than silently dropped. Wired bundled rule loading into SigmaAmsiEventProcessor at startup with warning logs for any unsupported syntax. Added comprehensive unit tests for bundled rule loading (all 101 rules valid), unsupported modifier/condition reporting, process multi-condition evaluation, script block detection, and PowerShell 4104 alert integration. Solution builds cleanly with 0 warnings/errors; all 268 tests pass. | 2026-10-07 claude-parity-audit review: the pipeline was non-functional end to end. (1) Output: detections were converted back into event observations and failed event-catalog validation, so none were stored; fixed by ingesting them as Downpour/Sigma and Downpour/Amsi findings. (2) Input: observations are metadata-only, so Sigma matched the constant text \"PowerShell script block recorded\" and AMSI scanned the same constant. Real detection needs ScriptBlockText, which is DN-029 (a consent decision).",
       "files": [
         "src/Downpour.Service/sigma_rules/",
         "src/Downpour.Service/SigmaEngine.cs",
@@ -499,7 +499,7 @@
     {
       "id": "DN-024",
       "title": "Local notifications and alert channels",
-      "status": "in_progress",
+      "status": "completed",
       "priority": "medium",
       "acceptance": [
         "Tray icon with restore/exit",
@@ -507,7 +507,7 @@
         "Optional sound alarm",
         "SMTP email alerts designed with credential storage via DPAPI and explicit opt-in"
       ],
-      "notes": "Non-route v29 features listed in parity-checklist.json nonRouteFeatures. | Claimed by claude-parity-audit 2026-10-07.",
+      "notes": "Completed 2026-10-07 by claude-parity-audit (commit d79ae26). Tray icon (Shell_NotifyIconW, Show/Exit, Explorer-restart safe, icon from exe), minimize to tray (WM_SIZE subclass; default on as v29), close exits (v29), Windows App SDK notifications for new open HIGH/CRITICAL alerts (first poll baseline, bursts combined, click opens Threats), opt-in v29 sound alarm with CRITICAL threshold and v29 beep patterns. Verified in self-contained publish. Remaining: SMTP email alerts (needs DPAPI credential storage + opt-in), floating widget, rain overlay window.",
       "files": []
     },
     {
@@ -563,6 +563,19 @@
         "Read-only; no start/stop/configure"
       ],
       "notes": "Completed 2026-10-07 by claude-parity-audit (commit e0f9634). v29 SmartServicesScanner rules plus unquoted-path and writable-binary-folder checks (shared FileSystemExposure ACL helper); disabled services Low; drivers excluded from vector substrings. Fixed pre-existing bugs: QUERY_SERVICE_CONFIGW struct order (all startup types were garbage) and 512 cap that dropped services (now 2048; 763 here). Live: 6 High, 2 Medium, 3 Low. Remaining: binary signature verification.",
+      "files": []
+    },
+    {
+      "id": "DN-029",
+      "title": "DECISION NEEDED: collect PowerShell script-block text for Sigma/AMSI (local consent design)",
+      "status": "blocked",
+      "priority": "high",
+      "acceptance": [
+        "User decides whether script-block (4104 ScriptBlockText) content may be read",
+        "If yes: explicit opt-in in Settings, analysis in memory only, never persisted/exported (only rule title + record id stored), bounded size, documented in SECURITY.md",
+        "If no: mark v29 Sigma-on-scripts and AMSI as declined in parity-checklist.json"
+      ],
+      "notes": "AGENTS.md forbids collecting command lines or file contents without a scoped feature and a local consent flow. v29 scanned script blocks with Sigma and AMSI by default. Without this, the Sigma/AMSI pipeline (DN-017) cannot detect anything on live events. On this test machine AMSI also returns 0x80070103 (no provider registered; Malwarebytes and Defender both present).",
       "files": []
     }
   ]
