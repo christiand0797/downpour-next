@@ -65,24 +65,13 @@ public static class SigmaEngine
     public static SigmaLoadReport LastLoadReport { get; private set; } = new(0, 0, 0,
         new Dictionary<string, int>(), new Dictionary<string, int>(), Array.Empty<string>());
 
-    public static string GetDefaultRulesDirectory()
-    {
-        var baseDir = AppContext.BaseDirectory;
-        var dir = Path.Combine(baseDir, "sigma_rules");
-        if (Directory.Exists(dir))
-            return dir;
+    /// <summary>
+    /// Rules are copied next to the service binary by the project file. Only that directory is trusted: searching
+    /// parent directories could load rules planted in a user-writable folder above the install location.
+    /// </summary>
+    public static string GetDefaultRulesDirectory() => Path.Combine(AppContext.BaseDirectory, "sigma_rules");
 
-        var current = new DirectoryInfo(baseDir);
-        while (current != null)
-        {
-            var candidate = Path.Combine(current.FullName, "src", "Downpour.Service", "sigma_rules");
-            if (Directory.Exists(candidate))
-                return candidate;
-            current = current.Parent;
-        }
-
-        return dir;
-    }
+    private const long MaximumRuleFileBytes = 1024 * 1024;
 
     public static List<SigmaRule> LoadBundledRules(string? directoryPath = null)
     {
@@ -138,6 +127,11 @@ public static class SigmaEngine
             if (!File.Exists(path)) continue;
             try
             {
+                if (new FileInfo(path).Length > MaximumRuleFileBytes)
+                {
+                    collector.AddIssue($"Skipped {Path.GetFileName(path)}: larger than {MaximumRuleFileBytes / 1024} KiB.");
+                    continue;
+                }
                 var content = File.ReadAllText(path);
                 var rules = ParseYamlDocuments(content, collector);
                 allRules.AddRange(rules);
