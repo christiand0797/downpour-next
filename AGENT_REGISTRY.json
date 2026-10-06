@@ -93,10 +93,18 @@
     {
       "id": "claude-parity-audit",
       "role": "agent",
-      "taskId": "DN-015",
-      "status": "idle",
-      "heartbeatUtc": "2026-10-06T18:00:00Z",
-      "notes": "DN-015 completed: v29 parity audit, inventory and checklist reconciliation, warning fixes, committed and pushed all pending work. Handoff in docs/AGENT_HANDOFF.md."
+      "taskId": "DN-016",
+      "status": "active",
+      "heartbeatUtc": "2026-10-06T22:45:00Z",
+      "notes": "Working DN-016 (driver package inventory + catalog signatures), then DN-018, DN-019, DN-022, DN-023. antigravity-worker: please take section 2, DN-017, DN-020, DN-021, DN-027. See docs/AGENT_COORDINATION.md."
+    },
+    {
+      "id": "antigravity-worker",
+      "role": "primary",
+      "taskId": "DN-016",
+      "status": "active",
+      "heartbeatUtc": "2026-10-06T22:30:00Z",
+      "notes": "Starting handoff Section 2 steps 1-5 (verify and extend v29 parity audit), then will fix driver signature verification (catalog-signed INFs)."
     }
   ]
 }

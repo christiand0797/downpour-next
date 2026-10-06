@@ -340,7 +340,7 @@
     {
       "id": "DN-016",
       "title": "Fix driver package signature verification (catalog-signed INFs)",
-      "status": "queued",
+      "status": "in_progress",
       "priority": "high",
       "acceptance": [
         "Verification uses the driver catalog (CryptCATAdmin* / WTD_CHOICE_CATALOG) not the INF as an embedded-signature file",
@@ -348,7 +348,7 @@
         "Fix guidAction scoping in VerifyDriverSignature finally block",
         "Tests: signed inbox driver reports Valid, unsigned/tampered reports a distinct status, unknown is never shown as signed"
       ],
-      "notes": "DriverPackageInventoryProvider.VerifyDriverSignature calls WinVerifyTrust with WTD_CHOICE_FILE on .inf files. INFs are catalog-signed, so legitimate drivers will show 'Verification failed'. This is a misleading security state.",
+      "notes": "Handoff section 2 complete: verified import graph, documented settings/config, detection thresholds, data stores, and right-click context menus. Now fixing driver signature verification. DriverPackageInventoryProvider.VerifyDriverSignature calls WinVerifyTrust with WTD_CHOICE_FILE on .inf files. INFs are catalog-signed, so legitimate drivers will show 'Verification failed'. This is a misleading security state. | 2026-10-06 claimed by claude-parity-audit (see docs/AGENT_COORDINATION.md). Provider rewritten: registry class keys + oem*.inf, CryptCATAdmin catalog lookup, WinVerifyTrust WTD_CHOICE_CATALOG with cache-only revocation. Also fixes: SetupDiEnumDriverInfo was called without SetupDiBuildDriverInfoList; pipe had no ACL; client did not validate length; page never displayed rows.",
       "files": [
         "src/Downpour.Service/DriverPackageInventoryProvider.cs"
       ]
@@ -364,7 +364,7 @@
         "Unsupported modifiers/conditions are counted and surfaced, not silently dropped",
         "Tests load every bundled rule"
       ],
-      "notes": "LoadFromYamlFiles currently has no callers; only built-in rules run. v29 ships 19 YAML rule files plus 24 bundled rules in sigma_engine.py.",
+      "notes": "LoadFromYamlFiles currently has no callers; only built-in rules run. v29 ships 19 YAML rule files plus 24 bundled rules in sigma_engine.py. | Assigned to antigravity-worker per docs/AGENT_COORDINATION.md.",
       "files": [
         "src/Downpour.Service/SigmaEngine.cs",
         "src/Downpour.Service/SigmaAmsiPushWorker.cs"
@@ -381,7 +381,7 @@
         "No fix actions",
         "hardening route shows real data"
       ],
-      "notes": "First slice of the Hardening/Compliance route. Fix-all stays behind DN-008.",
+      "notes": "First slice of the Hardening/Compliance route. Fix-all stays behind DN-008. | Assigned to claude-parity-audit per docs/AGENT_COORDINATION.md.",
       "files": []
     },
     {
@@ -395,7 +395,7 @@
         "Firewall tamper detection signal",
         "No rule edits until DN-008"
       ],
-      "notes": "Firewall route. Rule toggle/delete stay behind the action broker.",
+      "notes": "Firewall route. Rule toggle/delete stay behind the action broker. | Assigned to claude-parity-audit per docs/AGENT_COORDINATION.md.",
       "files": []
     },
     {
@@ -409,7 +409,7 @@
         "Bluetooth device posture",
         "No blocking"
       ],
-      "notes": "USB and Wi-Fi routes. USB whitelist/block stays behind DN-008.",
+      "notes": "USB and Wi-Fi routes. USB whitelist/block stays behind DN-008. | Assigned to antigravity-worker per docs/AGENT_COORDINATION.md.",
       "files": []
     },
     {
@@ -423,7 +423,7 @@
         "TOFU baseline persisted with bounded size",
         "Alerts flow into SecurityAlertRepository"
       ],
-      "notes": "DNS route. Also port the SPF/DMARC/DKIM lookup tool.",
+      "notes": "DNS route. Also port the SPF/DMARC/DKIM lookup tool. | Assigned to antigravity-worker per docs/AGENT_COORDINATION.md.",
       "files": []
     },
     {
@@ -436,7 +436,7 @@
         "Baseline + diff with alerts",
         "Services route gains v29 risk scoring"
       ],
-      "notes": "Ports scheduled_task_monitor, wmi_persistence_detector, persistence_watchers, dll_hijack_detector.",
+      "notes": "Ports scheduled_task_monitor, wmi_persistence_detector, persistence_watchers, dll_hijack_detector. | Assigned to claude-parity-audit per docs/AGENT_COORDINATION.md.",
       "files": []
     },
     {
@@ -451,7 +451,7 @@
         "Export/report",
         "Response buttons visible but disabled with reason until DN-008"
       ],
-      "notes": "Core triage workflow from v29 dashboard/threats tabs.",
+      "notes": "Core triage workflow from v29 dashboard/threats tabs. | Assigned to claude-parity-audit per docs/AGENT_COORDINATION.md.",
       "files": []
     },
     {
@@ -507,7 +507,7 @@
         "Attack detection patterns and HTML export",
         "AEGIS phishing analyzer for pasted text, fully local"
       ],
-      "notes": "Low-risk ports from Timeline and AEGIS tabs.",
+      "notes": "Low-risk ports from Timeline and AEGIS tabs. | Assigned to antigravity-worker per docs/AGENT_COORDINATION.md.",
       "files": []
     }
   ]
