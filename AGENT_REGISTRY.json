@@ -93,10 +93,10 @@
     {
       "id": "claude-parity-audit",
       "role": "agent",
-      "taskId": "DN-024",
-      "status": "active",
-      "heartbeatUtc": "2026-10-07T03:10:00Z",
-      "notes": "Completed DN-016, 018, 019, 022, 023, 028; fixed DN-020 Wi-Fi to native API. Working DN-024 (tray icon, notifications, sound alarm)."
+      "taskId": "DN-009",
+      "status": "idle",
+      "heartbeatUtc": "2026-10-07T05:00:00Z",
+      "notes": "Idle, awaiting user decisions. Completed DN-016, 018, 019, 022, 023, 024, 028 and the DN-009 Remote Access slice; fixed DN-017 persistence and DN-020 Wi-Fi. Open decisions: DN-029 (script-block text for Sigma/AMSI), DN-025 (off-box indicator lookups), DN-026 (YARA dependency), DN-008 (action broker security review), and the DN-009 routes that need content access or active probing."
     },
     {
       "id": "antigravity-worker",
