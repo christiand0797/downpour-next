@@ -1,5 +1,24 @@
 # Downpour Next TODO
 
+## 2026-10-07 checkpoint (claude-parity-audit)
+
+Completed and pushed. Each item was verified in a clean worktree (Debug: 0 warnings/errors; 368 tests pass):
+- DN-016 driver packages: catalog signature verification, real inventory (122 packages here), ACL'd pipe, a page that lists rows.
+- DN-018 hardening: v29's eight firmware/platform posture checks.
+- DN-019 firewall: profiles, rules, tamper findings, Event 5157, Downpour rule detection.
+- DN-022 persistence review (Threat Hunt route): hash-only TOFU baseline. Found a CRITICAL BYOVD driver (msio64.sys) on this machine.
+- DN-023 Threats / Possible Threats triage: shared finding bridge into the alert store; Verify/Unverify; per-finding false-positive suppression. v29's Possible Threats was never populated.
+- DN-028 service risk scoring. Also fixed a pre-existing bug where every service startup type was garbage (struct field order), and a 512 cap that dropped services.
+- DN-024 tray icon, notifications, and sound alarm, verified in a self-contained publish.
+- Reviews and fixes of other agents' work:
+  - Sigma loader no longer searches parent directories.
+  - DN-020 Wi-Fi moved from English-only netsh parsing to the Native Wifi API.
+  - Sigma/AMSI detections are now stored. They had all been rejected.
+  - Thresholds doc regenerated from source because the hand-written values were wrong.
+
+Needs a user decision: DN-029 (whether to read PowerShell script-block text). Without it, Sigma/AMSI cannot detect anything on live events.
+Still security-gated: DN-008 action broker. Queued: DN-025 (off-box indicator lookups need a consent design), DN-026 (YARA dependency review), DN-009 umbrella routes.
+
 ## 2026-10-06 DN-020: USB, Wi-Fi, and Bluetooth Posture (antigravity-worker)
 
 **DN-020 completed:**
