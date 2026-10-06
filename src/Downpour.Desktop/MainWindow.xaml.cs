@@ -394,6 +394,13 @@ public sealed partial class MainWindow : Window
         menuItems.Add(item);
     }
 
+    /// <summary>Navigates to a route by id (used when a notification is clicked).</summary>
+    internal void ShowRoute(string routeId)
+    {
+        var capability = _capabilities.FirstOrDefault(candidate => candidate.RouteId.Equals(routeId, StringComparison.OrdinalIgnoreCase));
+        if (capability is not null) Navigate(capability);
+    }
+
     private void Navigate(CapabilityDefinition capability)
     {
         if (string.Equals(_currentRouteId, capability.RouteId, StringComparison.OrdinalIgnoreCase)) return;

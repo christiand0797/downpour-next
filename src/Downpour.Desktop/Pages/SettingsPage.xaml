@@ -37,9 +37,41 @@
                 </StackPanel>
             </Border>
             <Border Padding="18" CornerRadius="12" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource DownpourStrokeBrush}" BorderThickness="1">
+                <StackPanel Spacing="14">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Alerts &amp; notifications" FontSize="18" FontWeight="SemiBold" />
+                        <TextBlock Text="How Downpour tells you about new high and critical alerts while it is running." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                    </StackPanel>
+                    <Grid ColumnSpacing="16">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                        <StackPanel Spacing="2"><TextBlock Text="Windows notifications" FontWeight="SemiBold" /><TextBlock Text="Show a notification for new high or critical alerts. Several at once are combined into one. Clicking it opens Threats." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" /></StackPanel>
+                        <ToggleSwitch x:Name="NotificationsToggle" Grid.Column="1" IsOn="True" OnContent="On" OffContent="Off" />
+                    </Grid>
+                    <Grid ColumnSpacing="16">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                        <StackPanel Spacing="2"><TextBlock Text="Minimize to the notification area" FontWeight="SemiBold" /><TextBlock Text="When the window is minimized, hide it and keep Downpour in the notification area. Closing the window still exits." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" /></StackPanel>
+                        <ToggleSwitch x:Name="MinimizeToTrayToggle" Grid.Column="1" IsOn="True" OnContent="On" OffContent="Off" />
+                    </Grid>
+                    <Grid ColumnSpacing="16">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                        <StackPanel Spacing="2"><TextBlock Text="Sound alarm" FontWeight="SemiBold" /><TextBlock Text="Beep when a new critical alert arrives (off by default, as in v29)." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" /></StackPanel>
+                        <ToggleSwitch x:Name="SoundAlarmToggle" Grid.Column="1" IsOn="False" OnContent="On" OffContent="Off" />
+                    </Grid>
+                    <Grid ColumnSpacing="16">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                        <StackPanel Spacing="2"><TextBlock Text="Also sound for high alerts" FontWeight="SemiBold" /><TextBlock Text="Extend the sound alarm to high-severity alerts." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" /></StackPanel>
+                        <ToggleSwitch x:Name="SoundHighToggle" Grid.Column="1" IsOn="False" OnContent="On" OffContent="Off" />
+                    </Grid>
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <Button Content="Test alarm sound" Click="TestAlarm_Click" />
+                        <TextBlock x:Name="NotificationState" VerticalAlignment="Center" FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" TextWrapping="Wrap" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+            <Border Padding="18" CornerRadius="12" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource DownpourStrokeBrush}" BorderThickness="1">
                 <StackPanel Spacing="8">
                     <TextBlock Text="Privacy &amp; data" FontSize="18" FontWeight="SemiBold" />
-                    <TextBlock Text="This build stores only the visual preferences above in the current user's app settings. No usage analytics, clipboard data, browser data, command lines, or file contents are collected." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                    <TextBlock Text="This build stores only the preferences above in the current user's app settings. No usage analytics, clipboard data, browser data, command lines, or file contents are collected." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                     <TextBlock Text="Threat Intelligence contacts the fixed CISA endpoint only when you open that route or choose Refresh. The current prototype does not persist downloaded feed data." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                 </StackPanel>
             </Border>

@@ -1,4 +1,4 @@
-﻿using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
@@ -17,6 +17,11 @@ public partial class App : Application
 {
     private Window? _window;
     private SensorServiceProcess? _sensorService;
+    private TrayIcon? _tray;
+    private AlertNotifier? _notifier;
+    private MinimizeWatcher? _minimizeWatcher;
+
+    internal static string? NotificationsUnavailable => Current is App app ? app._notifier?.Unavailable : null;
 
     internal static string SensorServiceStatusHint { get; private set; } =
         "The desktop app is running; sensor-service startup has not completed.";
@@ -35,6 +40,22 @@ public partial class App : Application
         Current is App app && app._window is not null
             ? WinRT.Interop.WindowNative.GetWindowHandle(app._window)
             : IntPtr.Zero;
+
+    private void HideToTrayIfMinimized()
+    {
+        if (_window is null || !AppPreferences.MinimizeToTray || _tray?.IsVisible != true || !_window.AppWindow.IsVisible) return;
+        if (_window.AppWindow.Presenter is Microsoft.UI.Windowing.OverlappedPresenter { State: Microsoft.UI.Windowing.OverlappedPresenterState.Minimized })
+            _window.AppWindow.Hide();
+    }
+
+    private void RestoreMainWindow()
+    {
+        if (_window is null) return;
+        _window.AppWindow.Show();
+        if (_window.AppWindow.Presenter is Microsoft.UI.Windowing.OverlappedPresenter { State: Microsoft.UI.Windowing.OverlappedPresenterState.Minimized } presenter)
+            presenter.Restore();
+        _window.Activate();
+    }
 
     internal static void MarkSensorServiceConnected() =>
         SensorServiceStatusHint = "The desktop app is running and connected to the local sensor service.";
@@ -58,7 +79,27 @@ public partial class App : Application
         _window = new MainWindow();
         var sensorService = new SensorServiceProcess(message => SensorServiceStatusHint = message);
         _sensorService = sensorService;
-        _window.Closed += (_, _) => sensorService.Dispose();
+        _window.Closed += (_, _) =>
+        {
+            _notifier?.Dispose();
+            _tray?.Dispose();
+            sensorService.Dispose();
+        };
+
+        var dispatcher = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
+        _tray = new TrayIcon(System.IO.Path.Combine(AppContext.BaseDirectory, "Assets", "AppIcon.ico"), "Downpour Next");
+        _tray.ShowRequested += RestoreMainWindow;
+        _tray.ExitRequested += () => _window?.Close();
+        _notifier = new AlertNotifier(dispatcher);
+        _notifier.RouteRequested += route =>
+        {
+            RestoreMainWindow();
+            (_window as MainWindow)?.ShowRoute(route);
+        };
+        // v29 _on_minimize: a minimized window is withdrawn to the tray when minimize_to_tray is on (default).
+        // AppWindow.Changed does not fire for a plain minimize, so watch WM_SIZE / SIZE_MINIMIZED instead.
+        _minimizeWatcher = new MinimizeWatcher(MainWindowHandle, () => dispatcher.TryEnqueue(HideToTrayIfMinimized));
+        _window.Closed += (_, _) => _minimizeWatcher?.Dispose();
         _window.Activate();
         _ = _sensorService.EnsureRunningAsync();
     }
