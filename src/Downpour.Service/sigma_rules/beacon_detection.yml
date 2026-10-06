@@ -1,0 +1,152 @@
+title: C2 Beacon Communication Pattern
+id: d29-beacon-001
+status: stable
+level: high
+description: Detects process command lines associated with C2 beacon frameworks
+author: Downpour v29
+date: 2026/09/16
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    sel_cobalt:
+        CommandLine|contains:
+            - 'beacon.exe'
+            - 'cobaltstrike'
+            - 'artifact.exe'
+            - 'pipename='
+    sel_sliver:
+        CommandLine|contains:
+            - 'sliver-client'
+            - 'sliver-server'
+            - '.woff --'
+    sel_mythic:
+        CommandLine|contains:
+            - 'mythic_agent'
+            - 'apfell'
+    sel_havoc:
+        CommandLine|contains:
+            - 'havoc.exe'
+            - 'demon.x64'
+            - 'demon.x86'
+    sel_bruteratel:
+        CommandLine|contains:
+            - 'badger'
+            - 'brute_ratel'
+            - 'brc4'
+    condition: 1 of sel*
+tags:
+    - attack.command_and_control
+    - attack.t1071
+    - attack.t1573
+falsepositives:
+    - Security testing tools in authorized use
+---
+title: Suspicious Periodic Network Connection
+id: d29-beacon-002
+status: stable
+level: medium
+description: Detects processes making regular periodic connections (beacon-like)
+author: Downpour v29
+date: 2026/09/16
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    sel_curl_loop:
+        CommandLine|contains:
+            - 'curl'
+            - 'wget'
+        CommandLine|contains:
+            - '--retry'
+            - '-retry'
+            - 'loop'
+            - 'sleep'
+    sel_ncat:
+        Image|endswith:
+            - '\ncat.exe'
+            - '\nc.exe'
+            - '\netcat.exe'
+    sel_reverse:
+        CommandLine|contains:
+            - 'reverse'
+            - 'connect-back'
+            - 'callback'
+        CommandLine|contains:
+            - '.exe'
+    condition: 1 of sel*
+tags:
+    - attack.command_and_control
+    - attack.t1071
+    - attack.t1095
+falsepositives:
+    - Legitimate monitoring scripts
+    - System health checks
+---
+title: Browser Extension Sideloading
+id: d29-browser-001
+status: stable
+level: high
+description: Detects browser extension sideloading via command line
+author: Downpour v29
+date: 2026/09/16
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    sel_chrome_ext:
+        Image|endswith:
+            - '\chrome.exe'
+            - '\msedge.exe'
+            - '\brave.exe'
+        CommandLine|contains:
+            - '--load-extension='
+            - '--disable-extensions-except='
+    sel_reg_ext:
+        Image|endswith: '\reg.exe'
+        CommandLine|contains:
+            - 'ExtensionInstallForceList'
+            - 'ExtensionInstallAllowlist'
+            - 'ExtensionSettings'
+    condition: 1 of sel*
+tags:
+    - attack.persistence
+    - attack.t1176
+falsepositives:
+    - Developer testing
+    - Enterprise extension management
+---
+title: Bluetooth Reconnaissance
+id: d29-bt-001
+status: stable
+level: medium
+description: Detects Bluetooth scanning and reconnaissance tools
+author: Downpour v29
+date: 2026/09/16
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    sel_bt_tools:
+        CommandLine|contains:
+            - 'btscanner'
+            - 'bluescanner'
+            - 'blescan'
+            - 'ubertooth'
+            - 'bluescan'
+            - 'redfang'
+    sel_bt_enum:
+        CommandLine|contains:
+            - 'bluetooth'
+            - 'btaddr'
+        CommandLine|contains:
+            - 'scan'
+            - 'enum'
+            - 'discover'
+    condition: 1 of sel*
+tags:
+    - attack.discovery
+    - attack.t1120
+    - attack.t1200
+falsepositives:
+    - Legitimate Bluetooth management tools

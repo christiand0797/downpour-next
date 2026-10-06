@@ -1,11 +1,34 @@
 # Downpour Next shared context
 
-**Updated:** 2026-10-06 (DN-016 complete; handoff section 2 verification done; DN-017 queued)
+**Updated:** 2026-10-06 (DN-017 complete; DN-018/DN-019 complete; DN-020/DN-022 in progress)
 
 **Repository:** public [christiand0797/downpour-next](https://github.com/christiand0797/downpour-next)
 **Local path:** `C:\Users\purpl\Desktop\downpour v2`  
 **Branch:** `main`  
 **Latest source checkpoint:** `1750c70 Prepare v0.1.14 performance release` on `main`. Stable [v0.1.14](https://github.com/christiand0797/downpour-next/releases/tag/v0.1.14) is published with `DownpourNext-win-x64-0.1.14.zip`, size 196,796,799 bytes, SHA-256 `B5C723A9DC15FEDA679BA735731369BB29ED54C8BA7F78A218D3B560EE7C3272`; the anonymous GitHub release API reports the same digest and size. The ZIP contains 769 entries. The ignored local `DownpourNext-Portable/` folder contains the current v0.1.14 package plus two legacy README extras; desktop/service/updater-helper executable hashes match fresh self-contained staging. Serial Release build: 0 warnings/errors; 117 tests pass, including per-process CPU delta and system-wide commit counter coverage. Current package desktop launched and its bundled service child was confirmed running. Dashboard screenshot: `artifacts/desktop-downpour-latest.png`. Native Performance navigation/save-picker click-through remains pending. v0.1.12's full disposable v0.1.11 update apply/hash/relaunch check passed. The user authorized public repo visibility for anonymous updates. Releases remain unsigned, portable, and not a full parity claim.
+
+## 2026-10-06 DN-017: Bundled Sigma Rules & Enhanced Engine (antigravity-worker)
+
+**DN-017 completed:**
+- Copied all 19 YAML rule files (101 rules) from v29 into `src/Downpour.Service/sigma_rules/` with provenance and Detection Rule License 1.1 (DRL 1.1) documentation.
+- Bundled rule directory copied to output via `Downpour.Service.csproj` and `Downpour.Tests.csproj`.
+- Enhanced `SigmaEngine` to support field-bound modifiers (`CommandLine|contains`, `Image|endswith`, `ScriptBlockText|contains`, `CommandLine|re`, `ParentImage|endswith`, `CommandLine|contains|all`) and boolean/quantifier conditions (`1 of sel*`, `1 of selection_*`, `all of sel*`, `selection and not filter`, nested parentheses).
+- Added `SigmaLoadReport` to surface and count unsupported modifiers and conditions rather than silently dropping them.
+- Wired bundled rule loading into `SigmaAmsiEventProcessor` at service startup with warning logs for unsupported syntax.
+- Expanded unit tests in `SigmaEngineTests`: all 101 bundled rules load cleanly (0 unsupported, 0 errors); tested unsupported modifier/condition reporting; tested process multi-condition evaluation and PowerShell 4104 alert pipeline.
+- Build: 0 warnings, 0 errors. All 268 tests pass in Debug and Release.
+
+**Files updated:**
+- `src/Downpour.Service/sigma_rules/` (19 yaml files + README.md)
+- `src/Downpour.Service/Downpour.Service.csproj`
+- `src/Downpour.Service/SigmaEngine.cs`
+- `src/Downpour.Service/SigmaAmsiEventProcessor.cs`
+- `tests/Downpour.Tests/Downpour.Tests.csproj`
+- `tests/Downpour.Tests/SigmaEngineTests.cs`
+- `WORK_QUEUE.json` (DN-017 completed, DN-020 claimed)
+- `AGENT_REGISTRY.json` (antigravity-worker active on DN-020)
+
+**Next safe task:** DN-020 (read-only USB, Wi-Fi, and Bluetooth posture)
 
 ## 2026-10-06 handoff section 2 and DN-016 (antigravity-worker)
 

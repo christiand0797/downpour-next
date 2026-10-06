@@ -1,0 +1,128 @@
+title: UAC Bypass via Fodhelper Registry Hijack
+id: downpour-sigma-090
+status: stable
+level: critical
+description: Detects registry modifications for UAC bypass via fodhelper.exe
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_reg:
+        Image|endswith: '\reg.exe'
+    selection_key:
+        CommandLine|contains:
+            - 'ms-settings\\Shell\\Open\\command'
+            - 'ms-settings\\shell\\open\\command'
+    condition: selection_reg and selection_key
+tags:
+    - attack.privilege_escalation
+    - attack.defense_evasion
+    - attack.t1548.002
+---
+title: UAC Bypass via Eventvwr MSC File Handler
+id: downpour-sigma-091
+status: stable
+level: critical
+description: Detects registry modifications for UAC bypass via eventvwr.exe
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_reg:
+        Image|endswith: '\reg.exe'
+    selection_key:
+        CommandLine|contains:
+            - 'mscfile\\Shell\\Open\\command'
+            - 'mscfile\\shell\\open\\command'
+    condition: selection_reg and selection_key
+tags:
+    - attack.privilege_escalation
+    - attack.t1548.002
+---
+title: Token Impersonation via Named Pipe
+id: downpour-sigma-092
+status: stable
+level: high
+description: Detects potential token impersonation via named pipe creation tools
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection:
+        CommandLine|contains:
+            - 'ImpersonateNamedPipeClient'
+            - 'CreateNamedPipe'
+            - 'ConnectNamedPipe'
+            - 'potato'
+            - 'juicypotato'
+            - 'rottenpotato'
+            - 'sweetpotato'
+            - 'godpotato'
+            - 'printspoofer'
+    condition: selection
+tags:
+    - attack.privilege_escalation
+    - attack.t1134.001
+---
+title: SeDebugPrivilege Abuse Indicator
+id: downpour-sigma-093
+status: stable
+level: high
+description: Detects processes that commonly exploit SeDebugPrivilege
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection:
+        CommandLine|contains:
+            - 'SeDebugPrivilege'
+            - 'privilege::debug'
+            - 'AdjustTokenPrivileges'
+            - 'EnablePrivilege'
+    condition: selection
+tags:
+    - attack.privilege_escalation
+    - attack.t1134
+---
+title: AlwaysInstallElevated Registry Check
+id: downpour-sigma-094
+status: stable
+level: high
+description: Detects queries for AlwaysInstallElevated (privesc reconnaissance)
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection:
+        CommandLine|contains: 'AlwaysInstallElevated'
+    condition: selection
+tags:
+    - attack.privilege_escalation
+    - attack.t1548.002
+---
+title: DLL Hijack in System Directory
+id: downpour-sigma-095
+status: stable
+level: high
+description: Detects copy or move of DLL files into system directories
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_cmd:
+        Image|endswith:
+            - '\cmd.exe'
+            - '\xcopy.exe'
+            - '\robocopy.exe'
+    selection_dll:
+        CommandLine|contains: '.dll'
+    selection_target:
+        CommandLine|contains:
+            - 'System32'
+            - 'SysWOW64'
+            - 'Program Files'
+    condition: selection_cmd and selection_dll and selection_target
+tags:
+    - attack.persistence
+    - attack.privilege_escalation
+    - attack.t1574.001

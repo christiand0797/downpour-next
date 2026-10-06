@@ -1,0 +1,104 @@
+title: Office Application Spawning Command Shell
+id: downpour-sigma-010
+status: stable
+level: high
+description: Detects Office applications spawning cmd.exe or PowerShell
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_parent:
+        ParentImage|endswith:
+            - '\winword.exe'
+            - '\excel.exe'
+            - '\powerpnt.exe'
+            - '\outlook.exe'
+            - '\msaccess.exe'
+            - '\mspub.exe'
+            - '\visio.exe'
+    selection_child:
+        Image|endswith:
+            - '\cmd.exe'
+            - '\powershell.exe'
+            - '\pwsh.exe'
+            - '\wscript.exe'
+            - '\cscript.exe'
+            - '\mshta.exe'
+    condition: selection_parent and selection_child
+tags:
+    - attack.execution
+    - attack.t1204.002
+---
+title: Browser Spawning Command Shell
+id: downpour-sigma-011
+status: stable
+level: high
+description: Detects web browsers spawning cmd/powershell (possible drive-by or exploit)
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_parent:
+        ParentImage|endswith:
+            - '\chrome.exe'
+            - '\msedge.exe'
+            - '\firefox.exe'
+            - '\iexplore.exe'
+            - '\brave.exe'
+    selection_child:
+        Image|endswith:
+            - '\cmd.exe'
+            - '\powershell.exe'
+            - '\pwsh.exe'
+    condition: selection_parent and selection_child
+tags:
+    - attack.execution
+    - attack.initial_access
+---
+title: Svchost Spawning Suspicious Child Process
+id: downpour-sigma-012
+status: stable
+level: medium
+description: Detects svchost spawning unusual child processes that may indicate injection
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_parent:
+        ParentImage|endswith: '\svchost.exe'
+    selection_child:
+        Image|endswith:
+            - '\cmd.exe'
+            - '\powershell.exe'
+            - '\pwsh.exe'
+            - '\mshta.exe'
+            - '\wscript.exe'
+            - '\cscript.exe'
+            - '\regsvr32.exe'
+            - '\rundll32.exe'
+    condition: selection_parent and selection_child
+tags:
+    - attack.defense_evasion
+    - attack.privilege_escalation
+---
+title: WMI Provider Host Spawning Shell
+id: downpour-sigma-013
+status: stable
+level: high
+description: Detects WmiPrvSE.exe spawning command interpreters (WMI lateral movement)
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_parent:
+        ParentImage|endswith: '\WmiPrvSE.exe'
+    selection_child:
+        Image|endswith:
+            - '\cmd.exe'
+            - '\powershell.exe'
+            - '\pwsh.exe'
+    condition: selection_parent and selection_child
+tags:
+    - attack.execution
+    - attack.t1047
+    - attack.lateral_movement

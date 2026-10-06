@@ -1,0 +1,149 @@
+title: Data Exfiltration Tool Execution
+id: d29-sigma-exfil-tools-001
+status: stable
+level: critical
+description: Detects execution of data exfiltration tools including rclone, mega, DNS tunneling
+author: Downpour v29 Titanium
+date: 2024/12/01
+logsource:
+  category: process_creation
+  product: windows
+detection:
+  sel_rclone:
+    CommandLine|contains:
+      - 'rclone copy'
+      - 'rclone sync'
+      - 'rclone move'
+  sel_mega:
+    Image|endswith:
+      - '\megacmd.exe'
+      - '\mega-put.exe'
+  sel_dns_tunnel:
+    CommandLine|contains:
+      - 'dnscat'
+      - 'iodine'
+      - 'dns2tcp'
+  sel_anon_upload:
+    CommandLine|contains:
+      - 'transfer.sh'
+      - 'file.io'
+      - 'gofile.io'
+      - 'anonfiles'
+  condition: 1 of sel*
+tags:
+  - attack.exfiltration
+  - attack.t1048
+  - attack.t1567
+
+---
+
+title: Anti-Forensics Evidence Destruction
+id: d29-sigma-antifor-tools-001
+status: stable
+level: critical
+description: Detects anti-forensics tools and evidence destruction
+author: Downpour v29 Titanium
+date: 2024/12/01
+logsource:
+  category: process_creation
+  product: windows
+detection:
+  sel_secure_delete:
+    Image|endswith:
+      - '\sdelete.exe'
+      - '\sdelete64.exe'
+      - '\eraser.exe'
+  sel_log_clear:
+    CommandLine|contains:
+      - 'wevtutil cl'
+      - 'wevtutil clear-log'
+  sel_audit_tamper:
+    CommandLine|contains:
+      - 'auditpol /clear'
+      - 'auditpol /remove'
+  sel_prefetch_del:
+    CommandLine|contains:
+      - 'del /q /f'
+      - 'Prefetch'
+  sel_usn_journal:
+    CommandLine|contains:
+      - 'fsutil usn deletejournal'
+  condition: 1 of sel*
+tags:
+  - attack.defense_evasion
+  - attack.t1070
+  - attack.t1070.001
+  - attack.t1070.004
+
+---
+
+title: Gaming Cheat Tool Execution
+id: d29-sigma-gaming-cheat-001
+status: stable
+level: high
+description: Detects game cheating tools, memory editors, and DDoS tools used against gamers
+author: Downpour v29 Titanium
+date: 2024/12/01
+logsource:
+  category: process_creation
+  product: windows
+detection:
+  sel_cheat_engine:
+    Image|endswith:
+      - '\cheatengine-x86_64.exe'
+      - '\CheatEngine.exe'
+      - '\ce.exe'
+  sel_memory_editor:
+    Image|endswith:
+      - '\artmoney.exe'
+      - '\WeMod.exe'
+      - '\PLITCH.exe'
+  sel_injector:
+    Image|endswith:
+      - '\ExtremeInjector.exe'
+      - '\Xenos.exe'
+  sel_ddos_tool:
+    CommandLine|contains:
+      - 'LOIC'
+      - 'HOIC'
+      - 'slowloris'
+      - 'hping'
+      - 'lag switch'
+  sel_lag_tool:
+    Image|endswith:
+      - '\clumsy.exe'
+      - '\NetLimiter.exe'
+  condition: 1 of sel*
+tags:
+  - attack.execution
+  - attack.t1055
+  - attack.t1498
+
+---
+
+title: WMI Event Subscription Persistence
+id: d29-sigma-wmi-persist-001
+status: stable
+level: critical
+description: Detects WMI event subscription creation for persistence
+author: Downpour v29 Titanium
+date: 2024/12/01
+logsource:
+  category: process_creation
+  product: windows
+detection:
+  sel_wmi_consumer:
+    CommandLine|contains:
+      - 'CommandLineEventConsumer'
+      - 'ActiveScriptEventConsumer'
+  sel_wmi_filter:
+    CommandLine|contains:
+      - '__EventFilter'
+      - '__FilterToConsumerBinding'
+  sel_mofcomp:
+    Image|endswith:
+      - '\mofcomp.exe'
+  condition: 1 of sel*
+tags:
+  - attack.persistence
+  - attack.t1546.003

@@ -361,7 +361,7 @@
     {
       "id": "DN-017",
       "title": "Load v29 Sigma rule files",
-      "status": "in_progress",
+      "status": "completed",
       "priority": "high",
       "acceptance": [
         "SigmaEngine.LoadFromYamlFiles is called at service start for a bundled rules folder",
@@ -369,10 +369,14 @@
         "Unsupported modifiers/conditions are counted and surfaced, not silently dropped",
         "Tests load every bundled rule"
       ],
-      "notes": "Claimed by antigravity-worker: copying v29 sigma_rules/*.yml into repo, calling LoadFromYamlFiles at service startup, surfacing unsupported rules, and adding test coverage.",
+      "notes": "Completed 2026-10-06 by antigravity-worker. Copied all 19 YAML rule files (101 rules) from v29 into src/Downpour.Service/sigma_rules/ with provenance and Detection Rule License 1.1 (DRL 1.1) documentation. Included rule assets in Downpour.Service and Downpour.Tests output builds. Enhanced SigmaEngine to evaluate field-bound modifiers (CommandLine|contains, Image|endswith, ScriptBlockText|contains, CommandLine|re, ParentImage|endswith, CommandLine|contains|all) and robust conditions (1 of sel*, 1 of selection_*, all of sel*, selection and not filter, and boolean expressions). Unsupported modifiers and conditions are counted and surfaced via SigmaLoadReport rather than silently dropped. Wired bundled rule loading into SigmaAmsiEventProcessor at startup with warning logs for any unsupported syntax. Added comprehensive unit tests for bundled rule loading (all 101 rules valid), unsupported modifier/condition reporting, process multi-condition evaluation, script block detection, and PowerShell 4104 alert integration. Solution builds cleanly with 0 warnings/errors; all 268 tests pass.",
       "files": [
+        "src/Downpour.Service/sigma_rules/",
         "src/Downpour.Service/SigmaEngine.cs",
-        "src/Downpour.Service/SigmaAmsiPushWorker.cs"
+        "src/Downpour.Service/SigmaAmsiEventProcessor.cs",
+        "src/Downpour.Service/Downpour.Service.csproj",
+        "tests/Downpour.Tests/Downpour.Tests.csproj",
+        "tests/Downpour.Tests/SigmaEngineTests.cs"
       ]
     },
     {
@@ -414,7 +418,7 @@
     {
       "id": "DN-020",
       "title": "USB, Wi-Fi, and Bluetooth posture (read-only)",
-      "status": "queued",
+      "status": "in_progress",
       "priority": "medium",
       "acceptance": [
         "USB device inventory and registry history",
@@ -422,7 +426,7 @@
         "Bluetooth device posture",
         "No blocking"
       ],
-      "notes": "USB and Wi-Fi routes. USB whitelist/block stays behind DN-008. | Assigned to antigravity-worker per docs/AGENT_COORDINATION.md.",
+      "notes": "Claimed by antigravity-worker per docs/AGENT_COORDINATION.md: implementing read-only USB, Wi-Fi, and Bluetooth posture routes.",
       "files": []
     },
     {

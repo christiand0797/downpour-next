@@ -1,0 +1,166 @@
+title: Lateral Movement Tool Execution
+id: 9f8e7d6c-5b4a-3c2d-1e0f-a9b8c7d6e5f4
+status: stable
+level: critical
+description: Detects execution of lateral movement tools including PsExec, WMI remote, Impacket, CrackMapExec
+author: Downpour v29 Titanium
+date: 2026/09/16
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    sel_psexec:
+        Image|endswith:
+            - '\psexec.exe'
+            - '\psexec64.exe'
+            - '\paexec.exe'
+            - '\remcom.exe'
+            - '\csexec.exe'
+    sel_wmi_remote:
+        CommandLine|contains:
+            - 'wmic /node:'
+            - 'wmic.exe /node:'
+    sel_winrs:
+        Image|endswith: '\winrs.exe'
+        CommandLine|contains: '-r:'
+    sel_schtasks_remote:
+        Image|endswith: '\schtasks.exe'
+        CommandLine|contains|all:
+            - '/create'
+            - '/s '
+    sel_sc_remote:
+        Image|endswith: '\sc.exe'
+        CommandLine|contains: '\\\\'
+    sel_impacket:
+        CommandLine|contains:
+            - 'wmiexec'
+            - 'smbexec'
+            - 'atexec'
+            - 'dcomexec'
+            - 'psexec.py'
+            - 'secretsdump'
+    sel_cme:
+        CommandLine|contains:
+            - 'crackmapexec'
+            - 'netexec'
+            - 'evil-winrm'
+    condition: 1 of sel*
+tags:
+    - attack.lateral_movement
+    - attack.t1021.002
+    - attack.t1047
+    - attack.t1053.005
+falsepositives:
+    - Legitimate system administration using PsExec
+    - Authorized remote management tools
+---
+title: BadUSB / Keystroke Injection Tool Detection
+id: a1b2c3d4-e5f6-7a8b-9c0d-e1f2a3b4c5d6
+status: stable
+level: high
+description: Detects execution of keystroke injection and BadUSB development tools
+author: Downpour v29 Titanium
+date: 2026/09/16
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    sel_tools:
+        CommandLine|contains:
+            - 'arduino-cli'
+            - 'teensy_loader'
+            - 'dfu-programmer'
+            - 'dfu-util'
+            - 'esptool'
+    sel_hid:
+        CommandLine|contains:
+            - 'HID keyboard'
+            - 'rubber ducky'
+            - 'ducktoolkit'
+            - 'usb-rubber-ducky'
+            - 'flipper zero'
+            - 'badusb'
+    condition: 1 of sel*
+tags:
+    - attack.initial_access
+    - attack.t1200
+falsepositives:
+    - Legitimate hardware development environments
+---
+title: Shadow Copy Deletion - Ransomware Indicator
+id: b2c3d4e5-f6a7-8b9c-0d1e-f2a3b4c5d6e7
+status: stable
+level: critical
+description: Detects shadow copy deletion and backup sabotage commonly used by ransomware
+author: Downpour v29 Titanium
+date: 2026/09/16
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    sel_vssadmin:
+        Image|endswith: '\vssadmin.exe'
+        CommandLine|contains:
+            - 'delete shadows'
+            - 'resize shadowstorage'
+    sel_wmic_shadow:
+        Image|endswith: '\wmic.exe'
+        CommandLine|contains:
+            - 'shadowcopy delete'
+            - 'shadowcopy where'
+    sel_bcdedit:
+        Image|endswith: '\bcdedit.exe'
+        CommandLine|contains:
+            - 'recoveryenabled No'
+            - 'bootstatuspolicy ignoreallfailures'
+    sel_wbadmin:
+        Image|endswith: '\wbadmin.exe'
+        CommandLine|contains:
+            - 'delete catalog'
+            - 'delete systemstatebackup'
+    condition: 1 of sel*
+tags:
+    - attack.impact
+    - attack.t1490
+falsepositives:
+    - Legitimate backup management by system administrators
+---
+title: Network Share Reconnaissance and Abuse
+id: c3d4e5f6-a7b8-9c0d-1e2f-a3b4c5d6e7f8
+status: stable
+level: medium
+description: Detects network share enumeration and suspicious share operations
+author: Downpour v29 Titanium
+date: 2026/09/16
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    sel_enum:
+        Image|endswith:
+            - '\net.exe'
+            - '\net1.exe'
+        CommandLine|contains:
+            - 'share'
+            - 'view \\\\'
+            - 'use \\\\'
+            - 'session'
+    sel_admin_shares:
+        CommandLine|contains:
+            - '\\C$'
+            - '\\ADMIN$'
+            - '\\IPC$'
+    sel_sharphound:
+        CommandLine|contains:
+            - 'SharpHound'
+            - 'Invoke-ShareFinder'
+            - 'Find-DomainShare'
+    condition: 1 of sel*
+tags:
+    - attack.discovery
+    - attack.t1135
+    - attack.lateral_movement
+    - attack.t1021.002
+falsepositives:
+    - Legitimate network administration
+    - System backup scripts

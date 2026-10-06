@@ -1,0 +1,163 @@
+title: WMI Remote Process Execution
+id: e7f8a9b0-5c6d-7e8f-9a0b-1c2d3e4f5a6b
+status: experimental
+description: Detects remote process execution via WMI (wmic or PowerShell)
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    sel_wmic_remote:
+        CommandLine|contains:
+            - 'wmic /node:'
+            - 'wmic /NODE:'
+    sel_process_call:
+        CommandLine|contains:
+            - 'process call create'
+    condition: sel_wmic_remote and sel_process_call
+level: high
+tags:
+    - attack.execution
+    - attack.t1047
+falsepositives:
+    - Legitimate remote administration via WMI
+
+---
+
+title: WMI Event Subscription Persistence
+id: f8a9b0c1-6d7e-8f9a-0b1c-2d3e4f5a6b7c
+status: experimental
+description: Detects WMI event subscription creation for persistence
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    sel_wmic_sub:
+        CommandLine|contains:
+            - '__EventFilter'
+            - '__EventConsumer'
+            - '__FilterToConsumerBinding'
+            - 'ActiveScriptEventConsumer'
+            - 'CommandLineEventConsumer'
+    condition: sel_wmic_sub
+level: high
+tags:
+    - attack.persistence
+    - attack.t1546.003
+falsepositives:
+    - Legitimate WMI event subscription management
+
+---
+
+title: WMIC Reconnaissance Commands
+id: a9b0c1d2-7e8f-9a0b-1c2d-3e4f5a6b7c8d
+status: experimental
+description: Detects WMIC commands used for system reconnaissance
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    sel_wmic_recon:
+        Image|endswith:
+            - '\wmic.exe'
+    sel_recon_args:
+        CommandLine|contains:
+            - 'os get'
+            - 'computersystem get'
+            - 'useraccount list'
+            - 'group list'
+            - 'service get'
+            - 'startup list'
+            - 'qfe list'
+            - 'product get'
+            - 'logicaldisk get'
+            - 'nteventlog get'
+    condition: sel_wmic_recon and sel_recon_args
+level: medium
+tags:
+    - attack.discovery
+    - attack.t1082
+falsepositives:
+    - System administration scripts
+
+---
+
+title: WMI Lateral Movement via DCOM
+id: b0c1d2e3-8f9a-0b1c-2d3e-4f5a6b7c8d9e
+status: experimental
+description: Detects WMI-based lateral movement using DCOM protocol
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    sel_wmiprvse:
+        ParentImage|endswith:
+            - '\WmiPrvSE.exe'
+    sel_suspicious_child:
+        Image|endswith:
+            - '\cmd.exe'
+            - '\powershell.exe'
+            - '\mshta.exe'
+            - '\rundll32.exe'
+            - '\regsvr32.exe'
+            - '\cscript.exe'
+            - '\wscript.exe'
+    condition: sel_wmiprvse and sel_suspicious_child
+level: high
+tags:
+    - attack.lateral_movement
+    - attack.execution
+    - attack.t1047
+falsepositives:
+    - Legitimate WMI scripts spawning command interpreters
+
+---
+
+title: WMI Shadow Copy Deletion
+id: c1d2e3f4-9a0b-1c2d-3e4f-5a6b7c8d9e0f
+status: experimental
+description: Detects shadow copy deletion via WMI (pre-ransomware indicator)
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    sel_wmic_shadow:
+        CommandLine|contains:
+            - 'shadowcopy delete'
+            - 'shadowcopy where'
+    sel_wmic:
+        Image|endswith:
+            - '\wmic.exe'
+    condition: sel_wmic and sel_wmic_shadow
+level: critical
+tags:
+    - attack.impact
+    - attack.t1490
+falsepositives:
+    - Legitimate shadow copy management
+
+---
+
+title: WMIC Antivirus Enumeration
+id: d2e3f4a5-0b1c-2d3e-4f5a-6b7c8d9e0f1a
+status: experimental
+description: Detects WMI queries enumerating installed antivirus products
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    sel_av_query:
+        CommandLine|contains:
+            - 'AntiVirusProduct'
+            - 'AntiSpywareProduct'
+            - 'FirewallProduct'
+    sel_namespace:
+        CommandLine|contains:
+            - '/namespace:\\\\root\\SecurityCenter2'
+            - '/namespace:\\\\root\\SecurityCenter'
+    condition: sel_av_query or sel_namespace
+level: medium
+tags:
+    - attack.discovery
+    - attack.t1518.001
+falsepositives:
+    - Security audit scripts checking AV status

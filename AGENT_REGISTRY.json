@@ -101,10 +101,10 @@
     {
       "id": "antigravity-worker",
       "role": "primary",
-      "taskId": "DN-017",
+      "taskId": "DN-020",
       "status": "active",
-      "heartbeatUtc": "2026-10-06T23:30:00Z",
-      "notes": "Claimed DN-017: Bundling v29 sigma_rules into repo, calling LoadFromYamlFiles at startup, surfacing unsupported rules, and adding test coverage."
+      "heartbeatUtc": "2026-10-07T00:45:00Z",
+      "notes": "Completed DN-017 (bundled v29 sigma rules, parser/condition/modifier engine, load report, test coverage). Claimed DN-020 (read-only USB, Wi-Fi, Bluetooth posture)."
     }
   ]
 }

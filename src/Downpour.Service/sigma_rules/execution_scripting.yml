@@ -1,0 +1,157 @@
+title: MSHTA Executing Remote HTA
+id: downpour-sigma-080
+status: stable
+level: critical
+description: Detects mshta.exe loading remote HTA files for code execution
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_img:
+        Image|endswith: '\mshta.exe'
+    selection_remote:
+        CommandLine|contains:
+            - 'http://'
+            - 'https://'
+            - 'ftp://'
+            - 'javascript:'
+            - 'vbscript:'
+    condition: selection_img and selection_remote
+tags:
+    - attack.execution
+    - attack.defense_evasion
+    - attack.t1218.005
+---
+title: CMSTP INF File Execution
+id: downpour-sigma-081
+status: stable
+level: high
+description: Detects CMSTP.exe loading INF files for UAC bypass or code execution
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_img:
+        Image|endswith: '\cmstp.exe'
+    selection_inf:
+        CommandLine|contains:
+            - '.inf'
+            - '/ni'
+            - '/au'
+            - '/s'
+    condition: selection_img and selection_inf
+tags:
+    - attack.defense_evasion
+    - attack.execution
+    - attack.t1218.003
+---
+title: InstallUtil CLR Code Execution
+id: downpour-sigma-082
+status: stable
+level: high
+description: Detects InstallUtil.exe used to execute .NET assemblies (AppLocker bypass)
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_img:
+        Image|endswith: '\InstallUtil.exe'
+    selection_args:
+        CommandLine|contains:
+            - '/logfile='
+            - '/LogToConsole=false'
+            - '/U'
+    condition: selection_img and selection_args
+tags:
+    - attack.defense_evasion
+    - attack.t1218.004
+---
+title: MSBuild Inline Task Code Execution
+id: downpour-sigma-083
+status: stable
+level: high
+description: Detects MSBuild.exe executing inline tasks or project files for code execution
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection:
+        Image|endswith:
+            - '\MSBuild.exe'
+            - '\MSBuild64.exe'
+    condition: selection
+tags:
+    - attack.defense_evasion
+    - attack.execution
+    - attack.t1127.001
+---
+title: Wscript or Cscript Executing Remote Script
+id: downpour-sigma-084
+status: stable
+level: high
+description: Detects Windows Script Host executing scripts from remote or suspicious locations
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_img:
+        Image|endswith:
+            - '\wscript.exe'
+            - '\cscript.exe'
+    selection_suspicious:
+        CommandLine|contains:
+            - 'http://'
+            - 'https://'
+            - '\\\\'
+            - '%temp%'
+            - '%appdata%'
+            - 'ProgramData'
+    condition: selection_img and selection_suspicious
+tags:
+    - attack.execution
+    - attack.t1059.005
+    - attack.t1059.007
+---
+title: Compiled HTML Help File Execution
+id: downpour-sigma-085
+status: stable
+level: high
+description: Detects hh.exe executing CHM files (used for malicious payload delivery)
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_img:
+        Image|endswith: '\hh.exe'
+    selection_remote:
+        CommandLine|contains:
+            - 'http://'
+            - 'https://'
+            - '\\\\'
+    condition: selection_img and selection_remote
+tags:
+    - attack.defense_evasion
+    - attack.t1218.001
+---
+title: Control Panel Item Execution
+id: downpour-sigma-086
+status: stable
+level: medium
+description: Detects control.exe loading CPL files from unusual locations
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_img:
+        Image|endswith: '\control.exe'
+    selection_suspicious:
+        CommandLine|contains:
+            - '%temp%'
+            - '%appdata%'
+            - 'Downloads'
+            - '\\\\'
+    condition: selection_img and selection_suspicious
+tags:
+    - attack.defense_evasion
+    - attack.execution
+    - attack.t1218.002

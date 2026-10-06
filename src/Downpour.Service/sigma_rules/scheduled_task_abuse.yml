@@ -1,0 +1,169 @@
+title: Scheduled Task Created via Command Line
+id: e3f4a5b6-1c2d-3e4f-5a6b-7c8d9e0f1a2b
+status: experimental
+description: Detects scheduled task creation via schtasks.exe with suspicious parameters
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    sel_schtasks:
+        Image|endswith:
+            - '\schtasks.exe'
+    sel_create:
+        CommandLine|contains:
+            - '/create'
+            - '/Create'
+    sel_suspicious:
+        CommandLine|contains:
+            - '/sc onlogon'
+            - '/sc onidle'
+            - '/sc onstart'
+            - '/sc ONLOGON'
+            - '/sc ONIDLE'
+            - '/sc ONSTART'
+            - '/ru SYSTEM'
+            - '/ru system'
+            - 'powershell'
+            - 'cmd.exe /c'
+            - 'mshta'
+            - 'rundll32'
+            - 'regsvr32'
+            - 'wscript'
+            - 'cscript'
+            - 'certutil'
+            - 'bitsadmin'
+    condition: sel_schtasks and sel_create and sel_suspicious
+level: high
+tags:
+    - attack.persistence
+    - attack.t1053.005
+falsepositives:
+    - Legitimate administration tasks
+
+---
+
+title: Scheduled Task Executing from Suspicious Path
+id: f4a5b6c7-2d3e-4f5a-6b7c-8d9e0f1a2b3c
+status: experimental
+description: Detects scheduled tasks that execute from temp, user, or download directories
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    sel_schtasks:
+        Image|endswith:
+            - '\schtasks.exe'
+    sel_create:
+        CommandLine|contains:
+            - '/create'
+    sel_path:
+        CommandLine|contains:
+            - '\\Temp\\'
+            - '\\tmp\\'
+            - '\\Downloads\\'
+            - '\\AppData\\Local\\'
+            - '\\AppData\\Roaming\\'
+            - '\\ProgramData\\'
+            - '\\Users\\Public\\'
+            - '%TEMP%'
+            - '%APPDATA%'
+            - '%PUBLIC%'
+    condition: sel_schtasks and sel_create and sel_path
+level: high
+tags:
+    - attack.persistence
+    - attack.t1053.005
+falsepositives:
+    - Software installers that create scheduled tasks in user directories
+
+---
+
+title: Scheduled Task Remote Creation
+id: a5b6c7d8-3e4f-5a6b-7c8d-9e0f1a2b3c4d
+status: experimental
+description: Detects remote scheduled task creation for lateral movement
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    sel_schtasks:
+        Image|endswith:
+            - '\schtasks.exe'
+    sel_remote:
+        CommandLine|contains:
+            - '/s '
+            - '/S '
+            - '/create /tn'
+    sel_create:
+        CommandLine|contains:
+            - '/create'
+    condition: sel_schtasks and sel_create and sel_remote
+level: high
+tags:
+    - attack.lateral_movement
+    - attack.persistence
+    - attack.t1053.005
+falsepositives:
+    - Remote administration tools
+
+---
+
+title: Scheduled Task XML Import
+id: b6c7d8e9-4f5a-6b7c-8d9e-0f1a2b3c4d5e
+status: experimental
+description: Detects scheduled task creation from XML file (potential payload delivery)
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    sel_schtasks:
+        Image|endswith:
+            - '\schtasks.exe'
+    sel_xml:
+        CommandLine|contains:
+            - '/xml'
+            - '/XML'
+    condition: sel_schtasks and sel_xml
+level: medium
+tags:
+    - attack.persistence
+    - attack.t1053.005
+falsepositives:
+    - GPO-managed scheduled tasks
+    - Software deployment tools
+
+---
+
+title: Scheduled Task Masquerading as System Task
+id: c7d8e9f0-5a6b-7c8d-9e0f-1a2b3c4d5e6f
+status: experimental
+description: Detects scheduled tasks using names that mimic Windows system tasks
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    sel_schtasks:
+        Image|endswith:
+            - '\schtasks.exe'
+    sel_create:
+        CommandLine|contains:
+            - '/create'
+    sel_masquerade:
+        CommandLine|contains:
+            - '\Microsoft\Windows\WindowsUpdate'
+            - '\Microsoft\Windows\Maintenance'
+            - '\Microsoft\Windows\Defrag'
+            - 'WindowsUpdate'
+            - 'SystemRestore'
+            - 'OneDriveSync'
+            - 'GoogleUpdate'
+            - 'AdobeUpdate'
+    condition: sel_schtasks and sel_create and sel_masquerade
+level: high
+tags:
+    - attack.persistence
+    - attack.defense_evasion
+    - attack.t1053.005
+    - attack.t1036.005
+falsepositives:
+    - Actual system or vendor update tasks (verify publisher)

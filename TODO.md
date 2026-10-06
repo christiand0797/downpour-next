@@ -1,5 +1,29 @@
 # Downpour Next TODO
 
+## 2026-10-06 DN-017: Bundled Sigma Rules & Enhanced Engine (antigravity-worker)
+
+**DN-017 completed:**
+- Copied all 19 YAML rule files (101 rules) from v29 into `src/Downpour.Service/sigma_rules/` with provenance and Detection Rule License 1.1 (DRL 1.1) documentation.
+- Bundled rule directory copied to output via `Downpour.Service.csproj` and `Downpour.Tests.csproj`.
+- Enhanced `SigmaEngine` to support field-bound modifiers (`CommandLine|contains`, `Image|endswith`, `ScriptBlockText|contains`, `CommandLine|re`, `ParentImage|endswith`, `CommandLine|contains|all`) and boolean/quantifier conditions (`1 of sel*`, `1 of selection_*`, `all of sel*`, `selection and not filter`, nested parentheses).
+- Added `SigmaLoadReport` to surface and count unsupported modifiers and conditions rather than silently dropping them.
+- Wired bundled rule loading into `SigmaAmsiEventProcessor` at service startup with warning logs for unsupported syntax.
+- Expanded unit tests in `SigmaEngineTests`: all 101 bundled rules load cleanly (0 unsupported, 0 errors); tested unsupported modifier/condition reporting; tested process multi-condition evaluation and PowerShell 4104 alert pipeline.
+- Build: 0 warnings, 0 errors. All 268 tests pass in Debug and Release.
+
+**Files updated:**
+- `src/Downpour.Service/sigma_rules/` (19 yaml files + README.md)
+- `src/Downpour.Service/Downpour.Service.csproj`
+- `src/Downpour.Service/SigmaEngine.cs`
+- `src/Downpour.Service/SigmaAmsiEventProcessor.cs`
+- `tests/Downpour.Tests/Downpour.Tests.csproj`
+- `tests/Downpour.Tests/SigmaEngineTests.cs`
+- `WORK_QUEUE.json` (DN-017 completed, DN-020 claimed)
+- `AGENT_REGISTRY.json` (antigravity-worker active on DN-020)
+- `SHARED_CONTEXT.md` (updated)
+
+**Next safe task:** DN-020 (read-only USB, Wi-Fi, and Bluetooth posture)
+
 ## 2026-10-06 handoff section 2 and DN-016 (antigravity-worker)
 
 **Handoff section 2 completed:**

@@ -1,0 +1,139 @@
+title: Kerberoasting via SPN Enumeration
+id: d2e5f0a1-8c3b-4e7a-9d1f-2c6a8b3e5d4f
+status: experimental
+description: Detects SPN enumeration commonly used before Kerberoasting attacks
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    sel_setspn:
+        CommandLine|contains:
+            - 'setspn -T'
+            - 'setspn -Q'
+            - 'setspn -F'
+            - 'setspn -L'
+    condition: sel_setspn
+level: high
+tags:
+    - attack.credential_access
+    - attack.t1558.003
+falsepositives:
+    - Legitimate SPN management by administrators
+
+---
+
+title: AS-REP Roasting Tool Execution
+id: a3b4c5d6-1e2f-3a4b-5c6d-7e8f9a0b1c2d
+status: experimental
+description: Detects tools commonly used for AS-REP roasting attacks
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    sel_rubeus:
+        CommandLine|contains:
+            - 'asreproast'
+            - 'Rubeus.exe'
+            - 'GetNPUsers'
+    sel_impacket:
+        Image|endswith:
+            - 'GetNPUsers.py'
+    condition: sel_rubeus or sel_impacket
+level: critical
+tags:
+    - attack.credential_access
+    - attack.t1558.004
+falsepositives:
+    - Authorized penetration testing
+
+---
+
+title: DCSync Attack via Replication Request
+id: b4c5d6e7-2f3a-4b5c-6d7e-8f9a0b1c2d3e
+status: experimental
+description: Detects DCSync attacks using mimikatz lsadump module or impacket
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    sel_mimikatz:
+        CommandLine|contains:
+            - 'lsadump::dcsync'
+            - 'lsadump::lsa'
+            - 'lsadump::trust'
+    sel_impacket:
+        CommandLine|contains:
+            - 'secretsdump'
+            - '-just-dc'
+            - '-just-dc-ntlm'
+    condition: sel_mimikatz or sel_impacket
+level: critical
+tags:
+    - attack.credential_access
+    - attack.t1003.006
+falsepositives:
+    - Authorized domain controller replication testing
+
+---
+
+title: Golden Ticket or Silver Ticket Creation
+id: c5d6e7f8-3a4b-5c6d-7e8f-9a0b1c2d3e4f
+status: experimental
+description: Detects Kerberos ticket forging attempts
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    sel_kerberos:
+        CommandLine|contains:
+            - 'kerberos::golden'
+            - 'kerberos::silver'
+            - 'kerberos::ptt'
+    sel_rubeus_forge:
+        CommandLine|contains:
+            - 'Rubeus.exe golden'
+            - 'Rubeus.exe silver'
+            - 'Rubeus.exe ptt'
+    sel_ticketer:
+        CommandLine|contains:
+            - 'ticketer.py'
+            - 'getST.py'
+    condition: sel_kerberos or sel_rubeus_forge or sel_ticketer
+level: critical
+tags:
+    - attack.credential_access
+    - attack.t1558.001
+falsepositives:
+    - Authorized Kerberos security testing
+
+---
+
+title: Kerberos Ticket Extraction from Memory
+id: d6e7f8a9-4b5c-6d7e-8f9a-0b1c2d3e4f5a
+status: experimental
+description: Detects extraction of Kerberos tickets from LSASS memory
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    sel_mimikatz_krb:
+        CommandLine|contains:
+            - 'sekurlsa::tickets'
+            - 'sekurlsa::kerberos'
+            - 'kerberos::list'
+    sel_klist:
+        CommandLine|contains:
+            - 'klist tickets'
+            - 'klist tgt'
+    sel_rubeus_dump:
+        CommandLine|contains:
+            - 'Rubeus.exe dump'
+            - 'Rubeus.exe triage'
+            - 'Rubeus.exe monitor'
+    condition: sel_mimikatz_krb or sel_rubeus_dump or sel_klist
+level: high
+tags:
+    - attack.credential_access
+    - attack.t1558
+falsepositives:
+    - Kerberos troubleshooting by administrators

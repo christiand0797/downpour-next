@@ -20,4 +20,10 @@
     <ProjectReference Include="..\Downpour.Core\Downpour.Core.csproj" />
     <ProjectReference Include="..\Downpour.Contracts\Downpour.Contracts.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="sigma_rules\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 </Project>

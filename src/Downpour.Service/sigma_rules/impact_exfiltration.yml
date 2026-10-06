@@ -1,0 +1,141 @@
+title: Ransomware Recovery Disabling
+id: downpour-sigma-100
+status: stable
+level: critical
+description: Detects commands that disable Windows recovery options (pre-ransomware)
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_bcdedit:
+        Image|endswith: '\bcdedit.exe'
+        CommandLine|contains:
+            - 'recoveryenabled no'
+            - 'bootstatuspolicy ignoreallfailures'
+    selection_reagentc:
+        Image|endswith: '\reagentc.exe'
+        CommandLine|contains: '/disable'
+    condition: 1 of selection_*
+tags:
+    - attack.impact
+    - attack.t1490
+---
+title: Mass File Encryption Indicator via Cipher
+id: downpour-sigma-101
+status: stable
+level: high
+description: Detects cipher.exe used to wipe free space (anti-forensics)
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_img:
+        Image|endswith: '\cipher.exe'
+    selection_args:
+        CommandLine|contains:
+            - '/w:'
+            - '/e'
+    condition: selection_img and selection_args
+tags:
+    - attack.impact
+    - attack.defense_evasion
+    - attack.t1485
+---
+title: Data Staged for Exfiltration via Archive
+id: downpour-sigma-102
+status: stable
+level: medium
+description: Detects data being archived before exfiltration
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_tools:
+        Image|endswith:
+            - '\7z.exe'
+            - '\7za.exe'
+            - '\rar.exe'
+            - '\WinRAR.exe'
+            - '\tar.exe'
+    selection_suspicious:
+        CommandLine|contains:
+            - 'Documents'
+            - 'Desktop'
+            - 'passwords'
+            - 'credential'
+            - 'secret'
+            - '.pst'
+            - '.ost'
+            - '.kdbx'
+            - 'wallet'
+    condition: selection_tools and selection_suspicious
+tags:
+    - attack.collection
+    - attack.exfiltration
+    - attack.t1560.001
+---
+title: Exfiltration via Curl or Wget Upload
+id: downpour-sigma-103
+status: stable
+level: medium
+description: Detects curl/wget used to upload data to remote servers
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_tools:
+        Image|endswith:
+            - '\curl.exe'
+    selection_upload:
+        CommandLine|contains:
+            - '-X POST'
+            - '--upload-file'
+            - '-T '
+            - '-F '
+            - '--data-binary'
+    condition: selection_tools and selection_upload
+tags:
+    - attack.exfiltration
+    - attack.t1048
+---
+title: Disk Wiper Indicators
+id: downpour-sigma-104
+status: stable
+level: critical
+description: Detects commands associated with disk wiping
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_format:
+        Image|endswith: '\format.com'
+        CommandLine|contains: '/y'
+    selection_diskpart:
+        Image|endswith: '\diskpart.exe'
+    selection_sdelete:
+        Image|endswith:
+            - '\sdelete.exe'
+            - '\sdelete64.exe'
+    condition: 1 of selection_*
+tags:
+    - attack.impact
+    - attack.t1561.001
+    - attack.t1561.002
+---
+title: Screen Capture via Built-in Tools
+id: downpour-sigma-105
+status: stable
+level: low
+description: Detects screen capture using snippingtool or psr
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection:
+        Image|endswith:
+            - '\SnippingTool.exe'
+            - '\psr.exe'
+    condition: selection
+tags:
+    - attack.collection
+    - attack.t1113

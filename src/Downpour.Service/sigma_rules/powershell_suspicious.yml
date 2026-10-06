@@ -1,0 +1,146 @@
+title: PowerShell Encoded Command Execution
+id: downpour-sigma-060
+status: stable
+level: high
+description: Detects PowerShell execution with encoded/base64 command arguments
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_img:
+        Image|endswith:
+            - '\powershell.exe'
+            - '\pwsh.exe'
+    selection_encoded:
+        CommandLine|contains:
+            - '-enc '
+            - '-EncodedCommand'
+            - '-ec '
+            - '-e '
+    condition: selection_img and selection_encoded
+tags:
+    - attack.execution
+    - attack.t1059.001
+---
+title: PowerShell Download Cradle
+id: downpour-sigma-061
+status: stable
+level: high
+description: Detects PowerShell commands downloading and executing remote content
+logsource:
+    category: ps_script
+    product: windows
+detection:
+    selection:
+        ScriptBlockText|contains:
+            - 'Invoke-WebRequest'
+            - 'Invoke-RestMethod'
+            - 'Net.WebClient'
+            - 'DownloadString'
+            - 'DownloadFile'
+            - 'DownloadData'
+            - 'Start-BitsTransfer'
+            - 'iwr '
+            - 'irm '
+            - 'curl '
+            - 'wget '
+    condition: selection
+tags:
+    - attack.execution
+    - attack.t1059.001
+    - attack.command_and_control
+    - attack.t1105
+---
+title: PowerShell AMSI Bypass Attempt
+id: downpour-sigma-062
+status: stable
+level: critical
+description: Detects PowerShell script blocks attempting to bypass AMSI
+logsource:
+    category: ps_script
+    product: windows
+detection:
+    selection:
+        ScriptBlockText|contains:
+            - 'AmsiInitFailed'
+            - 'amsiContext'
+            - 'AmsiUtils'
+            - 'amsi.dll'
+            - 'AmsiScanBuffer'
+            - 'SetValue($null,$true)'
+            - 'Disable-AMSI'
+    condition: selection
+tags:
+    - attack.defense_evasion
+    - attack.t1562.001
+---
+title: PowerShell Credential Harvesting Commands
+id: downpour-sigma-063
+status: stable
+level: high
+description: Detects PowerShell commands used for credential harvesting
+logsource:
+    category: ps_script
+    product: windows
+detection:
+    selection:
+        ScriptBlockText|contains:
+            - 'Get-Credential'
+            - 'PromptForCredential'
+            - 'SecureString'
+            - 'ConvertFrom-SecureString'
+            - 'NetworkCredential'
+            - 'System.Net.CredentialCache'
+    condition: selection
+tags:
+    - attack.credential_access
+    - attack.t1555
+---
+title: PowerShell Reflection and Assembly Loading
+id: downpour-sigma-064
+status: stable
+level: high
+description: Detects PowerShell loading .NET assemblies reflectively (common in exploits)
+logsource:
+    category: ps_script
+    product: windows
+detection:
+    selection:
+        ScriptBlockText|contains:
+            - '[Reflection.Assembly]::Load'
+            - 'Assembly.Load'
+            - 'LoadFrom('
+            - 'Unsafe.AsPointer'
+            - 'DllImport'
+            - 'GetProcAddress'
+            - 'VirtualAlloc'
+            - 'VirtualProtect'
+            - 'WriteProcessMemory'
+            - 'CreateThread'
+    condition: selection
+tags:
+    - attack.execution
+    - attack.defense_evasion
+    - attack.t1620
+---
+title: PowerShell Disable Security Features
+id: downpour-sigma-065
+status: stable
+level: critical
+description: Detects PowerShell commands disabling security features
+logsource:
+    category: ps_script
+    product: windows
+detection:
+    selection:
+        ScriptBlockText|contains:
+            - 'Set-MpPreference -DisableRealtimeMonitoring'
+            - 'Set-MpPreference -DisableBehaviorMonitoring'
+            - 'Set-MpPreference -DisableIOAVProtection'
+            - 'Set-MpPreference -DisableScriptScanning'
+            - 'Uninstall-WindowsFeature -Name Windows-Defender'
+            - 'Remove-WindowsFeature Windows-Defender'
+    condition: selection
+tags:
+    - attack.defense_evasion
+    - attack.t1562.001

@@ -1,0 +1,105 @@
+title: Scheduled Task Created via Schtasks
+id: downpour-sigma-040
+status: stable
+level: medium
+description: Detects creation of scheduled tasks via schtasks.exe
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_img:
+        Image|endswith: '\schtasks.exe'
+    selection_create:
+        CommandLine|contains: '/create'
+    condition: selection_img and selection_create
+tags:
+    - attack.persistence
+    - attack.t1053.005
+---
+title: Registry Run Key Modification
+id: downpour-sigma-041
+status: stable
+level: medium
+description: Detects modifications to registry Run/RunOnce keys for persistence
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_reg:
+        Image|endswith: '\reg.exe'
+    selection_add:
+        CommandLine|contains: 'add'
+    selection_keys:
+        CommandLine|contains:
+            - 'CurrentVersion\\Run'
+            - 'CurrentVersion\\RunOnce'
+            - 'CurrentVersion\\RunServices'
+            - 'CurrentVersion\\Explorer\\Shell Folders'
+            - 'CurrentVersion\\Winlogon'
+    condition: selection_reg and selection_add and selection_keys
+tags:
+    - attack.persistence
+    - attack.t1547.001
+---
+title: Service Created via SC Command
+id: downpour-sigma-042
+status: stable
+level: medium
+description: Detects new service creation via sc.exe (persistence or lateral movement)
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_img:
+        Image|endswith: '\sc.exe'
+    selection_args:
+        CommandLine|contains: 'create'
+    selection_binpath:
+        CommandLine|contains: 'binpath'
+    condition: selection_img and selection_args and selection_binpath
+tags:
+    - attack.persistence
+    - attack.t1543.003
+---
+title: WMI Event Subscription Persistence
+id: downpour-sigma-043
+status: stable
+level: high
+description: Detects WMI event subscription creation for persistence
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection:
+        CommandLine|contains:
+            - '__EventFilter'
+            - 'CommandLineEventConsumer'
+            - 'ActiveScriptEventConsumer'
+            - '__FilterToConsumerBinding'
+    condition: selection
+tags:
+    - attack.persistence
+    - attack.t1546.003
+---
+title: Startup Folder File Drop
+id: downpour-sigma-044
+status: stable
+level: high
+description: Detects copy or move commands targeting the Startup folder
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_cmd:
+        Image|endswith:
+            - '\cmd.exe'
+            - '\xcopy.exe'
+            - '\robocopy.exe'
+    selection_startup:
+        CommandLine|contains:
+            - 'Start Menu\\Programs\\Startup'
+            - 'Startup\\'
+    condition: selection_cmd and selection_startup
+tags:
+    - attack.persistence
+    - attack.t1547.001

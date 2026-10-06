@@ -1,0 +1,192 @@
+title: DNS Tunneling via Suspicious Query Length
+id: a1b2c3d4-1234-5678-9abc-def012345678
+status: experimental
+description: Detects DNS queries with unusually long subdomains indicating DNS tunneling
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    sel_dns_tools:
+        Image|endswith:
+            - '\nslookup.exe'
+            - '\dig.exe'
+    sel_long_query:
+        CommandLine|re: '[a-zA-Z0-9]{30,}\.'
+    condition: sel_dns_tools and sel_long_query
+level: high
+tags:
+    - attack.exfiltration
+    - attack.t1048.003
+falsepositives:
+    - Legitimate long DNS queries (CDN hostnames)
+
+---
+
+title: Data Compression Before Exfiltration
+id: b2c3d4e5-2345-6789-abcd-ef0123456789
+status: experimental
+description: Detects data being compressed with sensitive file extensions before exfiltration
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    sel_archive:
+        Image|endswith:
+            - '\7z.exe'
+            - '\rar.exe'
+            - '\zip.exe'
+            - '\tar.exe'
+    sel_sensitive_ext:
+        CommandLine|contains:
+            - '.doc'
+            - '.xls'
+            - '.pdf'
+            - '.pst'
+            - '.ost'
+            - '.eml'
+            - '.mdb'
+            - '.sql'
+            - '.kdbx'
+            - '.key'
+            - '.pem'
+            - '.pfx'
+    sel_password:
+        CommandLine|contains:
+            - '-p'
+            - '-hp'
+            - '--password'
+    condition: sel_archive and sel_sensitive_ext and sel_password
+level: high
+tags:
+    - attack.collection
+    - attack.exfiltration
+    - attack.t1560.001
+falsepositives:
+    - Legitimate backup operations with encryption
+
+---
+
+title: Exfiltration via Cloud Storage CLI
+id: c3d4e5f6-3456-789a-bcde-f01234567890
+status: experimental
+description: Detects use of cloud storage CLI tools for potential data exfiltration
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    sel_cloud_tools:
+        CommandLine|contains:
+            - 'rclone'
+            - 'mega-cmd'
+            - 'megacmd'
+            - 'aws s3 cp'
+            - 'aws s3 sync'
+            - 'gsutil cp'
+            - 'azcopy'
+            - 'az storage blob upload'
+    sel_upload:
+        CommandLine|contains:
+            - 'copy'
+            - 'sync'
+            - 'upload'
+            - 'put'
+            - 'send'
+    condition: sel_cloud_tools
+level: high
+tags:
+    - attack.exfiltration
+    - attack.t1567.002
+falsepositives:
+    - Legitimate cloud backup tools
+    - DevOps deployment scripts
+
+---
+
+title: Data Exfiltration via HTTP POST
+id: d4e5f6a7-4567-89ab-cdef-012345678901
+status: experimental
+description: Detects curl or wget used to upload files to external servers
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    sel_curl_upload:
+        Image|endswith:
+            - '\curl.exe'
+        CommandLine|contains:
+            - '-X POST'
+            - '--data-binary'
+            - '-F file='
+            - '--upload-file'
+            - '-T '
+    sel_certutil_encode:
+        Image|endswith:
+            - '\certutil.exe'
+        CommandLine|contains:
+            - '-encode'
+            - '-encodehex'
+    condition: sel_curl_upload or sel_certutil_encode
+level: high
+tags:
+    - attack.exfiltration
+    - attack.t1048.002
+falsepositives:
+    - Legitimate API calls using curl
+    - Certificate management
+
+---
+
+title: Exfiltration via Alternate Data Streams
+id: e5f6a7b8-5678-9abc-def0-123456789012
+status: experimental
+description: Detects use of alternate data streams to hide exfiltration staging
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    sel_ads:
+        CommandLine|contains:
+            - ':Zone.Identifier'
+            - 'streams -s'
+            - 'streams.exe'
+    sel_type_ads:
+        CommandLine|re: 'type\s+.*:.*>'
+    sel_powershell_ads:
+        CommandLine|contains:
+            - 'Get-Content -Stream'
+            - 'Set-Content -Stream'
+            - 'Add-Content -Stream'
+    condition: sel_ads or sel_type_ads or sel_powershell_ads
+level: medium
+tags:
+    - attack.defense_evasion
+    - attack.t1564.004
+falsepositives:
+    - Security tools examining ADS
+
+---
+
+title: Network Share Mounting for Data Staging
+id: f6a7b8c9-6789-abcd-ef01-234567890123
+status: experimental
+description: Detects mounting of remote network shares potentially for data staging
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    sel_net_use:
+        Image|endswith:
+            - '\net.exe'
+            - '\net1.exe'
+        CommandLine|contains:
+            - 'use'
+    sel_remote_path:
+        CommandLine|re: '\\\\[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\\'
+    condition: sel_net_use and sel_remote_path
+level: medium
+tags:
+    - attack.lateral_movement
+    - attack.exfiltration
+    - attack.t1021.002
+falsepositives:
+    - Legitimate file share access

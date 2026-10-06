@@ -1,0 +1,86 @@
+title: PsExec Service Installation
+id: downpour-sigma-050
+status: stable
+level: high
+description: Detects PsExec service installation (lateral movement)
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_psexec:
+        Image|endswith:
+            - '\PsExec.exe'
+            - '\PsExec64.exe'
+            - '\PSEXESVC.exe'
+    selection_cmdline:
+        CommandLine|contains:
+            - '\\\\'
+            - '-s cmd'
+            - '-accepteula'
+    condition: 1 of selection_*
+tags:
+    - attack.lateral_movement
+    - attack.t1021.002
+    - attack.t1569.002
+---
+title: Remote Desktop Connection via Mstsc
+id: downpour-sigma-051
+status: stable
+level: low
+description: Detects mstsc.exe connecting to remote hosts (informational)
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_img:
+        Image|endswith: '\mstsc.exe'
+    selection_args:
+        CommandLine|contains: '/v:'
+    condition: selection_img and selection_args
+tags:
+    - attack.lateral_movement
+    - attack.t1021.001
+---
+title: Remote Service Creation via SC
+id: downpour-sigma-052
+status: stable
+level: high
+description: Detects sc.exe targeting a remote host for service creation
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_img:
+        Image|endswith: '\sc.exe'
+    selection_remote:
+        CommandLine|contains: '\\\\'
+    selection_action:
+        CommandLine|contains:
+            - 'create'
+            - 'start'
+    condition: selection_img and selection_remote and selection_action
+tags:
+    - attack.lateral_movement
+    - attack.t1021.002
+---
+title: Net Use Mounting Remote Share
+id: downpour-sigma-053
+status: stable
+level: low
+description: Detects net use commands mapping remote shares
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_img:
+        Image|endswith: '\net.exe'
+    selection_args:
+        CommandLine|contains:
+            - ' use '
+            - ' use\\'
+    selection_remote:
+        CommandLine|contains: '\\\\'
+    condition: selection_img and selection_args and selection_remote
+tags:
+    - attack.lateral_movement
+    - attack.t1021.002

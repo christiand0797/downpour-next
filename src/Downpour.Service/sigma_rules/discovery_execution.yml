@@ -1,0 +1,132 @@
+title: System Information Discovery via Systeminfo
+id: downpour-sigma-070
+status: stable
+level: low
+description: Detects systeminfo.exe execution (recon indicator when combined with other discovery)
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection:
+        Image|endswith: '\systeminfo.exe'
+    condition: selection
+tags:
+    - attack.discovery
+    - attack.t1082
+---
+title: Network Share Discovery via Net View
+id: downpour-sigma-071
+status: stable
+level: medium
+description: Detects net.exe share enumeration
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_img:
+        Image|endswith:
+            - '\net.exe'
+            - '\net1.exe'
+    selection_args:
+        CommandLine|contains:
+            - ' view'
+            - ' share'
+    condition: selection_img and selection_args
+tags:
+    - attack.discovery
+    - attack.t1135
+---
+title: Domain Trust Discovery
+id: downpour-sigma-072
+status: stable
+level: medium
+description: Detects nltest or dsquery for domain trust enumeration
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_nltest:
+        Image|endswith: '\nltest.exe'
+        CommandLine|contains:
+            - '/domain_trusts'
+            - '/dclist'
+            - '/dsgetdc'
+    selection_dsquery:
+        Image|endswith: '\dsquery.exe'
+    condition: 1 of selection_*
+tags:
+    - attack.discovery
+    - attack.t1482
+---
+title: User Account Discovery via Net User or Whoami
+id: downpour-sigma-073
+status: stable
+level: low
+description: Detects local user enumeration commands
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_net:
+        Image|endswith: '\net.exe'
+        CommandLine|contains:
+            - ' user'
+            - ' localgroup'
+            - ' group'
+    selection_whoami:
+        Image|endswith: '\whoami.exe'
+        CommandLine|contains:
+            - '/priv'
+            - '/groups'
+            - '/all'
+    condition: 1 of selection_*
+tags:
+    - attack.discovery
+    - attack.t1087
+---
+title: Windows Defender Exclusion Added via Reg
+id: downpour-sigma-074
+status: stable
+level: critical
+description: Detects adding Defender exclusions via registry (common pre-ransomware step)
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_reg:
+        Image|endswith: '\reg.exe'
+    selection_defender:
+        CommandLine|contains:
+            - 'Windows Defender\\Exclusions'
+            - 'Exclusions\\Paths'
+            - 'Exclusions\\Processes'
+            - 'Exclusions\\Extensions'
+    selection_add:
+        CommandLine|contains: 'add'
+    condition: selection_reg and selection_defender and selection_add
+tags:
+    - attack.defense_evasion
+    - attack.t1562.001
+---
+title: BCDEdit Boot Configuration Tampering
+id: downpour-sigma-075
+status: stable
+level: critical
+description: Detects bcdedit used to disable recovery or enable test-signing
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_img:
+        Image|endswith: '\bcdedit.exe'
+    selection_args:
+        CommandLine|contains:
+            - 'recoveryenabled No'
+            - 'bootstatuspolicy ignoreallfailures'
+            - 'safeboot'
+            - 'testsigning'
+    condition: selection_img and selection_args
+tags:
+    - attack.impact
+    - attack.t1490
+    - attack.defense_evasion

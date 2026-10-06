@@ -17,7 +17,37 @@ public sealed class SigmaAmsiEventProcessor
     public SigmaAmsiEventProcessor(ILogger<SigmaAmsiEventProcessor> logger)
     {
         _logger = logger;
-        _sigmaRules = SigmaEngine.GetBuiltinRules();
+        
+        var builtin = SigmaEngine.GetBuiltinRules();
+        var rulesDir = SigmaEngine.GetDefaultRulesDirectory();
+        List<SigmaRule> bundled = [];
+
+        if (Directory.Exists(rulesDir))
+        {
+            var files = Directory.GetFiles(rulesDir, "*.yml", SearchOption.TopDirectoryOnly)
+                .Concat(Directory.GetFiles(rulesDir, "*.yaml", SearchOption.TopDirectoryOnly))
+                .OrderBy(f => f, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            bundled = SigmaEngine.LoadFromYamlFiles(files, out var report);
+
+            if (report.UnsupportedRulesCount > 0)
+            {
+                _logger.LogWarning("Loaded {ValidCount} bundled Sigma rules from {RulesDir} ({UnsupportedCount} unsupported: {Issues}).",
+                    report.ValidRulesLoaded, rulesDir, report.UnsupportedRulesCount, string.Join("; ", report.Issues));
+            }
+            else
+            {
+                _logger.LogInformation("Loaded {ValidCount} bundled Sigma rules from {RulesDir}.",
+                    report.ValidRulesLoaded, rulesDir);
+            }
+        }
+        else
+        {
+            _logger.LogWarning("Bundled Sigma rules directory not found at {RulesDir}.", rulesDir);
+        }
+
+        _sigmaRules = [..builtin, ..bundled];
         
         // Initialize AMSI
         if (!AmsiIntegration.Initialize("DownpourNext-SigmaAmsi"))
@@ -40,8 +70,8 @@ public sealed class SigmaAmsiEventProcessor
             var scriptContent = observation.Summary;
             if (!string.IsNullOrWhiteSpace(scriptContent))
             {
-                // Run Sigma rule matching
-                var sigmaMatches = SigmaEngine.Match(scriptContent, SigmaEngine.GetBuiltinRules());
+                // Run Sigma rule matching against all loaded rules
+                var sigmaMatches = SigmaEngine.Match(scriptContent, _sigmaRules);
                 foreach (var match in sigmaMatches)
                 {
                     var alert = CreateAlertFromSigmaMatch(observation, match, scriptContent);

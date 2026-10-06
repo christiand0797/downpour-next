@@ -1,0 +1,132 @@
+title: Windows Defender Real-Time Protection Disabled
+id: downpour-sigma-030
+status: stable
+level: critical
+description: Detects attempts to disable Windows Defender real-time protection via registry
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_reg:
+        Image|endswith: '\reg.exe'
+    selection_defender:
+        CommandLine|contains:
+            - 'DisableRealtimeMonitoring'
+            - 'DisableBehaviorMonitoring'
+            - 'DisableOnAccessProtection'
+            - 'DisableScanOnRealtimeEnable'
+            - 'DisableIOAVProtection'
+    condition: selection_reg and selection_defender
+tags:
+    - attack.defense_evasion
+    - attack.t1562.001
+---
+title: AMSI Provider Registry Tampering
+id: downpour-sigma-031
+status: stable
+level: critical
+description: Detects registry modifications to AMSI provider entries
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection:
+        CommandLine|contains:
+            - 'AMSI\\Providers'
+            - '{2781761E-28E0-4109-99FE-B9D127C57AFE}'
+    condition: selection
+tags:
+    - attack.defense_evasion
+    - attack.t1562.001
+---
+title: Event Log Service Stopped or Disabled
+id: downpour-sigma-032
+status: stable
+level: critical
+description: Detects stopping or disabling of Windows Event Log service
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_sc:
+        Image|endswith: '\sc.exe'
+        CommandLine|contains:
+            - 'EventLog'
+        CommandLine|contains:
+            - 'stop'
+            - 'disabled'
+            - 'delete'
+    condition: selection_sc
+tags:
+    - attack.defense_evasion
+    - attack.t1562.002
+---
+title: Event Log Cleared via Wevtutil
+id: downpour-sigma-033
+status: stable
+level: high
+description: Detects clearing of Windows event logs via wevtutil
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_img:
+        Image|endswith: '\wevtutil.exe'
+    selection_args:
+        CommandLine|contains:
+            - ' cl '
+            - ' clear-log '
+    condition: selection_img and selection_args
+tags:
+    - attack.defense_evasion
+    - attack.t1070.001
+---
+title: Shadow Copy Deletion
+id: downpour-sigma-034
+status: stable
+level: critical
+description: Detects deletion of volume shadow copies (ransomware indicator)
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_vssadmin:
+        Image|endswith: '\vssadmin.exe'
+        CommandLine|contains: 'delete shadows'
+    selection_wmic:
+        Image|endswith: '\wmic.exe'
+        CommandLine|contains: 'shadowcopy delete'
+    selection_ps:
+        CommandLine|contains:
+            - 'Get-WmiObject Win32_ShadowCopy | ForEach-Object'
+            - 'Win32_ShadowCopy'
+    condition: 1 of selection_*
+tags:
+    - attack.impact
+    - attack.t1490
+---
+title: Firewall Rule Modification via Netsh
+id: downpour-sigma-035
+status: stable
+level: medium
+description: Detects netsh used to add or delete firewall rules
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_img:
+        Image|endswith: '\netsh.exe'
+    selection_args:
+        CommandLine|contains:
+            - 'firewall'
+            - 'advfirewall'
+    selection_action:
+        CommandLine|contains:
+            - 'add rule'
+            - 'delete rule'
+            - 'set rule'
+            - 'set allprofiles state off'
+    condition: selection_img and selection_args and selection_action
+tags:
+    - attack.defense_evasion
+    - attack.t1562.004

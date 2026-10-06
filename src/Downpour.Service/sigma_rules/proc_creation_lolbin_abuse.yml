@@ -1,0 +1,154 @@
+title: Certutil Download or Decode Activity
+id: downpour-sigma-001
+status: stable
+level: high
+description: Detects certutil.exe used to download files or decode base64 content
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_img:
+        Image|endswith: '\certutil.exe'
+    selection_args:
+        CommandLine|contains:
+            - 'urlcache'
+            - '-decode'
+            - '/decode'
+            - '-urlcache'
+            - '/urlcache'
+            - '-decodehex'
+            - '/decodehex'
+    condition: selection_img and selection_args
+tags:
+    - attack.defense_evasion
+    - attack.t1140
+    - attack.command_and_control
+    - attack.t1105
+---
+title: Msiexec Remote Package Installation
+id: downpour-sigma-002
+status: stable
+level: high
+description: Detects msiexec.exe installing a package from a remote URL
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_img:
+        Image|endswith: '\msiexec.exe'
+    selection_url:
+        CommandLine|contains:
+            - 'http://'
+            - 'https://'
+            - 'ftp://'
+    condition: selection_img and selection_url
+tags:
+    - attack.defense_evasion
+    - attack.t1218.007
+---
+title: BITSAdmin Download or Transfer
+id: downpour-sigma-003
+status: stable
+level: medium
+description: Detects bitsadmin.exe used for file transfers
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_img:
+        Image|endswith: '\bitsadmin.exe'
+    selection_args:
+        CommandLine|contains:
+            - '/transfer'
+            - '/create'
+            - '/addfile'
+            - '/resume'
+            - '/complete'
+    condition: selection_img and selection_args
+tags:
+    - attack.defense_evasion
+    - attack.persistence
+    - attack.t1197
+---
+title: Rundll32 Executing JavaScript or VBScript
+id: downpour-sigma-004
+status: stable
+level: critical
+description: Detects rundll32 executing script content via mshtml or javascript protocol
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_img:
+        Image|endswith: '\rundll32.exe'
+    selection_args:
+        CommandLine|contains:
+            - 'javascript:'
+            - 'vbscript:'
+            - 'mshtml'
+            - 'RunHTMLApplication'
+    condition: selection_img and selection_args
+tags:
+    - attack.defense_evasion
+    - attack.t1218.011
+---
+title: Regsvr32 Scriptlet Execution (Squiblydoo)
+id: downpour-sigma-005
+status: stable
+level: high
+description: Detects regsvr32 loading remote scriptlets for code execution
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_img:
+        Image|endswith: '\regsvr32.exe'
+    selection_args:
+        CommandLine|contains:
+            - '/i:http'
+            - '/i:ftp'
+            - 'scrobj.dll'
+    condition: selection_img and selection_args
+tags:
+    - attack.defense_evasion
+    - attack.t1218.010
+---
+title: Forfiles Command Execution Proxy
+id: downpour-sigma-006
+status: stable
+level: medium
+description: Detects forfiles.exe used as a command execution proxy
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_img:
+        Image|endswith: '\forfiles.exe'
+    selection_args:
+        CommandLine|contains:
+            - '/c '
+            - '/p '
+    condition: selection_img and selection_args
+tags:
+    - attack.defense_evasion
+    - attack.execution
+---
+title: WMIC Process Call Create
+id: downpour-sigma-007
+status: stable
+level: high
+description: Detects WMIC used to spawn processes remotely or locally
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_img:
+        Image|endswith: '\wmic.exe'
+    selection_args:
+        CommandLine|contains:
+            - 'process call create'
+            - 'process call '
+    condition: selection_img and selection_args
+tags:
+    - attack.execution
+    - attack.t1047
