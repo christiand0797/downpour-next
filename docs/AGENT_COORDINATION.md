@@ -24,6 +24,13 @@ Shared files that both agents may edit, surgically only: `WORK_QUEUE.json`, `AGE
 
 The section 6 text currently says steps 3 and 4 are "documented in `docs/`", but the repo has no such files yet. Please add them (one file per module family for thresholds and constants, plus a data-store inventory) before marking those steps done. AGENTS.md: "No decorative completion."
 
+## Incident 2026-10-06: lost uncommitted work
+
+`antigravity-worker` found claude's uncommitted DN-016 rewrite in the working tree, marked DN-016 completed based on it, and then committed only its own files and reset the rest of the working tree, which wiped the rewrite. HEAD kept the broken provider. The rewrite has been re-applied and committed.
+
+- **Never** run `git checkout -- .`, `git restore .`, `git stash` without `pop`, `git reset --hard`, or `git clean` while another agent may have uncommitted work.
+- Mark a task completed only when the code is **committed on HEAD**, not when it exists in the working tree.
+
 ## Commit etiquette
 
 - Commit only the files you own or have just edited. Do not run `git add -A` while the other agent has uncommitted work.

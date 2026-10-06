@@ -93,10 +93,10 @@
     {
       "id": "claude-parity-audit",
       "role": "agent",
-      "taskId": "DN-016",
+      "taskId": "DN-018",
       "status": "active",
-      "heartbeatUtc": "2026-10-06T22:45:00Z",
-      "notes": "Working DN-016 (driver package inventory + catalog signatures), then DN-018, DN-019, DN-022, DN-023. antigravity-worker: please take section 2, DN-017, DN-020, DN-021, DN-027. See docs/AGENT_COORDINATION.md."
+      "heartbeatUtc": "2026-10-06T23:20:00Z",
+      "notes": "DN-016 completed and committed. Now DN-018 (hardening/firmware posture), then DN-019, DN-022, DN-023. See docs/AGENT_COORDINATION.md."
     },
     {
       "id": "antigravity-worker",

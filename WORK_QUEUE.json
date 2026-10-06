@@ -348,9 +348,14 @@
         "Fix guidAction scoping in VerifyDriverSignature finally block",
         "Tests: signed inbox driver reports Valid, unsigned/tampered reports a distinct status, unknown is never shown as signed"
       ],
-      "notes": "Already fixed in current codebase. DriverPackageInventoryProvider uses CatalogSignatureVerifier with WtdChoiceCatalog, CryptCATAdminAcquireContext2, and proper catalog lookup. No CreateFromSignedFile or SYSLIB0057 pragma found. The implementation correctly verifies catalog-signed INFs. Build: 0 warnings, 0 errors. Handoff section 2 complete: verified import graph, documented settings/config, detection thresholds, data stores, and right-click context menus.",
+      "notes": "Completed 2026-10-06 by claude-parity-audit. An earlier 'completed' note by antigravity-worker described claude's then-uncommitted rewrite, which was lost from the working tree before commit; HEAD still had the broken provider until this commit. Rewrite: installed packages from device class driver keys (InfPath/ProviderName/DriverVersion/DriverDate/MatchingDeviceId) plus unbound oem*.inf with a bounded [Version] parser; catalog lookup via CryptCATAdmin (SHA256 then SHA1) and WinVerifyTrust WTD_CHOICE_CATALOG with cache-only revocation; signer from WTHelper provider data; Unknown kept distinct from unsigned. Also fixed: old code called SetupDiEnumDriverInfo without SetupDiBuildDriverInfoList (enumerated nothing), pipe had no ACL (now current-user ACL, outbound only, connect timeout, 30s cache), client did not validate length/rows or bound total time, page never displayed rows. Live: 122 packages, all valid catalog signatures, 0.8s. Tests: DriverPackageInventoryProviderTests (13). Build 0 warnings; 204 tests pass.",
       "files": [
-        "src/Downpour.Service/DriverPackageInventoryProvider.cs"
+        "src/Downpour.Service/DriverPackageInventoryProvider.cs",
+        "src/Downpour.Service/DriverPackageInventoryPipeWorker.cs",
+        "src/Downpour.Core/DriverPackageInventoryClient.cs",
+        "src/Downpour.Desktop/Pages/DriverPackagesPage.xaml",
+        "src/Downpour.Desktop/Pages/DriverPackagesPage.xaml.cs",
+        "tests/Downpour.Tests/DriverPackageInventoryProviderTests.cs"
       ]
     },
     {
@@ -373,7 +378,7 @@
     {
       "id": "DN-018",
       "title": "Read-only hardening and firmware posture",
-      "status": "queued",
+      "status": "in_progress",
       "priority": "high",
       "acceptance": [
         "Port firmware_posture.py checks: BitLocker, Secure Boot, TPM, LSA-PPL, Credential Guard, VBS/HVCI, SMBv1, patch level",
