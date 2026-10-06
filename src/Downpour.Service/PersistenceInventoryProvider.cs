@@ -1,8 +1,6 @@
 using System.Management;
 using System.Runtime.InteropServices;
 using System.Security;
-using System.Security.AccessControl;
-using System.Security.Principal;
 using System.Text.Json;
 using Downpour.Contracts;
 using Downpour.Core;
@@ -310,40 +308,7 @@ public sealed class PersistenceInventoryProvider(string baselinePath)
         status.Add($"PATH folders writable by standard users: {writable} of {directories.Length}");
     }
 
-    /// <summary>
-    /// True when the directory ACL lets ordinary users plant files: an allow rule granting CreateFiles/WriteData to
-    /// Everyone, Authenticated Users, Users, INTERACTIVE or the current user, with no matching deny. This replaces
-    /// v29's os.access(W_OK), which on Windows only checks the read-only attribute.
-    /// </summary>
-    internal static bool IsWritableByStandardUsers(string directory)
-    {
-        try
-        {
-            var current = WindowsIdentity.GetCurrent().User;
-            var broad = new HashSet<SecurityIdentifier>
-            {
-                new(WellKnownSidType.WorldSid, null),
-                new(WellKnownSidType.AuthenticatedUserSid, null),
-                new(WellKnownSidType.BuiltinUsersSid, null),
-                new(WellKnownSidType.InteractiveSid, null),
-            };
-            if (current is not null) broad.Add(current);
-            var rules = new DirectoryInfo(directory).GetAccessControl().GetAccessRules(true, true, typeof(SecurityIdentifier));
-            const FileSystemRights plant = FileSystemRights.CreateFiles | FileSystemRights.WriteData;
-            bool allowed = false, denied = false;
-            foreach (FileSystemAccessRule rule in rules)
-            {
-                if (rule.IdentityReference is not SecurityIdentifier sid || !broad.Contains(sid) || (rule.FileSystemRights & plant) == 0) continue;
-                if (rule.PropagationFlags.HasFlag(PropagationFlags.InheritOnly)) continue;
-                if (rule.AccessControlType == AccessControlType.Deny) denied = true; else allowed = true;
-            }
-            return allowed && !denied;
-        }
-        catch (Exception ex) when (ex is UnauthorizedAccessException or IOException or InvalidOperationException or SystemException)
-        {
-            return false;
-        }
-    }
+    internal static bool IsWritableByStandardUsers(string directory) => FileSystemExposure.IsWritableByStandardUsers(directory);
 
     private static (IReadOnlyList<PersistenceObservation>, string) ReadDriverFiles()
     {

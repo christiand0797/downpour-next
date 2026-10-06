@@ -101,20 +101,37 @@ public sealed partial class ServicesPage : Page
             _ => Color.FromArgb(255, 193, 199, 213)
         });
 
+        var riskBrush = new SolidColorBrush(service.Risk switch
+        {
+            "Critical" or "High" => Color.FromArgb(255, 255, 120, 110),
+            "Medium" => Color.FromArgb(255, 255, 170, 90),
+            "Low" => Color.FromArgb(255, 255, 214, 102),
+            _ => Color.FromArgb(255, 116, 220, 170)
+        });
+        var indicators = service.RiskIndicators is { Count: > 0 } list ? string.Join(" · ", list) : "";
+        var detail = string.Join(" — ", new[] { service.ImagePath, indicators }.Where(part => part.Length > 0));
         return new WindowsServiceRow(service.ServiceName, service.DisplayName, service.State, service.StartupType,
-            StateColor(service.State), StateColor(service.StartupType));
+            StateColor(service.State), StateColor(service.StartupType), service.Risk, riskBrush, detail);
     }
 
     private void SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args) => ApplyFilter();
+    private void ShowClean_Changed(object sender, RoutedEventArgs e) => ApplyFilter();
 
     private void ApplyFilter(int? reportedCount = null, string? collectionStatus = null)
     {
         if (ServiceList is null) return;
         var query = SearchBox.Text?.Trim() ?? "";
-        var filtered = _allServices.Where(row => query.Length == 0 ||
+        var showClean = ShowClean?.IsChecked == true;
+        var filtered = _allServices.Where(row => (showClean || row.Risk != ServiceRiskAnalyzer.Clean) && (query.Length == 0 ||
                 row.ServiceName.Contains(query, StringComparison.OrdinalIgnoreCase) ||
-                row.DisplayName.Contains(query, StringComparison.OrdinalIgnoreCase))
+                row.DisplayName.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                row.RiskDetail.Contains(query, StringComparison.OrdinalIgnoreCase)))
+            .OrderBy(row => Array.IndexOf(["Critical", "High", "Medium", "Low", "Clean"], row.Risk))
+            .ThenBy(row => row.ServiceName, StringComparer.OrdinalIgnoreCase)
             .ToArray();
+        if (RiskSummary is not null)
+            RiskSummary.Text = string.Join("  ·  ", new[] { "Critical", "High", "Medium", "Low", "Clean" }
+                .Select(level => $"{level.ToUpperInvariant()}: {_allServices.Count(row => row.Risk == level)}"));
         CollectionReconciler.Apply(Services, filtered, row => row.Key,
             (current, incoming) => current.UpdateFrom(incoming));
 
@@ -137,10 +154,16 @@ public sealed class WindowsServiceRow : ObservableRow
     private string _startupType;
     private SolidColorBrush _stateBrush;
     private SolidColorBrush _startupBrush;
+    private string _risk;
+    private SolidColorBrush _riskBrush;
+    private string _riskDetail;
 
     public WindowsServiceRow(string serviceName, string displayName, string state, string startupType,
-        SolidColorBrush stateBrush, SolidColorBrush startupBrush)
+        SolidColorBrush stateBrush, SolidColorBrush startupBrush, string risk, SolidColorBrush riskBrush, string riskDetail)
     {
+        _risk = risk;
+        _riskBrush = riskBrush;
+        _riskDetail = riskDetail;
         _serviceName = serviceName;
         _displayName = displayName;
         _state = state;
@@ -156,6 +179,9 @@ public sealed class WindowsServiceRow : ObservableRow
     public string StartupType { get => _startupType; private set => SetProperty(ref _startupType, value); }
     public SolidColorBrush StateBrush { get => _stateBrush; private set => SetBrush(ref _stateBrush, value, nameof(StateBrush)); }
     public SolidColorBrush StartupBrush { get => _startupBrush; private set => SetBrush(ref _startupBrush, value, nameof(StartupBrush)); }
+    public string Risk { get => _risk; private set => SetProperty(ref _risk, value); }
+    public SolidColorBrush RiskBrush { get => _riskBrush; private set => SetBrush(ref _riskBrush, value, nameof(RiskBrush)); }
+    public string RiskDetail { get => _riskDetail; private set => SetProperty(ref _riskDetail, value); }
 
     public void UpdateFrom(WindowsServiceRow incoming)
     {
@@ -165,6 +191,9 @@ public sealed class WindowsServiceRow : ObservableRow
         StartupType = incoming.StartupType;
         StateBrush = incoming.StateBrush;
         StartupBrush = incoming.StartupBrush;
+        Risk = incoming.Risk;
+        RiskBrush = incoming.RiskBrush;
+        RiskDetail = incoming.RiskDetail;
     }
 
     private void SetBrush(ref SolidColorBrush current, SolidColorBrush incoming, string propertyName)

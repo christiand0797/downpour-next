@@ -47,7 +47,10 @@ public sealed record WindowsServiceInventoryEntry(
     string ServiceName,
     string DisplayName,
     string State,
-    string StartupType);
+    string StartupType,
+    string ImagePath = "",
+    string Risk = "Clean",
+    IReadOnlyList<string>? RiskIndicators = null);
 
 public sealed record WindowsServiceInventorySnapshot(
     int SchemaVersion,

@@ -7,7 +7,7 @@ namespace Downpour.Core;
 public sealed class WindowsServiceInventoryClient(string pipeName = WindowsServiceInventoryClient.PipeName)
 {
     public const string PipeName = "Downpour.WindowsServiceInventory.v1";
-    private const int MaximumServices = 512;
+    private const int MaximumServices = 2048;
     private const int MaximumWarnings = 64;
     private readonly string _pipeName = pipeName;
     private static readonly HashSet<string> CollectionStatuses = new(StringComparer.Ordinal)
@@ -68,7 +68,9 @@ public sealed class WindowsServiceInventoryClient(string pipeName = WindowsServi
         {
             if (service is null || !BoundedText(service.ServiceName, 256, allowEmpty: false) ||
                 !BoundedText(service.DisplayName, 256, allowEmpty: false) || !States.Contains(service.State) ||
-                !StartupTypes.Contains(service.StartupType) || !names.Add(service.ServiceName))
+                !StartupTypes.Contains(service.StartupType) || !names.Add(service.ServiceName) ||
+                !BoundedText(service.ImagePath, 512, allowEmpty: true) || !ServiceRiskAnalyzer.Levels.Contains(service.Risk) ||
+                service.RiskIndicators is { Count: > 8 } || service.RiskIndicators?.Any(indicator => !BoundedText(indicator, 512, allowEmpty: false)) == true)
                 return false;
         }
 

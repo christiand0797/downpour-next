@@ -1,15 +1,17 @@
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Text;
+using Microsoft.Win32;
 using Microsoft.Win32.SafeHandles;
 using Downpour.Contracts;
+using Downpour.Core;
 
 namespace Downpour.Service;
 
 /// <summary>Bounded, read-only inventory of Windows services and their startup configuration.</summary>
 public sealed class WindowsServiceInventoryProvider
 {
-    public const int MaximumServices = 512;
+    public const int MaximumServices = 2048;
     private const int MaximumTextLength = 256;
     private const int MaximumWarningLength = 512;
     private const int MaximumPages = 16;
@@ -22,12 +24,15 @@ public sealed class WindowsServiceInventoryProvider
     private const int ErrorMoreData = 234;
     private const int ErrorInsufficientBuffer = 122;
     private const uint ServiceQueryConfig = 0x0001;
+    internal const int MaximumImagePathLength = 512;
+    internal const int MaximumRiskIndicators = 8;
 
     public WindowsServiceInventorySnapshot Capture()
     {
         var capturedAt = DateTimeOffset.UtcNow;
         var warnings = new List<string>();
         var services = new List<WindowsServiceInventoryEntry>(MaximumServices);
+        var writable = FileSystemExposure.CachedChecker();
         using var manager = OpenSCManager(null, null, ScManagerEnumerateService);
         if (manager.IsInvalid)
         {
@@ -71,11 +76,17 @@ public sealed class WindowsServiceInventoryProvider
                         continue;
                     }
 
+                    var startupType = QueryStartupType(manager, serviceName);
+                    var imagePath = ReadImagePath(serviceName);
+                    var risk = ServiceRiskAnalyzer.Analyze(serviceName, imagePath, startupType, writable);
                     services.Add(new WindowsServiceInventoryEntry(
                         serviceName,
                         string.IsNullOrWhiteSpace(displayName) ? "Unknown" : displayName,
                         MapState(nativeRow.Status.CurrentState),
-                        QueryStartupType(manager, serviceName)));
+                        startupType,
+                        imagePath,
+                        risk.Level,
+                        risk.Indicators.Take(MaximumRiskIndicators).Select(indicator => Bound(indicator, MaximumImagePathLength)).ToArray()));
                 }
 
                 if (succeeded)
@@ -166,6 +177,24 @@ public sealed class WindowsServiceInventoryProvider
         }
     }
 
+    /// <summary>ImagePath from the service's registry key (readable by standard users); empty when unavailable.</summary>
+    private static string ReadImagePath(string serviceName)
+    {
+        if (serviceName.IndexOfAny(['\\', '/']) >= 0) return "";
+        try
+        {
+            using var key = Registry.LocalMachine.OpenSubKey($@"SYSTEM\CurrentControlSet\Services\{serviceName}");
+            var value = key?.GetValue("ImagePath", null, RegistryValueOptions.DoNotExpandEnvironmentNames) as string ?? "";
+            return Bound(value, MaximumImagePathLength);
+        }
+        catch (Exception ex) when (ex is System.Security.SecurityException or UnauthorizedAccessException or IOException)
+        {
+            return "";
+        }
+    }
+
+    private static string Bound(string value, int max) => value.Length <= max ? value : value[..max];
+
     private static string MapState(uint state) => state switch
     {
         1 => "Stopped",
@@ -248,12 +277,14 @@ public sealed class WindowsServiceInventoryProvider
     }
 
     [StructLayout(LayoutKind.Sequential)]
+    // QUERY_SERVICE_CONFIGW field order (winsvc.h). BinaryPathName follows the three DWORDs; declaring it first
+    // shifted every field and made StartType read pointer bytes.
     private struct QueryServiceConfigNative
     {
-        public IntPtr BinaryPathName;
         public uint ServiceType;
         public uint StartType;
         public uint ErrorControl;
+        public IntPtr BinaryPathName;
         public IntPtr LoadOrderGroup;
         public uint TagId;
         public IntPtr Dependencies;

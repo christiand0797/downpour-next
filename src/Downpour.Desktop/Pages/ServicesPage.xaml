@@ -31,12 +31,17 @@
         <Grid Grid.Row="2" RowSpacing="10">
             <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
             <Grid ColumnSpacing="12">
-                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                <AutoSuggestBox x:Name="SearchBox" PlaceholderText="Filter by service name or display name" TextChanged="SearchBox_TextChanged" />
-                <TextBlock x:Name="ServiceCount" Grid.Column="1" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="—" />
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                <AutoSuggestBox x:Name="SearchBox" PlaceholderText="Filter by service name, display name, path, or risk reason" TextChanged="SearchBox_TextChanged" />
+                <CheckBox Grid.Column="1" x:Name="ShowClean" Content="Show clean services" IsChecked="True" Checked="ShowClean_Changed" Unchecked="ShowClean_Changed" />
+                <StackPanel Grid.Column="2" VerticalAlignment="Center" Spacing="2">
+                    <TextBlock x:Name="ServiceCount" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="—" HorizontalAlignment="Right" />
+                    <TextBlock x:Name="RiskSummary" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" HorizontalAlignment="Right" />
+                </StackPanel>
             </Grid>
             <Grid Grid.Row="1" Padding="12,9" ColumnSpacing="12" Background="{StaticResource DownpourSurfaceElevatedBrush}">
-                <Grid.ColumnDefinitions><ColumnDefinition Width="2*" /><ColumnDefinition Width="3*" /><ColumnDefinition Width="1.2*" /><ColumnDefinition Width="1.2*" /></Grid.ColumnDefinitions>
+                <Grid.ColumnDefinitions><ColumnDefinition Width="2*" /><ColumnDefinition Width="3*" /><ColumnDefinition Width="1.2*" /><ColumnDefinition Width="1.2*" /><ColumnDefinition Width="0.8*" /></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="4" FontSize="10" FontWeight="SemiBold" CharacterSpacing="65" Text="RISK" />
                 <TextBlock FontSize="10" FontWeight="SemiBold" CharacterSpacing="65" Text="SERVICE NAME" />
                 <TextBlock Grid.Column="1" FontSize="10" FontWeight="SemiBold" CharacterSpacing="65" Text="DISPLAY NAME" />
                 <TextBlock Grid.Column="2" FontSize="10" FontWeight="SemiBold" CharacterSpacing="65" Text="STATE" />
@@ -46,9 +51,13 @@
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <Grid Padding="12,8" ColumnSpacing="12">
-                            <Grid.ColumnDefinitions><ColumnDefinition Width="2*" /><ColumnDefinition Width="3*" /><ColumnDefinition Width="1.2*" /><ColumnDefinition Width="1.2*" /></Grid.ColumnDefinitions>
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="2*" /><ColumnDefinition Width="3*" /><ColumnDefinition Width="1.2*" /><ColumnDefinition Width="1.2*" /><ColumnDefinition Width="0.8*" /></Grid.ColumnDefinitions>
                             <TextBlock Text="{Binding ServiceName}" FontFamily="Consolas" FontSize="11" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
-                            <TextBlock Grid.Column="1" Text="{Binding DisplayName}" FontSize="12" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding DisplayName}" FontSize="12" TextTrimming="CharacterEllipsis" />
+                                <TextBlock Text="{Binding RiskDetail}" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                            <TextBlock Grid.Column="4" Text="{Binding Risk}" FontSize="11" FontWeight="SemiBold" Foreground="{Binding RiskBrush}" VerticalAlignment="Center" />
                             <TextBlock Grid.Column="2" Text="{Binding State}" FontSize="11" Foreground="{Binding StateBrush}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
                             <TextBlock Grid.Column="3" Text="{Binding StartupType}" FontSize="11" Foreground="{Binding StartupBrush}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
                         </Grid>
@@ -60,6 +69,6 @@
             </ListView>
         </Grid>
 
-        <TextBlock Grid.Row="3" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Inventory only · start, stop, and configuration changes are not available here. Access-denied or unknown startup types are shown as such and are never inferred." TextWrapping="Wrap" />
+        <TextBlock Grid.Row="3" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Inventory only · start, stop, disable, and configuration changes are not available here. Risk ports v29's remote-access service rules (disabled services rated Low) and adds unquoted-path and writable-folder checks; binary signatures are not verified yet. Access-denied or unknown values are never inferred." TextWrapping="Wrap" />
     </Grid>
 </Page>
