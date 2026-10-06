@@ -427,6 +427,8 @@ public sealed partial class MainWindow : Window
             NavFrame.Navigate(typeof(ThreatIntelligencePage));
         else if (capability.RouteId.Equals("settings", StringComparison.OrdinalIgnoreCase))
             NavFrame.Navigate(typeof(SettingsPage));
+        else if (capability.RouteId.Equals("hardening", StringComparison.OrdinalIgnoreCase))
+            NavFrame.Navigate(typeof(HardeningPage));
         else
             NavFrame.Navigate(typeof(CapabilityPage), capability);
     }
@@ -476,6 +478,7 @@ public sealed partial class MainWindow : Window
         if (routeId is null && args.Content is ScannerPage) routeId = "scanner";
         if (routeId is null && args.Content is ThreatIntelligencePage) routeId = "threat-intel";
         if (routeId is null && args.Content is SettingsPage) routeId = "settings";
+        if (routeId is null && args.Content is HardeningPage) routeId = "hardening";
 
         if (routeId is null || !_routeItems.TryGetValue(routeId, out var item)) return;
         _currentRouteId = routeId;

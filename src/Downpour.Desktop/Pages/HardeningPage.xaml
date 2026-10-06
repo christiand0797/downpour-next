@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page x:Class="Downpour_Desktop.Pages.HardeningPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      mc:Ignorable="d">
+    <Grid Padding="24,20,24,30" RowSpacing="14">
+        <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+        <Grid ColumnSpacing="16">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+            <StackPanel Spacing="4">
+                <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Foreground="#FF76DDF5" Text="DOWNPOUR  /  PROTECTION  /  HARDENING" />
+                <TextBlock Style="{StaticResource TitleTextBlockStyle}" FontSize="30" Text="Hardening" />
+                <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Firmware and platform trust posture: BitLocker, Secure Boot, TPM, LSA protection, Credential Guard, memory integrity, SMBv1, and Windows Update. Read-only." TextWrapping="Wrap" />
+            </StackPanel>
+            <Button Grid.Column="1" x:Name="RefreshButton" Content="Re-check" Click="Refresh_Click" VerticalAlignment="Center" />
+        </Grid>
+
+        <Border Grid.Row="1" Padding="14,11" CornerRadius="10" Background="#B9081220" BorderBrush="#423EC5D8" BorderThickness="1">
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                <FontIcon Glyph="&#xE72E;" FontSize="20" Foreground="#FF60DBEE" VerticalAlignment="Center" />
+                <StackPanel Grid.Column="1" Spacing="3">
+                    <TextBlock x:Name="StatusHeadline" FontWeight="SemiBold" Text="Checking platform posture" />
+                    <TextBlock x:Name="StatusDetail" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Readings come from the registry, TPM Base Services, and WMI. Checks that need administrator rights show Unknown rather than a guess." TextWrapping="Wrap" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <ListView Grid.Row="2" ItemsSource="{x:Bind Checks}" SelectionMode="None" IsItemClickEnabled="False" Background="{StaticResource DownpourSurfaceBrush}">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <Grid Padding="12,10" ColumnSpacing="14">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="96" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                        <Border CornerRadius="6" Padding="8,4" Background="{Binding StateBackground}" VerticalAlignment="Top">
+                            <TextBlock Text="{Binding StateLabel}" FontSize="11" FontWeight="SemiBold" Foreground="{Binding StateForeground}" HorizontalAlignment="Center" />
+                        </Border>
+                        <StackPanel Grid.Column="1" Spacing="3">
+                            <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding Detail}" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <TextBlock Grid.Column="2" Text="{Binding Technique}" FontFamily="Consolas" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" VerticalAlignment="Top" />
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+            <ListView.Footer>
+                <TextBlock x:Name="EmptyState" Padding="14" FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="No posture data yet." TextWrapping="Wrap" />
+            </ListView.Footer>
+        </ListView>
+
+        <TextBlock Grid.Row="3" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Posture only. Fix actions (v29 &quot;FIX ALL&quot;), NSA/STIG checks, compliance scoring, and zero-day scanning are not ported yet; system changes require the audited action broker." TextWrapping="Wrap" />
+    </Grid>
+</Page>
