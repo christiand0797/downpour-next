@@ -43,6 +43,7 @@ builder.Services.AddHostedService<DriverPackageBrokerPipeWorker>();
 builder.Services.AddHostedService<HardeningPosturePipeWorker>();
 builder.Services.AddHostedService<FirewallInventoryPipeWorker>();
 builder.Services.AddHostedService<PersistenceInventoryPipeWorker>();
+builder.Services.AddHostedService<SecurityFindingBridgeWorker>();
 
 var host = builder.Build();
 host.Run();

@@ -225,7 +225,9 @@ public sealed partial class AlertsPage : Page
             _ => Color.FromArgb(255, 255, 177, 107)
         };
         return new SecurityAlertRow(alert.AlertId, alert.FirstSeenUtc.ToLocalTime().ToString("MMM d HH:mm:ss"), alert.Title,
-            $"{alert.LogName} · {alert.Provider} · event {alert.EventId} / record {alert.RecordId?.ToString() ?? "unavailable"} · {alert.Technique}",
+            SecurityFindingCatalog.IsFinding(alert.LogName)
+                ? $"{TriageRow.SourceLabel(alert)} finding · {alert.Technique}{(alert.IsVerified ? " · verified" : "")}"
+                : $"{alert.LogName} · {alert.Provider} · event {alert.EventId} / record {alert.RecordId?.ToString() ?? "unavailable"} · {alert.Technique}",
             alert.Severity, new SolidColorBrush(severityColor), alert.State, new SolidColorBrush(stateColor),
             alert.Occurrences == 1 ? "1 occurrence" : $"{alert.Occurrences:N0} occurrences",
             alert.State == "Open", alert.State == "Open", alert.State != "Open");

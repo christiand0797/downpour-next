@@ -120,7 +120,8 @@ public sealed record SecurityAlert(
     DateTimeOffset FirstSeenUtc,
     DateTimeOffset LastSeenUtc,
     int Occurrences,
-    string State);
+    string State,
+    bool IsVerified = false);
 
 public sealed record SecurityAlertSnapshot(
     int SchemaVersion,

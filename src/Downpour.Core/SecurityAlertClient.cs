@@ -51,12 +51,20 @@ public sealed class SecurityAlertClient(string pipeName = SecurityAlertClient.Pi
                 alert.FirstSeenUtc.Offset != TimeSpan.Zero || alert.LastSeenUtc.Offset != TimeSpan.Zero || alert.EventTimeUtc.Offset != TimeSpan.Zero ||
                 alert.FirstSeenUtc > snapshot.CapturedAtUtc.AddMinutes(1) || alert.LastSeenUtc > snapshot.CapturedAtUtc.AddMinutes(1) ||
                 alert.FirstSeenUtc > alert.LastSeenUtc || alert.EventTimeUtc > snapshot.CapturedAtUtc.AddMinutes(1) ||
-                !SecurityEventCatalog.TryGetRule(alert.LogName, alert.EventId, out var rule) || rule.Severity != alert.Severity ||
-                rule.Technique != alert.Technique || rule.Summary != alert.Title)
+                !(IsValidEventAlert(alert) || IsValidFindingAlert(alert)))
                 return false;
         }
         return snapshot.Warnings.All(warning => Bounded(warning, 512, allowEmpty: true));
     }
+
+    private static bool IsValidEventAlert(SecurityAlert alert) =>
+        SecurityEventCatalog.TryGetRule(alert.LogName, alert.EventId, out var rule) && rule.Severity == alert.Severity &&
+        rule.Technique == alert.Technique && rule.Summary == alert.Title;
+
+    /// <summary>Finding alerts (hardening, firewall, persistence) carry free-text titles but a fixed source, identity shape and event ID 0.</summary>
+    private static bool IsValidFindingAlert(SecurityAlert alert) =>
+        SecurityFindingCatalog.IsFinding(alert.LogName) && SecurityFindingCatalog.IsValidIdentity(alert.Provider) &&
+        alert.EventId == 0 && alert.RecordId is null && SecurityFindingCatalog.Severities.Contains(alert.Severity);
 
     public async Task<AlertStateChangeResponse?> ChangeStateAsync(AlertStateChangeRequest request, CancellationToken cancellationToken = default)
     {
@@ -88,6 +96,8 @@ public sealed class SecurityAlertClient(string pipeName = SecurityAlertClient.Pi
             return false;
         if (request.State == "FalsePositive") return request.ExpectedState is "Open" or "Acknowledged";
         if (request.State == "RearmFalsePositive") return States.Contains(request.ExpectedState);
+        if (request.State == "Verify") return request.ExpectedState is "Open" or "Acknowledged";
+        if (request.State == "Unverify") return States.Contains(request.ExpectedState);
         if (!States.Contains(request.State)) return false;
         return request.ExpectedState == request.State || (request.ExpectedState, request.State) is
             ("Open", "Acknowledged") or ("Open", "Suppressed") or ("Acknowledged", "Open") or
@@ -96,8 +106,8 @@ public sealed class SecurityAlertClient(string pipeName = SecurityAlertClient.Pi
 
     internal static bool IsValidResponse(AlertStateChangeResponse? response, Guid expectedRequest) => response is not null &&
         response.SchemaVersion == 1 && response.RequestId == expectedRequest &&
-        (response.ResultCode is "updated" or "replayed" or "unchanged" or "confirmed-1" or "confirmed-2" or "fingerprint-suppressed" or "rearmed" or "invalid-request" or "alert-not-found" or "state-conflict" or "transition-denied" or "request-id-conflict") &&
-        (response.Accepted == (response.ResultCode is "updated" or "replayed" or "unchanged" or "confirmed-1" or "confirmed-2" or "fingerprint-suppressed" or "rearmed"));
+        (response.ResultCode is "updated" or "replayed" or "unchanged" or "confirmed-1" or "confirmed-2" or "fingerprint-suppressed" or "rearmed" or "verified" or "unverified" or "invalid-request" or "alert-not-found" or "state-conflict" or "transition-denied" or "request-id-conflict") &&
+        (response.Accepted == (response.ResultCode is "updated" or "replayed" or "unchanged" or "confirmed-1" or "confirmed-2" or "fingerprint-suppressed" or "rearmed" or "verified" or "unverified"));
 
     private static async Task<AlertStateChangeResponse?> ReadResponseAsync(Stream pipe, CancellationToken token)
     {

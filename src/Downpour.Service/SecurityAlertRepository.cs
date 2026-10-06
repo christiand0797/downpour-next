@@ -59,7 +59,9 @@ public sealed class SecurityAlertRepository(string databasePath)
                 "created_at_utc TEXT NOT NULL, FOREIGN KEY(alert_id) REFERENCES alerts(alert_id) ON DELETE CASCADE);" +
                 "CREATE TABLE IF NOT EXISTS alert_fp_rules (fingerprint TEXT PRIMARY KEY CHECK(length(fingerprint)=64), confirmations INTEGER NOT NULL CHECK(confirmations BETWEEN 1 AND 1000000), suppressed INTEGER NOT NULL CHECK(suppressed IN (0,1)), title TEXT NOT NULL CHECK(length(title)<=160), log_name TEXT NOT NULL CHECK(length(log_name)<=128), event_id INTEGER NOT NULL CHECK(event_id BETWEEN 0 AND 65535), first_seen_utc TEXT NOT NULL, last_seen_utc TEXT NOT NULL);" +
                 "CREATE TABLE IF NOT EXISTS alert_fp_events (request_id TEXT PRIMARY KEY, alert_id TEXT NOT NULL, fingerprint TEXT NOT NULL, event_type TEXT NOT NULL CHECK(event_type IN ('confirm','rearm')), created_at_utc TEXT NOT NULL);" +
-                "CREATE TABLE IF NOT EXISTS alert_fp_applied (alert_id TEXT PRIMARY KEY, fingerprint TEXT NOT NULL);",
+                "CREATE TABLE IF NOT EXISTS alert_fp_applied (alert_id TEXT PRIMARY KEY, fingerprint TEXT NOT NULL);" +
+                // Additive (no migration): user verification moves an item from Possible Threats to Threats, as in v29.
+                "CREATE TABLE IF NOT EXISTS alert_verifications (alert_id TEXT PRIMARY KEY CHECK(length(alert_id)=64), verified_at_utc TEXT NOT NULL);",
                 cancellationToken);
             var version = Convert.ToInt32(await ScalarAsync(connection, "SELECT MAX(version) FROM alert_schema;", cancellationToken));
             if (version == 1)
@@ -124,6 +126,61 @@ public sealed class SecurityAlertRepository(string databasePath)
         finally { _gate.Release(); }
     }
 
+    public const int MaximumFindingsPerIngest = 512;
+
+    /// <summary>
+    /// Upserts posture/persistence findings as alerts. Identity lives in the provider column (see
+    /// <see cref="SecurityFindingCatalog"/>), so deduplication and false-positive suppression are per finding.
+    /// </summary>
+    public async Task IngestFindingsAsync(IReadOnlyList<SecurityFindingObservation> findings, DateTimeOffset capturedAtUtc, CancellationToken cancellationToken = default)
+    {
+        if (findings.Count > MaximumFindingsPerIngest)
+            throw new InvalidDataException("Too many findings in one ingest.");
+        foreach (var finding in findings)
+        {
+            if (!SecurityFindingCatalog.Sources.Contains(finding.Source) || !SecurityFindingCatalog.Severities.Contains(finding.Severity) ||
+                finding.Category is not { Length: > 0 and <= 128 } || finding.Technique is not { Length: > 0 and <= 32 } ||
+                finding.Summary is not { Length: > 0 and <= 160 } || finding.Indicator is not { Length: <= 512 })
+                throw new InvalidDataException("A finding did not pass its contract validation.");
+        }
+
+        await _gate.WaitAsync(cancellationToken);
+        try
+        {
+            await using var connection = await OpenAsync(cancellationToken);
+            await using var transaction = connection.BeginTransaction();
+            var seen = capturedAtUtc.ToUniversalTime().ToString("O");
+            foreach (var finding in findings)
+            {
+                var identity = SecurityFindingMapper.Identity(finding);
+                var dedupKey = $"finding|{finding.Source}|{identity}";
+                var id = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes("downpour-alert-v1\0" + dedupKey))).ToLowerInvariant();
+                var fingerprint = BuildFalsePositiveFingerprint(finding.Source, identity, 0);
+                var suppressionActive = await IsFingerprintSuppressedAsync(connection, transaction, fingerprint, cancellationToken);
+                await using var command = connection.CreateCommand();
+                command.Transaction = transaction;
+                command.CommandText =
+                    "INSERT INTO alerts(alert_id,dedup_key,title,severity,technique,log_name,provider,event_id,record_id,event_time_utc,first_seen_utc,last_seen_utc,occurrences,state) " +
+                    "VALUES($id,$key,$title,$severity,$technique,$log,$provider,0,NULL,$seen,$seen,$seen,1,'Open') " +
+                    "ON CONFLICT(dedup_key) DO UPDATE SET title=excluded.title, severity=excluded.severity, technique=excluded.technique, last_seen_utc=excluded.last_seen_utc;";
+                command.Parameters.AddWithValue("$id", id);
+                command.Parameters.AddWithValue("$key", dedupKey);
+                command.Parameters.AddWithValue("$title", finding.Summary);
+                command.Parameters.AddWithValue("$severity", finding.Severity);
+                command.Parameters.AddWithValue("$technique", finding.Technique);
+                command.Parameters.AddWithValue("$log", finding.Source);
+                command.Parameters.AddWithValue("$provider", identity);
+                command.Parameters.AddWithValue("$seen", seen);
+                await command.ExecuteNonQueryAsync(cancellationToken);
+                if (suppressionActive)
+                    await ApplyFingerprintSuppressionAsync(connection, transaction, id, fingerprint, cancellationToken);
+            }
+            await PruneAsync(connection, transaction, capturedAtUtc.ToUniversalTime(), cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+        }
+        finally { _gate.Release(); }
+    }
+
     public async Task<SecurityAlertSnapshot> ReadSnapshotAsync(CancellationToken cancellationToken = default)
     {
         await _gate.WaitAsync(cancellationToken);
@@ -133,14 +190,16 @@ public sealed class SecurityAlertRepository(string databasePath)
             var total = Convert.ToInt32(await ScalarAsync(connection, "SELECT COUNT(*) FROM alerts;", cancellationToken));
             var alerts = new List<SecurityAlert>(Math.Min(total, MaximumSnapshotAlerts));
             await using var command = connection.CreateCommand();
-            command.CommandText = "SELECT alert_id,title,severity,technique,log_name,provider,event_id,record_id,event_time_utc,first_seen_utc,last_seen_utc,occurrences,state FROM alerts ORDER BY last_seen_utc DESC,alert_id LIMIT $limit;";
+            command.CommandText = "SELECT a.alert_id,a.title,a.severity,a.technique,a.log_name,a.provider,a.event_id,a.record_id,a.event_time_utc,a.first_seen_utc,a.last_seen_utc,a.occurrences,a.state,v.alert_id IS NOT NULL " +
+                "FROM alerts a LEFT JOIN alert_verifications v ON v.alert_id=a.alert_id ORDER BY a.last_seen_utc DESC,a.alert_id LIMIT $limit;";
             command.Parameters.AddWithValue("$limit", MaximumSnapshotAlerts);
             await using var reader = await command.ExecuteReaderAsync(cancellationToken);
             while (await reader.ReadAsync(cancellationToken))
             {
                 alerts.Add(new SecurityAlert(reader.GetString(0), reader.GetString(1), reader.GetString(2), reader.GetString(3),
                     reader.GetString(4), reader.GetString(5), reader.GetInt32(6), reader.IsDBNull(7) ? null : reader.GetInt64(7),
-                    ParseUtc(reader.GetString(8)), ParseUtc(reader.GetString(9)), ParseUtc(reader.GetString(10)), reader.GetInt32(11), reader.GetString(12)));
+                    ParseUtc(reader.GetString(8)), ParseUtc(reader.GetString(9)), ParseUtc(reader.GetString(10)), reader.GetInt32(11), reader.GetString(12),
+                    reader.GetInt64(13) != 0));
             }
             return new SecurityAlertSnapshot(1, DateTimeOffset.UtcNow, total, alerts, []);
         }
@@ -151,7 +210,7 @@ public sealed class SecurityAlertRepository(string databasePath)
         AlertStateChangeRequest request, CancellationToken cancellationToken = default)
     {
         if (request.SchemaVersion != 1 || request.RequestId == Guid.Empty || !IsValidAlertId(request.AlertId) ||
-            !States.Contains(request.ExpectedState) || !(States.Contains(request.State) || request.State is "FalsePositive" or "RearmFalsePositive"))
+            !States.Contains(request.ExpectedState) || !(States.Contains(request.State) || request.State is "FalsePositive" or "RearmFalsePositive" or "Verify" or "Unverify"))
             return new AlertStateChangeResponse(1, request.RequestId, false, "invalid-request");
 
         await _gate.WaitAsync(cancellationToken);
@@ -285,6 +344,8 @@ public sealed class SecurityAlertRepository(string databasePath)
                 return new AlertStateChangeResponse(1, request.RequestId, true,
                     eventType == "rearm" ? "rearmed" : suppressed ? "fingerprint-suppressed" : $"confirmed-{Math.Min(count, FalsePositiveConfirmationThreshold)}");
             }
+            if (request.State is "Verify" or "Unverify")
+                return await ChangeVerificationAsync(connection, transaction, request, current, cancellationToken);
             if (!IsAllowedTransition(current, request.State))
             {
                 await transaction.CommitAsync(cancellationToken);
@@ -325,6 +386,41 @@ public sealed class SecurityAlertRepository(string databasePath)
             return new AlertStateChangeResponse(1, request.RequestId, true, "updated");
         }
         finally { _gate.Release(); }
+    }
+
+    /// <summary>Verify promotes an Open/Acknowledged item to Threats; Unverify returns it to Possible Threats. Both are audited and replay-safe.</summary>
+    private static async Task<AlertStateChangeResponse> ChangeVerificationAsync(
+        SqliteConnection connection, SqliteTransaction transaction, AlertStateChangeRequest request, string current, CancellationToken token)
+    {
+        if (request.State == "Verify" && current is not ("Open" or "Acknowledged"))
+        {
+            await transaction.CommitAsync(token);
+            return new AlertStateChangeResponse(1, request.RequestId, false, "transition-denied");
+        }
+        var now = DateTimeOffset.UtcNow.ToString("O");
+        await using (var change = connection.CreateCommand())
+        {
+            change.Transaction = transaction;
+            change.CommandText = request.State == "Verify"
+                ? "INSERT OR IGNORE INTO alert_verifications(alert_id,verified_at_utc) VALUES($id,$now);"
+                : "DELETE FROM alert_verifications WHERE alert_id=$id;";
+            change.Parameters.AddWithValue("$id", request.AlertId);
+            change.Parameters.AddWithValue("$now", now);
+            await change.ExecuteNonQueryAsync(token);
+        }
+        await using (var audit = connection.CreateCommand())
+        {
+            audit.Transaction = transaction;
+            audit.CommandText = "INSERT INTO alert_state_events(request_id,alert_id,previous_state,next_state,created_at_utc) VALUES($request,$id,$previous,$next,$now);";
+            audit.Parameters.AddWithValue("$request", request.RequestId.ToString("N"));
+            audit.Parameters.AddWithValue("$id", request.AlertId);
+            audit.Parameters.AddWithValue("$previous", current);
+            audit.Parameters.AddWithValue("$next", request.State);
+            audit.Parameters.AddWithValue("$now", now);
+            await audit.ExecuteNonQueryAsync(token);
+        }
+        await transaction.CommitAsync(token);
+        return new AlertStateChangeResponse(1, request.RequestId, true, request.State == "Verify" ? "verified" : "unverified");
     }
 
     public static bool IsValidAlertId(string? value) => value is { Length: 64 } && value.All(ch => ch is >= '0' and <= '9' or >= 'a' and <= 'f');
@@ -413,7 +509,8 @@ public sealed class SecurityAlertRepository(string databasePath)
         await cap.ExecuteNonQueryAsync(token);
         await using var markers = connection.CreateCommand();
         markers.Transaction = transaction;
-        markers.CommandText = "DELETE FROM alert_fp_applied WHERE NOT EXISTS(SELECT 1 FROM alerts WHERE alerts.alert_id=alert_fp_applied.alert_id);";
+        markers.CommandText = "DELETE FROM alert_fp_applied WHERE NOT EXISTS(SELECT 1 FROM alerts WHERE alerts.alert_id=alert_fp_applied.alert_id);" +
+            "DELETE FROM alert_verifications WHERE NOT EXISTS(SELECT 1 FROM alerts WHERE alerts.alert_id=alert_verifications.alert_id);";
         await markers.ExecuteNonQueryAsync(token);
     }
 
