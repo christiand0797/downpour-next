@@ -34,6 +34,10 @@ Shared files that both agents may edit, surgically only: `WORK_QUEUE.json`, `AGE
 - **Never** run `git checkout -- .`, `git restore .`, `git stash` without `pop`, `git reset --hard`, or `git clean` while another agent may have uncommitted work.
 - Mark a task completed only when the code is **committed on HEAD**, not when it exists in the working tree.
 
+## Review of DN-017 (2026-10-07)
+
+The loader worked and its tests pass. One security fix followed: the default rule directory searched parent folders for `src/Downpour.Service/sigma_rules`, so an installed copy could load rules planted in a user-writable ancestor folder. Rules now load only from the install directory, and files over 1 MiB are skipped.
+
 ## Commit etiquette
 
 - Commit only the files you own or have just edited. Do not run `git add -A` while the other agent has uncommitted work.

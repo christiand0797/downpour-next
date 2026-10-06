@@ -446,20 +446,24 @@
     {
       "id": "DN-022",
       "title": "Persistence and services risk views",
-      "status": "in_progress",
+      "status": "completed",
       "priority": "medium",
       "acceptance": [
         "Scheduled tasks, WMI subscriptions, Run/Winlogon keys, DLL hijack shadows (read-only)",
         "Baseline + diff with alerts",
         "Services route gains v29 risk scoring"
       ],
-      "notes": "Ports scheduled_task_monitor, wmi_persistence_detector, persistence_watchers, dll_hijack_detector. | Assigned to claude-parity-audit per docs/AGENT_COORDINATION.md.",
-      "files": []
+      "notes": "Completed 2026-10-07 by claude-parity-audit (commit 5e91a23). Persistence review on the Threat Hunt route: Run/RunOnce incl. WOW64, Winlogon code-launching values, startup folders, scheduled tasks incl. hidden (Task Scheduler COM), WMI root\\subscription, DLL shadows in standard-user-writable PATH folders (ACL check), driver files. TOFU baseline of SHA-256 hashes in the protected state dir; new/changed items highlighted 7 days; v29 heuristics applied to new items, BYOVD/DLL shadow/WMI consumers always. Live here: 192 items, CRITICAL msio64.sys BYOVD driver present. Remaining: services risk scoring (v29 Smart Services scanner) moved to DN-028; alert-pipeline bridge; v29 hunt modes. 15 tests.",
+      "files": [
+        "src/Downpour.Core/PersistenceAnalyzer.cs",
+        "src/Downpour.Service/PersistenceInventoryProvider.cs",
+        "src/Downpour.Desktop/Pages/PersistencePage.xaml"
+      ]
     },
     {
       "id": "DN-023",
       "title": "Threats, Possible Threats, and false-positive store",
-      "status": "queued",
+      "status": "in_progress",
       "priority": "high",
       "acceptance": [
         "Threats and Possible Threats routes backed by the alert repository",
@@ -525,6 +529,19 @@
         "AEGIS phishing analyzer for pasted text, fully local"
       ],
       "notes": "Low-risk ports from Timeline and AEGIS tabs. | Assigned to antigravity-worker per docs/AGENT_COORDINATION.md.",
+      "files": []
+    },
+    {
+      "id": "DN-028",
+      "title": "Services risk scoring (v29 Smart Services Threat Scanner)",
+      "status": "queued",
+      "priority": "medium",
+      "acceptance": [
+        "Port v29 _build_services_tab risk rules with source line citations",
+        "Unquoted service paths, user-writable binaries, unsigned binaries flagged",
+        "Read-only; no start/stop/configure"
+      ],
+      "notes": "Split from DN-022 on 2026-10-07. Services route currently lists state and startup type only.",
       "files": []
     }
   ]

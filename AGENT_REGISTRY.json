@@ -93,10 +93,10 @@
     {
       "id": "claude-parity-audit",
       "role": "agent",
-      "taskId": "DN-022",
+      "taskId": "DN-023",
       "status": "active",
-      "heartbeatUtc": "2026-10-07T00:40:00Z",
-      "notes": "DN-016, DN-018, DN-019 completed. Working DN-022 (persistence + service risk views), then DN-023."
+      "heartbeatUtc": "2026-10-07T01:30:00Z",
+      "notes": "DN-016, DN-018, DN-019, DN-022 completed. Working DN-023 (Threats / Possible Threats / FP store). DN-028 (services risk scoring) queued and unassigned."
     },
     {
       "id": "antigravity-worker",
