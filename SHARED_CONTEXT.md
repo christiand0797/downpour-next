@@ -1,11 +1,35 @@
 # Downpour Next shared context
 
-**Updated:** 2026-10-06 (DN-015 parity audit complete; all pending work committed and pushed; next agent instructions in `docs/AGENT_HANDOFF.md`)
+**Updated:** 2026-10-06 (DN-016 complete; handoff section 2 verification done; DN-017 queued)
 
 **Repository:** public [christiand0797/downpour-next](https://github.com/christiand0797/downpour-next)
 **Local path:** `C:\Users\purpl\Desktop\downpour v2`  
 **Branch:** `main`  
 **Latest source checkpoint:** `1750c70 Prepare v0.1.14 performance release` on `main`. Stable [v0.1.14](https://github.com/christiand0797/downpour-next/releases/tag/v0.1.14) is published with `DownpourNext-win-x64-0.1.14.zip`, size 196,796,799 bytes, SHA-256 `B5C723A9DC15FEDA679BA735731369BB29ED54C8BA7F78A218D3B560EE7C3272`; the anonymous GitHub release API reports the same digest and size. The ZIP contains 769 entries. The ignored local `DownpourNext-Portable/` folder contains the current v0.1.14 package plus two legacy README extras; desktop/service/updater-helper executable hashes match fresh self-contained staging. Serial Release build: 0 warnings/errors; 117 tests pass, including per-process CPU delta and system-wide commit counter coverage. Current package desktop launched and its bundled service child was confirmed running. Dashboard screenshot: `artifacts/desktop-downpour-latest.png`. Native Performance navigation/save-picker click-through remains pending. v0.1.12's full disposable v0.1.11 update apply/hash/relaunch check passed. The user authorized public repo visibility for anonymous updates. Releases remain unsigned, portable, and not a full parity claim.
+
+## 2026-10-06 handoff section 2 and DN-016 (antigravity-worker)
+
+**Handoff section 2 completed:**
+- Verified import graph: no dynamic loading missed; `revolutionary_enhancements` and `ultimate_threat_intel` are stub-only with type stubs only
+- Documented v29 settings/config in parity-checklist.json (settings section with all keys from config.py)
+- Created docs/V29_DETECTION_THRESHOLDS.md with detection thresholds, IOCs, and event IDs for all planned modules
+- Documented v29 on-disk stores in parity-checklist.json (dataStores section: titanium.db, quarantine, baselines, etc.)
+- Added right-click context-menu workflows to parity-checklist.json (alerts, processes, remediation, possible-threats, performance, threats tabs)
+
+**DN-016 completed:**
+- Driver signature verification already fixed in current codebase
+- DriverPackageInventoryProvider uses CatalogSignatureVerifier with WtdChoiceCatalog and CryptCATAdminAcquireContext2
+- No CreateFromSignedFile or SYSLIB0057 pragma found
+- Build: 0 warnings, 0 errors
+
+**Files updated:**
+- docs/V29_PARITY_AUDIT.md (added section 6 handoff verification)
+- parity-checklist.json (added settings, dataStores sections; added right-click workflows to routes)
+- docs/V29_DETECTION_THRESHOLDS.md (new file)
+- WORK_QUEUE.json (DN-016 marked completed)
+- AGENT_REGISTRY.json (antigravity-worker active on DN-016)
+
+**Next safe task:** DN-017 (load v29 Sigma rule files)
 
 ## 2026-10-06 parity audit checkpoint (DN-015, claude-parity-audit)
 

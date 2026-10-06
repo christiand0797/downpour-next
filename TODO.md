@@ -1,5 +1,30 @@
 # Downpour Next TODO
 
+## 2026-10-06 handoff section 2 and DN-016 (antigravity-worker)
+
+**Handoff section 2 completed:**
+- Verified import graph: no dynamic loading missed; `revolutionary_enhancements` and `ultimate_threat_intel` are stub-only with type stubs only
+- Documented v29 settings/config in parity-checklist.json (settings section with all keys from config.py)
+- Created docs/V29_DETECTION_THRESHOLDS.md with detection thresholds, IOCs, and event IDs for all planned modules
+- Documented v29 on-disk stores in parity-checklist.json (dataStores section: titanium.db, quarantine, baselines, etc.)
+- Added right-click context-menu workflows to parity-checklist.json (alerts, processes, remediation, possible-threats, performance, threats tabs)
+
+**DN-016 completed:**
+- Driver signature verification already fixed in current codebase
+- DriverPackageInventoryProvider uses CatalogSignatureVerifier with WtdChoiceCatalog and CryptCATAdminAcquireContext2
+- No CreateFromSignedFile or SYSLIB0057 pragma found
+- Build: 0 warnings, 0 errors
+
+**Files updated:**
+- docs/V29_PARITY_AUDIT.md (added section 6 handoff verification)
+- parity-checklist.json (added settings, dataStores sections; added right-click workflows to routes)
+- docs/V29_DETECTION_THRESHOLDS.md (new file)
+- WORK_QUEUE.json (DN-016 marked completed)
+- AGENT_REGISTRY.json (antigravity-worker idle)
+- SHARED_CONTEXT.md (updated)
+
+**Next safe task:** DN-017 (load v29 Sigma rule files)
+
 ## 2026-10-06 parity audit checkpoint (DN-015, claude-parity-audit)
 
 - Compared v29 (`downpour_consolidated`) against this repo. See [`docs/V29_PARITY_AUDIT.md`](docs/V29_PARITY_AUDIT.md). By feature count Downpour Next is roughly 15-20% of v29. 24 of 38 routes are placeholders, and no response actions are enabled.

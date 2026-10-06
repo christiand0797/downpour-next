@@ -102,9 +102,9 @@
       "id": "antigravity-worker",
       "role": "primary",
       "taskId": "DN-016",
-      "status": "active",
-      "heartbeatUtc": "2026-10-06T22:30:00Z",
-      "notes": "Starting handoff Section 2 steps 1-5 (verify and extend v29 parity audit), then will fix driver signature verification (catalog-signed INFs)."
+      "status": "idle",
+      "heartbeatUtc": "2026-10-06T23:00:00Z",
+      "notes": "Handoff section 2 complete: verified import graph, documented settings/config (parity-checklist.json settings section), detection thresholds (docs/V29_DETECTION_THRESHOLDS.md), data stores (parity-checklist.json dataStores section), and right-click context menus. DN-016 already fixed: driver verification uses CatalogSignatureVerifier with WtdChoiceCatalog and CryptCATAdminAcquireContext2. Build: 0 warnings, 0 errors. Next safe task: DN-017 (load v29 Sigma rule files)."
     }
   ]
 }
