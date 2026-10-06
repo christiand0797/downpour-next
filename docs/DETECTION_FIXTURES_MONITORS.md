@@ -1,5 +1,8 @@
 # Detection Fixtures & Thresholds: Detection Monitors
 
+> **Accuracy note (2026-10-06):** These are hand-written summaries. Named constants were cross-checked against the v29 source; prose values were not. Where this file disagrees with the generated [`V29_DETECTION_THRESHOLDS.md`](V29_DETECTION_THRESHOLDS.md), the generated file is authoritative. Known prose error: `dga_detector.py` consonant threshold is `0.6` (`__init__` default), not 0.75/0.20.
+
+
 These constants, API flags, and pattern definitions are extracted from Downpour v29 detection monitors to guide native C# implementations.
 
 ---

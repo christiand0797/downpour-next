@@ -1,5 +1,8 @@
 # Detection Fixtures & Thresholds: Core Detection Engines
 
+> **Accuracy note (2026-10-06):** These are hand-written summaries. Named constants were cross-checked against the v29 source; prose values were not. Where this file disagrees with the generated [`V29_DETECTION_THRESHOLDS.md`](V29_DETECTION_THRESHOLDS.md), the generated file is authoritative. Known prose error: `dga_detector.py` consonant threshold is `0.6` (`__init__` default), not 0.75/0.20.
+
+
 These constants and scoring thresholds are extracted from Downpour v29 detection modules to ensure Downpour Next ports reproduce identical detection behavior and telemetry verdicts.
 
 ---
@@ -10,8 +13,8 @@ These constants and scoring thresholds are extracted from Downpour v29 detection
   - `CV_THRESHOLD_LOW = 0.05`: Extremely regular interval (high beacon probability).
   - `CV_THRESHOLD_MEDIUM = 0.25`: Regular with jitter (typical beacon configuration).
   - `CV_THRESHOLD_HIGH = 0.50`: Irregular (likely legitimate human/software traffic).
-  - `MIN_INTERVAL_SECONDS = 5.0`: Minimum connection interval considered.
-  - `MIN_CONNECTIONS = 5`: Minimum observed connection events to compute jitter/CV.
+  - `MIN_INTERVAL_SECONDS = 1.0`: Minimum connection interval considered.
+  - `MIN_CONNECTIONS_FOR_DETECTION = 5`: Minimum observed connection events to compute jitter/CV.
 - **DGA Analysis Thresholds:**
   - `DGA_ENTROPY_THRESHOLD = 3.5`: Shannon entropy threshold for suspicious domain names.
   - `DGA_LENGTH_THRESHOLD = 15`: Minimum domain label length for DGA heuristic evaluation.
