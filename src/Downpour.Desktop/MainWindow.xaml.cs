@@ -431,6 +431,8 @@ public sealed partial class MainWindow : Window
             NavFrame.Navigate(typeof(HardeningPage));
         else if (capability.RouteId.Equals("firewall", StringComparison.OrdinalIgnoreCase))
             NavFrame.Navigate(typeof(FirewallPage));
+        else if (capability.RouteId.Equals("hunt", StringComparison.OrdinalIgnoreCase))
+            NavFrame.Navigate(typeof(PersistencePage));
         else
             NavFrame.Navigate(typeof(CapabilityPage), capability);
     }
@@ -482,6 +484,7 @@ public sealed partial class MainWindow : Window
         if (routeId is null && args.Content is SettingsPage) routeId = "settings";
         if (routeId is null && args.Content is HardeningPage) routeId = "hardening";
         if (routeId is null && args.Content is FirewallPage) routeId = "firewall";
+        if (routeId is null && args.Content is PersistencePage) routeId = "hunt";
 
         if (routeId is null || !_routeItems.TryGetValue(routeId, out var item)) return;
         _currentRouteId = routeId;

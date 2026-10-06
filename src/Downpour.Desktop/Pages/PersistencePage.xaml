@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page x:Class="Downpour_Desktop.Pages.PersistencePage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      mc:Ignorable="d">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Padding="24,20,24,30" Spacing="14">
+            <Grid ColumnSpacing="16">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                <StackPanel Spacing="4">
+                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Foreground="#FF76DDF5" Text="DOWNPOUR  /  ANALYSIS  /  THREAT HUNT" />
+                    <TextBlock Style="{StaticResource TitleTextBlockStyle}" FontSize="30" Text="Persistence review" />
+                    <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Autostart registry values, Winlogon, startup folders, scheduled tasks (including hidden), WMI event subscriptions, DLL shadows in writable PATH folders, and kernel driver files. Read-only." TextWrapping="Wrap" />
+                </StackPanel>
+                <Button Grid.Column="1" x:Name="RefreshButton" Content="Re-scan" Click="Refresh_Click" VerticalAlignment="Center" />
+            </Grid>
+
+            <Border Padding="14,11" CornerRadius="10" Background="#B9081220" BorderBrush="#423EC5D8" BorderThickness="1">
+                <StackPanel Spacing="3">
+                    <TextBlock x:Name="StatusHeadline" FontWeight="SemiBold" Text="Scanning autostart locations" />
+                    <TextBlock x:Name="StatusDetail" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+
+            <StackPanel Spacing="6">
+                <TextBlock Text="FINDINGS" FontSize="11" FontWeight="SemiBold" CharacterSpacing="85" Foreground="#FF91AFC2" />
+                <ItemsControl ItemsSource="{x:Bind Findings}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Padding="10,6" ColumnSpacing="12">
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="80" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                                <TextBlock Text="{Binding Severity}" FontSize="11" FontWeight="SemiBold" Foreground="{Binding SeverityBrush}" />
+                                <StackPanel Grid.Column="1" Spacing="2">
+                                    <TextBlock Text="{Binding Summary}" FontSize="12" TextWrapping="Wrap" />
+                                    <TextBlock Text="{Binding Indicator}" FontSize="11" FontFamily="Consolas" Foreground="{ThemeResource TextFillColorTertiaryBrush}" TextWrapping="Wrap" />
+                                </StackPanel>
+                                <TextBlock Grid.Column="2" Text="{Binding Technique}" FontSize="11" FontFamily="Consolas" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <TextBlock x:Name="NoFindings" FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Visibility="Collapsed" TextWrapping="Wrap" />
+            </StackPanel>
+
+            <StackPanel Spacing="8">
+                <Grid ColumnSpacing="10">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                    <AutoSuggestBox x:Name="SearchBox" PlaceholderText="Filter by name, location, or command" TextChanged="Filter_Changed" />
+                    <ComboBox Grid.Column="1" x:Name="CategoryFilter" SelectedIndex="0" SelectionChanged="Filter_Changed" MinWidth="170" />
+                    <CheckBox Grid.Column="2" x:Name="RecentOnly" Content="New or changed (7 days)" Checked="Filter_Changed" Unchecked="Filter_Changed" />
+                </Grid>
+                <TextBlock x:Name="EntryCount" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <ListView ItemsSource="{x:Bind Entries}" SelectionMode="None" MaxHeight="520" Background="{StaticResource DownpourSurfaceBrush}">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Padding="10,6" ColumnSpacing="12">
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="120" /><ColumnDefinition Width="*" /><ColumnDefinition Width="90" /></Grid.ColumnDefinitions>
+                                <TextBlock Text="{Binding Category}" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                                <StackPanel Grid.Column="1" Spacing="2">
+                                    <TextBlock Text="{Binding Name}" FontSize="12" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Text="{Binding Value}" FontSize="11" FontFamily="Consolas" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" MaxLines="2" TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Text="{Binding Location}" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Text="{Binding Indicators}" FontSize="11" Foreground="#FFFFAA5A" TextWrapping="Wrap" Visibility="{Binding IndicatorsVisibility}" />
+                                </StackPanel>
+                                <TextBlock Grid.Column="2" Text="{Binding Change}" FontSize="11" FontWeight="SemiBold" Foreground="{Binding ChangeBrush}" />
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </StackPanel>
+
+            <TextBlock FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Review only; nothing is disabled or removed. The first scan creates a trust-on-first-use baseline, so later additions and changes are highlighted for 7 days. The baseline stores SHA-256 hashes of values, never the commands themselves. Inbox driver files are tracked but only new, changed, or known-vulnerable drivers are listed." TextWrapping="Wrap" />
+        </StackPanel>
+    </ScrollViewer>
+</Page>
