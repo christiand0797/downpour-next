@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page x:Class="Downpour_Desktop.Pages.DriverPackagesPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      mc:Ignorable="d">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Padding="28,24,28,36" Spacing="16" MaxWidth="1280" HorizontalAlignment="Left">
+            <StackPanel Spacing="5">
+                <TextBlock Text="ANALYSIS  /  DRIVER STORE  /  PACKAGE INVENTORY" Style="{StaticResource SubtitleTextBlockStyle}" />
+                <TextBlock Text="Driver packages" Style="{StaticResource TitleTextBlockStyle}" />
+                <TextBlock Text="Enumerates installed driver packages from the Windows Driver Store. Includes INF file, version, class, provider, hardware IDs, and signature status." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+            </StackPanel>
+
+            <Border Padding="14" CornerRadius="10" Background="#A80B1524" BorderBrush="#3D46C5D8" BorderThickness="1">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="Read-only enumeration of the Windows Driver Store" FontWeight="SemiBold" Foreground="#FFFFC76A" />
+                    <TextBlock Text="Lists driver packages with INF file, version, class, provider, hardware IDs, and signature status. No driver installation, update, or removal is performed. Signature verification uses WinVerifyTrust." FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+
+            <Grid ColumnSpacing="12" RowSpacing="8">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                <StackPanel Spacing="4">
+                    <TextBlock x:Name="StatusText" Text="Driver store not loaded." FontWeight="SemiBold" TextWrapping="Wrap" />
+                </StackPanel>
+                <Button Grid.Column="1" x:Name="RefreshButton" Content="Refresh driver store" Click="RefreshButton_Click" VerticalAlignment="Center" />
+            </Grid>
+
+            <TextBox x:Name="SearchBox" PlaceholderText="Filter by INF file, provider, class, hardware ID, or version..." TextChanged="SearchBox_TextChanged" />
+
+            <Border Padding="12" CornerRadius="10" Background="#C808111E" BorderBrush="#5738B9D1" BorderThickness="1">
+                <StackPanel Spacing="9">
+                    <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><TextBlock Text="DRIVER PACKAGES" FontSize="11" FontWeight="SemiBold" CharacterSpacing="85" Foreground="#FF91AFC2" /><TextBlock x:Name="PackageCount" Grid.Column="1" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" /></Grid>
+                    <ListView x:Name="PackageList" ItemsSource="{x:Bind VisiblePackages}" SelectionMode="None" IsItemClickEnabled="False" MaxHeight="500" Background="Transparent">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Padding="8,7" Spacing="3">
+                                    <TextBlock Text="{Binding InfFile}" FontWeight="SemiBold" Foreground="#FF50DBF1" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Text="{Binding DriverClass}" FontSize="11" Foreground="#FFB47AF8" TextWrapping="Wrap" />
+                                    <TextBlock Text="{Binding ProviderDisplay}" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" TextWrapping="Wrap" />
+                                    <TextBlock Text="{Binding VersionDateDisplay}" FontSize="10" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Text="{Binding SignatureDisplay}" FontSize="10" Foreground="{Binding SignatureBrush}" TextWrapping="Wrap" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                    <TextBlock x:Name="EmptyState" Text="Click 'Refresh driver store' to load data." Foreground="{ThemeResource TextFillColorTertiaryBrush}" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</Page>
