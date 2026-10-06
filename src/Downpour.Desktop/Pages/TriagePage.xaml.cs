@@ -162,6 +162,9 @@ public sealed class TriageRow(SecurityAlert alert)
         SecurityFindingCatalog.Hardening => "Hardening",
         SecurityFindingCatalog.Firewall => "Firewall",
         SecurityFindingCatalog.Persistence => "Persistence",
+        SecurityFindingCatalog.Sigma => "Sigma",
+        SecurityFindingCatalog.Amsi => "AMSI",
+        _ when alert.LogName.StartsWith("Downpour/", StringComparison.Ordinal) => alert.LogName["Downpour/".Length..],
         _ => $"{alert.LogName} event {alert.EventId}"
     };
 

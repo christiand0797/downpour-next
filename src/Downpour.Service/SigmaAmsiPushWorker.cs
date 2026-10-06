@@ -1,5 +1,6 @@
 using System.Threading.Channels;
 using Downpour.Contracts;
+using Downpour.Core;
 using Microsoft.Extensions.Logging;
 
 namespace Downpour.Service;
@@ -70,22 +71,18 @@ public sealed class SigmaAmsiPushWorker(
 
                 try
                 {
-                    var observations = new List<SecurityEventObservation>();
-                    foreach (var observation in batch)
-                    {
-                        var generatedAlerts = processor.ProcessEvent(observation);
-                        foreach (var alert in generatedAlerts)
-                        {
-                            observations.Add(new SecurityEventObservation(
-                                alert.LogName, alert.Provider, alert.EventId, alert.RecordId, alert.EventTimeUtc,
-                                alert.Severity, alert.Technique, alert.Title, alert.Occurrences));
-                        }
-                    }
+                    // Detections are stored as findings. Converting them back into event observations failed the
+                    // fixed event-catalog validation (4104 = "PowerShell script block recorded", LOW), so every
+                    // Sigma/AMSI detection used to be dropped with only a log warning.
+                    var findings = batch
+                        .SelectMany(processor.ProcessEvent)
+                        .Select(ToFinding)
+                        .Take(SecurityAlertRepository.MaximumFindingsPerIngest)
+                        .ToArray();
 
-                    if (observations.Count > 0)
+                    if (findings.Length > 0)
                     {
-                        var snapshot = new SecurityEventSnapshot(1, DateTimeOffset.UtcNow, observations, 1, []);
-                        await alerts.IngestAsync(snapshot, stoppingToken);
+                        await alerts.IngestFindingsAsync(findings, DateTimeOffset.UtcNow, stoppingToken);
 
                         // Publish updated alert snapshot
                         var alertSnapshot = await alerts.ReadSnapshotAsync(stoppingToken);
@@ -100,5 +97,18 @@ public sealed class SigmaAmsiPushWorker(
             }
         }
         catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested) { }
+    }
+
+    /// <summary>Maps a processor detection to a finding; the processor's alert ID (rule + event record) is the identity.</summary>
+    internal static SecurityFindingObservation ToFinding(SecurityAlert detection)
+    {
+        var amsi = detection.Title.StartsWith("AMSI", StringComparison.Ordinal);
+        return SecurityFindingMapper.Create(
+            amsi ? SecurityFindingCatalog.Amsi : SecurityFindingCatalog.Sigma,
+            amsi ? "AMSI" : "Sigma rule",
+            SecurityFindingCatalog.Severities.Contains(detection.Severity) ? detection.Severity : "MEDIUM",
+            detection.Technique,
+            detection.Title,
+            detection.AlertId.ToLowerInvariant());
     }
 }
