@@ -29,7 +29,8 @@
         "Isolate host",
         "Mark false positive / FP blocklist",
         "Dismiss / Clear all",
-        "Export and report"
+        "Export and report",
+        "Right-click: Remediate This Threat, Quarantine Associated Files, Kill Process, Block IP in Firewall, Mark False Positive, Dismiss, Copy Description"
       ]
     },
     "remediation": {
@@ -39,7 +40,8 @@
         "Remediation history",
         "Auto-revert and revert selected",
         "Export selected",
-        "Details pane"
+        "Details pane",
+        "Right-click: Revert This Remediation, View Details, Export Selected"
       ]
     },
     "possible-threats": {
@@ -51,7 +53,8 @@
         "Dismiss",
         "Investigate",
         "Intel lookup",
-        "Copy details"
+        "Copy details",
+        "Right-click: Verify & Move to Threat Log, Investigate, Dismiss, Look Up Intel, Copy Details"
       ]
     },
     "processes": {
@@ -64,7 +67,8 @@
         "Check process IPs",
         "Open file location",
         "Copy info",
-        "Mitigate selected"
+        "Mitigate selected",
+        "Right-click: Suspend, Resume, Kill Tree, Quarantine EXE, Network Isolate, Block All IPs, Clean Persistence, Full Remediation, Root Cause Analysis, Dump Memory, Check IP Connections, Copy Process Info, Open File Location, Add to Watchlist"
       ]
     },
     "drivers": {
@@ -118,7 +122,8 @@
       "v29Workflows": [
         "Deduplicated alerts with triage state",
         "Correlation patterns",
-        "Investigation timeline drill-down"
+        "Investigation timeline drill-down",
+        "Right-click: Open Threat Response Panel, Block IP, GeoIP, rDNS, VirusTotal, Copy IOC, Investigate, Check IP, Kill, Quarantine, Block Network, Copy Text, Dismiss, Clear All"
       ]
     },
     "scanner": {
@@ -193,7 +198,8 @@
         "Interfaces and partitions",
         "60-second history",
         "Refresh interval selector",
-        "CSV export"
+        "CSV export",
+        "Right-click on process table: Analyze Task, Kill Task, Set Priority, Open File Location"
       ]
     },
     "ransomware": {
@@ -460,5 +466,68 @@
     "Process mitigation policies (process_mitigation.py)",
     "Signature-bound trust validation (trust_check.py)",
     "Auto-updater (done in Next: ReleaseUpdateClient/UpdateHelper)"
-  ]
+  ],
+  "settings": {
+    "v29Config": {
+      "source": "config.py and config.json",
+      "manager": "ConfigManager class with hot-reload and tamper detection (HMAC-SHA256 signature)",
+      "keys": {
+        "AI.LEARNING_CYCLE_SECONDS": 300,
+        "HARDWARE.UPDATE_INTERVAL": 0.5,
+        "HARDWARE.HISTORY_SIZE": 100,
+        "HARDWARE.SMOOTHING_FACTOR": 0.3,
+        "HARDWARE.ALERT_THRESHOLDS.CPU": 80.0,
+        "HARDWARE.ALERT_THRESHOLDS.MEMORY": 85.0,
+        "HARDWARE.ALERT_THRESHOLDS.DISK": 90.0,
+        "HARDWARE.ALERT_THRESHOLDS.TEMP": 75.0,
+        "UI.ASCII_ONLY": true,
+        "UI.PREFIX": "DOWNPOUR",
+        "GEOIP.PROVIDER": "ip-api",
+        "GEOIP.ENABLED": true,
+        "LOGGING.LEVEL": "INFO",
+        "FEEDS.threatfox.enabled": true,
+        "FEEDS.threatfox.update_interval": 900,
+        "FEEDS.urlhaus.enabled": true,
+        "FEEDS.urlhaus.update_interval": 900,
+        "FEEDS.phishtank.enabled": true,
+        "FEEDS.phishtank.update_interval": 3600,
+        "FEEDS.emerging_threats.enabled": true,
+        "FEEDS.emerging_threats.update_interval": 3600,
+        "KEV.ENABLED": true,
+        "KEV.UPDATE_INTERVAL_HOURS": 24,
+        "KEV.CRITICAL_THRESHOLD": 9.0,
+        "EPSS.ENABLED": true,
+        "EPSS.UPDATE_INTERVAL_HOURS": 12,
+        "EPSS.EXPLOIT_THRESHOLD": 0.5,
+        "YARA.ENABLED": true,
+        "YARA.RULES_PATH": "yara_rules",
+        "YARA.SCAN_TIMEOUT_SECONDS": 30,
+        "VULNERABILITY.SCAN_ON_STARTUP": true,
+        "VULNERABILITY.SCAN_INTERVAL_HOURS": 24,
+        "VULNERABILITY.ALERT_ON_CRITICAL": true
+      },
+      "nextStatus": "Partial - visual preferences implemented in AppPreferences, no security settings yet"
+    }
+  },
+  "dataStores": {
+    "v29DiskStores": {
+      "downpour_data/": {
+        "titanium.db": "SQLite main database with WAL mode (titanium.db-shm, titanium.db-wal)",
+        "ultimate_threat_intel.db": "SQLite database for threat intelligence (unused stub)",
+        "quarantine/": "AES-GCM encrypted quarantine storage",
+        "ransomware_backups/": "File-level rollback backups for ransomware protection",
+        "honeytokens/": "Canary files for ransomware detection",
+        "snapshots/": "System state snapshots",
+        "models/": "Persisted ML models for ThreatLearningEngine",
+        "logs/": "Application logs",
+        "cache/": "Feed caches and temporary data",
+        "config/": "Configuration directory with settings.ini and tamper-protected config.json.sig/key",
+        "feed_manifests/": "HMAC-verified feed integrity manifests",
+        "context_shards/": "Sharded context persistence",
+        "*.json baselines": "Persistence baselines (code_integrity.json, persistence_baseline.json, dns_baseline.json, etc.) with .key files for HMAC protection"
+      },
+      "downpour_v27_data/": "Legacy v27 data directory (for migration)",
+      "nextDecision": "Downpour Next should migrate quarantine (if AES-GCM key recoverable), baseline fingerprints, and settings. titanium.db schema is not directly compatible with Next's operation journal. ML models are optional. Logs and cache can be recreated."
+    }
+  }
 }

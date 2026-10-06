@@ -108,7 +108,34 @@ Also unreachable and untracked, so a review should decide on each: `ad_attack_de
 
 The safety posture is correct: `QuarantineManager` and `DriverPackageBroker` both return `RejectedNotImplemented`, and no system-changing calls were found.
 
-## 6. Suggested next tasks (in order)
+## 6. Handoff Section 2 verification (2026-10-06)
+
+### Step 1: Import graph verification
+Searched for `importlib`, `__import__`, `exec`, string-built module names, and plugin directories:
+
+- **Dynamic imports via `__import__`**: Found 25 matches in `downpour_v29_titanium.py`. All are inline standard library calls (`os.cpu_count()`, `threading.Lock()`, `time.time()`, `tkinter.messagebox`, `webbrowser`, `re`, `ctypes.windll`, `sys.platform`). No plugin-style dynamic loading.
+
+- **`revolutionary_enhancements`**: Imported at lines 674-680 with try/except fallback. Directory contains only type stubs (`__init__.pyi`). Comment at line 18985: "ultimate_threat_intel was a stub-only package". This is a placeholder/beta feature set, not active code.
+
+- **`ultimate_threat_intel`**: Referenced at lines 25624-25625 as an optional database. Directory contains only `__init__.py` and type stubs. Incomplete/stub feature.
+
+- **No string-built module names or plugin directory loading**: No patterns like `f"import {name}"` or `getattr(module, name)` for dynamic module loading beyond the standard library inline calls.
+
+**Conclusion**: The orphaned module list in `source-modules.json` is correct. No orphaned modules are dynamically loaded. The only "dynamic" imports are standard library calls for CPU counts, locks, and GUI callbacks, which do not represent missing dependencies.
+
+### Step 2: Settings and config
+v29 uses `config.py` with a `ConfigManager` class and `config.json` on disk. Documented in parity-checklist.json as a `settings` section.
+
+### Step 3: Detection thresholds and constants
+Documented in fixture-style notes in `docs/` per module family.
+
+### Step 4: Data stores
+Documented v29 on-disk stores and schemas. Downpour Next must decide which to migrate/import.
+
+### Step 5: Right-click context menus
+Added workflows from `tk.Menu` / `add_command` per tab to parity-checklist.json.
+
+## 7. Suggested next tasks (in order)
 
 1. Commit and push the current working tree in focused commits. Fix `AGENT_REGISTRY.json`.
 2. Update `source-modules.json` with sections 4a and 4b. Add routes or tasks for section 3 (tray/notifications, alert channels, scheduled jobs, FP database).
