@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page x:Class="Downpour_Desktop.Pages.FirewallPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      mc:Ignorable="d">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Padding="24,20,24,30" Spacing="14">
+            <Grid ColumnSpacing="16">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                <StackPanel Spacing="4">
+                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Foreground="#FF76DDF5" Text="DOWNPOUR  /  PROTECTION  /  FIREWALL" />
+                    <TextBlock Style="{StaticResource TitleTextBlockStyle}" FontSize="30" Text="Firewall" />
+                    <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Windows Firewall profiles, rules, tamper indicators, and recently blocked connections (Security event 5157). Read-only." TextWrapping="Wrap" />
+                </StackPanel>
+                <Button Grid.Column="1" x:Name="RefreshButton" Content="Refresh" Click="Refresh_Click" VerticalAlignment="Center" />
+            </Grid>
+
+            <Border Padding="14,11" CornerRadius="10" Background="#B9081220" BorderBrush="#423EC5D8" BorderThickness="1">
+                <StackPanel Spacing="3">
+                    <TextBlock x:Name="StatusHeadline" FontWeight="SemiBold" Text="Reading firewall policy" />
+                    <TextBlock x:Name="StatusDetail" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+
+            <ItemsControl ItemsSource="{x:Bind Profiles}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="10" /></ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Padding="12,9" CornerRadius="8" MinWidth="170" Background="{StaticResource DownpourSurfaceElevatedBrush}" BorderBrush="{Binding Accent}" BorderThickness="1">
+                            <StackPanel Spacing="2">
+                                <TextBlock Text="{Binding Title}" FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding StateText}" FontSize="12" Foreground="{Binding Accent}" />
+                                <TextBlock Text="{Binding Defaults}" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <StackPanel Spacing="6">
+                <TextBlock Text="FINDINGS" FontSize="11" FontWeight="SemiBold" CharacterSpacing="85" Foreground="#FF91AFC2" />
+                <ItemsControl ItemsSource="{x:Bind Findings}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Padding="10,6" ColumnSpacing="12">
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="80" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                <TextBlock Text="{Binding Severity}" FontSize="11" FontWeight="SemiBold" Foreground="{Binding SeverityBrush}" />
+                                <TextBlock Grid.Column="1" Text="{Binding Summary}" FontSize="12" TextWrapping="Wrap" />
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <TextBlock x:Name="NoFindings" FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="No firewall findings." Visibility="Collapsed" />
+            </StackPanel>
+
+            <StackPanel Spacing="8">
+                <Grid ColumnSpacing="10">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                    <AutoSuggestBox x:Name="SearchBox" PlaceholderText="Filter rules by name, port, program, or group" TextChanged="Filter_Changed" />
+                    <ComboBox Grid.Column="1" x:Name="DirectionFilter" SelectedIndex="0" SelectionChanged="Filter_Changed" MinWidth="120">
+                        <x:String>All directions</x:String><x:String>Inbound</x:String><x:String>Outbound</x:String>
+                    </ComboBox>
+                    <ComboBox Grid.Column="2" x:Name="ActionFilter" SelectedIndex="0" SelectionChanged="Filter_Changed" MinWidth="110">
+                        <x:String>All actions</x:String><x:String>Allow</x:String><x:String>Block</x:String>
+                    </ComboBox>
+                    <CheckBox Grid.Column="3" x:Name="EnabledOnly" Content="Enabled only" IsChecked="True" Checked="Filter_Changed" Unchecked="Filter_Changed" />
+                    <CheckBox Grid.Column="4" x:Name="DownpourOnly" Content="Downpour rules" Checked="Filter_Changed" Unchecked="Filter_Changed" />
+                </Grid>
+                <TextBlock x:Name="RuleCount" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <ListView ItemsSource="{x:Bind Rules}" SelectionMode="None" MaxHeight="460" Background="{StaticResource DownpourSurfaceBrush}">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Padding="10,6" ColumnSpacing="12">
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="3*" /><ColumnDefinition Width="90" /><ColumnDefinition Width="60" /><ColumnDefinition Width="70" /><ColumnDefinition Width="1.4*" /><ColumnDefinition Width="1.6*" /></Grid.ColumnDefinitions>
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Name}" FontSize="12" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Text="{Binding Application}" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" TextTrimming="CharacterEllipsis" />
+                                </StackPanel>
+                                <TextBlock Grid.Column="1" Text="{Binding Direction}" FontSize="11" />
+                                <TextBlock Grid.Column="2" Text="{Binding Action}" FontSize="11" Foreground="{Binding ActionBrush}" />
+                                <TextBlock Grid.Column="3" Text="{Binding Protocol}" FontSize="11" />
+                                <TextBlock Grid.Column="4" Text="{Binding Ports}" FontSize="11" FontFamily="Consolas" TextTrimming="CharacterEllipsis" />
+                                <TextBlock Grid.Column="5" Text="{Binding Scope}" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </StackPanel>
+
+            <StackPanel Spacing="6">
+                <TextBlock Text="RECENTLY BLOCKED CONNECTIONS (EVENT 5157)" FontSize="11" FontWeight="SemiBold" CharacterSpacing="85" Foreground="#FF91AFC2" />
+                <TextBlock x:Name="BlockedStatus" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                <ListView ItemsSource="{x:Bind Blocked}" SelectionMode="None" MaxHeight="300" Background="{StaticResource DownpourSurfaceBrush}">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Padding="10,5" ColumnSpacing="12">
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="130" /><ColumnDefinition Width="70" /><ColumnDefinition Width="2*" /><ColumnDefinition Width="2*" /><ColumnDefinition Width="60" /></Grid.ColumnDefinitions>
+                                <TextBlock Text="{Binding Time}" FontSize="11" FontFamily="Consolas" />
+                                <TextBlock Grid.Column="1" Text="{Binding Direction}" FontSize="11" />
+                                <TextBlock Grid.Column="2" Text="{Binding Application}" FontSize="11" TextTrimming="CharacterEllipsis" />
+                                <TextBlock Grid.Column="3" Text="{Binding Endpoints}" FontSize="11" FontFamily="Consolas" TextTrimming="CharacterEllipsis" />
+                                <TextBlock Grid.Column="4" Text="{Binding Protocol}" FontSize="11" />
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </StackPanel>
+
+            <TextBlock FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="View only. v29's toggle, delete, and remove-all-Downpour-rules actions need the audited action broker and are not available. Findings describe current state; v29's alerts for newly added rules need a persisted baseline that is not ported yet." TextWrapping="Wrap" />
+        </StackPanel>
+    </ScrollViewer>
+</Page>

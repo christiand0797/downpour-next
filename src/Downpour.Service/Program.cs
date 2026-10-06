@@ -22,6 +22,7 @@ builder.Services.AddSingleton(OperationJournal.CreateForCurrentUser());
 builder.Services.AddSingleton<QuarantineManager>();
 builder.Services.AddSingleton<DriverPackageBroker>();
 builder.Services.AddSingleton<HardeningPostureProvider>();
+builder.Services.AddSingleton<FirewallInventoryProvider>();
 builder.Services.AddHostedService<SnapshotPipeWorker>();
 builder.Services.AddHostedService<DriverInventoryPipeWorker>();
 builder.Services.AddHostedService<DriverPackageInventoryPipeWorker>();
@@ -39,6 +40,7 @@ builder.Services.AddHostedService<OperationJournalStartupWorker>();
 builder.Services.AddHostedService<ActionBrokerPipeWorker>();
 builder.Services.AddHostedService<DriverPackageBrokerPipeWorker>();
 builder.Services.AddHostedService<HardeningPosturePipeWorker>();
+builder.Services.AddHostedService<FirewallInventoryPipeWorker>();
 
 var host = builder.Build();
 host.Run();
