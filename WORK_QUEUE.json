@@ -463,7 +463,7 @@
     {
       "id": "DN-023",
       "title": "Threats, Possible Threats, and false-positive store",
-      "status": "in_progress",
+      "status": "completed",
       "priority": "high",
       "acceptance": [
         "Threats and Possible Threats routes backed by the alert repository",
@@ -472,8 +472,12 @@
         "Export/report",
         "Response buttons visible but disabled with reason until DN-008"
       ],
-      "notes": "Core triage workflow from v29 dashboard/threats tabs. | Assigned to claude-parity-audit per docs/AGENT_COORDINATION.md.",
-      "files": []
+      "notes": "Completed 2026-10-07 by claude-parity-audit (commit 2d32837). SecurityFindingBridgeWorker ingests hardening/firewall/persistence findings every 10 min into the alert store (finding identity in provider column so dedup and 3-confirmation FP suppression are per finding). TriagePage serves threats (CRITICAL/HIGH or verified) and possible-threats (rest, awaiting Verify). Verify/Unverify via additive alert_verifications table on the replay-safe audited path. v29 Possible Threats had no producer (dead feature). Remaining: response actions (DN-008), auto-remediation, browser scan, report export, intel lookup (DN-025). 8 tests; 291 total.",
+      "files": [
+        "src/Downpour.Service/SecurityFindingBridgeWorker.cs",
+        "src/Downpour.Core/SecurityFindingMapper.cs",
+        "src/Downpour.Desktop/Pages/TriagePage.xaml"
+      ]
     },
     {
       "id": "DN-024",
@@ -534,14 +538,14 @@
     {
       "id": "DN-028",
       "title": "Services risk scoring (v29 Smart Services Threat Scanner)",
-      "status": "queued",
+      "status": "in_progress",
       "priority": "medium",
       "acceptance": [
         "Port v29 _build_services_tab risk rules with source line citations",
         "Unquoted service paths, user-writable binaries, unsigned binaries flagged",
         "Read-only; no start/stop/configure"
       ],
-      "notes": "Split from DN-022 on 2026-10-07. Services route currently lists state and startup type only.",
+      "notes": "Split from DN-022 on 2026-10-07. Services route currently lists state and startup type only. | Claimed by claude-parity-audit 2026-10-07.",
       "files": []
     }
   ]
