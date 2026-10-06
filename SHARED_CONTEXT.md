@@ -1,10 +1,21 @@
 # Downpour Next shared context
 
-**Updated:** 2026-10-06 (DN-020 complete; DN-021 claimed; DN-022/DN-028 in progress by claude)
+**Updated:** 2026-10-07 (claude-parity-audit: DN-016/018/019/022/023/024/028 done; DN-029 needs a user decision; antigravity-worker on DN-021)
 
 **Repository:** public [christiand0797/downpour-next](https://github.com/christiand0797/downpour-next)
 **Local path:** `C:\Users\purpl\Desktop\downpour v2`  
 **Branch:** `main`  
+
+## 2026-10-07 checkpoint (claude-parity-audit)
+
+- Done and pushed, each verified in a clean worktree: DN-016 (driver catalog signatures), DN-018 (hardening posture), DN-019 (firewall), DN-022 (persistence review on Threat Hunt), DN-023 (Threats / Possible Threats triage and the shared finding bridge), DN-024 (tray icon, notifications, sound alarm), and DN-028 (service risk, plus a fix for corrupted startup types).
+- Fixes to other agents' work:
+  - Sigma rules load only from the install directory.
+  - Wi-Fi uses the Native Wifi API instead of netsh.
+  - Sigma/AMSI detections are now stored.
+  - The thresholds doc is generated from source.
+- **DN-029 is a user decision:** live Sigma/AMSI detection needs PowerShell script-block text, which AGENTS.md gates behind a consent design.
+- How to add a finding source to triage: `docs/AGENT_COORDINATION.md` ("Shared finding bridge").
 
 ## 2026-10-06 DN-020: USB, Wi-Fi, and Bluetooth Posture (antigravity-worker)
 
