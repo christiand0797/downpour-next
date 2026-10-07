@@ -50,3 +50,29 @@ The USB and Bluetooth parts are fine: they use the registry with ACL'd pipes. Wi
 
 - Commit only the files you own or have just edited. Do not run `git add -A` while the other agent has uncommitted work.
 - Pull (`git pull --rebase`) before pushing.
+
+## Review of DN-008 phases 2-4 and requirements for phase 5 (2026-10-07, claude-parity-audit)
+
+Fixed in review (see commits 23b2fb2, be1497a, 3f5b380): name-only process deny-list (masquerading malware was unkillable),
+Authenticode skip accepting non-Microsoft leaves, firewall blocks that never expired while the service ran or could be
+permanent, consent tokens not binding the duration, USB blocks allowed on hubs/receivers/Bluetooth adapters (keyboard and
+mouse lockout), and USB blocks reported as done when Windows refused. Patterns to follow for every action:
+
+- **Allow-list the target class**, never deny-list by name text. Names do not reveal what a device or process really is.
+- **Bind everything the user reviewed** (target, duration, scope) into the consent token target string.
+- **Report only what Windows confirmed.** Check every return value; never record or announce an action that failed.
+- **Survive bad replies:** pipe workers must catch serialization failures (a BackgroundService exception stops the host)
+  and use a reply serializer MaxDepth of at least 16.
+
+**Merge blockers for host isolation (phase 5), from the current draft:**
+
+1. Expiry must not depend on the service process staying alive. In portable mode the desktop kills its child service on
+   close, so an in-process timer leaves the PC offline until Downpour is started again. Either register an OS-level
+   one-time release (for example a Task Scheduler task that runs Downpour's own binary with a fixed release switch, no
+   shell), or refuse isolation unless that release is in place, and test the "desktop closed during isolation" case.
+2. Windows Firewall block rules override allow rules, so the "allow loopback" rules do nothing (loopback is exempt anyway).
+   Do not describe them as protecting local IPC; remove or document them accurately.
+3. Creating the rules requires administrator rights; report the refusal instead of a partial isolation, and remove any
+   rules already created when a later rule fails (all-or-nothing).
+4. The UI must show the release time prominently and offer an immediate "release now" that works without the pipe
+   (for example from the tray) in case the desktop/service state is lost.
