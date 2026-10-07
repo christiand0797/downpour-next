@@ -262,7 +262,7 @@
     },
     "memory": {
       "title": "Memory",
-      "currentStatus": "planned",
+      "currentStatus": "in-progress",
       "v29Workflows": [
         "Auto-monitor toggle",
         "Injection events (process_injection_detector.py)",

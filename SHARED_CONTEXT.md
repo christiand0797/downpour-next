@@ -1,10 +1,53 @@
 # Downpour Next shared context
 
-**Updated:** 2026-10-07 (antigravity-worker: DN-009 Ransomware slice completed, DN-009 Sandbox slice completed, DN-009 Forensics slice completed, DN-029 completed, DN-009 Cleanup Center slice completed; claude-parity-audit: DN-016/018/019/022/023/024/028 done)
+**Updated:** 2026-10-07 (antigravity-worker: DN-009 Memory slice completed, DN-009 Ransomware slice completed, DN-009 Sandbox slice completed, DN-009 Forensics slice completed, DN-029 completed, DN-009 Cleanup Center slice completed; claude-parity-audit: DN-016/018/019/022/023/024/028 done)
 
 **Repository:** public [christiand0797/downpour-next](https://github.com/christiand0797/downpour-next)
 **Local path:** `C:\Users\purpl\Desktop\downpour v2`  
 **Branch:** `main`  
+
+## 2026-10-07 checkpoint: DN-009 Memory Route Slice (antigravity-worker)
+
+**DN-009 Memory Route Slice completed:**
+- **Memory Forensics & Process Injection Engine (`MemoryForensicsInspector`)**:
+  - Implemented strictly read-only, non-destructive process memory and injection inspection engine porting v29 `memory_forensics.py`, `process_injection_detector.py`, and `_build_memory_tab`.
+  - Process Memory Inspection & Enumeration:
+    - Bounded scanning of running processes (PID, Name, Executable Path, Working Set, Thread Count).
+    - Core system binary location validation (T1036.005): detects core binaries (`svchost.exe`, `csrss.exe`, `lsass.exe`, `smss.exe`, `services.exe`, `winlogon.exe`) running outside `%SystemRoot%\System32`.
+    - Typo-squatting / process masquerading scanner (T1036): flags lookalike process names (`svch0st.exe`, `scvhost.exe`, `lsas.exe`, `win1ogon.exe`, `taskmngr.exe`, `explorerr.exe`, `rundl132.exe`).
+    - Suspicious execution directories (T1204/T1059): flags processes executing out of user temporary or download directories (`\temp\`, `\appdata\local\temp\`, `\downloads\`).
+    - Abnormal thread/memory footprint detection (e.g. single-thread execution with oversized memory footprint).
+    - Security alert correlation: correlates processes against active alerts for process injection (T1055, T1055.002, T1055.004, T1055.012) and credential dumping (T1003).
+    - Scoring model (0-100) and classification (`Clean`, `Suspicious`, `Injected`) with severity tags (`CLEAN`, `LOW`, `MEDIUM`, `HIGH`, `CRITICAL`).
+  - Executive memory forensics report generator matching v29 text report output.
+- **Desktop UI (`MemoryPage.xaml/.cs`)**:
+  - Route `memory` displays total scanned counter, injected count, suspicious count, and clean count.
+  - Interactive process search box and filter toggle (All / Threats Only).
+  - Selected process deep review card (PID, executable path, working set, thread count, suspected MITRE ATT&CK technique, and enumerated findings).
+  - Auto-monitor toggle running recurring 60-second background evaluation on dispatcher timer.
+  - "Terminate Process" guarded with security dialog explaining process killing requires an audited action broker (DN-008).
+  - "Export Memory Report" writes timestamped report file to Desktop or AppData Reports folder.
+- **Navigation & Parity Tracking**:
+  - Wired in `MainWindow.xaml.cs`.
+  - Promoted route `memory` to `"in-progress"` in `capabilities.json`, `parity-checklist.json`, and `source-modules.json` (`memory_forensics.py`, `process_injection_detector.py`).
+- **Testing & Verification**:
+  - Added unit tests in `MemoryForensicsInspectorTests.cs` (clean process verification, typo-squatting detection, core binary masquerading validation, alert correlation, bulk scan summary, and report formatting).
+  - 489/489 solution tests pass with 0 warnings, 0 errors.
+
+**Files created/updated:**
+- `src/Downpour.Contracts/MemoryForensics.cs`
+- `src/Downpour.Core/MemoryForensicsInspector.cs`
+- `src/Downpour.Desktop/Pages/MemoryPage.xaml`
+- `src/Downpour.Desktop/Pages/MemoryPage.xaml.cs`
+- `src/Downpour.Desktop/MainWindow.xaml.cs`
+- `capabilities.json`
+- `parity-checklist.json`
+- `source-modules.json`
+- `tests/Downpour.Tests/MemoryForensicsInspectorTests.cs`
+- `WORK_QUEUE.json`
+- `AGENT_REGISTRY.json`
+- `SHARED_CONTEXT.md`
+- `TODO.md`
 
 ## 2026-10-07 checkpoint: DN-009 Ransomware Route Slice (antigravity-worker)
 

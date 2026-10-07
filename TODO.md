@@ -1,5 +1,15 @@
 # Downpour Next TODO
 
+## 2026-10-07 checkpoint: DN-009 Memory Route Slice (antigravity-worker)
+
+Completed and verified (Debug: 0 warnings/errors; 489/489 tests pass):
+- DN-009 Memory route slice: implemented `MemoryForensicsInspector` porting v29 `memory_forensics.py`, `process_injection_detector.py`, and `_build_memory_tab`.
+- Contracts in `src/Downpour.Contracts/MemoryForensics.cs`: `ProcessMemoryInspection` and `MemoryForensicsSummary`.
+- Core engine in `src/Downpour.Core/MemoryForensicsInspector.cs`: bounded process enumeration (PID, name, path, working set, thread count), core system binary location validation outside System32 (T1036.005), typo-squatted masquerading detection (T1036), temporary folder execution checks, single-thread memory footprint heuristics, security alert correlation for process injection (T1055) and credential dumping (T1003), scoring model (0-100), and report generator.
+- Desktop route `memory` in `MemoryPage.xaml/.cs`: overview metric counters, process search box, threat filter toggle, processes list, selected process deep inspection review card, auto-monitor 60s cadence on dispatcher timer, guarded process termination notice (DN-008), and report export.
+- Wired `memory` route in `MainWindow.xaml.cs` and promoted to `in-progress` in `capabilities.json`, `parity-checklist.json`, and `source-modules.json` (`memory_forensics.py`, `process_injection_detector.py`).
+- 6 unit tests in `MemoryForensicsInspectorTests.cs` (clean process verification, typo-squatting detection, core binary validation, alert correlation, bulk scan summary, and report formatting).
+
 ## 2026-10-07 checkpoint: DN-009 Ransomware Route Slice (antigravity-worker)
 
 Completed and verified (Debug: 0 warnings/errors; 476/476 tests pass):

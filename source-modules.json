@@ -381,8 +381,8 @@
     "family": "Hardening & System Integration",
     "module": "memory_forensics.py",
     "description": "Memory dump analysis and process injection detection.",
-    "sourceStatus": "Active",
-    "migrationStatus": "planned"
+    "sourceStatus": "Ported to MemoryForensicsInspector / MemoryPage (process memory inspection, path anomaly detection, injection pattern scoring)",
+    "migrationStatus": "in-progress"
   },
   {
     "family": "Utilities, Memory, & Dashboard",
@@ -633,8 +633,8 @@
     "family": "Detection Monitors",
     "module": "process_injection_detector.py",
     "description": "Process Injection Detector",
-    "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
-    "migrationStatus": "planned"
+    "sourceStatus": "Ported to MemoryForensicsInspector / MemoryPage (T1055, process hollowing, masquerading)",
+    "migrationStatus": "in-progress"
   },
   {
     "family": "Detection Monitors",
