@@ -11,6 +11,45 @@ public sealed class UsbInventoryProvider
     private const int MaximumHistory = 512;
     private const int MaximumText = 512;
 
+    /// <summary>
+    /// Maps a drive letter to the PnP instance ID of the USB storage function behind it (logical disk -> partition ->
+    /// disk drive) through documented WMI associations. Returns null for anything that is not a USBSTOR device, so a
+    /// block can only ever target a USB storage function.
+    /// </summary>
+    internal static string? ResolveStorageInstanceId(string driveLetter)
+    {
+        var letter = driveLetter.TrimEnd('\\');
+        if (letter.Length != 2 || !char.IsAsciiLetter(letter[0]) || letter[1] != ':') return null;
+        try
+        {
+            var options = new System.Management.EnumerationOptions { Timeout = TimeSpan.FromSeconds(5), ReturnImmediately = false };
+            using var partitions = new ManagementObjectSearcher(new ManagementScope(@"root\cimv2"),
+                new ObjectQuery($"ASSOCIATORS OF {{Win32_LogicalDisk.DeviceID='{letter}'}} WHERE AssocClass=Win32_LogicalDiskToPartition"), options);
+            foreach (var partition in partitions.Get())
+            {
+                using (partition)
+                {
+                    if (partition["DeviceID"] is not string partitionId || partitionId.Contains('\'')) continue;
+                    using var disks = new ManagementObjectSearcher(new ManagementScope(@"root\cimv2"),
+                        new ObjectQuery($"ASSOCIATORS OF {{Win32_DiskPartition.DeviceID='{partitionId}'}} WHERE AssocClass=Win32_DiskDriveToDiskPartition"), options);
+                    foreach (var disk in disks.Get())
+                    {
+                        using (disk)
+                        {
+                            if (disk["PNPDeviceID"] is string pnp && pnp.StartsWith(@"USBSTOR\", StringComparison.OrdinalIgnoreCase) && pnp.Length <= 256)
+                                return pnp;
+                        }
+                    }
+                }
+            }
+        }
+        catch (Exception ex) when (ex is ManagementException or System.Runtime.InteropServices.COMException or UnauthorizedAccessException or TimeoutException)
+        {
+            // Unknown device identity: the UI hides the block action rather than guessing.
+        }
+        return null;
+    }
+
     private static readonly string[] AutorunFilenames =
     [
         "autorun.inf",
@@ -136,7 +175,8 @@ public sealed class UsbInventoryProvider
                     SerialNumber: "Unknown",
                     HasAutorun: hasAutorun,
                     HasSuspiciousFiles: hasSuspicious,
-                    DriveType: drive.DriveType.ToString()));
+                    DriveType: drive.DriveType.ToString(),
+                    PnpDeviceId: ResolveStorageInstanceId(letter)));
             }
         }
         catch (Exception ex)
@@ -181,8 +221,9 @@ public sealed class UsbInventoryProvider
                             _ => ""
                         };
 
+                        // Full PnP instance ID (USBSTOR\<device>\<serial>) so a block targets exactly this device.
                         history.Add(new UsbDeviceHistoryEntry(
-                            DeviceId: Truncate(instanceSubKey, 128),
+                            DeviceId: Truncate($@"USBSTOR\{deviceSubKey}\{instanceSubKey}", 256),
                             Vendor: Truncate(vendor, 64),
                             Product: Truncate(product, 64),
                             Revision: Truncate(rev, 32),
@@ -229,11 +270,11 @@ public sealed class UsbInventoryProvider
                             _ => ""
                         };
 
-                        // Avoid duplicate serials
-                        if (history.Any(h => h.DeviceId == instanceSubKey)) continue;
+                        // Avoid listing a storage device twice (its USB parent shares the serial).
+                        if (history.Any(h => h.SerialNumber == instanceSubKey)) continue;
 
                         history.Add(new UsbDeviceHistoryEntry(
-                            DeviceId: Truncate(instanceSubKey, 128),
+                            DeviceId: Truncate($@"USB\{deviceSubKey}\{instanceSubKey}", 256),
                             Vendor: Truncate(deviceSubKey, 64),
                             Product: Truncate(deviceSubKey, 64),
                             Revision: "",

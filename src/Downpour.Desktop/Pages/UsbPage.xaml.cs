@@ -148,7 +148,11 @@ public sealed partial class UsbPage : Page
     {
         if (sender is not Button { Tag: UsbDeviceRow row }) return;
 
-        var devId = row.DriveLetter;
+        if (row.PnpDeviceId is not { } devId)
+        {
+            await ShowDialogAsync("Device identity unknown", $"Windows did not report a USB storage device behind {row.DriveLetter}, so it cannot be blocked from here.");
+            return;
+        }
         var friendlyName = string.IsNullOrWhiteSpace(row.VolumeLabel) ? $"Removable Drive ({row.DriveLetter})" : row.VolumeLabel;
 
         var preview = await _actionClient.PreviewBlockDeviceAsync(devId, friendlyName, "Operator blocked drive instance from USB posture page.");
@@ -284,6 +288,8 @@ public sealed class UsbFindingRow(UsbFinding finding)
 public sealed class UsbDeviceRow(UsbConnectedDevice dev)
 {
     public string DriveLetter => dev.DriveLetter;
+    public string? PnpDeviceId => dev.PnpDeviceId;
+    public Microsoft.UI.Xaml.Visibility BlockVisibility => dev.PnpDeviceId is null ? Microsoft.UI.Xaml.Visibility.Collapsed : Microsoft.UI.Xaml.Visibility.Visible;
     public string VolumeLabel => dev.VolumeLabel;
     public string FileSystem => dev.FileSystem;
 
@@ -309,7 +315,27 @@ public sealed class UsbDeviceRow(UsbConnectedDevice dev)
 public sealed class UsbHistoryRow(UsbDeviceHistoryEntry entry)
 {
     public string DeviceId => entry.DeviceId;
-    public string FriendlyName => string.IsNullOrWhiteSpace(entry.FriendlyName) ? entry.DeviceId : entry.FriendlyName;
+    public string FriendlyName => DisplayName(entry.FriendlyName, entry.DeviceId);
+
+    /// <summary>Only USB storage instances can be blocked (the service refuses hubs, controllers, and input devices).</summary>
+    public Microsoft.UI.Xaml.Visibility BlockVisibility =>
+        entry.DeviceId.StartsWith(@"USBSTOR\", StringComparison.OrdinalIgnoreCase) ? Microsoft.UI.Xaml.Visibility.Visible : Microsoft.UI.Xaml.Visibility.Collapsed;
+
+    /// <summary>
+    /// Registry device descriptions are often indirect strings such as
+    /// "@dc1-controller.inf,%usbid_045e&amp;pid_02ea.devicedesc%;Xbox One Controller"; the readable name follows the last ';'.
+    /// </summary>
+    internal static string DisplayName(string? friendlyName, string deviceId)
+    {
+        if (string.IsNullOrWhiteSpace(friendlyName)) return deviceId;
+        var name = friendlyName.Trim();
+        if (name.StartsWith('@'))
+        {
+            var separator = name.LastIndexOf(';');
+            name = separator >= 0 && separator < name.Length - 1 ? name[(separator + 1)..].Trim() : deviceId;
+        }
+        return name.Length == 0 ? deviceId : name;
+    }
     public string SerialNumber => entry.SerialNumber;
     public string DeviceDetails => string.IsNullOrWhiteSpace(entry.Vendor) ? entry.HardwareId : $"{entry.Vendor} / {entry.Product} (HW: {entry.HardwareId})";
 }

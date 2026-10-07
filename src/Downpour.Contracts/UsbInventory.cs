@@ -11,7 +11,8 @@ public sealed record UsbConnectedDevice(
     string SerialNumber,
     bool HasAutorun,
     bool HasSuspiciousFiles,
-    string DriveType);
+    string DriveType,
+    string? PnpDeviceId = null);
 
 public sealed record UsbDeviceHistoryEntry(
     string DeviceId,

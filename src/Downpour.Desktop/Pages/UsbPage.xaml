@@ -77,7 +77,7 @@
                                     <TextBlock Text="{Binding SuspiciousLabel}" FontSize="10" FontWeight="SemiBold" Foreground="{Binding SuspiciousForeground}" />
                                 </Border>
                             </StackPanel>
-                            <Button Grid.Column="3" Content="Block Drive…" Tag="{Binding}" Click="BlockDrive_Click" VerticalAlignment="Center" Margin="8,0,0,0" />
+                            <Button Grid.Column="3" Content="Block Drive…" Tag="{Binding}" Click="BlockDrive_Click" Visibility="{Binding BlockVisibility}" VerticalAlignment="Center" Margin="8,0,0,0" />
                         </Grid>
                     </DataTemplate>
                 </ListView.ItemTemplate>
@@ -98,7 +98,7 @@
                                 <TextBlock Text="{Binding DeviceDetails}" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                             </StackPanel>
                             <TextBlock Grid.Column="1" Text="{Binding SerialNumber}" FontFamily="Consolas" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" VerticalAlignment="Center" />
-                            <Button Grid.Column="2" Content="Block Device…" Tag="{Binding}" Click="BlockHistoryDevice_Click" VerticalAlignment="Center" Margin="8,0,0,0" />
+                            <Button Grid.Column="2" Content="Block Device…" Tag="{Binding}" Click="BlockHistoryDevice_Click" Visibility="{Binding BlockVisibility}" VerticalAlignment="Center" Margin="8,0,0,0" />
                         </Grid>
                     </DataTemplate>
                 </ListView.ItemTemplate>

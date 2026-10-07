@@ -81,3 +81,23 @@ public sealed class FramedInventoryPipeRoundTripTests
             new MemoryStream([.. BitConverter.GetBytes(10), (byte)'{', (byte)'}']), CancellationToken.None));
     }
 }
+
+public sealed class UsbStorageIdentityTests
+{
+    [Theory]
+    [InlineData("")]
+    [InlineData("C")]
+    [InlineData("CC:")]
+    [InlineData("1:")]
+    [InlineData("C:' OR 1=1")]
+    public void RejectsMalformedDriveLetters(string letter) =>
+        Assert.Null(UsbInventoryProvider.ResolveStorageInstanceId(letter));
+
+    [Fact]
+    public void SystemDriveIsNeverReportedAsUsbStorage()
+    {
+        var system = Path.GetPathRoot(Environment.SystemDirectory)!.TrimEnd(Path.DirectorySeparatorChar);
+        var id = UsbInventoryProvider.ResolveStorageInstanceId(system);
+        Assert.True(id is null || id.StartsWith(@"USBSTOR\", StringComparison.OrdinalIgnoreCase));
+    }
+}
