@@ -23,6 +23,9 @@ public sealed class SysmonProvider
         var warnings = new List<string>();
         var queried = 0;
 
+        if (!IsSysmonLogPresent())
+            return new SysmonSnapshot(1, capturedAt, [], 0, ["Sysmon is not installed on this PC, so Sysmon telemetry is unavailable."]);
+
         foreach (var source in Sources)
         {
             try
@@ -59,12 +62,34 @@ public sealed class SysmonProvider
 
     public static IReadOnlyCollection<int> WatchedEventIds => SysmonCatalog.WatchedEventIds;
 
+    /// <summary>True when the Sysmon operational channel is registered on this machine.</summary>
+    public static bool IsSysmonLogPresent()
+    {
+        try
+        {
+            using var configuration = new EventLogConfiguration(Sources[0].LogName);
+            return true;
+        }
+        catch (Exception exception) when (exception is EventLogNotFoundException or EventLogException or UnauthorizedAccessException)
+        {
+            // Access denied still means the channel exists.
+            return exception is UnauthorizedAccessException;
+        }
+    }
+
     /// <summary>Subscribes to allow-listed future Sysmon events.</summary>
     public IDisposable SubscribePush(Action<SysmonObservation> onObservation, Action<string> onWarning, out int activeSources)
     {
         ArgumentNullException.ThrowIfNull(onObservation);
         ArgumentNullException.ThrowIfNull(onWarning);
         var watchers = new List<EventLogWatcher>();
+        if (!IsSysmonLogPresent())
+        {
+            // Not an error: Sysmon is an optional Microsoft Sysinternals tool. Say so once instead of a read error per source.
+            onWarning("Sysmon is not installed, so Sysmon telemetry is unavailable. Install Microsoft Sysinternals Sysmon to enable it.");
+            activeSources = 0;
+            return new EventWatcherGroup(watchers);
+        }
         foreach (var source in Sources)
         {
             EventLogWatcher? watcher = null;

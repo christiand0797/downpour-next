@@ -18,7 +18,7 @@ public static class AmsiIntegration
     private static extern int AmsiScanString(IntPtr context, string content, string contentName, IntPtr session, out int result);
 
     [DllImport(AmsiDll, CharSet = CharSet.Unicode, ExactSpelling = true, SetLastError = true)]
-    private static extern int AmsiScanBuffer(IntPtr context, IntPtr buffer, ulong length, string contentName, IntPtr session, out int result);
+    private static extern int AmsiScanBuffer(IntPtr context, IntPtr buffer, uint length, string contentName, IntPtr session, out int result); // ULONG is 32-bit on Windows
 
     public const int AMSI_RESULT_CLEAN = 0;
     public const int AMSI_RESULT_NOT_DETECTED = 1;
@@ -38,6 +38,7 @@ public static class AmsiIntegration
             if (_initialized) return true;
 
             var result = AmsiInitialize(appName, out _context);
+            LastInitializeResult = result;
             if (result == 0) // S_OK
             {
                 _initialized = true;
@@ -46,6 +47,18 @@ public static class AmsiIntegration
             return false;
         }
     }
+
+    /// <summary>HRESULT from the most recent AmsiInitialize call (0 = success).</summary>
+    public static int LastInitializeResult { get; private set; }
+
+    /// <summary>Plain-language reason for an AmsiInitialize failure.</summary>
+    public static string DescribeInitializeFailure(int hresult) => unchecked((uint)hresult) switch
+    {
+        0x80070103 => "no antimalware provider is registered with AMSI (Microsoft Defender or another AMSI-capable antivirus is turned off or not installed)",
+        0x80070005 => "access to AMSI was denied",
+        0x8007007E => "amsi.dll could not be loaded",
+        _ => $"AmsiInitialize returned 0x{unchecked((uint)hresult):X8}",
+    };
 
     /// <summary>Uninitializes the AMSI context.</summary>
     public static void Uninitialize()
@@ -89,7 +102,7 @@ public static class AmsiIntegration
         var pinned = GCHandle.Alloc(buffer, GCHandleType.Pinned);
         try
         {
-            var result = AmsiScanBuffer(_context, pinned.AddrOfPinnedObject(), (ulong)buffer.Length, contentName, session, out var amsiResult);
+            var result = AmsiScanBuffer(_context, pinned.AddrOfPinnedObject(), (uint)buffer.Length, contentName, session, out var amsiResult);
             if (result != 0) return AMSI_RESULT_NOT_DETECTED;
             return amsiResult;
         }

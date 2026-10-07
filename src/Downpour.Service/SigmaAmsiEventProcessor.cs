@@ -54,7 +54,8 @@ public sealed class SigmaAmsiEventProcessor
         // Initialize AMSI
         if (!AmsiIntegration.Initialize("DownpourNext-SigmaAmsi"))
         {
-            _logger.LogWarning("AMSI initialization failed; script content scanning will be unavailable.");
+            _logger.LogWarning("AMSI is unavailable: {Reason}. PowerShell script blocks are still checked with Sigma rules; AMSI verdicts are skipped.",
+                AmsiIntegration.DescribeInitializeFailure(AmsiIntegration.LastInitializeResult));
         }
     }
 
