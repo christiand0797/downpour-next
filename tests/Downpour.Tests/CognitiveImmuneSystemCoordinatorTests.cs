@@ -1,177 +1,78 @@
 using Downpour.Contracts;
 using Downpour.Core;
-using Xunit;
 
 namespace Downpour.Tests;
 
 public sealed class CognitiveImmuneSystemCoordinatorTests
 {
     [Fact]
-    public void GetSnapshot_ReturnsValidBaselineImmuneSystemState()
+    public void MissingSourcesRemainUnknown()
     {
-        var coordinator = new CognitiveImmuneSystemCoordinator();
-        var snapshot = coordinator.GetSnapshot();
-
-        Assert.NotNull(snapshot);
-        Assert.NotEmpty(snapshot.Status);
-        Assert.NotNull(snapshot.DetectorStats);
-        Assert.True(snapshot.DetectorStats.TotalDetectors > 1000);
-        Assert.True(snapshot.DetectorStats.MemoryEpitopes > 100);
-        Assert.Equal(0, snapshot.DetectorStats.AutoimmuneEvents);
-
-        Assert.NotNull(snapshot.RedTeamer);
-        Assert.False(snapshot.RedTeamer.IsRunning);
-        Assert.True(snapshot.RedTeamer.EvasionResistanceScore >= 90);
-
-        Assert.NotNull(snapshot.Predictor);
-        Assert.True(snapshot.Predictor.IsRunning);
-        Assert.True(snapshot.Predictor.PredictiveConfidence > 80);
-
-        Assert.NotNull(snapshot.Verifier);
-        Assert.True(snapshot.Verifier.IsMonitoring);
-        Assert.Equal(0, snapshot.Verifier.IntegrityViolations);
-
-        Assert.Equal(6, snapshot.Honeypots.Count);
-        Assert.Equal(6, snapshot.Honeytokens.Count);
-        Assert.Empty(snapshot.DeceptionEvents);
+        var result = CognitiveImmuneSystemCoordinator.Assess(null, null, null);
+        Assert.Equal("Unavailable", result.Status);
+        Assert.Null(result.OpenAlerts);
+        Assert.Null(result.UrgentOpenAlerts);
+        Assert.Null(result.StoredAlerts);
+        Assert.Null(result.ObservedTechniques);
+        Assert.Empty(result.RecentAlerts);
+        Assert.Empty(result.Correlations);
+        Assert.Contains(result.Warnings, w => w.Contains("not absence"));
+        var report = CognitiveImmuneSystemCoordinator.CreateReport(result, null);
+        Assert.Contains("unknown", report);
+        Assert.Contains("not checked", report);
+        Assert.DoesNotContain("94%", report);
     }
 
     [Fact]
-    public void ToggleRedTeamer_FlipsRunningState()
+    public void CountsRespectStateVerificationAndReturnedWindow()
     {
-        var coordinator = new CognitiveImmuneSystemCoordinator();
-
-        bool running1 = coordinator.ToggleRedTeamer();
-        Assert.True(running1);
-
-        var snap1 = coordinator.GetSnapshot();
-        Assert.True(snap1.RedTeamer.IsRunning);
-        Assert.NotNull(snap1.RedTeamer.LastRunUtc);
-
-        bool running2 = coordinator.ToggleRedTeamer();
-        Assert.False(running2);
-
-        var snap2 = coordinator.GetSnapshot();
-        Assert.False(snap2.RedTeamer.IsRunning);
+        var rows = new[] { Alert('a', "Open", true), Alert('b', "Acknowledged", true), Alert('c', "Suppressed", true), Alert('d', "Open", false) };
+        var result = CognitiveImmuneSystemCoordinator.Assess(new(1, DateTimeOffset.UtcNow, 9000, rows, []), null, new(1, false, false));
+        Assert.Equal(9000, result.StoredAlerts);
+        Assert.Equal(4, result.ReviewedAlerts);
+        Assert.Equal(2, result.OpenAlerts);
+        Assert.Equal(2, result.UrgentOpenAlerts);
+        Assert.Equal(2, result.VerifiedActiveAlerts);
+        Assert.Equal(1, result.SuppressedAlerts);
+        Assert.Equal(1, result.ObservedTechniques);
+        Assert.Contains(result.Warnings, w => w.Contains("truncated"));
+        Assert.Contains(result.Sources, s => s.Name.Contains("PowerShell") && s.Status == "Disabled");
     }
 
     [Fact]
-    public void ExecuteAdversarialProbe_IncrementsRoundsAndDetections()
+    public void MalformedAndStaleSnapshotsAreNotCounted()
     {
-        var coordinator = new CognitiveImmuneSystemCoordinator();
-
-        var state1 = coordinator.ExecuteAdversarialProbe(simulatedPerturbations: 30);
-        Assert.Equal(1, state1.ProbeRounds);
-        Assert.True(state1.DetectionsCount > 0);
-        Assert.NotNull(state1.LastRunUtc);
-        Assert.InRange(state1.EvasionResistanceScore, 90, 100);
-
-        var state2 = coordinator.ExecuteAdversarialProbe(simulatedPerturbations: 20);
-        Assert.Equal(2, state2.ProbeRounds);
-        Assert.True(state2.DetectionsCount > state1.DetectionsCount);
+        var now = DateTimeOffset.UtcNow;
+        var stale = new SecurityAlertSnapshot(1, now.AddHours(-1), 0, [], []);
+        Assert.Null(CognitiveImmuneSystemCoordinator.Assess(stale, null, null).ReviewedAlerts);
+        var forged = new SecurityAlertSnapshot(1, now, 1, [Alert('a', "Open", false) with { Title = "Forged malware" }], []);
+        Assert.Null(CognitiveImmuneSystemCoordinator.Assess(forged, null, null).UrgentOpenAlerts);
     }
 
     [Fact]
-    public void TogglePredictorAndVerifier_ControlsSubsystemLifecycle()
+    public void EmptyValidWindowReportsZeroWithoutProtectionVerdict()
     {
-        var coordinator = new CognitiveImmuneSystemCoordinator();
-
-        // Predictor defaults to running
-        Assert.True(coordinator.GetSnapshot().Predictor.IsRunning);
-        bool pState = coordinator.TogglePredictor();
-        Assert.False(pState);
-        Assert.False(coordinator.GetSnapshot().Predictor.IsRunning);
-
-        // Verifier defaults to monitoring
-        Assert.True(coordinator.GetSnapshot().Verifier.IsMonitoring);
-        bool vState = coordinator.ToggleVerifier();
-        Assert.False(vState);
-        Assert.False(coordinator.GetSnapshot().Verifier.IsMonitoring);
+        var result = CognitiveImmuneSystemCoordinator.Assess(new(1, DateTimeOffset.UtcNow, 0, [], ["AMSI unavailable"]), null, null);
+        Assert.Equal(0, result.OpenAlerts);
+        Assert.Equal("Partial", result.Status);
+        Assert.Contains("AMSI unavailable", result.Warnings);
+        Assert.Contains("does not measure containment", CognitiveImmuneSystemCoordinator.CreateReport(result, null));
     }
 
     [Fact]
-    public void RecordDeceptionInteraction_UpdatesHoneypotsAndEventLog()
+    public void RecentWindowIsBoundedAndSorted()
     {
-        var coordinator = new CognitiveImmuneSystemCoordinator();
-
-        coordinator.RecordDeceptionInteraction(
-            sourceEndpoint: "192.168.1.185:54321",
-            targetDecoy: "ssh_honeypot",
-            decoyType: "Honeypot",
-            severity: "High",
-            details: "Simulated brute-force login probe with credentials admin:admin");
-
-        var snapshot = coordinator.GetSnapshot();
-        Assert.Single(snapshot.DeceptionEvents);
-        Assert.Equal("192.168.1.185:54321", snapshot.DeceptionEvents[0].SourceEndpoint);
-        Assert.Equal("ssh_honeypot", snapshot.DeceptionEvents[0].TargetDecoy);
-
-        var pot = snapshot.Honeypots.First(p => p.Name == "ssh_honeypot");
-        Assert.Equal(1, pot.InteractionCount);
+        var rows = Enumerable.Range(1, 50).Select(i => Alert('a', "Open", false) with { AlertId = i.ToString("x64"), LastSeenUtc = DateTimeOffset.UtcNow.AddSeconds(-i) }).ToArray();
+        var result = CognitiveImmuneSystemCoordinator.Assess(new(1, DateTimeOffset.UtcNow, 50, rows, []), null, null);
+        Assert.Equal(32, result.RecentAlerts.Count);
+        Assert.Equal(rows[0].AlertId, result.RecentAlerts[0].AlertId);
     }
 
-    [Fact]
-    public void RecordDeceptionInteraction_UpdatesHoneytokenTriggers()
+    private static SecurityAlert Alert(char id, string state, bool verified)
     {
-        var coordinator = new CognitiveImmuneSystemCoordinator();
-
-        coordinator.RecordDeceptionInteraction(
-            sourceEndpoint: "Host:DESKTOP-1",
-            targetDecoy: "fake_aws_creds",
-            decoyType: "Honeytoken",
-            severity: "Critical",
-            details: "Canary token accessed from staging directory");
-
-        var snapshot = coordinator.GetSnapshot();
-        Assert.Single(snapshot.DeceptionEvents);
-
-        var tok = snapshot.Honeytokens.First(t => t.TokenId == "fake_aws_creds");
-        Assert.Equal(1, tok.TriggerCount);
-    }
-
-    [Fact]
-    public void GenerateCisAuditReport_ProducesCompleteExecutiveMarkdown()
-    {
-        var coordinator = new CognitiveImmuneSystemCoordinator();
-        coordinator.ExecuteAdversarialProbe();
-        coordinator.RecordDeceptionInteraction("10.0.0.99", "http_honeypot", "Honeypot", "Medium", "GET /admin probe");
-
-        var snapshot = coordinator.GetSnapshot();
-        string report = coordinator.GenerateCisAuditReport(snapshot);
-
-        Assert.Contains("# Cognitive Immune System (CIS) Posture & Intelligence Report", report);
-        Assert.Contains("Total Detectors", report);
-        Assert.Contains("Memory Epitopes", report);
-        Assert.Contains("Clonal Expansions", report);
-        Assert.Contains("Adversarial Red Teamer", report);
-        Assert.Contains("Threat Evolution Predictor", report);
-        Assert.Contains("Semantic Integrity Verifier", report);
-        Assert.Contains("Deception Technology & Honeypots", report);
-        Assert.Contains("Deployed Honeytokens (Canary Tripwires)", report);
-        Assert.Contains("ssh_honeypot", report);
-        Assert.Contains("fake_aws_creds", report);
-    }
-
-    [Fact]
-    public void RunSwarmSimulation_UpdatesCoordinatorMetricsAndProducesReport()
-    {
-        var coordinator = new CognitiveImmuneSystemCoordinator();
-        var report = coordinator.RunSwarmSimulation(rounds: 3);
-
-        Assert.NotNull(report);
-        Assert.StartsWith("SWARM-", report.SimulationId);
-        Assert.Equal(3, report.RoundsSimulated);
-        Assert.Equal(8, report.ActiveAgentsCount);
-        Assert.InRange(report.ThreatConsensusRatio, 0.1, 1.0);
-        Assert.InRange(report.EvasionResistanceScore, 80, 100);
-        Assert.NotEmpty(report.EmergentVulnerabilities);
-        Assert.NotEmpty(report.RemediationRecommendations);
-        Assert.Contains("MiroFish Swarm Intelligence Prediction Report", report.ExecutiveSummary);
-        Assert.Equal(8, report.Agents.Count);
-        Assert.True(report.KeyInteractions.Count > 0);
-
-        var snapshot = coordinator.GetSnapshot();
-        Assert.Equal(report.Projected48hDriftVectors, snapshot.Predictor.ThreatDriftVectorsCount);
-        Assert.Equal(report.EvasionResistanceScore, snapshot.RedTeamer.EvasionResistanceScore);
+        var now = DateTimeOffset.UtcNow;
+        SecurityEventCatalog.TryGetRule("System", 7045, out var rule);
+        return new(new string(id, 64), rule.Summary, rule.Severity, rule.Technique, "System", "Service Control Manager", 7045,
+            id, now.AddMinutes(-2), now.AddMinutes(-2), now.AddMinutes(-1), 1, state, verified);
     }
 }

@@ -1,307 +1,171 @@
-using System.Collections.ObjectModel;
 using Downpour.Contracts;
 using Downpour.Core;
-using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
 using Windows.ApplicationModel.DataTransfer;
 
 namespace Downpour_Desktop.Pages;
 
 public sealed partial class CognitiveImmuneSystemPage : Page
 {
-    private readonly CognitiveImmuneSystemCoordinator _coordinator = new();
-    private readonly ObservableCollection<HoneypotItemViewModel> _honeypotItems = new();
-    private readonly ObservableCollection<HoneytokenItemViewModel> _honeytokenItems = new();
-    private CisSnapshot? _currentSnapshot;
-    private SwarmPredictionReport? _latestSwarmReport;
+    private readonly SecurityAlertClient _alerts = new();
+    private readonly SystemSnapshotClient _system = new();
+    private readonly SensorSettingsClient _settings = new();
+    private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromSeconds(30) };
+    private CancellationTokenSource _lifetime = new();
+    private CancellationTokenSource? _integrityCancellation;
+    private CisAssessment? _assessment;
+    private PackageIntegrityAssessment? _integrity;
+    private bool _refreshing;
+    private bool _checking;
+    private int _generation;
 
     public CognitiveImmuneSystemPage()
     {
         InitializeComponent();
-        HoneypotListView.ItemsSource = _honeypotItems;
-        HoneytokenListView.ItemsSource = _honeytokenItems;
-
-        Loaded += (_, _) => RefreshUi();
+        Loaded += OnLoaded;
+        Unloaded += OnUnloaded;
+        _timer.Tick += async (_, _) => await RefreshAsync();
     }
 
-    private void RefreshButton_Click(object sender, RoutedEventArgs e)
+    private async void OnLoaded(object sender, RoutedEventArgs e)
     {
-        RefreshUi();
-        NotificationInfoBar.IsOpen = true;
-        NotificationInfoBar.Severity = InfoBarSeverity.Success;
-        NotificationInfoBar.Title = "Telemetry Updated";
-        NotificationInfoBar.Message = "Cognitive Immune System detector pools and subsystem telemetry refreshed.";
+        if (_lifetime.IsCancellationRequested) { _lifetime.Dispose(); _lifetime = new(); }
+        _generation++;
+        _timer.Start();
+        await RefreshAsync();
     }
 
-    private async void RedTeamProbeButton_Click(object sender, RoutedEventArgs e)
+    private void OnUnloaded(object sender, RoutedEventArgs e)
     {
-        RedTeamProbeButton.IsEnabled = false;
+        _generation++;
+        _timer.Stop();
+        _lifetime.Cancel();
+        _integrityCancellation?.Cancel();
+    }
+
+    private async void Refresh_Click(object sender, RoutedEventArgs e) => await RefreshAsync();
+
+    private async Task RefreshAsync()
+    {
+        if (_refreshing || _lifetime.IsCancellationRequested) return;
+        _refreshing = true;
+        RefreshButton.IsEnabled = false;
+        var generation = _generation;
+        var token = _lifetime.Token;
         try
         {
-            var result = await Task.Run(() => _coordinator.ExecuteAdversarialProbe(30));
-            RefreshUi();
+            await App.EnsureSensorServiceAsync();
+            token.ThrowIfCancellationRequested();
+            var alerts = _alerts.TryGetSnapshotAsync(token);
+            var system = _system.TryGetSnapshotAsync(token);
+            var settings = _settings.GetAsync(token);
+            await Task.WhenAll(alerts, system, settings);
+            var response = await settings;
+            var assessment = await Task.Run(() => CognitiveImmuneSystemCoordinator.Assess(alerts.Result, system.Result,
+                response is { Accepted: true } ? response.Settings : null), token);
+            if (generation != _generation || token.IsCancellationRequested) return;
+            _assessment = assessment;
+            AssessmentStatus.Text = $"{assessment.Status} · checked {assessment.CapturedAtUtc:u} · refreshes every 30 seconds while this page is open";
+            WindowScope.Text = $"Returned {Count(assessment.ReviewedAlerts)} of {Count(assessment.StoredAlerts)} stored alerts. Alert snapshot: {assessment.AlertCapturedAtUtc?.ToString("u") ?? "unavailable"}.";
+            MeasuredCounts.Text = $"Open: {Count(assessment.OpenAlerts)} · Urgent open: {Count(assessment.UrgentOpenAlerts)} · User-verified active: {Count(assessment.VerifiedActiveAlerts)}";
+            TechniqueCounts.Text = $"Suppressed: {Count(assessment.SuppressedAlerts)} · Observed techniques: {Count(assessment.ObservedTechniques)}";
+            SourceList.ItemsSource = assessment.Sources.Select(s => $"{s.Name} — {s.Status}: {s.Detail}").ToArray();
+            WarningList.ItemsSource = assessment.Warnings.Count == 0 ? new[] { "No warnings in the returned measurements. This is not a complete protection verdict." } : assessment.Warnings;
+            RecentAlertList.ItemsSource = assessment.RecentAlerts.Count == 0 ? new[] { assessment.ReviewedAlerts is null ? "Alerts unavailable." : "No alerts in the returned window." } :
+                assessment.RecentAlerts.Select(a => $"{a.LastSeenUtc:u} · {a.Severity} · {a.State} · {a.Technique} · {a.Title}").ToArray();
+            CorrelationList.ItemsSource = assessment.Correlations.Count == 0 ? new[] { "No supported temporal pairs in the returned window." } :
+                assessment.Correlations.Select(c => $"{c.Title}: {c.EvidenceSummary} {c.Limitation}").ToArray();
+            CopyReportButton.IsEnabled = true;
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception ex)
+        {
+            if (generation == _generation)
+            {
+                _assessment = null;
+                CopyReportButton.IsEnabled = false;
+                AssessmentStatus.Text = "Measurements unavailable";
+                WindowScope.Text = "Refresh failed. Previously rendered rows are historical; current counts are unknown.";
+                MeasuredCounts.Text = "Open: unknown · Urgent open: unknown · User-verified active: unknown";
+                TechniqueCounts.Text = "Suppressed: unknown · Observed techniques: unknown";
+                SourceList.ItemsSource = null;
+                WarningList.ItemsSource = new[] { "Refresh failed; absence of data is not absence of threats." };
+                RecentAlertList.ItemsSource = null;
+                CorrelationList.ItemsSource = null;
+                Notify(InfoBarSeverity.Error, "Refresh failed", ex.GetType().Name);
+            }
+        }
+        finally { _refreshing = false; RefreshButton.IsEnabled = true; }
+    }
 
-            NotificationInfoBar.IsOpen = true;
-            NotificationInfoBar.Severity = InfoBarSeverity.Success;
-            NotificationInfoBar.Title = "Adversarial Probe Completed";
-            NotificationInfoBar.Message = $"Simulated 30 evasion vectors. Immune resistance: {result.EvasionResistanceScore}%. Intercepted detections: {result.DetectionsCount}.";
+    private async void Integrity_Click(object sender, RoutedEventArgs e)
+    {
+        if (_checking) return;
+        _checking = true;
+        IntegrityButton.IsEnabled = false;
+        CancelIntegrityButton.IsEnabled = true;
+        _integrityCancellation = CancellationTokenSource.CreateLinkedTokenSource(_lifetime.Token);
+        var token = _integrityCancellation.Token;
+        var generation = _generation;
+        IntegrityStatus.Text = "Checking package files…";
+        _integrity = null;
+        IntegrityFindings.ItemsSource = null;
+        var progress = new Progress<string>(message => { if (generation == _generation && !token.IsCancellationRequested) IntegrityProgress.Text = message; });
+        try
+        {
+            var version = typeof(CognitiveImmuneSystemPage).Assembly.GetName().Version!.ToString(3);
+            var result = await Task.Run(() => PackageIntegrityInspector.InspectAsync(AppContext.BaseDirectory, version, progress, token), token);
+            if (generation != _generation || token.IsCancellationRequested) return;
+            _integrity = result;
+            IntegrityStatus.Text = $"{result.Status} · {result.MatchingFiles}/{result.ExpectedFiles} match · {result.CheckedFiles} checked · {result.BytesHashed:N0} bytes hashed";
+            IntegrityProgress.Text = $"Checked {result.CapturedAtUtc:u}. Manifest SHA-256: {result.ManifestSha256 ?? "unavailable"}.";
+            IntegrityFindings.ItemsSource = result.Findings.Take(128).Select(f => $"{f.RelativePath}: {f.Status}").Concat(
+                result.Findings.Count > 128 ? new[] { $"Showing 128 of {result.Findings.Count} findings; full findings are included in the review report." } : []).ToArray();
+        }
+        catch (OperationCanceledException)
+        {
+            if (generation == _generation) { IntegrityStatus.Text = "Cancelled — no completed integrity result"; IntegrityProgress.Text = ""; }
         }
         catch (Exception ex)
         {
-            NotificationInfoBar.IsOpen = true;
-            NotificationInfoBar.Severity = InfoBarSeverity.Error;
-            NotificationInfoBar.Title = "Probe Failed";
-            NotificationInfoBar.Message = ex.Message;
+            if (generation == _generation) { IntegrityStatus.Text = "Integrity check unavailable"; Notify(InfoBarSeverity.Error, "Integrity check failed", ex.GetType().Name); }
         }
         finally
         {
-            RedTeamProbeButton.IsEnabled = true;
+            _checking = false;
+            _integrityCancellation.Dispose();
+            _integrityCancellation = null;
+            IntegrityButton.IsEnabled = true;
+            CancelIntegrityButton.IsEnabled = false;
         }
     }
 
-    private void ToggleRedTeamerButton_Click(object sender, RoutedEventArgs e)
+    private void CancelIntegrity_Click(object sender, RoutedEventArgs e) => _integrityCancellation?.Cancel();
+    private void Navigate_Click(object sender, RoutedEventArgs e)
     {
-        bool isRunning = _coordinator.ToggleRedTeamer();
-        RefreshUi();
-
-        NotificationInfoBar.IsOpen = true;
-        NotificationInfoBar.Severity = InfoBarSeverity.Informational;
-        NotificationInfoBar.Title = "Adversarial Red Teamer";
-        NotificationInfoBar.Message = isRunning
-            ? "Adversarial Red Teamer started. Continuous synthetic evasion generation active."
-            : "Adversarial Red Teamer stopped.";
+        if (sender is Button { Tag: string route }) App.NavigateToRoute(route);
     }
-
-    private void TogglePredictorButton_Click(object sender, RoutedEventArgs e)
+    private void CopyReport_Click(object sender, RoutedEventArgs e)
     {
-        bool isRunning = _coordinator.TogglePredictor();
-        RefreshUi();
-
-        NotificationInfoBar.IsOpen = true;
-        NotificationInfoBar.Severity = InfoBarSeverity.Informational;
-        NotificationInfoBar.Title = "Threat Evolution Predictor";
-        NotificationInfoBar.Message = isRunning
-            ? "Threat Evolution Predictor active. Anticipating mutation trajectories across 48h horizon."
-            : "Threat Evolution Predictor paused.";
-    }
-
-    private void ToggleVerifierButton_Click(object sender, RoutedEventArgs e)
-    {
-        bool isMonitoring = _coordinator.ToggleVerifier();
-        RefreshUi();
-
-        NotificationInfoBar.IsOpen = true;
-        NotificationInfoBar.Severity = InfoBarSeverity.Informational;
-        NotificationInfoBar.Title = "Semantic Integrity Verifier";
-        NotificationInfoBar.Message = isMonitoring
-            ? "Semantic Integrity Verifier active. Monitoring process and memory hash baselines."
-            : "Semantic Integrity Verifier paused.";
-    }
-
-    private void ExportReportButton_Click(object sender, RoutedEventArgs e)
-    {
-        if (_currentSnapshot is null)
-        {
-            RefreshUi();
-        }
-
-        if (_currentSnapshot is null) return;
-
+        if (_assessment is null) return;
         try
         {
-            string markdown = _coordinator.GenerateCisAuditReport(_currentSnapshot);
-            var package = new DataPackage();
-            package.SetText(markdown);
-            Clipboard.SetContent(package);
-
-            NotificationInfoBar.IsOpen = true;
-            NotificationInfoBar.Severity = InfoBarSeverity.Success;
-            NotificationInfoBar.Title = "Report Exported";
-            NotificationInfoBar.Message = "Cognitive Immune System intelligence report copied to clipboard in Markdown format.";
+            var report = CognitiveImmuneSystemCoordinator.CreateReport(_assessment, _integrity);
+            if (System.Text.Encoding.UTF8.GetByteCount(report) > 1024 * 1024) throw new InvalidDataException("Report exceeds its size limit.");
+            var data = new DataPackage();
+            data.SetText(report);
+            Clipboard.SetContent(data);
+            Notify(InfoBarSeverity.Success, "Review report copied", "Contains measured metadata, collection limits and any completed integrity findings. No file contents are included.");
         }
-        catch (Exception ex)
-        {
-            NotificationInfoBar.IsOpen = true;
-            NotificationInfoBar.Severity = InfoBarSeverity.Error;
-            NotificationInfoBar.Title = "Export Failed";
-            NotificationInfoBar.Message = ex.Message;
-        }
+        catch (Exception ex) { Notify(InfoBarSeverity.Error, "Report copy failed", ex.GetType().Name); }
     }
-
-    private async void SwarmSimButton_Click(object sender, RoutedEventArgs e)
+    private static string Count(int? count) => count?.ToString("N0") ?? "unknown";
+    private void Notify(InfoBarSeverity severity, string title, string message)
     {
-        SwarmSimButton.IsEnabled = false;
-        RunSwarmButton.IsEnabled = false;
-        try
-        {
-            var report = await Task.Run(() => _coordinator.RunSwarmSimulation(3));
-            _latestSwarmReport = report;
-            RefreshUi();
-
-            SwarmStatusBadgeText.Text = $"SIMULATED ({report.RoundsSimulated} ROUNDS)";
-            SwarmConsensusText.Text = $"{report.ThreatConsensusRatio:P0}";
-            SwarmResistanceText.Text = $"{report.EvasionResistanceScore}%";
-            SwarmDriftVectorsText.Text = $"{report.Projected48hDriftVectors} (48h)";
-            SwarmLastRunText.Text = report.GeneratedAtUtc.ToString("HH:mm:ss UTC");
-            SwarmExecutiveSnippetText.Text = string.Join(" • ", report.EmergentVulnerabilities);
-            CopySwarmReportButton.IsEnabled = true;
-
-            NotificationInfoBar.IsOpen = true;
-            NotificationInfoBar.Severity = InfoBarSeverity.Success;
-            NotificationInfoBar.Title = "Swarm Intelligence Simulation Complete";
-            NotificationInfoBar.Message = $"MiroFish OASIS engine completed {report.RoundsSimulated} rounds across {report.ActiveAgentsCount} agents. Equilibrium consensus: {report.ThreatConsensusRatio:P0}.";
-        }
-        catch (Exception ex)
-        {
-            NotificationInfoBar.IsOpen = true;
-            NotificationInfoBar.Severity = InfoBarSeverity.Error;
-            NotificationInfoBar.Title = "Swarm Simulation Failed";
-            NotificationInfoBar.Message = ex.Message;
-        }
-        finally
-        {
-            SwarmSimButton.IsEnabled = true;
-            RunSwarmButton.IsEnabled = true;
-        }
-    }
-
-    private void CopySwarmReportButton_Click(object sender, RoutedEventArgs e)
-    {
-        if (_latestSwarmReport is null) return;
-
-        try
-        {
-            var package = new DataPackage();
-            package.SetText(_latestSwarmReport.ExecutiveSummary);
-            Clipboard.SetContent(package);
-
-            NotificationInfoBar.IsOpen = true;
-            NotificationInfoBar.Severity = InfoBarSeverity.Success;
-            NotificationInfoBar.Title = "Swarm Report Copied";
-            NotificationInfoBar.Message = "MiroFish prediction and emergent threat forecast report copied to clipboard.";
-        }
-        catch (Exception ex)
-        {
-            NotificationInfoBar.IsOpen = true;
-            NotificationInfoBar.Severity = InfoBarSeverity.Error;
-            NotificationInfoBar.Title = "Copy Failed";
-            NotificationInfoBar.Message = ex.Message;
-        }
-    }
-
-    private void RefreshUi()
-    {
-        var snapshot = _coordinator.GetSnapshot();
-        _currentSnapshot = snapshot;
-
-        // Every metric on this page is generated by an in-memory model, not measured on this PC (see the banner).
-        StatusBadgeText.Text = "CONCEPT DEMO";
-
-        MetricTotalDetectors.Text = snapshot.DetectorStats.TotalDetectors.ToString("N0");
-        MetricMemoryEpitopes.Text = snapshot.DetectorStats.MemoryEpitopes.ToString("N0");
-        MetricResistanceScore.Text = $"{snapshot.RedTeamer.EvasionResistanceScore}%";
-        MetricPredictiveHorizon.Text = $"{snapshot.Predictor.HorizonHours}h ({snapshot.Predictor.PredictiveConfidence}%)";
-
-        // Red Teamer
-        bool rtRunning = snapshot.RedTeamer.IsRunning;
-        RedTeamerBadgeText.Text = rtRunning ? "RUNNING" : "STOPPED";
-        RedTeamerBadge.Background = rtRunning
-            ? new SolidColorBrush(ColorHelper.FromArgb(255, 6, 78, 59))
-            : new SolidColorBrush(ColorHelper.FromArgb(255, 55, 65, 81));
-        RedTeamerBadgeText.Foreground = rtRunning
-            ? new SolidColorBrush(ColorHelper.FromArgb(255, 52, 211, 153))
-            : new SolidColorBrush(ColorHelper.FromArgb(255, 229, 231, 235));
-        ToggleRedTeamerButtonText.Text = rtRunning ? "Stop Red Teamer" : "Start Red Teamer";
-        RtProbeRoundsText.Text = snapshot.RedTeamer.ProbeRounds.ToString();
-        RtDetectionsText.Text = snapshot.RedTeamer.DetectionsCount.ToString();
-        RtLastRunText.Text = snapshot.RedTeamer.LastRunUtc.HasValue
-            ? snapshot.RedTeamer.LastRunUtc.Value.ToString("HH:mm:ss UTC")
-            : "Never";
-
-        // Predictor
-        bool pRunning = snapshot.Predictor.IsRunning;
-        PredictorBadgeText.Text = pRunning ? "ACTIVE" : "STOPPED";
-        PredictorBadge.Background = pRunning
-            ? new SolidColorBrush(ColorHelper.FromArgb(255, 6, 78, 59))
-            : new SolidColorBrush(ColorHelper.FromArgb(255, 55, 65, 81));
-        PredictorBadgeText.Foreground = pRunning
-            ? new SolidColorBrush(ColorHelper.FromArgb(255, 52, 211, 153))
-            : new SolidColorBrush(ColorHelper.FromArgb(255, 229, 231, 235));
-        TogglePredictorButtonText.Text = pRunning ? "Stop Predictor" : "Start Predictor";
-        TeDriftVectorsText.Text = snapshot.Predictor.ThreatDriftVectorsCount.ToString();
-        TeMutationsText.Text = snapshot.Predictor.SimulatedMutationsCount.ToString();
-        TeConfidenceText.Text = $"{snapshot.Predictor.PredictiveConfidence}%";
-
-        // Verifier
-        bool vMonitoring = snapshot.Verifier.IsMonitoring;
-        VerifierBadgeText.Text = vMonitoring ? "MONITORING" : "STOPPED";
-        VerifierBadge.Background = vMonitoring
-            ? new SolidColorBrush(ColorHelper.FromArgb(255, 6, 78, 59))
-            : new SolidColorBrush(ColorHelper.FromArgb(255, 55, 65, 81));
-        VerifierBadgeText.Foreground = vMonitoring
-            ? new SolidColorBrush(ColorHelper.FromArgb(255, 52, 211, 153))
-            : new SolidColorBrush(ColorHelper.FromArgb(255, 229, 231, 235));
-        ToggleVerifierButtonText.Text = vMonitoring ? "Stop Verifier" : "Start Verifier";
-        SiHashesText.Text = snapshot.Verifier.VerifiedHashesCount.ToString();
-        SiViolationsText.Text = snapshot.Verifier.IntegrityViolations.ToString();
-        SiStatusText.Text = snapshot.Verifier.IntegrityViolations == 0 ? "Clean" : "Flagged";
-
-        // Detector Pool Stats
-        StatClonalExpansions.Text = snapshot.DetectorStats.ClonalExpansions.ToString();
-        StatSomaticMutations.Text = snapshot.DetectorStats.SomaticMutations.ToString();
-        StatDetectorsCreated.Text = snapshot.DetectorStats.DetectorsCreated.ToString();
-        StatDetectorsRetired.Text = snapshot.DetectorStats.DetectorsRetired.ToString();
-        StatActiveResponses.Text = snapshot.DetectorStats.ActiveResponses.ToString();
-        StatSignalQueue.Text = snapshot.DetectorStats.SignalQueueSize.ToString();
-        StatThreatsContained.Text = snapshot.DetectorStats.ThreatsContained.ToString();
-        StatAutoimmuneEvents.Text = snapshot.DetectorStats.AutoimmuneEvents.ToString();
-
-        // Honeypots
-        _honeypotItems.Clear();
-        foreach (var pot in snapshot.Honeypots)
-        {
-            _honeypotItems.Add(new HoneypotItemViewModel(pot));
-        }
-
-        // Honeytokens
-        _honeytokenItems.Clear();
-        foreach (var tok in snapshot.Honeytokens)
-        {
-            _honeytokenItems.Add(new HoneytokenItemViewModel(tok));
-        }
-    }
-}
-
-public sealed class HoneypotItemViewModel
-{
-    public string Name { get; }
-    public string ProtocolPort { get; }
-    public string Banner { get; }
-    public string InteractionSummary { get; }
-
-    public HoneypotItemViewModel(CisHoneypotInfo pot)
-    {
-        Name = pot.Name;
-        ProtocolPort = $"{pot.Protocol} :{pot.Port}";
-        Banner = pot.Banner;
-        InteractionSummary = pot.InteractionCount == 0 ? "0 PROBES" : $"{pot.InteractionCount} PROBES";
-    }
-}
-
-public sealed class HoneytokenItemViewModel
-{
-    public string Type { get; }
-    public string Description { get; }
-    public string Placement { get; }
-    public string TriggerSummary { get; }
-
-    public HoneytokenItemViewModel(CisHoneytokenInfo token)
-    {
-        Type = token.Type;
-        Description = token.Description;
-        Placement = $"Placement: {token.Placement}";
-        TriggerSummary = token.TriggerCount == 0 ? "ARMED" : $"{token.TriggerCount} TRIPPED";
+        NotificationInfoBar.Severity = severity;
+        NotificationInfoBar.Title = title;
+        NotificationInfoBar.Message = message;
+        NotificationInfoBar.IsOpen = true;
     }
 }
