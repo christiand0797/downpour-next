@@ -1,21 +1,33 @@
 # Downpour Next shared context
 
-**Updated:** 2026-10-07 (claude-parity-audit: DN-016/018/019/022/023/024/028 done; DN-029 needs a user decision; antigravity-worker on DN-021)
+**Updated:** 2026-10-07 (antigravity-worker: DN-021 completed, starting DN-027; claude-parity-audit: DN-016/018/019/022/023/024/028 done)
 
 **Repository:** public [christiand0797/downpour-next](https://github.com/christiand0797/downpour-next)
 **Local path:** `C:\Users\purpl\Desktop\downpour v2`  
 **Branch:** `main`  
 
-## 2026-10-07 checkpoint (claude-parity-audit)
+## 2026-10-07 checkpoint: DN-021 DNS Cache Watch with DGA Scoring (antigravity-worker)
 
-- Done and pushed, each verified in a clean worktree: DN-016 (driver catalog signatures), DN-018 (hardening posture), DN-019 (firewall), DN-022 (persistence review on Threat Hunt), DN-023 (Threats / Possible Threats triage and the shared finding bridge), DN-024 (tray icon, notifications, sound alarm), and DN-028 (service risk, plus a fix for corrupted startup types).
-- Fixes to other agents' work:
-  - Sigma rules load only from the install directory.
-  - Wi-Fi uses the Native Wifi API instead of netsh.
-  - Sigma/AMSI detections are now stored.
-  - The thresholds doc is generated from source.
-- **DN-029 is a user decision:** live Sigma/AMSI detection needs PowerShell script-block text, which AGENTS.md gates behind a consent design.
-- How to add a finding source to triage: `docs/AGENT_COORDINATION.md` ("Shared finding bridge").
+**DN-021 completed:**
+- **Resolver Cache Enumeration**: Native P/Invoke for `DnsGetCacheDataTable` in `dnsapi.dll` with linked-list traversal (`NativeDnsCacheEntry`). Strictly read-only; no cache clearing or mutation. Enforces cycle protection, bounds checks (4,096 entries maximum), and schema validation.
+- **DGA Scoring Engine (`DgaDetector`)**: Faithful C# port of v29 `dga_detector.py` heuristics with exact thresholds:
+  - Shannon entropy: `>=3.8` (+30 score, high entropy), `>=3.3` (+15 score, elevated entropy).
+  - Label length: `>=25` (+15 score), `>=18` (+8 score).
+  - Digit ratio: `>=0.40` (+20 score), `>=0.25` (+10 score).
+  - Consonant ratio: `>=0.75` (+15 score).
+  - English bigram frequency score: `<0.10` and length `>=8` (+15 score).
+  - Hyphen count: `>=4` (+10 score).
+  - Risky TLDs (`.top`, `.xyz`, `.club`, `.work`, `.click`, `.tk`, etc.): +15 score.
+  - Whitelist & Dictionary discount: Trusted suffixes (Microsoft, Google, Apple, Amazon, Cloudflare, etc.) zero the score; common English word occurrences discount score by 25.
+  - Alert threshold `>=70` (DGA alert / MEDIUM severity), `>=85` (HIGH severity).
+- **TOFU Baseline**: Persists seen domains to protected JSON store (`dns-baseline.v1.json`) bounded at 20,000 entries. First run absorbs current cache without spamming alerts; subsequent runs flag newly resolved DGA domains with MITRE ATT&CK techniques T1568 and T1071.004.
+- **Passive Email Security Analyzer (`EmailSecurityAnalyzer`)**: Uses native `DnsQuery_W` for TXT records to passively audit SPF policies (hard fail, softfail, or insecure `+all`), DMARC enforcement (`p=reject`, `quarantine`, `none`), and DKIM selector presence (`default`, `google`, `selector1`, `s1`, `dkim`, etc.).
+- **IPC & Security**: Named pipe `Downpour.DnsInventory.v1` with current-user ACL and client validation (`DnsInventoryClient`).
+- **Alert Pipeline Integration**: Integrated into `SecurityFindingCatalog` (`Downpour/Dns`), `SecurityFindingMapper` (`FromDns`), and `SecurityFindingBridgeWorker` (10-minute periodic polling into `SecurityAlertRepository`).
+- **Desktop UI**: Implemented `DnsPage.xaml/.cs` with live search, DGA indicators, risk metrics, and interactive domain SPF/DMARC/DKIM analysis tool. Wired navigation in `MainWindow.xaml.cs` and marked `dns` as `in-progress` in `capabilities.json`.
+- **Testing**: Added 8 unit tests in `DnsInventoryTests` covering Shannon entropy, consonant/digit ratios, DGA scoring, whitelisting, SPF/DMARC parsing, client validation, and provider capture. All 391/391 tests in solution pass with 0 errors, 0 warnings.
+
+**Next task:** DN-027 (standalone timeline and phishing text analyzer) per `docs/AGENT_COORDINATION.md`.
 
 ## 2026-10-06 DN-020: USB, Wi-Fi, and Bluetooth Posture (antigravity-worker)
 

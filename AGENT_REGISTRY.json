@@ -101,10 +101,10 @@
     {
       "id": "antigravity-worker",
       "role": "primary",
-      "taskId": "DN-021",
+      "taskId": "DN-027",
       "status": "active",
-      "heartbeatUtc": "2026-10-07T02:30:00Z",
-      "notes": "Completed DN-020 (read-only USB, Wi-Fi, and Bluetooth posture with pipe servers, client validation, Desktop pages, and alert bridge). Claimed DN-021 (DNS cache watch with DGA scoring)."
+      "heartbeatUtc": "2026-10-07T06:00:00Z",
+      "notes": "Completed DN-021 (DNS cache watch with native DnsGetCacheDataTable, DgaDetector scoring, TOFU baseline, passive SPF/DMARC/DKIM analyzer, IPC pipe, alert bridge, Desktop page, 391/391 tests pass). Claimed DN-027 (standalone timeline + AEGIS local phishing text analyzer)."
     }
   ]
 }

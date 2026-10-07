@@ -1,18 +1,25 @@
 # Downpour Next TODO
 
+## 2026-10-07 checkpoint: DN-021 DNS Cache Watch with DGA Scoring (antigravity-worker)
+
+Completed and verified (Debug: 0 warnings/errors; 391 tests pass):
+- DN-021 DNS cache watch: native `DnsGetCacheDataTable` P/Invoke in `DnsInventoryProvider`, bounded to 4096 entries, cycle protection.
+- DgaDetector ported from v29 with Shannon entropy, consonant ratio, digit ratio, bigram scoring, risky TLD penalties, and whitelist discounts.
+- TOFU baseline persisted to `dns-baseline.v1.json` (max 20,000 entries) preventing initial alert storm.
+- Passive email security analyzer (`EmailSecurityAnalyzer`) checking SPF, DMARC, and DKIM selector records via native `DnsQuery_W`.
+- Outbound-only named pipe `Downpour.DnsInventory.v1` with current-user ACL and client validation (`DnsInventoryClient`).
+- DNS findings mapped to `SecurityFindingCatalog` (`Downpour/Dns`) and bridged to `SecurityAlertRepository` by `SecurityFindingBridgeWorker`.
+- Desktop route `dns` in `Downpour.Desktop` (`DnsPage.xaml/.cs`) with live cache search, DGA indicators, and interactive SPF/DMARC/DKIM tool.
+- 8 unit tests in `DnsInventoryTests`.
+
+Claimed next: DN-027 (standalone timeline and phishing text analyzer) per `docs/AGENT_COORDINATION.md`.
+
 ## 2026-10-07 checkpoint (claude-parity-audit)
 
-Completed and pushed. Each item was verified in a clean worktree (Debug: 0 warnings/errors; 368 tests pass):
-- DN-016 driver packages: catalog signature verification, real inventory (122 packages here), ACL'd pipe, a page that lists rows.
-- DN-018 hardening: v29's eight firmware/platform posture checks.
-- DN-019 firewall: profiles, rules, tamper findings, Event 5157, Downpour rule detection.
-- DN-022 persistence review (Threat Hunt route): hash-only TOFU baseline. Found a CRITICAL BYOVD driver (msio64.sys) on this machine.
-- DN-023 Threats / Possible Threats triage: shared finding bridge into the alert store; Verify/Unverify; per-finding false-positive suppression. v29's Possible Threats was never populated.
-- DN-028 service risk scoring. Also fixed a pre-existing bug where every service startup type was garbage (struct field order), and a 512 cap that dropped services.
-- DN-024 tray icon, notifications, and sound alarm, verified in a self-contained publish.
-- Reviews and fixes of other agents' work:
-  - Sigma loader no longer searches parent directories.
-  - DN-020 Wi-Fi moved from English-only netsh parsing to the Native Wifi API.
+- Done and pushed, each verified in a clean worktree: DN-016 (driver catalog signatures), DN-018 (hardening posture), DN-019 (firewall), DN-022 (persistence review on Threat Hunt), DN-023 (Threats / Possible Threats triage and the shared finding bridge), DN-024 (tray icon, notifications, sound alarm), and DN-028 (service risk, plus a fix for corrupted startup types).
+- Fixes to other agents' work:
+  - Sigma rules load only from the install directory.
+  - Wi-Fi uses the Native Wifi API instead of netsh.
   - Sigma/AMSI detections are now stored. They had all been rejected.
   - Thresholds doc regenerated from source because the hand-written values were wrong.
 

@@ -27,6 +27,7 @@ builder.Services.AddSingleton(PersistenceInventoryProvider.CreateForCurrentUser(
 builder.Services.AddSingleton<UsbInventoryProvider>();
 builder.Services.AddSingleton<WirelessInventoryProvider>();
 builder.Services.AddSingleton<RemoteAccessProvider>();
+builder.Services.AddSingleton(DnsInventoryProvider.CreateForCurrentUser());
 builder.Services.AddSingleton(SensorSettingsStore.CreateForCurrentUser());
 builder.Services.AddHostedService<SnapshotPipeWorker>();
 builder.Services.AddHostedService<DriverInventoryPipeWorker>();
@@ -49,6 +50,7 @@ builder.Services.AddHostedService<FirewallInventoryPipeWorker>();
 builder.Services.AddHostedService<PersistenceInventoryPipeWorker>();
 builder.Services.AddHostedService<UsbInventoryPipeWorker>();
 builder.Services.AddHostedService<WirelessInventoryPipeWorker>();
+builder.Services.AddHostedService<DnsInventoryPipeWorker>();
 builder.Services.AddHostedService<SecurityFindingBridgeWorker>();
 builder.Services.AddHostedService<RemoteAccessPipeWorker>();
 builder.Services.AddHostedService<SensorSettingsPipeWorker>();

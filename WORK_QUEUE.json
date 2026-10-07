@@ -449,7 +449,7 @@
     {
       "id": "DN-021",
       "title": "DNS cache watch with DGA scoring",
-      "status": "in_progress",
+      "status": "completed",
       "priority": "medium",
       "acceptance": [
         "Resolver cache enumeration via DnsGetCacheDataTable or documented alternative",
@@ -457,8 +457,24 @@
         "TOFU baseline persisted with bounded size",
         "Alerts flow into SecurityAlertRepository"
       ],
-      "notes": "Claimed by antigravity-worker per docs/AGENT_COORDINATION.md: implementing DNS cache watch with DGA scoring.",
-      "files": []
+      "notes": "Completed 2026-10-07 by antigravity-worker. Resolver cache enumeration via native DnsGetCacheDataTable P/Invoke in DnsInventoryProvider (dnsapi.dll, bounded at 4096 entries, cycle protection). Full DgaDetector ported from v29 with Shannon entropy (>=3.8 high, >=3.3 elevated), consonant ratio (>=0.75), digit ratio (>=0.40 high, >=0.25 elevated), bigram frequency scoring, risky TLD weighting, and known-good whitelist. TOFU baseline persisted to dns-baseline.v1.json (bounded at 20,000 entries) preventing alert floods on first run. Passive email security analyzer inspecting SPF, DMARC, and DKIM selector TXT records via native DnsQuery_W. Outbound named pipe Downpour.DnsInventory.v1 with current-user ACL and client validation. DNS findings bridged to SecurityAlertRepository (Downpour/Dns) every 10 min. Desktop route 'dns' implemented with live cache search, DGA indicators, and interactive SPF/DMARC/DKIM analysis tool. 8 new unit tests (391/391 pass); 0 build warnings/errors.",
+      "files": [
+        "src/Downpour.Contracts/DnsInventory.cs",
+        "src/Downpour.Contracts/SecurityFindings.cs",
+        "src/Downpour.Core/DgaDetector.cs",
+        "src/Downpour.Core/EmailSecurityAnalyzer.cs",
+        "src/Downpour.Core/DnsInventoryClient.cs",
+        "src/Downpour.Core/SecurityFindingMapper.cs",
+        "src/Downpour.Service/DnsInventoryProvider.cs",
+        "src/Downpour.Service/DnsInventoryPipeWorker.cs",
+        "src/Downpour.Service/SecurityFindingBridgeWorker.cs",
+        "src/Downpour.Service/Program.cs",
+        "src/Downpour.Desktop/Pages/DnsPage.xaml",
+        "src/Downpour.Desktop/Pages/DnsPage.xaml.cs",
+        "src/Downpour.Desktop/MainWindow.xaml.cs",
+        "capabilities.json",
+        "tests/Downpour.Tests/DnsInventoryTests.cs"
+      ]
     },
     {
       "id": "DN-022",
@@ -542,14 +558,14 @@
     {
       "id": "DN-027",
       "title": "Standalone timeline and phishing text analyzer",
-      "status": "queued",
+      "status": "in_progress",
       "priority": "low",
       "acceptance": [
         "timeline route uses InvestigationTimelinePage without needing an alert",
         "Attack detection patterns and HTML export",
         "AEGIS phishing analyzer for pasted text, fully local"
       ],
-      "notes": "Low-risk ports from Timeline and AEGIS tabs. | Assigned to antigravity-worker per docs/AGENT_COORDINATION.md.",
+      "notes": "Claimed by antigravity-worker per docs/AGENT_COORDINATION.md: implementing standalone timeline route and local AEGIS phishing text analyzer.",
       "files": []
     },
     {

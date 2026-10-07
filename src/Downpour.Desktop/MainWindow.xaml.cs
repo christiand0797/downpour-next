@@ -446,6 +446,8 @@ public sealed partial class MainWindow : Window
             NavFrame.Navigate(typeof(UsbPage));
         else if (capability.RouteId.Equals("wifi", StringComparison.OrdinalIgnoreCase))
             NavFrame.Navigate(typeof(WifiPage));
+        else if (capability.RouteId.Equals("dns", StringComparison.OrdinalIgnoreCase))
+            NavFrame.Navigate(typeof(DnsPage));
         else if (capability.RouteId.Equals("threats", StringComparison.OrdinalIgnoreCase))
             NavFrame.Navigate(typeof(TriagePage), TriagePage.ThreatsMode);
         else if (capability.RouteId.Equals("possible-threats", StringComparison.OrdinalIgnoreCase))
@@ -505,6 +507,7 @@ public sealed partial class MainWindow : Window
         if (routeId is null && args.Content is RemoteAccessPage) routeId = "remote-access";
         if (routeId is null && args.Content is UsbPage) routeId = "usb";
         if (routeId is null && args.Content is WifiPage) routeId = "wifi";
+        if (routeId is null && args.Content is DnsPage) routeId = "dns";
         if (routeId is null && args.Content is TriagePage) routeId = args.Parameter as string == TriagePage.PossibleMode ? "possible-threats" : "threats";
 
         if (routeId is null || !_routeItems.TryGetValue(routeId, out var item)) return;

@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page x:Class="Downpour_Desktop.Pages.DnsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      mc:Ignorable="d">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Padding="24,20,24,30" Spacing="14">
+            <Grid ColumnSpacing="16">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                <StackPanel Spacing="4">
+                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Foreground="#FF76DDF5" Text="DOWNPOUR  /  MONITORING  /  DNS" />
+                    <TextBlock Style="{StaticResource TitleTextBlockStyle}" FontSize="30" Text="DNS Cache &amp; Domain Security" />
+                    <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Native resolver cache surveillance with DGA entropy scoring and email authentication (SPF/DMARC/DKIM) verification. Read-only." TextWrapping="Wrap" />
+                </StackPanel>
+                <Button Grid.Column="1" x:Name="RefreshButton" Content="Re-check" Click="Refresh_Click" VerticalAlignment="Center" />
+            </Grid>
+
+            <Border Padding="14,11" CornerRadius="10" Background="#B9081220" BorderBrush="#423EC5D8" BorderThickness="1">
+                <Grid ColumnSpacing="12">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                    <FontIcon Glyph="&#xE774;" FontSize="20" Foreground="#FF60DBEE" VerticalAlignment="Center" />
+                    <StackPanel Grid.Column="1" Spacing="3">
+                        <TextBlock x:Name="StatusHeadline" FontWeight="SemiBold" Text="Checking DNS resolver cache" />
+                        <TextBlock x:Name="StatusDetail" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Readings come from DnsGetCacheDataTable in dnsapi.dll and local DGA scoring. Strictly read-only." TextWrapping="Wrap" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Findings section -->
+            <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" FontSize="16" Text="Security Findings" Margin="0,8,0,0" />
+            <ListView ItemsSource="{x:Bind Findings}" SelectionMode="None" IsItemClickEnabled="False" Background="{StaticResource DownpourSurfaceBrush}">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Padding="12,10" ColumnSpacing="14">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="96" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                            <Border CornerRadius="6" Padding="8,4" Background="{Binding SeverityBackground}" VerticalAlignment="Top">
+                                <TextBlock Text="{Binding Severity}" FontSize="11" FontWeight="SemiBold" Foreground="{Binding SeverityForeground}" HorizontalAlignment="Center" />
+                            </Border>
+                            <StackPanel Grid.Column="1" Spacing="3">
+                                <TextBlock Text="{Binding Summary}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                <TextBlock Text="{Binding Indicator}" FontFamily="Consolas" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                            </StackPanel>
+                            <TextBlock Grid.Column="2" Text="{Binding Technique}" FontFamily="Consolas" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" VerticalAlignment="Top" />
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+                <ListView.Footer>
+                    <TextBlock x:Name="EmptyFindingsState" Padding="14" FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="No DGA or anomalous domains detected in resolver cache." TextWrapping="Wrap" />
+                </ListView.Footer>
+            </ListView>
+
+            <!-- Email Authentication (SPF / DMARC / DKIM) Tool -->
+            <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" FontSize="16" Text="Email Authentication Verifier (SPF / DMARC / DKIM)" Margin="0,8,0,0" />
+            <Border Padding="16,14" CornerRadius="10" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="#303EC5D8" BorderThickness="1">
+                <StackPanel Spacing="10">
+                    <TextBlock FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Verify passive email authentication DNS records to check anti-spoofing strength without external API keys." />
+                    <Grid ColumnSpacing="10">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                        <TextBox x:Name="DomainInput" PlaceholderText="Enter domain (e.g. microsoft.com, google.com)" Text="microsoft.com" VerticalAlignment="Center" />
+                        <Button Grid.Column="1" x:Name="VerifyDomainButton" Content="Verify Records" Click="VerifyDomain_Click" VerticalAlignment="Center" />
+                    </Grid>
+
+                    <StackPanel x:Name="EmailAuthResultsPanel" Spacing="8" Margin="0,6,0,0" Visibility="Collapsed">
+                        <!-- SPF Result -->
+                        <Grid ColumnSpacing="10">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="80" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                            <Border CornerRadius="4" Padding="6,2" Background="{x:Bind SpfBackground, Mode=OneWay}" VerticalAlignment="Center">
+                                <TextBlock Text="{x:Bind SpfStatus, Mode=OneWay}" FontSize="11" FontWeight="Bold" Foreground="{x:Bind SpfForeground, Mode=OneWay}" HorizontalAlignment="Center" />
+                            </Border>
+                            <StackPanel Grid.Column="1" Spacing="2">
+                                <TextBlock Text="{x:Bind SpfVerdict, Mode=OneWay}" FontWeight="SemiBold" FontSize="12" />
+                                <TextBlock Text="{x:Bind SpfRecord, Mode=OneWay}" FontFamily="Consolas" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- DMARC Result -->
+                        <Grid ColumnSpacing="10">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="80" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                            <Border CornerRadius="4" Padding="6,2" Background="{x:Bind DmarcBackground, Mode=OneWay}" VerticalAlignment="Center">
+                                <TextBlock Text="{x:Bind DmarcStatus, Mode=OneWay}" FontSize="11" FontWeight="Bold" Foreground="{x:Bind DmarcForeground, Mode=OneWay}" HorizontalAlignment="Center" />
+                            </Border>
+                            <StackPanel Grid.Column="1" Spacing="2">
+                                <TextBlock Text="{x:Bind DmarcVerdict, Mode=OneWay}" FontWeight="SemiBold" FontSize="12" />
+                                <TextBlock Text="{x:Bind DmarcRecord, Mode=OneWay}" FontFamily="Consolas" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- DKIM Result -->
+                        <Grid ColumnSpacing="10">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="80" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                            <Border CornerRadius="4" Padding="6,2" Background="{x:Bind DkimBackground, Mode=OneWay}" VerticalAlignment="Center">
+                                <TextBlock Text="{x:Bind DkimStatus, Mode=OneWay}" FontSize="11" FontWeight="Bold" Foreground="{x:Bind DkimForeground, Mode=OneWay}" HorizontalAlignment="Center" />
+                            </Border>
+                            <StackPanel Grid.Column="1" Spacing="2">
+                                <TextBlock Text="{x:Bind DkimVerdict, Mode=OneWay}" FontWeight="SemiBold" FontSize="12" />
+                                <TextBlock Text="{x:Bind DkimSelector, Mode=OneWay}" FontFamily="Consolas" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Resolver Cache Section -->
+            <Grid Margin="0,8,0,0" ColumnSpacing="12">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="220" /></Grid.ColumnDefinitions>
+                <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" FontSize="16" Text="Resolver Cache Entries" VerticalAlignment="Center" />
+                <TextBox Grid.Column="1" x:Name="SearchBox" PlaceholderText="Filter domains..." TextChanged="SearchBox_TextChanged" VerticalAlignment="Center" />
+            </Grid>
+
+            <ListView ItemsSource="{x:Bind FilteredEntries}" SelectionMode="None" IsItemClickEnabled="False" MaxHeight="400" Background="{StaticResource DownpourSurfaceBrush}">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Padding="12,8" ColumnSpacing="12">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="60" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                            <Border CornerRadius="6" Padding="4,3" Background="{Binding ScoreBackground}" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding ScoreDisplay}" FontSize="11" FontWeight="SemiBold" Foreground="{Binding ScoreForeground}" HorizontalAlignment="Center" />
+                            </Border>
+                            <StackPanel Grid.Column="1" Spacing="2">
+                                <TextBlock Text="{Binding Domain}" FontWeight="SemiBold" FontSize="13" TextWrapping="Wrap" />
+                                <TextBlock Text="{Binding FactorsDisplay}" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                            </StackPanel>
+                            <TextBlock Grid.Column="2" Text="{Binding RecordTypeDisplay}" FontFamily="Consolas" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" VerticalAlignment="Center" />
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+                <ListView.Footer>
+                    <TextBlock x:Name="EmptyCacheState" Padding="14" FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="No resolver cache entries recorded." TextWrapping="Wrap" />
+                </ListView.Footer>
+            </ListView>
+
+            <TextBlock FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Read-only DNS surveillance and domain risk evaluation. DNS flushing, HOSTS editing, and resolver redirection are disabled by default and require the audited action broker." TextWrapping="Wrap" Margin="0,8,0,0" />
+        </StackPanel>
+    </ScrollViewer>
+</Page>

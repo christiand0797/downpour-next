@@ -43,6 +43,11 @@ public static class SecurityFindingMapper
             .Where(finding => SecurityFindingCatalog.Severities.Contains(finding.Severity))
             .Select(finding => Create(SecurityFindingCatalog.RemoteAccess, "Remote access", finding.Severity, finding.Technique, finding.Summary, finding.Indicator));
 
+    public static IEnumerable<SecurityFindingObservation> FromDns(DnsCacheSnapshot snapshot) =>
+        snapshot.Findings
+            .Where(finding => SecurityFindingCatalog.Severities.Contains(finding.Severity))
+            .Select(finding => Create(SecurityFindingCatalog.Dns, "DNS", finding.Severity, finding.Technique, finding.Summary, finding.Indicator));
+
     public static SecurityFindingObservation Create(string source, string category, string severity, string technique, string summary, string indicator) =>
         new(source, Bound(category, 128), severity, string.IsNullOrWhiteSpace(technique) ? "Posture" : Bound(technique, 32),
             Bound(Clean(summary), MaximumTitle), Bound(indicator, MaximumIndicator));
