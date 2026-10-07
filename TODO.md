@@ -1,5 +1,17 @@
 # Downpour Next TODO
 
+## 2026-10-07 checkpoint: DN-027 Standalone Timeline and AEGIS Phishing Text Analyzer (antigravity-worker)
+
+Completed and verified (Debug: 0 warnings/errors; 412/412 tests pass):
+- DN-027 Standalone timeline route (`timeline`) in `InvestigationTimelinePage.xaml/.cs` loading all system alerts chronologically when accessed directly.
+- Quick filter buttons added for `All`, `Failed Logins` (4625), `Logons` (4624), `Accounts` (4720/4728/4732), `Services` (4697/7045), and `Tasks` (4698/4702).
+- Attack detection heuristics (`TimelineAttackDetector`) porting v29 `_tl_detect_attacks`: brute force (T1110.001, CRITICAL), account manipulation (T1098, HIGH), service install (T1543.003, HIGH), scheduled task persistence (T1053.005, HIGH), explicit credential bursts (T1078, MEDIUM), and firewall changes (T1562.004, MEDIUM).
+- Dark-themed executive HTML report generator porting v29 `_tl_export_html` saving directly to Desktop or local Reports directory.
+- Project AEGIS defense architecture overview page (`AegisPage.xaml/.cs`) displaying the 5 defense layers (L1 Physical, L2 TCP, L3 Ingestion, L4 NLP Phishing AI, L5 Memory Shield).
+- Local NLP phishing & social engineering text analyzer (`AegisPhishingAnalyzer`) porting v29 `AegisNLPPhishingEngine`: urgency (+15 max 30), authority impersonation (+20 max 25), fear/reward triggers (+20 max 25), grammar/tone (+10 max 15), blob URIs (+30), redirect shorteners (+15), QR instructions (+20). 100% on-device in-memory with zero network traffic.
+- Wired navigation in `MainWindow.xaml.cs` and marked `timeline` and `aegis` as `in-progress` in `capabilities.json`.
+- 21 unit tests in `AegisPhishingAnalyzerTests` and `TimelineAttackDetectorTests`.
+
 ## 2026-10-07 checkpoint: DN-021 DNS Cache Watch with DGA Scoring (antigravity-worker)
 
 Completed and verified (Debug: 0 warnings/errors; 391 tests pass):

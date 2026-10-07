@@ -8,4 +8,9 @@ if not exist "%~dp0Downpour.Desktop.exe" (
     pause
     exit /b 1
 )
+
+if exist "%~dp0service\Downpour.Service.exe" (
+    start "Downpour Service (CLI Monitor)" "%~dp0service\Downpour.Service.exe"
+)
+
 start "" "%~dp0Downpour.Desktop.exe"

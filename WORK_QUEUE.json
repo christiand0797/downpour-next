@@ -558,15 +558,26 @@
     {
       "id": "DN-027",
       "title": "Standalone timeline and phishing text analyzer",
-      "status": "in_progress",
+      "status": "completed",
       "priority": "low",
       "acceptance": [
         "timeline route uses InvestigationTimelinePage without needing an alert",
         "Attack detection patterns and HTML export",
         "AEGIS phishing analyzer for pasted text, fully local"
       ],
-      "notes": "Claimed by antigravity-worker per docs/AGENT_COORDINATION.md: implementing standalone timeline route and local AEGIS phishing text analyzer.",
-      "files": []
+      "notes": "Completed 2026-10-07. Implemented standalone timeline route in InvestigationTimelinePage loading all system alerts, with brute force (T1110.001), account manipulation (T1098), service installation (T1543.003), task persistence (T1053.005), explicit credential logon burst (T1078), and firewall change (T1562.004) pattern detection, plus quick filters and dark-themed executive HTML report export. Implemented Project AEGIS architecture view and Layer 4 local context-aware NLP phishing and social engineering text analyzer in AegisPage and AegisPhishingAnalyzer (urgency, authority impersonation, fear/reward cues, tone indicators, blob URIs, redirect shorteners, and multi-stage QR instructions) with zero network calls and full privacy preservation. 412/412 unit tests pass. 0 build warnings/errors.",
+      "files": [
+        "src/Downpour.Core/AegisPhishingAnalyzer.cs",
+        "src/Downpour.Core/TimelineAttackDetector.cs",
+        "src/Downpour.Desktop/Pages/InvestigationTimelinePage.xaml",
+        "src/Downpour.Desktop/Pages/InvestigationTimelinePage.xaml.cs",
+        "src/Downpour.Desktop/Pages/AegisPage.xaml",
+        "src/Downpour.Desktop/Pages/AegisPage.xaml.cs",
+        "src/Downpour.Desktop/MainWindow.xaml.cs",
+        "capabilities.json",
+        "tests/Downpour.Tests/AegisPhishingAnalyzerTests.cs",
+        "tests/Downpour.Tests/TimelineAttackDetectorTests.cs"
+      ]
     },
     {
       "id": "DN-028",

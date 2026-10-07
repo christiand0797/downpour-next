@@ -102,9 +102,9 @@
       "id": "antigravity-worker",
       "role": "primary",
       "taskId": "DN-027",
-      "status": "active",
-      "heartbeatUtc": "2026-10-07T06:00:00Z",
-      "notes": "Completed DN-021 (DNS cache watch with native DnsGetCacheDataTable, DgaDetector scoring, TOFU baseline, passive SPF/DMARC/DKIM analyzer, IPC pipe, alert bridge, Desktop page, 391/391 tests pass). Claimed DN-027 (standalone timeline + AEGIS local phishing text analyzer)."
+      "status": "idle",
+      "heartbeatUtc": "2026-10-07T07:30:00Z",
+      "notes": "Completed DN-027 (standalone timeline with brute force, account manipulation, service installation, task persistence, credential burst, and firewall change pattern detection, quick filters, and executive HTML report export; Project AEGIS architecture view and Layer 4 local NLP phishing analyzer with zero network calls). 412/412 tests pass, 0 build warnings/errors."
     }
   ]
 }

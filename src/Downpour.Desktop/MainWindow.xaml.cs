@@ -448,6 +448,10 @@ public sealed partial class MainWindow : Window
             NavFrame.Navigate(typeof(WifiPage));
         else if (capability.RouteId.Equals("dns", StringComparison.OrdinalIgnoreCase))
             NavFrame.Navigate(typeof(DnsPage));
+        else if (capability.RouteId.Equals("timeline", StringComparison.OrdinalIgnoreCase))
+            NavFrame.Navigate(typeof(InvestigationTimelinePage));
+        else if (capability.RouteId.Equals("aegis", StringComparison.OrdinalIgnoreCase))
+            NavFrame.Navigate(typeof(AegisPage));
         else if (capability.RouteId.Equals("threats", StringComparison.OrdinalIgnoreCase))
             NavFrame.Navigate(typeof(TriagePage), TriagePage.ThreatsMode);
         else if (capability.RouteId.Equals("possible-threats", StringComparison.OrdinalIgnoreCase))
@@ -508,6 +512,8 @@ public sealed partial class MainWindow : Window
         if (routeId is null && args.Content is UsbPage) routeId = "usb";
         if (routeId is null && args.Content is WifiPage) routeId = "wifi";
         if (routeId is null && args.Content is DnsPage) routeId = "dns";
+        if (routeId is null && args.Content is InvestigationTimelinePage) routeId = "timeline";
+        if (routeId is null && args.Content is AegisPage) routeId = "aegis";
         if (routeId is null && args.Content is TriagePage) routeId = args.Parameter as string == TriagePage.PossibleMode ? "possible-threats" : "threats";
 
         if (routeId is null || !_routeItems.TryGetValue(routeId, out var item)) return;

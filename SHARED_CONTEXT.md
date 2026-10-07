@@ -1,10 +1,57 @@
 # Downpour Next shared context
 
-**Updated:** 2026-10-07 (antigravity-worker: DN-021 completed, starting DN-027; claude-parity-audit: DN-016/018/019/022/023/024/028 done)
+**Updated:** 2026-10-07 (antigravity-worker: DN-027 completed; claude-parity-audit: DN-016/018/019/022/023/024/028 done)
 
 **Repository:** public [christiand0797/downpour-next](https://github.com/christiand0797/downpour-next)
 **Local path:** `C:\Users\purpl\Desktop\downpour v2`  
 **Branch:** `main`  
+
+## 2026-10-07 checkpoint: DN-027 Standalone Timeline and AEGIS Phishing Text Analyzer (antigravity-worker)
+
+**DN-027 completed:**
+- **Standalone Timeline Route (`timeline`)**:
+  - `InvestigationTimelinePage` operates without requiring a correlation finding ID. If opened directly via navigation, loads all system alerts chronologically.
+  - Quick filter buttons added for `All`, `Failed Logins` (Event 4625), `Logons` (Event 4624), `Accounts` (4720/4728/4732), `Services` (4697/7045), and `Tasks` (4698/4702).
+  - Wired in `MainWindow.xaml.cs` and marked `timeline` route as `in-progress` in `capabilities.json`.
+- **Automated Attack Detection (`TimelineAttackDetector`)**:
+  - Faithful C# port of v29 `_tl_detect_attacks` correlation heuristics:
+    - Brute force authentication pattern: $\ge 5$ Event 4625 records (MITRE ATT&CK T1110.001, CRITICAL severity).
+    - Privileged account manipulation: Events 4720, 4722, 4724, 4728, 4732, 4756 (T1098, HIGH severity).
+    - New Windows service installations: Events 4697, 7045 (T1543.003, HIGH severity).
+    - Scheduled task persistence activity: Events 4698, 4702 (T1053.005, HIGH severity).
+    - Explicit credential logon bursts: $> 3$ Event 4648 occurrences (T1078, MEDIUM severity).
+    - Windows Firewall modifications: Events 4946, 4947 (T1562.004, MEDIUM severity).
+- **Executive HTML Timeline Export**:
+  - Faithful port of v29 `_tl_export_html` generating self-contained, responsive, dark-themed HTML report containing executive findings cards with severity badges, MITRE ATT&CK techniques, and event records table.
+  - Exports directly to user's Desktop or LocalApplicationData Reports directory with explicit timestamped filename.
+- **Project AEGIS Architecture & Local NLP Phishing Analyzer (`aegis`)**:
+  - Implemented `AegisPage.xaml/.cs` with overview of the 5 AEGIS defense layers (L1 Physical Shield, L2 TCP Stack Guard, L3 Ingestion Engine, L4 NLP Phishing AI, L5 Memory Shield).
+  - Ported v29 `AegisNLPPhishingEngine` into `AegisPhishingAnalyzer.cs`:
+    - Urgency triggers (+15 each, max 30).
+    - Authority impersonation (+20 each, max 25).
+    - Fear and reward triggers (+20 each, max 25).
+    - Grammar/tone indicators (+10 each, max 15).
+    - Blob / ephemeral URI detection (+30).
+    - Suspicious redirect chains and shorteners (+15).
+    - Multi-stage QR code instructions (+20).
+    - Calibrated scoring 0–100 with verdicts: $\ge 70$ `PHISHING`, $50–69$ `SUSPICIOUS`, $< 50$ `CLEAN`.
+  - Strictly local in-memory text analysis: zero network calls, no passive clipboard reading, full privacy preservation.
+  - Wired in `MainWindow.xaml.cs` and marked `aegis` route as `in-progress` in `capabilities.json`.
+- **Testing & Verification**:
+  - Added 21 unit tests in `AegisPhishingAnalyzerTests` and `TimelineAttackDetectorTests`.
+  - All 412/412 unit tests in solution pass with 0 warnings, 0 errors.
+
+**Files created/updated:**
+- `src/Downpour.Core/AegisPhishingAnalyzer.cs`
+- `src/Downpour.Core/TimelineAttackDetector.cs`
+- `src/Downpour.Desktop/Pages/InvestigationTimelinePage.xaml`
+- `src/Downpour.Desktop/Pages/InvestigationTimelinePage.xaml.cs`
+- `src/Downpour.Desktop/Pages/AegisPage.xaml`
+- `src/Downpour.Desktop/Pages/AegisPage.xaml.cs`
+- `src/Downpour.Desktop/MainWindow.xaml.cs`
+- `capabilities.json`
+- `tests/Downpour.Tests/AegisPhishingAnalyzerTests.cs`
+- `tests/Downpour.Tests/TimelineAttackDetectorTests.cs`
 
 ## 2026-10-07 checkpoint: DN-021 DNS Cache Watch with DGA Scoring (antigravity-worker)
 

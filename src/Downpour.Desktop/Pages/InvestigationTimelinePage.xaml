@@ -15,6 +15,8 @@
                 <TextBlock x:Name="FindingTitle" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Select a correlation finding from the Alerts page" TextWrapping="Wrap" />
             </StackPanel>
             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                <Button Content="Detect Attacks" ToolTipService.ToolTip="Analyze loaded timeline events for brute force, lateral movement, and persistence patterns" Click="DetectAttacks_Click" />
+                <Button Content="Export HTML" ToolTipService.ToolTip="Export timeline and attack findings to a self-contained HTML report" Click="ExportHtml_Click" />
                 <Button Content="Refresh" Click="Refresh_Click" />
             </StackPanel>
         </Grid>
@@ -34,13 +36,21 @@
             <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
             <Border Padding="12,9" CornerRadius="8" Background="#9B111A2A" BorderBrush="#333EC5D8" BorderThickness="1">
                 <StackPanel Spacing="3">
-                    <TextBlock FontSize="10" FontWeight="SemiBold" CharacterSpacing="65" Foreground="#FF76DDF5" Text="FINDING DETAILS" />
+                    <TextBlock FontSize="10" FontWeight="SemiBold" CharacterSpacing="65" Foreground="#FF76DDF5" Text="FINDING &amp; DETECTION SUMMARY" />
                     <TextBlock x:Name="FindingDetail" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Waiting for finding data." TextWrapping="Wrap" />
                 </StackPanel>
             </Border>
             <Grid Grid.Row="1" ColumnSpacing="10">
                 <Grid.ColumnDefinitions><ColumnDefinition Width="2*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                <TextBox x:Name="FilterBox" PlaceholderText="Filter timeline events..." TextChanged="FilterBox_TextChanged" />
+                <TextBox x:Name="FilterBox" PlaceholderText="Filter timeline events (text, ID, provider, technique)..." TextChanged="FilterBox_TextChanged" />
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+                    <Button Content="All" Click="QuickFilter_All" Padding="8,5" FontSize="11" />
+                    <Button Content="Failed Logins" ToolTipService.ToolTip="Event 4625" Click="QuickFilter_FailedLogins" Padding="8,5" FontSize="11" />
+                    <Button Content="Logons" ToolTipService.ToolTip="Event 4624" Click="QuickFilter_Logons" Padding="8,5" FontSize="11" />
+                    <Button Content="Accounts" ToolTipService.ToolTip="Events 4720, 4728, 4732" Click="QuickFilter_Accounts" Padding="8,5" FontSize="11" />
+                    <Button Content="Services" ToolTipService.ToolTip="Events 4697, 7045" Click="QuickFilter_Services" Padding="8,5" FontSize="11" />
+                    <Button Content="Tasks" ToolTipService.ToolTip="Events 4698, 4702" Click="QuickFilter_Tasks" Padding="8,5" FontSize="11" />
+                </StackPanel>
             </Grid>
             <ListView x:Name="TimelineList" Grid.Row="2" ItemsSource="{x:Bind TimelineEvents}" SelectionMode="None" IsItemClickEnabled="False" Background="{StaticResource DownpourSurfaceBrush}">
                 <ListView.ItemTemplate>
