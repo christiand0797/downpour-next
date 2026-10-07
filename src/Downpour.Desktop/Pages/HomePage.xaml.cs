@@ -197,7 +197,7 @@ public sealed partial class HomePage : Page
 
             App.MarkSensorServiceConnected();
             SensorHeadline.Text = "Read-only sensor service connected";
-            SensorDescription.Text = "Downpour is online with live local measurements updating every three seconds. Detection and response engines are not connected yet.";
+            SensorDescription.Text = "Downpour is online with live local measurements updating every three seconds. Detections feed Triage; response actions run only after you confirm each one.";
             SensorBadge.Text = "ONLINE";
             SensorDot.Fill = new SolidColorBrush(Color.FromArgb(255, 73, 227, 193));
             var captured = snapshot.CapturedAtUtc.ToLocalTime();
@@ -209,7 +209,7 @@ public sealed partial class HomePage : Page
             SetMetricCards(snapshot.ProcessCount.ToString("N0"), "Current Windows process snapshot",
                 snapshot.ActiveTcpConnections?.ToString("N0") ?? "—", "Current connection count",
                 captured.ToString("HH:mm:ss"), captured.ToString("MMM d · h:mm:ss tt"),
-                "Observe only", "No system-changing actions enabled");
+                "Confirm to act", "Detection is automatic; quarantine, process, firewall, and USB actions need your confirmation");
 
             _history.Enqueue(new ResourceSample(snapshot.CpuPercent, memoryPercent));
             while (_history.Count > 60) _history.Dequeue();
