@@ -1,5 +1,15 @@
 # Downpour Next changelog
 
+## v0.1.17 — measured CIS review and package integrity
+
+- Replaced scripted CIS detector counts, resistance/confidence scores, forecasts, pretend honeypots and swarm protection controls with real validated alert/system/settings measurements. Removed unused simulation code/contracts and replaced their model tests with behavioral regressions.
+- Displays returned-window scope, open/urgent/user-verified/suppressed counts, techniques, actual source warnings and cautious temporal correlations; unavailable data stays unknown. Refresh/cancellation follows page lifetime, and an explicit local metadata report includes limitations.
+- Added a bounded explicit package-file consistency check with strict schema/version/path/size/hash validation, missing/mismatch/unreadable outcomes, cancellation and a 30-second deadline. The unsigned local manifest remains replaceable and is not publisher authentication or malware clearance. See CIS.md.
+- Debug build clean; 893 working-tree tests passed. Clean committed Release build: 0 warnings/errors; 870 tests passed, 0 skipped. The 28 new measured/integrity cases cover real bytes, tampering, bounds, malformed paths/contracts, cancellation and actual link rejection on this host.
+- Packaged desktop/service/scanner lifecycle smoke passed with 179 YARA rules and a benign scan. Actual new integrity workflow matched all 1,061 manifest-listed files (659,846,854 bytes hashed); a live review/report probe returned measured alerts and partial-source warnings. Native CIS click-through remains outstanding.
+- Source: `e8ce959cc0c8238e3eed0b86e9a5894d36874485`. Archive: `DownpourNext-win-x64-0.1.17.zip`, 259,783,061 bytes; SHA-256 `B035C921C7F9A1BF1DB7222448EEECD6C3C5E43932A6F60B9BC8C77FA843DBB2`. All 1,062 archive entries hash-match staging; SBOM lists 52 runtime components.
+- Full adaptive/deception CIS, admin elevation, host isolation, driver lifecycle execution, broader v29 parity, installer/signing and complete native acceptance remain unfinished. Pre-existing host-isolation/AntiStalker drafts are preserved and excluded.
+
 ## v0.1.16 — detection reliability and connected migration slices
 
 - Sysmon review events 8/9/25 now reach persisted alerts through validated catalog entries. Normal telemetry remains telemetry; labels are corrected, clipboard activity is excluded, real polling supplements subscriptions, and unavailable channels/queue/persistence failures are visible.
