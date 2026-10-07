@@ -47,7 +47,9 @@ public sealed class SigmaAmsiEventProcessor
             _logger.LogWarning("Bundled Sigma rules directory not found at {RulesDir}.", rulesDir);
         }
 
-        _sigmaRules = [..builtin, ..bundled];
+        // Bundled v29 rules win over built-ins with the same title, so one script block does not raise two alerts.
+        var bundledTitles = new HashSet<string>(bundled.Select(rule => rule.Title), StringComparer.OrdinalIgnoreCase);
+        _sigmaRules = [..builtin.Where(rule => !bundledTitles.Contains(rule.Title)), ..bundled];
         
         // Initialize AMSI
         if (!AmsiIntegration.Initialize("DownpourNext-SigmaAmsi"))

