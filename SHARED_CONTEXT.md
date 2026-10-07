@@ -57,7 +57,7 @@
 - Isolation: `Downpour.Scanner.exe` (no args, stdin/stdout JSON lines) runs in a job object (1.5 GiB, one process, kill on close) started by `YaraScannerHost`; a hang or crash fails one file and restarts the helper.
 - Rules: 33 v29 files / 179 rules bundled in `src/Downpour.Scanner/yara_rules` (provenance and the `$_` unused-pattern renames in `PROVENANCE.md`). Measured on 4,389 clean System32 binaries, 108 rules matched clean files, so they are low confidence (`rule_quality.json`, regenerate with `python tools/yara_rule_quality.py`): shown in results, never raised to triage.
 - Service: `YaraScanCoordinator` (one job, file or folder, recursive optional, 100k files, no reparse points), pipe `Downpour.YaraScan.v1` (status/start/cancel), findings source `Downpour/Yara`. Desktop: YARA section on the Scanner (File Inspector) page.
-- Verified: 619 tests pass; live service scan raised a CRITICAL ransom-note finding and listed a low-confidence match without raising it; helper dies with the service. Found and fixed: pipe reply depth overflow that crashed the service.
+- Verified: 607 tests pass in a clean checkout (which also re-downloads and hash-checks the DLL); live service scan raised a CRITICAL ransom-note finding and listed a low-confidence match without raising it; helper dies with the service. Found and fixed: pipe reply depth overflow that crashed the service.
 - Incident: another agent stashed and dropped this uncommitted work (`git stash -u` + `reset --hard`); recovered from the dangling stash commit. Agents: commit with a pathspec; never stash/reset/clean others' files.
 - Next: Authenticode check to skip Microsoft-signed files, DN-008 phase 2 (process termination).
 
