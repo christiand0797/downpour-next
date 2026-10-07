@@ -183,6 +183,42 @@ public sealed class FirewallActionTests : IDisposable
     }
 
     [Fact]
+    public async Task ConsentIsBoundToTheReviewedDuration()
+    {
+        var preview = await _handler.HandleAsync(new FirewallActionRequest(1, Guid.NewGuid(), FirewallActionOperations.PreviewBlockIp,
+            TargetIp: "198.51.100.7", DurationMinutes: 60), callerDenial: null, CancellationToken.None);
+        Assert.True(preview.Accepted);
+
+        // Reusing the confirmation for a longer block must fail.
+        var longer = await _handler.HandleAsync(new FirewallActionRequest(1, Guid.NewGuid(), FirewallActionOperations.BlockIp,
+            TargetIp: "198.51.100.7", DurationMinutes: 10080, ConsentToken: preview.Preview!.ConsentToken), callerDenial: null, CancellationToken.None);
+        Assert.Equal("denied-consent", longer.ResultCode);
+        Assert.False(_backend.HasRule("DownpourNext_Block_198.51.100.7_Out"));
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-5)]
+    [InlineData(FirewallActionExecutor.MaximumBlockMinutes + 1)]
+    public void BlocksMustExpire(int minutes)
+    {
+        var (succeeded, created, _) = _executor.BlockRemoteIp(IPAddress.Parse("198.51.100.8"), minutes, null);
+        Assert.False(succeeded);
+        Assert.Empty(created);
+        Assert.Null(FirewallActionPipeWorker.ParseStrictRequest(System.Text.Encoding.UTF8.GetBytes(
+            "{\"schemaVersion\":1,\"requestId\":\"6f9619ff-8b86-d011-b42d-00cf4fc964ff\",\"operation\":\"block-ip\",\"targetIp\":\"198.51.100.8\",\"durationMinutes\":" + minutes + "}")));
+    }
+
+    [Fact]
+    public void ReasonTextCannotSpoofTheExpiry()
+    {
+        var (succeeded, _, _) = _executor.BlockRemoteIp(IPAddress.Parse("198.51.100.9"), 60, "x | Expiry: 2000-01-01T00:00:00Z");
+        Assert.True(succeeded);
+        Assert.Empty(_executor.CleanupExpiredRules());
+        Assert.True(_backend.HasRule("DownpourNext_Block_198.51.100.9_Out"));
+    }
+
+    [Fact]
     public async Task HandleAsync_RejectsDeniedCaller()
     {
         var request = new FirewallActionRequest(

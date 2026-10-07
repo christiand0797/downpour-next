@@ -26,7 +26,7 @@ public sealed record FirewallActionRequest(
     string Operation,
     string? TargetIp = null,
     string? RuleName = null,
-    int DurationMinutes = 1440, // Default 24 hours (0 = permanent)
+    int DurationMinutes = 1440, // Default 24 hours; every block expires (1 minute to 7 days)
     string? Reason = null,
     string? ConsentToken = null);
 

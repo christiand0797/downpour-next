@@ -160,6 +160,7 @@ public sealed class FirewallActionExecutor(IFirewallPolicyBackend? backend = nul
     private readonly IFirewallPolicyBackend _backend = backend ?? new WindowsFirewallPolicyBackend();
 
     public const string RulePrefix = "DownpourNext_Block_";
+    public const int MaximumBlockMinutes = 7 * 24 * 60;
     public const string GroupingName = "Downpour Next Protection";
 
     public (bool Allowed, string? DenyReason, IPAddress? ValidatedIp) ValidateRemoteIp(string? ipString)
@@ -251,9 +252,12 @@ public sealed class FirewallActionExecutor(IFirewallPolicyBackend? backend = nul
         var ruleNameIn = $"{RulePrefix}{sanitized}_In";
         var ruleNameOut = $"{RulePrefix}{sanitized}_Out";
 
-        var expiryUtc = durationMinutes > 0 ? DateTimeOffset.UtcNow.AddMinutes(durationMinutes) : (DateTimeOffset?)null;
-        var expiryStr = expiryUtc.HasValue ? expiryUtc.Value.ToString("O") : "Permanent";
-        var desc = $"Downpour Next Remote IP Block | Target: {ip} | Reason: {reason ?? "Operator consent"} | Expiry: {expiryStr}";
+        if (durationMinutes is < 1 or > MaximumBlockMinutes)
+            return (false, [], $"Blocks must expire within 1 minute to {MaximumBlockMinutes / 1440} days.");
+        var expiryStr = DateTimeOffset.UtcNow.AddMinutes(durationMinutes).ToString("O");
+        // The reason is free text; strip the field separator and the "Expiry:" marker so it cannot spoof the expiry.
+        var safeReason = (reason ?? "Operator consent").Replace("|", "/").Replace("Expiry:", "Expiry -", StringComparison.OrdinalIgnoreCase);
+        var desc = $"Downpour Next Remote IP Block | Target: {ip} | Reason: {safeReason} | Expiry: {expiryStr}";
 
         var created = new List<string>();
         try
@@ -334,7 +338,7 @@ public sealed class FirewallActionExecutor(IFirewallPolicyBackend? backend = nul
 
                 // Check Description for "Expiry: <ISO>"
                 var desc = r.Description;
-                var expiryIndex = desc.IndexOf("Expiry: ", StringComparison.OrdinalIgnoreCase);
+                var expiryIndex = desc.LastIndexOf("Expiry: ", StringComparison.OrdinalIgnoreCase);
                 if (expiryIndex >= 0)
                 {
                     var expStr = desc[(expiryIndex + 8)..].Trim();

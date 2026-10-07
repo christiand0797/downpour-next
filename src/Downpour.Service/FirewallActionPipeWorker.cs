@@ -64,9 +64,10 @@ public sealed class FirewallActionHandler(
                     return Respond(false, "denied-protected-ip", denyReason ?? "Invalid IP address.", preview: deniedPreview, target: request.TargetIp);
                 }
 
+                // Bind the duration the user reviewed into the confirmation, so a different duration cannot reuse it.
                 var (consentToken, expires) = consent.Mint(
                     FirewallActionOperations.BlockIp,
-                    ip.ToString(),
+                    $"{ip}|{request.DurationMinutes}",
                     "Firewall Remote IP Block");
 
                 var sanitized = ip.ToString().Replace(':', '_');
@@ -115,7 +116,7 @@ public sealed class FirewallActionHandler(
                     return Respond(false, "denied-protected-ip", denyReason ?? "Invalid IP address.", target: request.TargetIp);
                 }
 
-                if (string.IsNullOrEmpty(request.ConsentToken) || !consent.TryConsume(request.ConsentToken, FirewallActionOperations.BlockIp, ip.ToString(), out _))
+                if (string.IsNullOrEmpty(request.ConsentToken) || !consent.TryConsume(request.ConsentToken, FirewallActionOperations.BlockIp, $"{ip}|{request.DurationMinutes}", out _))
                 {
                     return Respond(false, "denied-consent", "The firewall action confirmation expired or did not match. Review the target IP again.", target: ip.ToString());
                 }
@@ -279,19 +280,26 @@ public sealed class FirewallActionPipeWorker(
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        // On service startup, clean up any expired DownpourNext rules
-        try
+        // Remove expired DownpourNext rules at startup and then every minute, so a timed block really ends on time
+        // while the service runs (previously expiry was only enforced at the next service start).
+        _ = Task.Run(async () =>
         {
-            var expired = executor.CleanupExpiredRules();
-            if (expired.Count > 0)
+            while (!stoppingToken.IsCancellationRequested)
             {
-                logger.LogInformation("Cleaned up {Count} expired DownpourNext firewall rule(s).", expired.Count);
+                try
+                {
+                    var expired = executor.CleanupExpiredRules();
+                    if (expired.Count > 0)
+                        logger.LogInformation("Removed {Count} expired DownpourNext firewall rule(s).", expired.Count);
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    logger.LogDebug(ex, "Expired firewall rule cleanup encountered an error.");
+                }
+                try { await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken); }
+                catch (OperationCanceledException) { break; }
             }
-        }
-        catch (Exception ex)
-        {
-            logger.LogDebug(ex, "Initial expired firewall rules cleanup encountered an error.");
-        }
+        }, stoppingToken);
 
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -340,6 +348,11 @@ public sealed class FirewallActionPipeWorker(
             catch (IOException ex) when (!stoppingToken.IsCancellationRequested)
             {
                 logger.LogDebug(ex, "A firewall action client disconnected before completion.");
+            }
+            catch (Exception ex) when (ex is JsonException or NotSupportedException or InvalidOperationException && !stoppingToken.IsCancellationRequested)
+            {
+                // A BackgroundService failure stops the whole host; one bad reply must not take the sensor service down.
+                logger.LogWarning(ex, "A firewall action reply could not be written.");
             }
         }
     }
@@ -400,10 +413,11 @@ public sealed class FirewallActionPipeWorker(
                 return text.Length <= max ? text : throw new JsonException();
             }
 
+            // Every block expires (SECURITY.md, DN-008): 1 minute to 7 days, default 24 hours. No permanent blocks.
             int duration = 1440;
             if (values.TryGetValue("durationMinutes", out var durElem) && durElem.ValueKind != JsonValueKind.Null)
             {
-                if (!durElem.TryGetInt32(out duration) || duration < 0 || duration > 525600) // max 1 year
+                if (!durElem.TryGetInt32(out duration) || duration < 1 || duration > FirewallActionExecutor.MaximumBlockMinutes)
                     return null;
             }
 

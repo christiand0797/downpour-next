@@ -330,7 +330,7 @@ public sealed partial class RemediationPage : Page
         var ipBox = new TextBox { PlaceholderText = "e.g. 198.51.100.1 or 2001:db8::1" };
         var durationCombo = new ComboBox
         {
-            ItemsSource = new[] { "1 hour (60 min)", "24 hours (1440 min)", "7 days (10080 min)", "Permanent" },
+            ItemsSource = new[] { "1 hour (60 min)", "24 hours (1440 min)", "7 days (10080 min)" },
             SelectedIndex = 1
         };
         var reasonBox = new TextBox { PlaceholderText = "Optional reason (e.g. C2 indicator, port scan)" };
@@ -368,7 +368,6 @@ public sealed partial class RemediationPage : Page
             0 => 60,
             1 => 1440,
             2 => 10080,
-            3 => 0,
             _ => 1440
         };
 

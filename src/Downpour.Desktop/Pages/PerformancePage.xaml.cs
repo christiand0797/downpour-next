@@ -94,7 +94,11 @@ public sealed partial class PerformancePage : Page
             _perCoreGauges.Add(gauge);
         }
 
-        // Add per-core gauges to the grid (4x4 layout)
+        // Add per-core gauges to a 4-column grid with as many rows as the machine needs (laptops can exceed 16 threads).
+        while (PerCoreGaugeHost.ColumnDefinitions.Count < 4)
+            PerCoreGaugeHost.ColumnDefinitions.Add(new ColumnDefinition { Width = new Microsoft.UI.Xaml.GridLength(1, Microsoft.UI.Xaml.GridUnitType.Star) });
+        while (PerCoreGaugeHost.RowDefinitions.Count < (_perCoreGauges.Count + 3) / 4)
+            PerCoreGaugeHost.RowDefinitions.Add(new RowDefinition { Height = Microsoft.UI.Xaml.GridLength.Auto });
         for (int i = 0; i < _perCoreGauges.Count; i++)
         {
             var col = i % 4;
@@ -224,6 +228,9 @@ public sealed partial class PerformancePage : Page
 
     private void IntervalCombo_SelectionChanged(object sender, Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs e)
     {
+        // The XAML pre-selects "3 sec", so WinUI raises this during InitializeComponent(), before the timer exists.
+        // Touching _timer then threw a NullReferenceException that crashed the app when Performance was opened.
+        if (_timer is null || PauseButton is null) return;
         if (IntervalCombo?.SelectedItem is not ComboBoxItem item) return;
         if (!int.TryParse(item.Tag?.ToString(), out var seconds)) return;
         _timer.Interval = TimeSpan.FromSeconds(seconds);

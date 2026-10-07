@@ -75,7 +75,27 @@ public partial class App : Application
     public App()
     {
         InitializeComponent();
+        // Record unhandled UI exceptions locally so a crash on a test machine can be diagnosed. The process still
+        // terminates as before; only the exception type, message, and stack are written (no user data).
+        UnhandledException += (_, args) => WriteCrashLog(args.Exception);
+        AppDomain.CurrentDomain.UnhandledException += (_, args) => WriteCrashLog(args.ExceptionObject as Exception);
         AppPreferences.Load();
+    }
+
+    private static void WriteCrashLog(Exception? exception)
+    {
+        try
+        {
+            var folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DownpourNext", "logs");
+            Directory.CreateDirectory(folder);
+            var path = Path.Combine(folder, "desktop-crash.log");
+            if (File.Exists(path) && new FileInfo(path).Length > 1024 * 1024) File.Move(path, path + ".1", overwrite: true);
+            File.AppendAllText(path, $"{DateTimeOffset.Now:O} v{DesktopRelease.CurrentVersion}{Environment.NewLine}{exception}{Environment.NewLine}{Environment.NewLine}");
+        }
+        catch (Exception logError) when (logError is IOException or UnauthorizedAccessException)
+        {
+            // Logging must never mask the original failure.
+        }
     }
 
     /// <summary>
