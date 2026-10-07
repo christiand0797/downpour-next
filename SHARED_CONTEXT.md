@@ -6,6 +6,15 @@
 **Local path:** `C:\Users\purpl\Desktop\downpour v2`  
 **Branch:** `main`  
 
+## 2026-10-07 checkpoint: DN-008 phase 1 quarantine and restore ENABLED (claude-parity-audit)
+
+- Owner approved "build and switch on everything" phase by phase (SECURITY.md). Phase 1 is live: Remediation route quarantines a user-picked file and restores it, each with a preview dialog and a one-time 60 s consent token.
+- Service: `QuarantineVault` (encrypted store in `state\quarantine`), `QuarantineExecutor` (handle-based, deny-list on final path, write-ahead journal, verify before delete, startup recovery), `QuarantineActionPipeWorker` + `QuarantineActionHandler` (pipe `Downpour.QuarantineActions.v1`), `ParentDesktopCallerVerifier`, `ActionConsentStore`, `ActionAuditLog` (`statection-audit.v1.jsonl`, denials included).
+- Switch: sensor setting `quarantineActions` (default on) in Settings > Detection data.
+- Caller rule: only the `Downpour.Desktop.exe` that started the service (parent PID + start time + install path). A service started any other way refuses all quarantine requests; restart the desktop if it reports "not started by the Downpour desktop".
+- Verified: `dotnet test Downpour.slnx` 565/565, 0 warnings; live denial from a shell; live success via a stand-in parent launcher.
+- Next: DN-026 YARA (approved), then DN-008 phase 2 (process termination). Old `QuarantineManager`/`ActionBrokerPipeWorker` remain prepare-only and are superseded for files.
+
 ## 2026-10-07 checkpoint: DN-009 VPN Route Slice (antigravity-worker)
 
 **DN-009 VPN Route Slice completed:**

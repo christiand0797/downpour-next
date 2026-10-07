@@ -84,6 +84,11 @@
                         <StackPanel Spacing="2"><TextBlock Text="Sample documents for ransomware checks" FontWeight="SemiBold" /><TextBlock Text="The Ransomware screen reads up to 64 KB of documents in protected folders (Documents, Desktop and similar) to detect encrypted files. Only an entropy score is kept. When off, it checks file names and extensions only." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" /></StackPanel>
                         <ToggleSwitch x:Name="RansomwareSamplingToggle" Grid.Column="1" IsOn="True" OnContent="On" OffContent="Off" />
                     </Grid>
+                    <Grid ColumnSpacing="16">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                        <StackPanel Spacing="2"><TextBlock Text="Allow quarantine actions" FontWeight="SemiBold" /><TextBlock Text="Lets the Remediation page quarantine and restore files you choose. Each action still asks for your confirmation and is recorded. When off, the service refuses every quarantine and restore request." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" /></StackPanel>
+                        <ToggleSwitch x:Name="QuarantineActionsToggle" Grid.Column="1" IsOn="True" IsEnabled="False" OnContent="On" OffContent="Off" />
+                    </Grid>
                     <TextBlock x:Name="SensorSettingsState" FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" TextWrapping="Wrap" />
                 </StackPanel>
             </Border>

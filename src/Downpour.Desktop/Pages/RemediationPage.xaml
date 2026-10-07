@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page x:Class="Downpour_Desktop.Pages.RemediationPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      mc:Ignorable="d">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Padding="28,24,28,36" Spacing="18" MaxWidth="1120" HorizontalAlignment="Left">
+            <StackPanel Spacing="5">
+                <TextBlock Text="TRIAGE  /  RESPONSE ACTIONS" Style="{StaticResource SubtitleTextBlockStyle}" />
+                <TextBlock Text="Remediation" Style="{StaticResource TitleTextBlockStyle}" />
+                <TextBlock Text="Quarantine a file you choose, or restore one you quarantined earlier. The file is encrypted into Downpour's protected store and removed only after the encrypted copy verifies. Every action needs your confirmation and is recorded." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+            </StackPanel>
+            <Border Padding="14" CornerRadius="10" Background="#A80B1524" BorderBrush="#3D46C5D8" BorderThickness="1">
+                <StackPanel Spacing="6">
+                    <TextBlock Text="Quarantine and restore only" FontWeight="SemiBold" Foreground="#FFFFC76A" />
+                    <TextBlock Text="Process termination, firewall blocks, USB blocks, and host isolation are not available yet. Windows system folders, security software, and Downpour's own files are protected. Files over 256 MiB, links, and files with several hard links are refused. Until releases are signed, the service accepts actions only from the desktop that started it, identified by process and path rather than a signature." FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+            <StackPanel Orientation="Horizontal" Spacing="12">
+                <Button x:Name="QuarantineButton" Content="Quarantine a file…" Click="Quarantine_Click" Style="{StaticResource AccentButtonStyle}" />
+                <Button x:Name="RefreshButton" Content="Refresh" Click="Refresh_Click" />
+                <ProgressRing x:Name="Busy" Width="22" Height="22" IsActive="False" VerticalAlignment="Center" />
+                <TextBlock x:Name="StatusText" Text="Loading…" VerticalAlignment="Center" TextWrapping="Wrap" />
+            </StackPanel>
+            <InfoBar x:Name="RecoveryBar" Severity="Warning" IsOpen="False" IsClosable="True" Title="Interrupted actions were resolved" />
+            <TextBlock Text="Quarantined files" Style="{StaticResource SubtitleTextBlockStyle}" />
+            <TextBlock x:Name="EmptyText" Text="Nothing is quarantined." Foreground="{ThemeResource TextFillColorSecondaryBrush}" Visibility="Collapsed" />
+            <StackPanel x:Name="ItemsPanel" Spacing="10" />
+        </StackPanel>
+    </ScrollViewer>
+</Page>

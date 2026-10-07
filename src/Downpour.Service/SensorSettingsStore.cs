@@ -5,7 +5,7 @@ namespace Downpour.Service;
 
 /// <summary>
 /// Persisted service-side sensor settings in the ACL-protected state folder. Defaults follow the owner's decisions in
-/// SECURITY.md: script-block analysis and automatic intel lookups are on (lookups stay inert until a key is configured).
+/// SECURITY.md: script-block analysis, automatic intel lookups (inert until a key is configured), and confirmed quarantine actions are on.
 /// </summary>
 public sealed class SensorSettingsStore(string path)
 {
@@ -50,6 +50,7 @@ public sealed class SensorSettingsStore(string path)
             updated = request.Key switch
             {
                 SensorSettingKeys.ScriptBlockAnalysis => current with { ScriptBlockAnalysis = request.Value },
+                SensorSettingKeys.QuarantineActions => current with { QuarantineActions = request.Value },
                 _ => current with { IntelLookups = request.Value },
             };
             if (updated == current) return new(1, request.RequestId, true, "unchanged", current);

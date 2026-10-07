@@ -464,6 +464,8 @@ public sealed partial class MainWindow : Window
             NavFrame.Navigate(typeof(MemoryPage));
         else if (capability.RouteId.Equals("vpn", StringComparison.OrdinalIgnoreCase))
             NavFrame.Navigate(typeof(VpnPage));
+        else if (capability.RouteId.Equals("remediation", StringComparison.OrdinalIgnoreCase))
+            NavFrame.Navigate(typeof(RemediationPage));
         else if (capability.RouteId.Equals("threats", StringComparison.OrdinalIgnoreCase))
             NavFrame.Navigate(typeof(TriagePage), TriagePage.ThreatsMode);
         else if (capability.RouteId.Equals("possible-threats", StringComparison.OrdinalIgnoreCase))
@@ -532,6 +534,7 @@ public sealed partial class MainWindow : Window
         if (routeId is null && args.Content is RansomwarePage) routeId = "ransomware";
         if (routeId is null && args.Content is MemoryPage) routeId = "memory";
         if (routeId is null && args.Content is VpnPage) routeId = "vpn";
+        if (routeId is null && args.Content is RemediationPage) routeId = "remediation";
         if (routeId is null && args.Content is TriagePage) routeId = args.Parameter as string == TriagePage.PossibleMode ? "possible-threats" : "threats";
 
         if (routeId is null || !_routeItems.TryGetValue(routeId, out var item)) return;

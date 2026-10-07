@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-06",
+  "updatedAt": "2026-10-07",
   "tasks": [
     {
       "id": "DN-001",
@@ -201,7 +201,7 @@
         "Denial, timeout, race, and recovery tests",
         "Feature switches default off"
       ],
-      "notes": "Progress: Added ActionBrokerPipeWorker and DriverPackageBrokerPipeWorker pipe workers. QuarantineManager prepares quarantine intent (validates path, size, hash, records intent in journal) but execution is rejected (RejectedNotImplemented) pending security review. DriverPackageBroker validates driver package requests against policy and records intent but execution is rejected (RejectedNotImplemented). Added QuarantineManager and DriverPackageBroker to DI. Added InvestigationTimelinePage with correlation drill-down from AlertsPage (using Button instead of SelectionChanged to avoid XAML compiler crash WMC9999). CorrelationFindingRow added to display findings in ListView. Remaining: authenticated consent/UI, actual quarantine/restore design and implementation, timeout/cancellation/recovery verifier, feature switch and operation history UI, and broader denial/timeout/race/recovery tests. Do not claim quarantine execution exists or enable any mutating action. See docs/ACTION_BROKER.md. | Owner decision: write the design and threat model for review first; enable nothing. | 2026-10-07 claude-parity-audit: docs/ACTION_BROKER_THREAT_MODEL.md written for owner review (abuse cases, caller authentication, write-ahead quarantine and restore protocol, crash verifier, phased enablement, required tests). Awaiting decisions D1-D4. Nothing enabled."
+      "notes": "Progress: Added ActionBrokerPipeWorker and DriverPackageBrokerPipeWorker pipe workers. QuarantineManager prepares quarantine intent (validates path, size, hash, records intent in journal) but execution is rejected (RejectedNotImplemented) pending security review. DriverPackageBroker validates driver package requests against policy and records intent but execution is rejected (RejectedNotImplemented). Added QuarantineManager and DriverPackageBroker to DI. Added InvestigationTimelinePage with correlation drill-down from AlertsPage (using Button instead of SelectionChanged to avoid XAML compiler crash WMC9999). CorrelationFindingRow added to display findings in ListView. Remaining: authenticated consent/UI, actual quarantine/restore design and implementation, timeout/cancellation/recovery verifier, feature switch and operation history UI, and broader denial/timeout/race/recovery tests. Do not claim quarantine execution exists or enable any mutating action. See docs/ACTION_BROKER.md. | Owner decision: write the design and threat model for review first; enable nothing. | 2026-10-07 claude-parity-audit: docs/ACTION_BROKER_THREAT_MODEL.md written for owner review (abuse cases, caller authentication, write-ahead quarantine and restore protocol, crash verifier, phased enablement, required tests). Awaiting decisions D1-D4. Nothing enabled. | 2026-10-07 owner approved build-and-enable phase by phase. PHASE 1 (quarantine/restore) IMPLEMENTED AND ON: QuarantineVault (AES-256-GCM 64 KiB chunks, AAD objectId|index|final, DPAPI key), QuarantineExecutor (handle-based open with FILE_FLAG_OPEN_REPARSE_POINT, rejects reparse/dirs/hard links/>256 MiB/2 GiB quota, deny-list on final path, write-ahead journal Prepared->ContentStaged->Quarantined, verify-decrypt before POSIX delete by handle; restore to temp, hash verify, move without overwrite; startup recovery), QuarantineActionPipeWorker (Downpour.QuarantineActions.v1, strict JSON, ParentDesktopCallerVerifier = service's parent Downpour.Desktop.exe started before service + install-path match, 60 s single-use consent token bound to target+hash, ActionAuditLog state/action-audit.v1.jsonl incl. denials), sensor setting quarantineActions (default on), Remediation page (picker, preview dialog, restore / restore as). Tests: QuarantineExecutorTests + QuarantineActionTests (565/565 total). Live smoke: service started from a shell -> denied-caller (audited); stand-in Downpour.Desktop.exe parent -> list/preview/quarantine/restore succeeded. Remaining: alert-driven quarantine from Threats, 7-day retention/purge UI, Authenticode caller check after DN-010; phases 2-5 (process kill, firewall block + DOWNPOUR_* cleanup, USB block, isolation with auto-expiry)."
     },
     {
       "id": "DN-009",
@@ -544,7 +544,7 @@
     {
       "id": "DN-026",
       "title": "YARA scanning",
-      "status": "blocked",
+      "status": "ready",
       "priority": "medium",
       "acceptance": [
         "Dependency reviewed and version-pinned (e.g. libyara.NET or YARA-X binding)",
@@ -552,7 +552,7 @@
         "Scanner route recursive scope with bounds, cancellation, and progress",
         "No auto-quarantine"
       ],
-      "notes": "Scanner route parity. | Owner decision: evaluate and propose before adding a dependency. | Claimed by claude-parity-audit for the evaluation write-up. | 2026-10-07 evaluation written: docs/YARA_EVALUATION.md recommends YARA-X C API via own P/Invoke, DLL built in CI from a pinned tag, scanning in an isolated helper process. Awaiting owner approval of the native DLL and the helper-process design.",
+      "notes": "Scanner route parity. | Owner decision: evaluate and propose before adding a dependency. | Claimed by claude-parity-audit for the evaluation write-up. | 2026-10-07 evaluation written: docs/YARA_EVALUATION.md recommends YARA-X C API via own P/Invoke, DLL built in CI from a pinned tag, scanning in an isolated helper process. Awaiting owner approval of the native DLL and the helper-process design. | 2026-10-07 owner APPROVED option A (YARA-X C API, own P/Invoke, CI-built pinned DLL with hash pin, isolated scanner helper). Ready to implement.",
       "files": []
     },
     {

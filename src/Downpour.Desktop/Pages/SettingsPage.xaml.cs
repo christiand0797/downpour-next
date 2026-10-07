@@ -29,6 +29,7 @@ public sealed partial class SettingsPage : Page
         RansomwareSamplingToggle.Toggled += (_, _) => Save(() => AppPreferences.RansomwareContentSampling = RansomwareSamplingToggle.IsOn);
         ScriptBlockToggle.Toggled += async (_, _) => await SetSensorSettingAsync(Downpour.Contracts.SensorSettingKeys.ScriptBlockAnalysis, ScriptBlockToggle.IsOn);
         IntelLookupsToggle.Toggled += async (_, _) => await SetSensorSettingAsync(Downpour.Contracts.SensorSettingKeys.IntelLookups, IntelLookupsToggle.IsOn);
+        QuarantineActionsToggle.Toggled += async (_, _) => await SetSensorSettingAsync(Downpour.Contracts.SensorSettingKeys.QuarantineActions, QuarantineActionsToggle.IsOn);
     }
 
     private async Task LoadSensorSettingsAsync()
@@ -48,6 +49,8 @@ public sealed partial class SettingsPage : Page
                 ScriptBlockToggle.IsEnabled = true;
                 IntelLookupsToggle.IsOn = settings.IntelLookups;
                 IntelLookupsToggle.IsEnabled = true;
+                QuarantineActionsToggle.IsOn = settings.QuarantineActions;
+                QuarantineActionsToggle.IsEnabled = true;
                 ShowConfiguredKeys(settings.IntelServicesConfigured ?? []);
                 SensorSettingsState.Text = "";
             }
@@ -55,6 +58,7 @@ public sealed partial class SettingsPage : Page
             {
                 ScriptBlockToggle.IsEnabled = false;
                 IntelLookupsToggle.IsEnabled = false;
+                QuarantineActionsToggle.IsEnabled = false;
                 SensorSettingsState.Text = "The sensor service is not reachable, so its settings cannot be shown or changed.";
             }
         }

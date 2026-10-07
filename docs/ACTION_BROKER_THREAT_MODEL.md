@@ -1,6 +1,8 @@
 # Action broker: threat model and quarantine design (DN-008, for owner review)
 
-**Status:** design for review. Nothing in this document is enabled. The owner decided "design first" (SECURITY.md, 2026-10-07). This builds on `ACTION_BROKER.md` (contracts, catalog, feature switches, validator) and `ACTION_JOURNAL.md` (journal). It covers what those leave open: the threats, the caller authentication, the crash-safe quarantine and restore protocol, the order in which actions get enabled, and the tests that must pass before each one.
+**Status (2026-10-07):** the owner approved building and enabling actions phase by phase. Phase 1 (quarantine and restore) is implemented and on: see `QuarantineExecutor`, `QuarantineVault`, `QuarantineActionPipeWorker`. Deviations from the original text: caller verification uses parent-process identity and install path until signing exists (D2); the restore copy is kept until the user deletes it (no 7-day purge yet); a quarantine-actions switch in Settings defaults on per the owner's decision. Phases 2–5 are not built.
+
+**Original status:** design for review. The owner decided "design first" (SECURITY.md, 2026-10-07). This builds on `ACTION_BROKER.md` (contracts, catalog, feature switches, validator) and `ACTION_JOURNAL.md` (journal). It covers what those leave open: the threats, the caller authentication, the crash-safe quarantine and restore protocol, the order in which actions get enabled, and the tests that must pass before each one.
 
 ## 1. What we are protecting and from whom
 
