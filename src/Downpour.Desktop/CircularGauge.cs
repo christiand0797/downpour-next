@@ -83,7 +83,8 @@ public sealed class CircularGauge : UserControl
     public void SetMetric(double? normalizedPercent, string? displayValue)
     {
         double? nextValue = normalizedPercent is { } measured && double.IsFinite(measured) ? Math.Clamp(measured, 0, 100) : null;
-        var nextDisplay = nextValue is null || string.IsNullOrWhiteSpace(displayValue) ? "—" : displayValue;
+        // A reading without a known maximum (e.g. GPU memory in use) shows its text with an empty ring.
+        var nextDisplay = string.IsNullOrWhiteSpace(displayValue) ? "—" : displayValue;
         if (_value == nextValue && _valueText.Text == nextDisplay) return;
         _value = nextValue;
         _displayValue = nextDisplay;
