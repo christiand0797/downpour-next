@@ -192,6 +192,32 @@ public sealed class ActionPolicyValidator
                 rollbackSteps.Add("Re-create the firewall block rule if network traffic remains suspicious");
                 break;
 
+            case ActionKinds.BlockUsbDevice:
+                effects.Add($"Disable Windows PnP device node for USB device '{request.ObjectId}'");
+                effects.Add("Add device identifier to Downpour persistent blocked device store");
+                effects.Add("Prevent device from functioning until explicitly unblocked by an operator");
+                effects.Add("Record device blocking event in the append-only action audit log");
+                risks.Add("The device will immediately stop responding and become unusable");
+                risks.Add("Any pending I/O or unsaved data transfers to the device will fail");
+                rollbackSteps.Add("Unblock the device via Downpour USB Device management page or re-enable the device in Device Manager");
+                break;
+
+            case ActionKinds.UnblockUsbDevice:
+                effects.Add($"Re-enable Windows PnP device node for USB device '{request.ObjectId}'");
+                effects.Add("Remove device identifier from Downpour persistent blocked device store");
+                effects.Add("Allow Windows to initialize and communicate with the device");
+                effects.Add("Record device unblocking event in the append-only action audit log");
+                risks.Add("If the device is malicious (e.g. BadUSB/Rubber Ducky/infected media), it may execute unauthorized payloads upon activation");
+                rollbackSteps.Add("Block the USB device again if unauthorized activity or malicious hardware is observed");
+                break;
+
+            case ActionKinds.SetUsbStorage:
+                effects.Add("Configure Windows USBSTOR storage driver start state");
+                effects.Add("Record USB storage policy update in the append-only action audit log");
+                risks.Add("Disabling USB storage prevents all standard USB flash drives and external hard drives from mounting");
+                rollbackSteps.Add("Re-enable the USBSTOR service via Downpour USB settings or Windows Services");
+                break;
+
             default:
                 effects.Add($"Execute action '{request.ActionKind}' on '{request.ObjectId}'");
                 risks.Add("Action-specific risks not yet documented");

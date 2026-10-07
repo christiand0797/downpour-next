@@ -98,8 +98,10 @@ public static class ActionKinds
     public const string TerminateProcess = "TerminateProcess";
     public const string BlockRemoteIp = "BlockRemoteIp";
     public const string RemoveFirewallRule = "RemoveFirewallRule";
+    public const string BlockUsbDevice = "BlockUsbDevice";
+    public const string UnblockUsbDevice = "UnblockUsbDevice";
+    public const string SetUsbStorage = "SetUsbStorage";
     // Future action kinds to be added in later phases:
-    // public const string BlockUsbDevice = "BlockUsbDevice";
     // public const string IsolateHost = "IsolateHost";
 }
 

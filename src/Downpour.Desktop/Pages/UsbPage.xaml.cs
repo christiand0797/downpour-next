@@ -12,7 +12,9 @@ namespace Downpour_Desktop.Pages;
 public sealed partial class UsbPage : Page
 {
     private readonly UsbInventoryClient _client = new();
+    private readonly UsbActionClient _actionClient = new();
     private bool _requestInFlight;
+    private bool _usbStorageEnabled = true;
 
     public ObservableCollection<UsbFindingRow> Findings { get; } = [];
     public ObservableCollection<UsbDeviceRow> ConnectedDevices { get; } = [];
@@ -33,6 +35,7 @@ public sealed partial class UsbPage : Page
         if (_requestInFlight) return;
         _requestInFlight = true;
         RefreshButton.IsEnabled = false;
+        ToggleUsbStorageButton.IsEnabled = false;
         StatusHeadline.Text = "Checking USB device posture";
 
         try
@@ -59,6 +62,9 @@ public sealed partial class UsbPage : Page
             }
 
             App.MarkSensorServiceConnected();
+
+            _usbStorageEnabled = snapshot.UsbStorageServiceEnabled;
+            ToggleUsbStorageButton.Content = _usbStorageEnabled ? "Disable USB Mass Storage" : "Enable USB Mass Storage";
 
             foreach (var finding in snapshot.Findings.OrderBy(f => SeverityRank(f.Severity)))
                 Findings.Add(new UsbFindingRow(finding));
@@ -88,7 +94,161 @@ public sealed partial class UsbPage : Page
         {
             _requestInFlight = false;
             RefreshButton.IsEnabled = true;
+            ToggleUsbStorageButton.IsEnabled = true;
         }
+    }
+
+    private async void ToggleUsbStorage_Click(object sender, RoutedEventArgs e)
+    {
+        var targetState = !_usbStorageEnabled;
+        var actionWord = targetState ? "enable" : "disable";
+        ToggleUsbStorageButton.IsEnabled = false;
+
+        try
+        {
+            var preview = await _actionClient.PreviewSetUsbStorageAsync(targetState, $"User requested to {actionWord} USB mass storage driver.");
+            if (preview is null)
+            {
+                await App.EnsureSensorServiceAsync();
+                preview = await _actionClient.PreviewSetUsbStorageAsync(targetState, $"User requested to {actionWord} USB mass storage driver.");
+            }
+
+            if (preview is null)
+            {
+                await ShowDialogAsync("Service Unreachable", "The USB action service endpoint is not reachable.");
+                return;
+            }
+
+            if (!preview.Accepted || preview.Preview is null)
+            {
+                await ShowDialogAsync("Action Denied", preview.Message);
+                return;
+            }
+
+            var p = preview.Preview;
+            var details = $"Operation: {(targetState ? "Enable USB Mass Storage (USBSTOR)" : "Disable USB Mass Storage (USBSTOR)")}\n\n" +
+                          $"Expected Effects:\n• {string.Join("\n• ", p.ExpectedEffects)}\n\n" +
+                          $"Risks:\n• {string.Join("\n• ", p.Risks)}\n\n" +
+                          "Consent token minted (valid for 60 seconds). Are you sure you want to proceed?";
+
+            if (await ConfirmAsync("Confirm USB Storage Policy Change", details, targetState ? "Enable" : "Disable") && p.ConsentToken is not null)
+            {
+                var outcome = await _actionClient.SetUsbStorageAsync(targetState, p.ConsentToken);
+                await ShowDialogAsync(outcome?.Accepted == true ? "USB Storage Updated" : "Update Failed", outcome?.Message ?? "No response received.");
+                await RefreshAsync();
+            }
+        }
+        finally
+        {
+            ToggleUsbStorageButton.IsEnabled = true;
+        }
+    }
+
+    private async void BlockDrive_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: UsbDeviceRow row }) return;
+
+        var devId = row.DriveLetter;
+        var friendlyName = string.IsNullOrWhiteSpace(row.VolumeLabel) ? $"Removable Drive ({row.DriveLetter})" : row.VolumeLabel;
+
+        var preview = await _actionClient.PreviewBlockDeviceAsync(devId, friendlyName, "Operator blocked drive instance from USB posture page.");
+        if (preview is null)
+        {
+            await App.EnsureSensorServiceAsync();
+            preview = await _actionClient.PreviewBlockDeviceAsync(devId, friendlyName, "Operator blocked drive instance from USB posture page.");
+        }
+
+        if (preview is null)
+        {
+            await ShowDialogAsync("Service Unreachable", "The USB action service endpoint is not reachable.");
+            return;
+        }
+
+        if (!preview.Accepted || preview.Preview is null)
+        {
+            await ShowDialogAsync("Block Denied", preview.Message);
+            return;
+        }
+
+        var p = preview.Preview;
+        var details = $"Target: {p.DeviceId} ({p.FriendlyName})\n\n" +
+                      $"Expected Effects:\n• {string.Join("\n• ", p.ExpectedEffects)}\n\n" +
+                      $"Risks:\n• {string.Join("\n• ", p.Risks)}\n\n" +
+                      "Consent token minted (valid for 60 seconds). Are you sure you want to block and disable this device?";
+
+        if (await ConfirmAsync("Confirm USB Device Block", details, "Block Device") && p.ConsentToken is not null)
+        {
+            var outcome = await _actionClient.BlockDeviceAsync(p.DeviceId!, p.ConsentToken, p.FriendlyName, "Operator confirmed block.");
+            await ShowDialogAsync(outcome?.Accepted == true ? "Device Blocked" : "Block Failed", outcome?.Message ?? "No response received.");
+            await RefreshAsync();
+        }
+    }
+
+    private async void BlockHistoryDevice_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: UsbHistoryRow row }) return;
+
+        var devId = row.DeviceId;
+        var friendlyName = row.FriendlyName;
+
+        var preview = await _actionClient.PreviewBlockDeviceAsync(devId, friendlyName, "Operator blocked USB device instance from history.");
+        if (preview is null)
+        {
+            await App.EnsureSensorServiceAsync();
+            preview = await _actionClient.PreviewBlockDeviceAsync(devId, friendlyName, "Operator blocked USB device instance from history.");
+        }
+
+        if (preview is null)
+        {
+            await ShowDialogAsync("Service Unreachable", "The USB action service endpoint is not reachable.");
+            return;
+        }
+
+        if (!preview.Accepted || preview.Preview is null)
+        {
+            await ShowDialogAsync("Block Denied", preview.Message);
+            return;
+        }
+
+        var p = preview.Preview;
+        var details = $"Target Device ID: {p.DeviceId}\n" +
+                      $"Friendly Name: {p.FriendlyName}\n\n" +
+                      $"Expected Effects:\n• {string.Join("\n• ", p.ExpectedEffects)}\n\n" +
+                      $"Risks:\n• {string.Join("\n• ", p.Risks)}\n\n" +
+                      "Consent token minted (valid for 60 seconds). Are you sure you want to block and disable this device?";
+
+        if (await ConfirmAsync("Confirm USB Device Block", details, "Block Device") && p.ConsentToken is not null)
+        {
+            var outcome = await _actionClient.BlockDeviceAsync(p.DeviceId!, p.ConsentToken, p.FriendlyName, "Operator confirmed block.");
+            await ShowDialogAsync(outcome?.Accepted == true ? "Device Blocked" : "Block Failed", outcome?.Message ?? "No response received.");
+            await RefreshAsync();
+        }
+    }
+
+    private async Task<bool> ConfirmAsync(string title, string body, string primaryButton)
+    {
+        var dialog = new ContentDialog
+        {
+            Title = title,
+            Content = new ScrollViewer { Content = new TextBlock { Text = body, TextWrapping = TextWrapping.Wrap, IsTextSelectionEnabled = true }, MaxHeight = 360 },
+            PrimaryButtonText = primaryButton,
+            CloseButtonText = "Cancel",
+            DefaultButton = ContentDialogButton.Close,
+            XamlRoot = XamlRoot,
+        };
+        return await dialog.ShowAsync() == ContentDialogResult.Primary;
+    }
+
+    private async Task ShowDialogAsync(string title, string body)
+    {
+        var dialog = new ContentDialog
+        {
+            Title = title,
+            Content = new TextBlock { Text = body, TextWrapping = TextWrapping.Wrap, IsTextSelectionEnabled = true },
+            CloseButtonText = "OK",
+            XamlRoot = XamlRoot,
+        };
+        await dialog.ShowAsync();
     }
 
     private static int SeverityRank(string severity) => severity switch
@@ -148,6 +308,7 @@ public sealed class UsbDeviceRow(UsbConnectedDevice dev)
 
 public sealed class UsbHistoryRow(UsbDeviceHistoryEntry entry)
 {
+    public string DeviceId => entry.DeviceId;
     public string FriendlyName => string.IsNullOrWhiteSpace(entry.FriendlyName) ? entry.DeviceId : entry.FriendlyName;
     public string SerialNumber => entry.SerialNumber;
     public string DeviceDetails => string.IsNullOrWhiteSpace(entry.Vendor) ? entry.HardwareId : $"{entry.Vendor} / {entry.Product} (HW: {entry.HardwareId})";

@@ -1,5 +1,17 @@
 # Downpour Next TODO
 
+## 2026-10-07 checkpoint: DN-008 Phase 4 Reversible USB Device Instance Block & USBSTOR Toggle (antigravity-worker)
+
+Completed and verified (Debug: 0 warnings/errors; 773/773 tests pass):
+- Contracts in `src/Downpour.Contracts/UsbActionContracts.cs`: `UsbActionOperations` (`preview-block-device`, `block-device`, `preview-unblock-device`, `unblock-device`, `preview-set-usbstorage`, `set-usbstorage`), `UsbActionRequest`, `UsbActionPreview`, `UsbActionResponse`.
+- Sensor settings: added `UsbActions` (default true) to `SensorSettingsSnapshot`, `SensorSettingKeys`, and writable list in `SensorSettingsStore`.
+- Action catalog & policy: enabled `ActionKinds.BlockUsbDevice`, `ActionKinds.UnblockUsbDevice`, and `ActionKinds.SetUsbStorage` in `ActionBroker.cs`, `ActionCatalog.cs`, and `ActionPolicyValidator.cs`.
+- Service executor in `src/Downpour.Service/UsbActionExecutor.cs`: immutable deny-list protecting root hubs (`ROOT_HUB`), PCI/ACPI buses (`PCI\`, `ACPI\`, `SCSI\`, `IDE\`, `STORAGE\`, `SWD\`), Human Interface Devices (`HID\`, keyboards, mice, touchpads, styluses), and OS boot/system volume (`C:`); `IUsbDeviceBackend` abstraction (`WindowsUsbDeviceBackend` leveraging `cfgmgr32.dll` `CM_Locate_DevNodeW`, `CM_Disable_DevNode`, `CM_Enable_DevNode`, and `Registry` for `USBSTOR\Start`; `InMemoryUsbDeviceBackend` for tests); durable atomic blocked device store in `state/blocked-usb-devices.v1.json`; mass storage driver toggle.
+- Service IPC worker in `src/Downpour.Service/UsbActionPipeWorker.cs`: `Downpour.UsbActions.v1` named pipe, `ParentDesktopCallerVerifier` caller authentication, 60s single-use consent tokens, audited logging of previews/denials/executions to `state/action-audit.v1.jsonl`.
+- Core client in `src/Downpour.Core/UsbActionClient.cs`: preview/execute for block device, unblock device, and USBSTOR mass storage toggle.
+- Desktop UI in `UsbPage.xaml/.cs` ("Toggle Mass Storage Driver" button, row "Block Drive…" button, history row "Block Device…" button) and `RemediationPage.xaml/.cs` ("Block USB device…" button, Phase 1-4 banner).
+- Unit tests in `tests/Downpour.Tests/UsbActionTests.cs` (17 deny-list test cases including root hubs, keyboards, mice, touchpads, internal buses; action catalog & feature switch verification; policy validator previews; caller rejection; feature switch disabled check; preview token minting; block & unblock cycle with backend verification & audit log assertions; USBSTOR toggle; strict request parser bounds).
+
 ## 2026-10-07 checkpoint: DN-008 Phase 3 Firewall Actions Broker & Legacy Cleanup (antigravity-worker)
 
 Completed and verified (Debug: 0 warnings/errors; 734/734 tests pass):

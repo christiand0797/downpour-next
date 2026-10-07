@@ -95,8 +95,8 @@
       "role": "primary",
       "taskId": "DN-008",
       "status": "active",
-      "heartbeatUtc": "2026-10-07T20:00:00Z",
-      "notes": "Completed DN-008 Phase 3 (Firewall Actions Broker with remote IP deny-list, inbound/outbound DownpourNext_ block rules with expiration metadata, legacy downpour rule cleanup, expired rule purging, 60s consent tokens, caller verification, audit logging, FirewallPage & RemediationPage UI, 734/734 tests pass). Next: DN-008 Phase 4 (USB device block) or Phase 5 (host emergency isolation with auto-expiry)."
+      "heartbeatUtc": "2026-10-07T21:00:00Z",
+      "notes": "Completed DN-008 Phase 4 (Reversible USB Device Instance Block & USBSTOR mass storage toggle with immutable deny-list protecting root hubs, controllers, keyboards, mice, touchpads, and boot disk; PnP CM_Locate/Disable/Enable devnode backend; atomic durable blocked list; 60s consent tokens; caller verification; audit logging; UsbPage & RemediationPage UI; 773/773 tests pass). Next: DN-008 Phase 5 (host emergency isolation with auto-expiry)."
     },
     {
       "id": "claude-parity-audit",

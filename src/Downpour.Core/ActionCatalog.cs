@@ -77,7 +77,43 @@ public static class DefaultActionCatalog
                 TimeoutSeconds: 30,
                 RequiredPermission: "firewall-rule-delete",
                 RequiredParameters: new[] { "ruleName" },
-                AllowedObjectIdPatterns: new[] { "rule-", "obj-" })
+                AllowedObjectIdPatterns: new[] { "rule-", "obj-" }),
+
+            [ActionKinds.BlockUsbDevice] = new ActionCatalogEntry(
+                ActionKind: ActionKinds.BlockUsbDevice,
+                DisplayName: "Block USB Device",
+                Description: "Disable a connected or recognized USB device instance node via Windows PnP and persist it in the blocked device registry.",
+                Category: "Device Control",
+                EnabledByDefault: false,
+                RequiresElevation: true,
+                TimeoutSeconds: 30,
+                RequiredPermission: "device-manage",
+                RequiredParameters: new[] { "deviceId" },
+                AllowedObjectIdPatterns: new[] { "usb-", "obj-" }),
+
+            [ActionKinds.UnblockUsbDevice] = new ActionCatalogEntry(
+                ActionKind: ActionKinds.UnblockUsbDevice,
+                DisplayName: "Unblock USB Device",
+                Description: "Re-enable a blocked USB device instance node via Windows PnP and remove it from the blocked device registry.",
+                Category: "Device Control",
+                EnabledByDefault: false,
+                RequiresElevation: true,
+                TimeoutSeconds: 30,
+                RequiredPermission: "device-manage",
+                RequiredParameters: new[] { "deviceId" },
+                AllowedObjectIdPatterns: new[] { "usb-", "obj-" }),
+
+            [ActionKinds.SetUsbStorage] = new ActionCatalogEntry(
+                ActionKind: ActionKinds.SetUsbStorage,
+                DisplayName: "Configure USB Mass Storage Driver",
+                Description: "Enable or disable the Windows USBSTOR service to control whether external USB mass storage devices can be mounted.",
+                Category: "Device Control",
+                EnabledByDefault: false,
+                RequiresElevation: true,
+                TimeoutSeconds: 30,
+                RequiredPermission: "service-configure",
+                RequiredParameters: new[] { "enabled" },
+                AllowedObjectIdPatterns: new[] { "usbstor-", "obj-" })
         };
 
         return new ActionCatalogSnapshot(
@@ -130,6 +166,30 @@ public static class DefaultActionCatalog
                 FeatureId: ActionKinds.RemoveFirewallRule,
                 DisplayName: "Firewall Rule Removal",
                 Description: "Allow removing Downpour and legacy Downpour v29 firewall rules.",
+                Enabled: false,
+                RequiredPolicyVersion: CurrentPolicyVersion,
+                EnabledAtUtc: null),
+
+            [ActionKinds.BlockUsbDevice] = new FeatureSwitch(
+                FeatureId: ActionKinds.BlockUsbDevice,
+                DisplayName: "USB Device Block",
+                Description: "Allow blocking suspicious USB devices via Windows PnP.",
+                Enabled: false,
+                RequiredPolicyVersion: CurrentPolicyVersion,
+                EnabledAtUtc: null),
+
+            [ActionKinds.UnblockUsbDevice] = new FeatureSwitch(
+                FeatureId: ActionKinds.UnblockUsbDevice,
+                DisplayName: "USB Device Unblock",
+                Description: "Allow unblocking previously blocked USB devices.",
+                Enabled: false,
+                RequiredPolicyVersion: CurrentPolicyVersion,
+                EnabledAtUtc: null),
+
+            [ActionKinds.SetUsbStorage] = new FeatureSwitch(
+                FeatureId: ActionKinds.SetUsbStorage,
+                DisplayName: "USB Mass Storage Toggle",
+                Description: "Allow enabling or disabling the Windows USBSTOR storage driver.",
                 Enabled: false,
                 RequiredPolicyVersion: CurrentPolicyVersion,
                 EnabledAtUtc: null)

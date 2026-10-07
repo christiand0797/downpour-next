@@ -41,6 +41,9 @@ builder.Services.AddSingleton<ProcessTerminationExecutor>();
 builder.Services.AddSingleton<ProcessTerminationActionHandler>();
 builder.Services.AddSingleton<FirewallActionExecutor>();
 builder.Services.AddSingleton<FirewallActionHandler>();
+builder.Services.AddSingleton<IUsbDeviceBackend, WindowsUsbDeviceBackend>();
+builder.Services.AddSingleton<UsbActionExecutor>();
+builder.Services.AddSingleton<UsbActionHandler>();
 builder.Services.AddSingleton<IAuthenticodeVerifier, AuthenticodeVerifier>();
 builder.Services.AddSingleton<IYaraScannerBackend>(provider => new YaraScannerHost(provider.GetRequiredService<ILogger<YaraScannerHost>>()));
 builder.Services.AddSingleton(provider => new YaraScanCoordinator(provider.GetRequiredService<IYaraScannerBackend>(),
@@ -76,6 +79,7 @@ builder.Services.AddHostedService<IntelPipeWorker>();
 builder.Services.AddHostedService<QuarantineActionPipeWorker>();
 builder.Services.AddHostedService<ProcessTerminationActionPipeWorker>();
 builder.Services.AddHostedService<FirewallActionPipeWorker>();
+builder.Services.AddHostedService<UsbActionPipeWorker>();
 builder.Services.AddHostedService<YaraScanPipeWorker>();
 
 var host = builder.Build();

@@ -39,9 +39,11 @@ public sealed partial class RemediationPage : Page
         SetBusy(false, "");
         if (response is null)
         {
-            StatusText.Text = "The sensor service is not reachable. Quarantine needs the service that this desktop started.";
+            StatusText.Text = "The sensor service is not reachable. Remediation needs the service that this desktop started.";
             QuarantineButton.IsEnabled = false;
             TerminateProcessButton.IsEnabled = false;
+            BlockIpButton.IsEnabled = false;
+            BlockUsbDeviceButton.IsEnabled = false;
             return;
         }
         if (!response.Accepted)
@@ -50,12 +52,14 @@ public sealed partial class RemediationPage : Page
             QuarantineButton.IsEnabled = false;
             TerminateProcessButton.IsEnabled = false;
             BlockIpButton.IsEnabled = false;
+            BlockUsbDeviceButton.IsEnabled = false;
             return;
         }
         QuarantineButton.IsEnabled = response.ActionsEnabled;
         TerminateProcessButton.IsEnabled = response.ActionsEnabled;
         BlockIpButton.IsEnabled = response.ActionsEnabled;
-        StatusText.Text = response.ActionsEnabled ? "" : "Quarantine actions are turned off in Settings.";
+        BlockUsbDeviceButton.IsEnabled = response.ActionsEnabled;
+        StatusText.Text = response.ActionsEnabled ? "" : "Response actions are turned off in Settings.";
         if (response.RecoveryNotes is { Count: > 0 } notes)
         {
             RecoveryBar.Message = string.Join("\n", notes);
@@ -441,6 +445,110 @@ public sealed partial class RemediationPage : Page
         }
     }
 
+    private async void BlockUsbDevice_Click(object sender, RoutedEventArgs e)
+    {
+        var deviceIdBox = new TextBox { PlaceholderText = "Enter USB Device ID or Drive Letter (e.g. E: or Disk&Ven_SanDisk...)" };
+        var friendlyNameBox = new TextBox { PlaceholderText = "Optional friendly name (e.g. Suspicious Flash Drive)" };
+        var reasonBox = new TextBox { PlaceholderText = "Optional reason (e.g. Unauthorized USB drive)" };
+
+        var inputDialog = new ContentDialog
+        {
+            Title = "Block USB Device Instance",
+            Content = new StackPanel
+            {
+                Spacing = 10,
+                Children =
+                {
+                    new TextBlock { Text = "Enter the USB device instance ID or drive letter to inspect and block under Action Broker policy (DN-008 Phase 4):", TextWrapping = TextWrapping.Wrap },
+                    new TextBlock { Text = "Device ID / Drive Letter:", FontWeight = Microsoft.UI.Text.FontWeights.SemiBold },
+                    deviceIdBox,
+                    new TextBlock { Text = "Friendly Name:", FontWeight = Microsoft.UI.Text.FontWeights.SemiBold },
+                    friendlyNameBox,
+                    new TextBlock { Text = "Reason:", FontWeight = Microsoft.UI.Text.FontWeights.SemiBold },
+                    reasonBox
+                }
+            },
+            PrimaryButtonText = "Inspect & Preview",
+            CloseButtonText = "Cancel",
+            DefaultButton = ContentDialogButton.Primary,
+            XamlRoot = this.XamlRoot
+        };
+
+        if (await inputDialog.ShowAsync() != ContentDialogResult.Primary) return;
+
+        var devId = deviceIdBox.Text.Trim();
+        if (string.IsNullOrWhiteSpace(devId)) return;
+
+        var friendlyName = string.IsNullOrWhiteSpace(friendlyNameBox.Text) ? null : friendlyNameBox.Text.Trim();
+        var reason = string.IsNullOrWhiteSpace(reasonBox.Text) ? "Operator blocked USB device from Remediation page." : reasonBox.Text.Trim();
+
+        var client = new UsbActionClient();
+        var preview = await client.PreviewBlockDeviceAsync(devId, friendlyName, reason);
+        if (preview is null)
+        {
+            await App.EnsureSensorServiceAsync();
+            preview = await client.PreviewBlockDeviceAsync(devId, friendlyName, reason);
+        }
+
+        if (preview is null)
+        {
+            var unreachDialog = new ContentDialog
+            {
+                Title = "Service Unreachable",
+                Content = "The USB action service endpoint is not reachable.",
+                CloseButtonText = "OK",
+                XamlRoot = this.XamlRoot
+            };
+            await unreachDialog.ShowAsync();
+            return;
+        }
+
+        if (!preview.Accepted || preview.Preview is null)
+        {
+            var deniedDialog = new ContentDialog
+            {
+                Title = "Block Denied",
+                Content = preview.Message,
+                CloseButtonText = "OK",
+                XamlRoot = this.XamlRoot
+            };
+            await deniedDialog.ShowAsync();
+            return;
+        }
+
+        var p = preview.Preview;
+        var detailsText = $"Target Device: {p.DeviceId} ({(string.IsNullOrWhiteSpace(p.FriendlyName) ? "Unknown" : p.FriendlyName)})\n\n" +
+                          $"Expected Effects:\n• {string.Join("\n• ", p.ExpectedEffects)}\n\n" +
+                          $"Risks:\n• {string.Join("\n• ", p.Risks)}\n\n" +
+                          "Consent token minted (valid for 60 seconds). Are you sure you want to block and disable this USB device?";
+
+        var confirmDialog = new ContentDialog
+        {
+            Title = "Confirm USB Device Block",
+            Content = new TextBlock { Text = detailsText, TextWrapping = TextWrapping.Wrap },
+            PrimaryButtonText = "Block Device",
+            CloseButtonText = "Cancel",
+            DefaultButton = ContentDialogButton.Close,
+            XamlRoot = this.XamlRoot
+        };
+
+        if (await confirmDialog.ShowAsync() == ContentDialogResult.Primary && p.ConsentToken is not null)
+        {
+            SetBusy(true, $"Blocking USB device {p.DeviceId}...");
+            var outcome = await client.BlockDeviceAsync(p.DeviceId!, p.ConsentToken, p.FriendlyName, reason);
+            SetBusy(false, "");
+
+            var outcomeDialog = new ContentDialog
+            {
+                Title = outcome?.Accepted == true ? "USB Device Blocked" : "Block Failed",
+                Content = outcome?.Message ?? "No response received from action service.",
+                CloseButtonText = "OK",
+                XamlRoot = this.XamlRoot
+            };
+            await outcomeDialog.ShowAsync();
+        }
+    }
+
     private void SetBusy(bool busy, string status)
     {
         _busy = busy;
@@ -451,6 +559,14 @@ public sealed partial class RemediationPage : Page
             QuarantineButton.IsEnabled = false;
             TerminateProcessButton.IsEnabled = false;
             BlockIpButton.IsEnabled = false;
+            BlockUsbDeviceButton.IsEnabled = false;
+        }
+        else
+        {
+            QuarantineButton.IsEnabled = true;
+            TerminateProcessButton.IsEnabled = true;
+            BlockIpButton.IsEnabled = true;
+            BlockUsbDeviceButton.IsEnabled = true;
         }
         if (status.Length > 0 || busy) StatusText.Text = status;
     }

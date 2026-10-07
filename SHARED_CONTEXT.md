@@ -5,6 +5,33 @@
 **Repository:** public [christiand0797/downpour-next](https://github.com/christiand0797/downpour-next)
 **Local path:** `C:\Users\purpl\Desktop\downpour v2`  
 **Branch:** `main`  
+## 2026-10-07 checkpoint: DN-008 Phase 4 Reversible USB Device Instance Block & USBSTOR Toggle (antigravity-worker)
+
+**DN-008 Phase 4 Reversible USB Device Block completed:**
+- **Contracts (`UsbActionContracts.cs`, `SensorSettings.cs`, `ActionBroker.cs`)**:
+  - `UsbActionOperations`: `preview-block-device`, `block-device`, `preview-unblock-device`, `unblock-device`, `preview-set-usbstorage`, `set-usbstorage`.
+  - `UsbActionRequest`, `UsbActionPreview`, `UsbActionResponse`.
+  - Added `UsbActions = true` to `SensorSettingsSnapshot`, `SensorSettingKeys.UsbActions`, and `Writable` set.
+  - Enabled `ActionKinds.BlockUsbDevice`, `ActionKinds.UnblockUsbDevice`, and `ActionKinds.SetUsbStorage` in `ActionBroker`, `ActionCatalog`, and `ActionPolicyValidator`.
+- **Service Layer (`UsbActionExecutor.cs`, `UsbActionPipeWorker.cs`, `SensorSettingsStore.cs`)**:
+  - `UsbActionExecutor`:
+    - Immutable deny-list: strictly protects USB Root Hubs (`ROOT_HUB`), PCI/ACPI host controllers and internal buses (`PCI\`, `ACPI\`, `SCSI\`, `IDE\`, `STORAGE\`, `SWD\`), Human Interface Devices (`HID\`, keyboards, mice, touchpads, styluses), and OS boot/system volume disks (`C:`).
+    - `IUsbDeviceBackend` abstraction (`WindowsUsbDeviceBackend` leveraging `cfgmgr32.dll` `CM_Locate_DevNodeW`, `CM_Disable_DevNode`, `CM_Enable_DevNode`, and `Registry` for `USBSTOR\Start`; and `InMemoryUsbDeviceBackend` for deterministic unit testing).
+    - Durable blocked device persistence: records blocked devices atomically in `state/blocked-usb-devices.v1.json` with timestamp and reason.
+    - USB mass storage service toggle: configures `SYSTEM\CurrentControlSet\Services\USBSTOR\Start` (3 = enabled, 4 = disabled).
+  - `UsbActionPipeWorker`:
+    - Named pipe `Downpour.UsbActions.v1` with Current-User ACL and 32 KiB bounded payload.
+    - Caller authentication via `ParentDesktopCallerVerifier`.
+    - Single-use 60-second consent tokens via `ActionConsentStore`.
+    - Tamper-evident audit logging to `state/action-audit.v1.jsonl`.
+- **Core Layer (`UsbActionClient.cs`)**:
+  - Named pipe client providing `PreviewBlockDeviceAsync`, `BlockDeviceAsync`, `PreviewUnblockDeviceAsync`, `UnblockDeviceAsync`, `PreviewSetUsbStorageAsync`, and `SetUsbStorageAsync`.
+- **Desktop UI Integration (`UsbPage.xaml/.cs`, `RemediationPage.xaml/.cs`)**:
+  - `UsbPage`: added "Toggle Mass Storage Driver" button in header displaying current driver state; added "Block Drive…" button on connected removable drive rows; added "Block Device…" button on registry history rows with preview dialog, itemized consent, and audited execution.
+  - `RemediationPage`: updated Phase 1-4 active banner; added "Block USB device…" button with device ID/friendly name/reason prompt, preview verification, and execution.
+- **Testing & Verification**:
+  - Added unit test suite `UsbActionTests.cs` (17 deny-list test cases including root hubs, keyboards, mice, touchpads, internal buses; action catalog & feature switch verification; policy validator previews; caller rejection; feature switch disabled check; preview token minting; block & unblock cycle with backend verification & audit log assertions; USBSTOR toggle; strict request parser bounds).
+  - 773 / 773 tests passing; clean solution build (0 warnings, 0 errors).
 
 ## 2026-10-07 checkpoint: review of agent work + v0.1.15 package (claude-parity-audit)
 
