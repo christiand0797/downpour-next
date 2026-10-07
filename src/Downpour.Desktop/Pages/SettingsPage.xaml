@@ -158,14 +158,14 @@
             <Border Padding="18" CornerRadius="12" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource DownpourStrokeBrush}" BorderThickness="1">
                 <StackPanel Spacing="8">
                     <TextBlock Text="Privacy &amp; data" FontSize="18" FontWeight="SemiBold" />
-                    <TextBlock Text="This build stores only the preferences above in the current user's app settings. No usage analytics, clipboard data, browser data, command lines, or file contents are collected. PowerShell script text is analyzed in memory when the setting above is on, and is never stored." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
-                    <TextBlock Text="Threat Intelligence contacts the fixed CISA endpoint only when you open that route or choose Refresh. The current prototype does not persist downloaded feed data." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                    <TextBlock Text="Preferences, sensor settings, alert metadata, action records, and configured threat-intelligence keys are stored locally for your Windows account. Saved API keys are encrypted. User-selected scans read file contents; quarantine retains the selected file locally. PowerShell script text is analyzed in memory only when its setting is on and is never stored. Clipboard contents, browser secrets, and usage analytics are not collected." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                    <TextBlock Text="Threat Intelligence uses the configured feed and lookup services. Automatic enrichment can send public IP addresses, hashes, and domains as described above. Turn automatic lookups off to stop background enrichment; manually requested network checks remain explicit." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                 </StackPanel>
             </Border>
             <Border Padding="18" CornerRadius="12" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource DownpourStrokeBrush}" BorderThickness="1">
                 <StackPanel Spacing="8">
                     <TextBlock Text="Scanning &amp; protection" FontSize="18" FontWeight="SemiBold" />
-                    <TextBlock Text="System-changing actions remain disabled. A durable operation journal is initialized by the service, but it does not authorize or perform changes. Quarantine, firewall changes, hardening, and driver package actions need an isolated service identity, verified consent, audit failure handling, and tested recovery before controls are enabled." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                    <TextBlock Text="Quarantine/restore, process termination, temporary IP firewall rules, and reversible USB controls use separate previews and confirmations. Their policy switches above permit requests; they do not perform an action themselves. Windows access checks still apply. Automatic administrator elevation, host isolation, and driver installation remain unfinished. This unsigned portable build does not provide complete v29 protection." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                 </StackPanel>
             </Border>
         </StackPanel>
