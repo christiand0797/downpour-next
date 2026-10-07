@@ -225,7 +225,8 @@ public sealed class UsbActionHandler(
 public sealed class UsbActionPipeWorker(
     UsbActionHandler handler,
     IActionCallerVerifier callerVerifier,
-    ILogger<UsbActionPipeWorker> logger) : BackgroundService
+    ILogger<UsbActionPipeWorker> logger,
+    string pipeName = UsbActionPipeWorker.PipeName) : BackgroundService
 {
     public const string PipeName = "Downpour.UsbActions.v1";
     private const int MaximumRequestBytes = 32 * 1024;
@@ -248,7 +249,7 @@ public sealed class UsbActionPipeWorker(
             try
             {
                 pipe = NamedPipeServerStreamAcl.Create(
-                    PipeName,
+                    pipeName,
                     PipeDirection.InOut,
                     1,
                     PipeTransmissionMode.Byte,
