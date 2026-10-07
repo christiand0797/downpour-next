@@ -6,6 +6,14 @@
 **Local path:** `C:\Users\purpl\Desktop\downpour v2`  
 **Branch:** `main`  
 
+## 2026-10-07 checkpoint: review of agent work + v0.1.15 package (claude-parity-audit)
+
+- Fixed (be1497a): Performance page crashed on open (IntervalCombo SelectionChanged ran in InitializeComponent before `_timer` existed). Desktop now logs unhandled exceptions to `%LOCALAPPDATA%\DownpourNext\logs\desktop-crash.log`.
+- Review fixes (23b2fb2, be1497a): process termination protects critical names only under the Windows folder (masquerading copies can be ended) and protects security software; Authenticode YARA skip requires leaf O=Microsoft Corporation and excludes WHQL/third-party Microsoft signers; firewall blocks always expire (1 min to 7 days), expired rules are removed every minute, consent binds duration, reasons cannot spoof expiry; action pipes survive reply serialization errors.
+- Cognitive Immune System / MiroFish swarm: labelled CONCEPT DEMO; its metrics are generated in code, not measured. Do not present it as protection.
+- Package: `artifacts/DownpourNext-win-x64-0.1.15.zip` built from be1497a in a clean worktree (desktop, service, service/scanner with YARA-X, update-helper). Smoke-tested: service + scanner start, Performance clicked through. GitHub release not yet published (gh not authenticated on this PC).
+- Open: AMSI initialization fails in the service on this PC (event log); Sysmon live subscription read errors.
+
 ## 2026-10-07 checkpoint: DN-008 Phase 3 Firewall Actions Broker & Legacy Cleanup (antigravity-worker)
 
 **DN-008 Phase 3 Firewall Actions Broker completed:**
