@@ -1,5 +1,15 @@
 # Downpour Next TODO
 
+## 2026-10-07 checkpoint: DN-009 Defense Suite Route Slice (antigravity-worker)
+
+Completed and verified (Debug: 0 warnings/errors; 638/638 tests pass):
+- DN-009 Defense Suite route slice: implemented `DefenseSuiteCoordinator` porting v29 `advanced_defense_suite.py` and `_build_defense_tab`.
+- Contracts in `src/Downpour.Contracts/DefenseSuite.cs`: `DefensePillarStatus`, `DefenseWatcherFinding`, and `DefenseSuiteSnapshot`.
+- Core engine in `src/Downpour.Core/DefenseSuiteCoordinator.cs`: multi-layer native MITRE ATT&CK attack surface watchers inspecting IFEO process execution hijacks (T1546.012), LSA Protection / RunAsPPL (T1003), UAC elevation enforcement (T1548.002), Trusted Root CA certificate store proxy interception (T1553.004), Startup folder autostart drops (T1547.001), SMB network shares exposure (T1021.002), Windows Defender Real-Time Protection policy (T1562.001), and system DEP & ASLR mitigations (T1055); overall defense scoring (0-100) and attack surface exposure calculation; core defense pillars aggregation (AEGIS, Ransomware, Hardening, Emergency); and executive markdown posture report generator.
+- Desktop route `defense` in `DefenseSuitePage.xaml/.cs`: posture header with dynamic status badge, 4 metric cards (Defense Posture Score, Attack Surface Exposure %, Active Watchers, Flagged Exposures), 4 Core Defense Pillars status cards with 1-click drill-downs into each subsystem (`App.NavigateToRoute`), live MITRE ATT&CK watcher diagnostic list with category and severity badges, and 1-click clipboard export of executive Markdown report.
+- Wired `defense` route in `MainWindow.xaml.cs` (navigation and back-sync) and `App.xaml.cs`, and promoted `defense` to `in-progress` in `capabilities.json`, `parity-checklist.json`, and `source-modules.json` (`advanced_defense_suite.py`).
+- 7 unit tests in `DefenseSuiteCoordinatorTests.cs` (clean posture scoring, weighted deduction scoring, severe risk clamping, watcher enumeration, memory exploitation guard, and report formatting).
+
 ## 2026-10-07 checkpoint: DN-009 Parental Controls Route Slice (antigravity-worker)
 
 Completed and verified (Debug: 0 warnings/errors; 600/600 tests pass):

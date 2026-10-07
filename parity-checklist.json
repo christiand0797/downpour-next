@@ -403,7 +403,7 @@
     },
     "defense": {
       "title": "Defense Suite",
-      "currentStatus": "planned",
+      "currentStatus": "in-progress",
       "v29Workflows": [
         "Container in v29: Aegis layers, Ransomware, Hardening, Emergency sub-views",
         "advanced_defense_suite.py watchers"

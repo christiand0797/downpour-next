@@ -36,6 +36,14 @@ public partial class App : Application
         if (Current is App app) app._window?.Close();
     }
 
+    internal static void NavigateToRoute(string routeId)
+    {
+        if (Current is App app && app._window is MainWindow mainWindow)
+        {
+            mainWindow.ShowRoute(routeId);
+        }
+    }
+
     internal static IntPtr MainWindowHandle =>
         Current is App app && app._window is not null
             ? WinRT.Interop.WindowNative.GetWindowHandle(app._window)

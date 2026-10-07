@@ -683,7 +683,7 @@
     "module": "advanced_defense_suite.py",
     "description": "ADVANCED DEFENSE SUITE — v29.62",
     "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
-    "migrationStatus": "planned"
+    "migrationStatus": "in-progress"
   },
   {
     "family": "Core Engines & Detection Modules",

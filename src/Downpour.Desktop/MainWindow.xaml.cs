@@ -472,6 +472,8 @@ public sealed partial class MainWindow : Window
             NavFrame.Navigate(typeof(EmergencyPage));
         else if (capability.RouteId.Equals("parental-controls", StringComparison.OrdinalIgnoreCase))
             NavFrame.Navigate(typeof(ParentalControlsPage));
+        else if (capability.RouteId.Equals("defense", StringComparison.OrdinalIgnoreCase))
+            NavFrame.Navigate(typeof(DefenseSuitePage));
         else if (capability.RouteId.Equals("threats", StringComparison.OrdinalIgnoreCase))
             NavFrame.Navigate(typeof(TriagePage), TriagePage.ThreatsMode);
         else if (capability.RouteId.Equals("possible-threats", StringComparison.OrdinalIgnoreCase))
