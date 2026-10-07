@@ -544,7 +544,7 @@
     {
       "id": "DN-026",
       "title": "YARA scanning",
-      "status": "in_progress",
+      "status": "blocked",
       "priority": "medium",
       "acceptance": [
         "Dependency reviewed and version-pinned (e.g. libyara.NET or YARA-X binding)",
@@ -552,7 +552,7 @@
         "Scanner route recursive scope with bounds, cancellation, and progress",
         "No auto-quarantine"
       ],
-      "notes": "Scanner route parity. | Owner decision: evaluate and propose before adding a dependency. | Claimed by claude-parity-audit for the evaluation write-up.",
+      "notes": "Scanner route parity. | Owner decision: evaluate and propose before adding a dependency. | Claimed by claude-parity-audit for the evaluation write-up. | 2026-10-07 evaluation written: docs/YARA_EVALUATION.md recommends YARA-X C API via own P/Invoke, DLL built in CI from a pinned tag, scanning in an isolated helper process. Awaiting owner approval of the native DLL and the helper-process design.",
       "files": []
     },
     {
