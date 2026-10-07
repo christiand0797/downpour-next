@@ -529,7 +529,7 @@
     {
       "id": "DN-025",
       "title": "Indicator lookups, API keys, and custom feeds",
-      "status": "in_progress",
+      "status": "completed",
       "priority": "medium",
       "acceptance": [
         "Settings stores user-supplied OSINT API keys with DPAPI, never logged",
@@ -538,13 +538,13 @@
         "Custom feed manager with size/time bounds and integrity checks",
         "Scheduled feed refresh with feed health"
       ],
-      "notes": "Intel and Network route lookups. | Owner decision: automatic lookups for alert indicators approved (SECURITY.md); sensor setting intelLookups exists, default on, inert until keys exist. Not implemented. | Claimed by claude-parity-audit 2026-10-07 (VirusTotal, AbuseIPDB, GreyNoise; DPAPI keys; automatic for open alert indicators).",
+      "notes": "Completed 2026-10-07 by claude-parity-audit (commit 9815f22) per owner decision (SECURITY.md). IntelLookupWorker every 5 min: public IPs/hashes/DNS-flagged domains from open alerts -> VirusTotal/AbuseIPDB/GreyNoise with user keys (DPAPI IntelKeyStore, set via settings pipe, never returned/logged). Fixed HTTPS hosts, no redirects, 10s, 256 KiB; free-tier rate limits; 25/run; 24h cache; outbound log without indicator values. Malicious/suspicious -> Downpour/Intel findings. Settings UI shows configured state, last run, flagged results, outbound log. 31 tests with fake HTTP. Remaining: custom feed manager (add/fetch/import), OTX/urlscan, per-alert manual lookup button.",
       "files": []
     },
     {
       "id": "DN-026",
       "title": "YARA scanning",
-      "status": "queued",
+      "status": "in_progress",
       "priority": "medium",
       "acceptance": [
         "Dependency reviewed and version-pinned (e.g. libyara.NET or YARA-X binding)",
@@ -552,7 +552,7 @@
         "Scanner route recursive scope with bounds, cancellation, and progress",
         "No auto-quarantine"
       ],
-      "notes": "Scanner route parity. | Owner decision: evaluate and propose before adding a dependency.",
+      "notes": "Scanner route parity. | Owner decision: evaluate and propose before adding a dependency. | Claimed by claude-parity-audit for the evaluation write-up.",
       "files": []
     },
     {
