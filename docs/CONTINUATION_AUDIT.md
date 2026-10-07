@@ -23,12 +23,12 @@ Baseline restore and Debug build passed with zero warnings/errors. Baseline test
 | DN-005 | ETW adapters, stronger cross-source correlation, complete investigation lifecycle, sensor retry/health and loss acceptance, live channel-by-channel event verification. |
 | DN-006 | Full affected-version/range/CPE analysis, feed and rule lifecycle/integrity, scan coverage and v29 acceptance fixtures. |
 | DN-008 | Admin elevation through a narrow action helper, timeout/rollback/audit gates for each privileged operation, recovery independent of portable service lifetime, action history/retention. Do not enable the isolation draft until the four blockers in AGENT_COORDINATION.md are fixed. |
-| DN-009 | Replace CIS generated scores/swarm demonstrations with measured operational detection; finish all five AEGIS layers, continuous ransomware monitoring/recovery, isolated detonation, memory analysis, hunting, actual parental enforcement, cleanup deletion, VPN kill-switch, IoT controls and emergency workflows through validated brokers. Existing read-only inspections are useful slices, not complete protection. |
+| DN-009 | Finish operational adaptive/deception CIS beyond the new measured review/integrity slice; all five AEGIS layers, continuous ransomware monitoring/recovery, isolated detonation, memory analysis, hunting, actual parental enforcement, cleanup deletion, VPN kill-switch, IoT controls and emergency workflows through validated brokers. Existing read-only inspections are useful slices, not complete protection. |
 | DN-010 | Clean release packaging, publish/verify v0.1.16, signing, installed restricted service, installer/upgrade/uninstall and recovery, real Windows Runtime deployment validation. |
 | DN-012 | Driver lifecycle execution with verified packages, export/rollback, authorization, UAC and denial/recovery tests. Current prepare-only broker is not installation capability. |
 | DN-002 | Native route/picker click-through, keyboard/high contrast/reduced motion, narrow/high-DPI layout and clean-machine deployment. |
 
-Windows adapters still appear in some Core inspectors and need migration into Service where appropriate. Build/test coverage is not native UI or privileged-action acceptance. The CIS screen currently identifies itself as a concept demo; it must not count as protection or functional parity. This release does not add host isolation or administrator escalation.
+Windows adapters still appear in some Core inspectors and need migration into Service where appropriate. Build/test coverage is not native UI or privileged-action acceptance. v0.1.16 retained a labeled CIS concept demo; the subsequent DN-009 slice removes scripted protection and connects measured review plus explicit package-file consistency checks (docs/CIS.md). This remains incomplete CIS parity. Neither slice adds host isolation or administrator escalation.
 
 ## Release source boundary
 

@@ -15,8 +15,10 @@ Downpour Next is the native Windows rebuild of Downpour. The target is complete 
 - Services and Security Events show bounded local read-only Windows service inventory and allow-listed event metadata. Alerts now persist unique event-ID findings and support local acknowledge/suppress/reopen triage; this changes review state only and performs no system-changing action.
 - Vulnerabilities reads local uninstall-key display metadata and compares software names conservatively with CISA KEV. Rows are candidate leads only; the feature does not confirm affected versions or vulnerability status. See [`docs/THREAT_INTELLIGENCE.md`](docs/THREAT_INTELLIGENCE.md).
 - File Inspector selects one local EXE/DLL/SYS, computes SHA-256, and reads bounded PE header metadata without executing or uploading the file. It does not detect malware or verify Authenticode trust. See [`docs/FILE_INSPECTOR.md`](docs/FILE_INSPECTOR.md).
-- Windows service uses a restricted, outbound-only local named pipe and performs no system-changing actions.
-- No original detection, scanning, remediation, or hardening engine has been ported yet.
+- Sigma/AMSI analyze bounded PowerShell content under an explicit sensor setting; Sysmon metadata-only review events reach persisted alerts with visible source failures. Selected-file YARA-X scans run in an isolated helper; posture/investigation routes provide partial v29 coverage.
+- Separate typed action brokers support confirmed quarantine/restore, process termination, temporary IP firewall rules and reversible USB controls, with policy, caller/consent checks and audit records. Windows permissions still apply; automatic admin elevation and host isolation remain unfinished.
+- CIS now shows measured alert/source review and an explicit bounded package-file consistency check, replacing scripted protection models. Its unsigned local manifest is not publisher authentication. See [`docs/CIS.md`](docs/CIS.md).
+- All 38 committed routes remain partial. Full operational AEGIS/CIS, driver lifecycle execution, broader response, installer/signing and complete native acceptance remain unfinished; see [`docs/CONTINUATION_AUDIT.md`](docs/CONTINUATION_AUDIT.md).
 
 ## Build
 
@@ -33,15 +35,15 @@ dotnet run --project src/Downpour.Desktop/Downpour.Desktop.csproj
 ## Architecture
 
 - `src/Downpour.Desktop`: WinUI 3 presentation, navigation, and dashboard.
-- `src/Downpour.Service`: Windows service host for future sensors and policy-controlled response.
+- `src/Downpour.Service`: Windows API adapters, bounded sensors, persisted alerts/settings and typed consent/audit response brokers. Portable mode runs as the current user; no Windows service is installed.
 - `src/Downpour.Core`: shared application logic and capability registry validation.
 - `src/Downpour.Contracts`: typed records shared across process boundaries.
 - `capabilities.json`: feature parity inventory mapped to the original source methods.
-- `source-modules.json`: all 71 entries in the original module map, including active, legacy, reference, orphaned, and declined dispositions.
+- `source-modules.json`: 129 reconciled module/content entries, including active, legacy, reference, orphaned, and declined dispositions.
 - `docs/ARCHITECTURE_AND_MIGRATION.md`: detailed target architecture and staged parity plan.
 - `docs/FEATURE_PARITY.md`: staged migration order and completion criteria.
 
-The service and UI will communicate through versioned, typed contracts with least-privilege authorization. The UI must remain responsive when sensors are unavailable, and every privileged response action will require clear policy, audit logging, and a safe failure path.
+The service and UI communicate through bounded, versioned contracts and current-user/SYSTEM-restricted pipes. The UI must remain responsive when sensors are unavailable. Every additional privileged action requires policy, auditable consent, denial, timeout and recovery acceptance before enablement. Signing, a separate installed-service identity and independent server authentication remain open.
 
 ## Feature parity rule
 

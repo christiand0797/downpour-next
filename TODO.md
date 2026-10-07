@@ -408,7 +408,9 @@ This checklist tracks current implementation state; the detailed order, dependen
 - [x] Finish deterministic AMSI/Sysmon/dedup/health regressions and full Debug verification (badcf28; 879 tests).
 - [x] Reconcile current feature documentation and source tracking with actual implemented paths (CONTINUATION_AUDIT.md; broader per-workflow acceptance remains).
 - [x] Commit owned DN-005 fixes; build/test/package from a clean committed checkout (ffc241d; 856 clean tests; final native smoke passed).
-- [ ] Publish v0.1.16 to the configured GitHub repository, verify asset digest, smoke-test desktop/service/scanner, and record release evidence.
+- [x] Publish v0.1.16 to the configured GitHub repository, verify asset digest, smoke-test desktop/service/scanner, and record release evidence (remote tag/latest/digests match).
+- [x] Replace the CIS route's generated protection metrics with real measured alert/source status and bounded explicit package-integrity checks (e8ce959; 893 working-tree tests; full adaptive/deception parity remains).
+- [ ] Package and publish v0.1.17 with measured CIS and verify actual whole-package integrity and remote asset hashes.
 - [ ] Continue complete v29 parity: real detection/correlation and sensors, admin elevation, recovery-safe actions, driver lifecycle, operational AEGIS/advanced workflows, installer/signing/accessibility. Demonstration metrics do not count as protection. Host-isolation draft remains gated by the four merge blockers in `docs/AGENT_COORDINATION.md`.
 
 Resume from the newest SHARED_CONTEXT checkpoint; do not treat historical completion claims or route presence as full functional parity.

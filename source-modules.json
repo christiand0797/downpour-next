@@ -688,7 +688,7 @@
   {
     "family": "Core Engines & Detection Modules",
     "module": "cognitive_immune_system.py",
-    "description": "Cognitive Immune System: adversarial red teamer, threat evolution predictor, semantic integrity verifier (CIS tab).",
+    "description": "CIS partial migration: measured alert/system/source/policy review, cautious temporal correlations, bounded explicit package-file consistency check and report. Scripted protection models removed. Operational adaptive learning/deception/continuous semantic baselines remain unfinished; see docs/CIS.md.",
     "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
     "migrationStatus": "in-progress"
   },

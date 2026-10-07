@@ -7,8 +7,8 @@
       "role": "primary",
       "taskId": "DN-010",
       "status": "active",
-      "heartbeatUtc": "2026-10-07T20:47:16Z",
-      "notes": "DN-010 final ffc241d package verified; 856 Release tests; native smoke passed; 1062 ZIP entries checked. GitHub publication next. Preserve pre-existing drafts; SHARED_CONTEXT has exact handoff."
+      "heartbeatUtc": "2026-10-07T21:02:36Z",
+      "notes": "CIS e8ce959 committed: 893 Debug tests, 28 new measurement/integrity cases. Active DN-010 v0.1.17 clean build/package/publish. See checkpoint; preserve all pre-existing drafts."
     },
     {
       "id": "v29_action_map",
