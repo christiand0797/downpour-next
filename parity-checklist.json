@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedFrom": "docs/V29_PARITY_AUDIT.md (2026-10-06)",
+  "generatedFrom": "docs/V29_PARITY_AUDIT.md (2026-10-06); route status reconciled with committed capabilities on 2026-10-07; functional gaps in docs/CONTINUATION_AUDIT.md",
   "note": "Not loaded by the app (CapabilityRegistry rejects unknown members). A route may be marked implemented in capabilities.json only when every item here is done, declined with a documented reason, or explicitly blocked on a security review.",
   "routes": {
     "dashboard": {
@@ -17,7 +17,7 @@
     },
     "threats": {
       "title": "Threats",
-      "currentStatus": "planned",
+      "currentStatus": "in-progress",
       "v29Workflows": [
         "Threat log with filter/sort/detail",
         "AUTO remediation toggle",
@@ -35,7 +35,7 @@
     },
     "remediation": {
       "title": "Remediation",
-      "currentStatus": "planned",
+      "currentStatus": "in-progress",
       "v29Workflows": [
         "Remediation history",
         "Auto-revert and revert selected",
@@ -46,7 +46,7 @@
     },
     "possible-threats": {
       "title": "Possible Threats",
-      "currentStatus": "planned",
+      "currentStatus": "in-progress",
       "v29Workflows": [
         "Awaiting-verification list",
         "Verify and move to Threats",
@@ -179,7 +179,7 @@
     },
     "hardening": {
       "title": "Hardening",
-      "currentStatus": "planned",
+      "currentStatus": "in-progress",
       "v29Workflows": [
         "System hardening analyzer and score",
         "NSA checks (scheduled)",
@@ -218,7 +218,7 @@
     },
     "firewall": {
       "title": "Firewall",
-      "currentStatus": "planned",
+      "currentStatus": "in-progress",
       "v29Workflows": [
         "Rule manager: filter by direction/action, search",
         "Toggle rule",
@@ -232,7 +232,7 @@
     },
     "wifi": {
       "title": "Wi-Fi",
-      "currentStatus": "planned",
+      "currentStatus": "in-progress",
       "v29Workflows": [
         "Current connection: SSID, signal, IP",
         "Scan networks",
@@ -241,7 +241,7 @@
     },
     "dns": {
       "title": "DNS",
-      "currentStatus": "planned",
+      "currentStatus": "in-progress",
       "v29Workflows": [
         "DNS security center overview",
         "Resolver cache watch with DGA scoring and TOFU baseline",
@@ -252,7 +252,7 @@
     },
     "aegis": {
       "title": "Project AEGIS",
-      "currentStatus": "planned",
+      "currentStatus": "in-progress",
       "v29Workflows": [
         "Five active defence layers status",
         "AEGIS live event log",
@@ -281,7 +281,7 @@
     },
     "hunt": {
       "title": "Threat Hunt",
-      "currentStatus": "planned",
+      "currentStatus": "in-progress",
       "v29Workflows": [
         "Target/mode selection",
         "Run and stop hunt",
@@ -313,7 +313,7 @@
     },
     "usb": {
       "title": "USB Devices",
-      "currentStatus": "planned",
+      "currentStatus": "in-progress",
       "v29Workflows": [
         "Device scan",
         "USB history (registry)",
@@ -337,7 +337,7 @@
     },
     "timeline": {
       "title": "Timeline",
-      "currentStatus": "planned",
+      "currentStatus": "in-progress",
       "v29Workflows": [
         "Load events",
         "Detect attacks",
@@ -349,7 +349,7 @@
     },
     "remote-access": {
       "title": "Remote Access",
-      "currentStatus": "planned",
+      "currentStatus": "in-progress",
       "v29Workflows": [
         "Remote access exposure scan",
         "Action log"
@@ -357,7 +357,7 @@
     },
     "cleanup": {
       "title": "Cleanup",
-      "currentStatus": "planned",
+      "currentStatus": "in-progress",
       "v29Workflows": [
         "Cache and temp",
         "Duplicates",
@@ -476,35 +476,126 @@
       "source": "config.py and config.json",
       "manager": "ConfigManager class with hot-reload (Watchdog) and tamper detection (HMAC-SHA256 signature + DPAPI key)",
       "keys": {
-        "AI.LEARNING_CYCLE_SECONDS": {"default": 300, "reads": "ThreatLearningEngine background model training loop"},
-        "HARDWARE.UPDATE_INTERVAL": {"default": 0.5, "reads": "Hardware telemetry collection and gauge refresh"},
-        "HARDWARE.HISTORY_SIZE": {"default": 100, "reads": "Hardware rolling history deque size"},
-        "HARDWARE.SMOOTHING_FACTOR": {"default": 0.3, "reads": "Exponential smoothing on hardware gauge deltas"},
-        "HARDWARE.ALERT_THRESHOLDS.CPU": {"default": 80.0, "reads": "CPU usage alert threshold check"},
-        "HARDWARE.ALERT_THRESHOLDS.MEMORY": {"default": 85.0, "reads": "RAM usage alert threshold check"},
-        "HARDWARE.ALERT_THRESHOLDS.DISK": {"default": 90.0, "reads": "Disk utilization alert threshold check"},
-        "HARDWARE.ALERT_THRESHOLDS.TEMP": {"default": 75.0, "reads": "Thermal sensor alert threshold check"},
-        "UI.ASCII_ONLY": {"default": true, "reads": "Console / terminal formatting wrappers"},
-        "UI.PREFIX": {"default": "DOWNPOUR", "reads": "UI header and alert log prefixes"},
-        "GEOIP.PROVIDER": {"default": "ip-api", "reads": "GeoIP lookup resolver"},
-        "GEOIP.ENABLED": {"default": true, "reads": "GeoIP resolution toggle in network views"},
-        "LOGGING.LEVEL": {"default": "INFO", "reads": "Application logging level"},
-        "FEEDS.threatfox": {"enabled": true, "update_interval": 900, "reads": "ThreatFox abuse.ch feed fetcher"},
-        "FEEDS.urlhaus": {"enabled": true, "update_interval": 900, "reads": "URLhaus abuse.ch feed fetcher"},
-        "FEEDS.phishtank": {"enabled": true, "update_interval": 3600, "reads": "PhishTank feed fetcher"},
-        "FEEDS.emerging_threats": {"enabled": true, "update_interval": 3600, "reads": "Emerging Threats IP blocklist fetcher"},
-        "KEV.ENABLED": {"default": true, "reads": "CISA KEV integration master toggle"},
-        "KEV.UPDATE_INTERVAL_HOURS": {"default": 24, "reads": "CISA KEV periodic catalog refresh timer"},
-        "KEV.CRITICAL_THRESHOLD": {"default": 9.0, "reads": "CISA KEV CVSS score filter threshold"},
-        "EPSS.ENABLED": {"default": true, "reads": "FIRST EPSS enrichment master toggle"},
-        "EPSS.UPDATE_INTERVAL_HOURS": {"default": 12, "reads": "EPSS score refresh timer"},
-        "EPSS.EXPLOIT_THRESHOLD": {"default": 0.5, "reads": "EPSS exploit probability cutoff for high-risk warnings"},
-        "YARA.ENABLED": {"default": true, "reads": "YARA scanner engine master toggle"},
-        "YARA.RULES_PATH": {"default": "yara_rules", "reads": "YARA rules directory location"},
-        "YARA.SCAN_TIMEOUT_SECONDS": {"default": 30, "reads": "Per-file YARA scan timeout"},
-        "VULNERABILITY.SCAN_ON_STARTUP": {"default": true, "reads": "Boot-time system vulnerability check"},
-        "VULNERABILITY.SCAN_INTERVAL_HOURS": {"default": 24, "reads": "Periodic vulnerability scan cycle"},
-        "VULNERABILITY.ALERT_ON_CRITICAL": {"default": true, "reads": "Bridge critical vulnerability discoveries to UI alerts"}
+        "AI.LEARNING_CYCLE_SECONDS": {
+          "default": 300,
+          "reads": "ThreatLearningEngine background model training loop"
+        },
+        "HARDWARE.UPDATE_INTERVAL": {
+          "default": 0.5,
+          "reads": "Hardware telemetry collection and gauge refresh"
+        },
+        "HARDWARE.HISTORY_SIZE": {
+          "default": 100,
+          "reads": "Hardware rolling history deque size"
+        },
+        "HARDWARE.SMOOTHING_FACTOR": {
+          "default": 0.3,
+          "reads": "Exponential smoothing on hardware gauge deltas"
+        },
+        "HARDWARE.ALERT_THRESHOLDS.CPU": {
+          "default": 80.0,
+          "reads": "CPU usage alert threshold check"
+        },
+        "HARDWARE.ALERT_THRESHOLDS.MEMORY": {
+          "default": 85.0,
+          "reads": "RAM usage alert threshold check"
+        },
+        "HARDWARE.ALERT_THRESHOLDS.DISK": {
+          "default": 90.0,
+          "reads": "Disk utilization alert threshold check"
+        },
+        "HARDWARE.ALERT_THRESHOLDS.TEMP": {
+          "default": 75.0,
+          "reads": "Thermal sensor alert threshold check"
+        },
+        "UI.ASCII_ONLY": {
+          "default": true,
+          "reads": "Console / terminal formatting wrappers"
+        },
+        "UI.PREFIX": {
+          "default": "DOWNPOUR",
+          "reads": "UI header and alert log prefixes"
+        },
+        "GEOIP.PROVIDER": {
+          "default": "ip-api",
+          "reads": "GeoIP lookup resolver"
+        },
+        "GEOIP.ENABLED": {
+          "default": true,
+          "reads": "GeoIP resolution toggle in network views"
+        },
+        "LOGGING.LEVEL": {
+          "default": "INFO",
+          "reads": "Application logging level"
+        },
+        "FEEDS.threatfox": {
+          "enabled": true,
+          "update_interval": 900,
+          "reads": "ThreatFox abuse.ch feed fetcher"
+        },
+        "FEEDS.urlhaus": {
+          "enabled": true,
+          "update_interval": 900,
+          "reads": "URLhaus abuse.ch feed fetcher"
+        },
+        "FEEDS.phishtank": {
+          "enabled": true,
+          "update_interval": 3600,
+          "reads": "PhishTank feed fetcher"
+        },
+        "FEEDS.emerging_threats": {
+          "enabled": true,
+          "update_interval": 3600,
+          "reads": "Emerging Threats IP blocklist fetcher"
+        },
+        "KEV.ENABLED": {
+          "default": true,
+          "reads": "CISA KEV integration master toggle"
+        },
+        "KEV.UPDATE_INTERVAL_HOURS": {
+          "default": 24,
+          "reads": "CISA KEV periodic catalog refresh timer"
+        },
+        "KEV.CRITICAL_THRESHOLD": {
+          "default": 9.0,
+          "reads": "CISA KEV CVSS score filter threshold"
+        },
+        "EPSS.ENABLED": {
+          "default": true,
+          "reads": "FIRST EPSS enrichment master toggle"
+        },
+        "EPSS.UPDATE_INTERVAL_HOURS": {
+          "default": 12,
+          "reads": "EPSS score refresh timer"
+        },
+        "EPSS.EXPLOIT_THRESHOLD": {
+          "default": 0.5,
+          "reads": "EPSS exploit probability cutoff for high-risk warnings"
+        },
+        "YARA.ENABLED": {
+          "default": true,
+          "reads": "YARA scanner engine master toggle"
+        },
+        "YARA.RULES_PATH": {
+          "default": "yara_rules",
+          "reads": "YARA rules directory location"
+        },
+        "YARA.SCAN_TIMEOUT_SECONDS": {
+          "default": 30,
+          "reads": "Per-file YARA scan timeout"
+        },
+        "VULNERABILITY.SCAN_ON_STARTUP": {
+          "default": true,
+          "reads": "Boot-time system vulnerability check"
+        },
+        "VULNERABILITY.SCAN_INTERVAL_HOURS": {
+          "default": 24,
+          "reads": "Periodic vulnerability scan cycle"
+        },
+        "VULNERABILITY.ALERT_ON_CRITICAL": {
+          "default": true,
+          "reads": "Bridge critical vulnerability discoveries to UI alerts"
+        }
       }
     },
     "settingsIni": {
@@ -512,69 +603,216 @@
       "manager": "ConfigManager class in downpour_v29_titanium.py (configparser.ConfigParser)",
       "sections": {
         "general": {
-          "minimize_to_tray": {"default": "true", "reads": "Tray icon minimize toggle"},
-          "start_minimized": {"default": "false", "reads": "Startup window show/hide state"},
-          "show_widget": {"default": "false", "reads": "Floating desktop widget visibility"},
-          "rain_intensity": {"default": "200", "reads": "Weather animation raindrop count"},
-          "lightning_freq": {"default": "0.012", "reads": "Lightning flash probability per animation tick"},
-          "worker_count": {"default": "12", "reads": "ThreadPoolExecutor background worker capacity"}
+          "minimize_to_tray": {
+            "default": "true",
+            "reads": "Tray icon minimize toggle"
+          },
+          "start_minimized": {
+            "default": "false",
+            "reads": "Startup window show/hide state"
+          },
+          "show_widget": {
+            "default": "false",
+            "reads": "Floating desktop widget visibility"
+          },
+          "rain_intensity": {
+            "default": "200",
+            "reads": "Weather animation raindrop count"
+          },
+          "lightning_freq": {
+            "default": "0.012",
+            "reads": "Lightning flash probability per animation tick"
+          },
+          "worker_count": {
+            "default": "12",
+            "reads": "ThreadPoolExecutor background worker capacity"
+          }
         },
         "scanning": {
-          "max_file_size_mb": {"default": "100", "reads": "Scanner skips files above this size"},
-          "max_depth": {"default": "20", "reads": "Directory recursion depth limit"},
-          "scan_archives": {"default": "true", "reads": "Inspection inside .zip/.tar archives toggle"}
+          "max_file_size_mb": {
+            "default": "100",
+            "reads": "Scanner skips files above this size"
+          },
+          "max_depth": {
+            "default": "20",
+            "reads": "Directory recursion depth limit"
+          },
+          "scan_archives": {
+            "default": "true",
+            "reads": "Inspection inside .zip/.tar archives toggle"
+          }
         },
         "network": {
-          "port_scan_detection": {"default": "true", "reads": "SYN / connection burst port-scan detector"},
-          "block_suspicious": {"default": "false", "reads": "Auto-block suspicious outbound connections (safety off by default)"},
-          "connection_monitor": {"default": "true", "reads": "Active TCP connection polling loop"}
+          "port_scan_detection": {
+            "default": "true",
+            "reads": "SYN / connection burst port-scan detector"
+          },
+          "block_suspicious": {
+            "default": "false",
+            "reads": "Auto-block suspicious outbound connections (safety off by default)"
+          },
+          "connection_monitor": {
+            "default": "true",
+            "reads": "Active TCP connection polling loop"
+          }
         },
         "modules": {
-          "real_time": {"default": "true", "reads": "Master switch for all background detection threads"},
-          "process_monitor": {"default": "true", "reads": "Process creation and memory watcher"},
-          "network_shield": {"default": "true", "reads": "Network adapter and connection watcher"},
-          "file_guardian": {"default": "true", "reads": "Filesystem watcher on sensitive directories"},
-          "threat_engine": {"default": "true", "reads": "Main detection and correlation engine loop"},
-          "anti_keylogger": {"default": "true", "reads": "SetWindowsHookEx and keyboard input monitor"},
-          "anti_rat": {"default": "true", "reads": "Known RAT port and backdoor connection monitor"},
-          "anti_surveillance": {"default": "true", "reads": "Webcam and microphone access monitor"},
-          "port_scan_detector": {"default": "true", "reads": "Local port scanning detector"},
-          "ai_analyzer": {"default": "true", "reads": "AI anomaly scoring engine"},
-          "c2_detector": {"default": "true", "reads": "C2 beacon interval / jitter detector"},
-          "parental_controls": {"default": "true", "reads": "Parental controls module activation"}
+          "real_time": {
+            "default": "true",
+            "reads": "Master switch for all background detection threads"
+          },
+          "process_monitor": {
+            "default": "true",
+            "reads": "Process creation and memory watcher"
+          },
+          "network_shield": {
+            "default": "true",
+            "reads": "Network adapter and connection watcher"
+          },
+          "file_guardian": {
+            "default": "true",
+            "reads": "Filesystem watcher on sensitive directories"
+          },
+          "threat_engine": {
+            "default": "true",
+            "reads": "Main detection and correlation engine loop"
+          },
+          "anti_keylogger": {
+            "default": "true",
+            "reads": "SetWindowsHookEx and keyboard input monitor"
+          },
+          "anti_rat": {
+            "default": "true",
+            "reads": "Known RAT port and backdoor connection monitor"
+          },
+          "anti_surveillance": {
+            "default": "true",
+            "reads": "Webcam and microphone access monitor"
+          },
+          "port_scan_detector": {
+            "default": "true",
+            "reads": "Local port scanning detector"
+          },
+          "ai_analyzer": {
+            "default": "true",
+            "reads": "AI anomaly scoring engine"
+          },
+          "c2_detector": {
+            "default": "true",
+            "reads": "C2 beacon interval / jitter detector"
+          },
+          "parental_controls": {
+            "default": "true",
+            "reads": "Parental controls module activation"
+          }
         },
         "parental": {
-          "enabled": {"default": "false", "reads": "Parental restriction enforcement toggle"},
-          "child_user": {"default": "", "reads": "Target Windows username for restriction application"},
-          "weekday_mins": {"default": "120", "reads": "Daily screen time limit Monday-Friday"},
-          "weekend_mins": {"default": "240", "reads": "Daily screen time limit Saturday-Sunday"},
-          "bedtime_start": {"default": "21:00", "reads": "Evening curfew lockdown start time"},
-          "bedtime_end": {"default": "07:00", "reads": "Morning curfew lockdown end time"},
-          "block_adult": {"default": "true", "reads": "Adult content DNS / web filtering toggle"},
-          "block_gambling": {"default": "true", "reads": "Gambling domains filtering toggle"},
-          "block_violence": {"default": "true", "reads": "Violence domains filtering toggle"}
+          "enabled": {
+            "default": "false",
+            "reads": "Parental restriction enforcement toggle"
+          },
+          "child_user": {
+            "default": "",
+            "reads": "Target Windows username for restriction application"
+          },
+          "weekday_mins": {
+            "default": "120",
+            "reads": "Daily screen time limit Monday-Friday"
+          },
+          "weekend_mins": {
+            "default": "240",
+            "reads": "Daily screen time limit Saturday-Sunday"
+          },
+          "bedtime_start": {
+            "default": "21:00",
+            "reads": "Evening curfew lockdown start time"
+          },
+          "bedtime_end": {
+            "default": "07:00",
+            "reads": "Morning curfew lockdown end time"
+          },
+          "block_adult": {
+            "default": "true",
+            "reads": "Adult content DNS / web filtering toggle"
+          },
+          "block_gambling": {
+            "default": "true",
+            "reads": "Gambling domains filtering toggle"
+          },
+          "block_violence": {
+            "default": "true",
+            "reads": "Violence domains filtering toggle"
+          }
         },
         "intel": {
-          "auto_update": {"default": "true", "reads": "Automatic threat intelligence feed refresh timer"},
-          "update_interval_hours": {"default": "1", "reads": "Interval between feed sync passes"}
+          "auto_update": {
+            "default": "true",
+            "reads": "Automatic threat intelligence feed refresh timer"
+          },
+          "update_interval_hours": {
+            "default": "1",
+            "reads": "Interval between feed sync passes"
+          }
         },
         "security": {
-          "bypass_tpm_bitlocker": {"default": "false", "reads": "Permit execution on non-TPM / unencrypted systems without warning"}
+          "bypass_tpm_bitlocker": {
+            "default": "false",
+            "reads": "Permit execution on non-TPM / unencrypted systems without warning"
+          }
         },
         "osint": {
-          "abuseipdb_key": {"default": "", "reads": "AbuseIPDB API v2 authentication token"},
-          "talos_reputation": {"default": "true", "reads": "Cisco Talos reputation check toggle"},
-          "shodan_key": {"default": "", "reads": "Shodan API authentication key"},
-          "censys_enabled": {"default": "true", "reads": "Censys search integration toggle"},
-          "censys_api_id": {"default": "", "reads": "Censys API ID credential"},
-          "censys_secret": {"default": "", "reads": "Censys API secret credential"},
-          "pulsedive_key": {"default": "", "reads": "Pulsedive API key"},
-          "onyphe_key": {"default": "", "reads": "Onyphe OSINT API key"},
-          "emailrep_key": {"default": "", "reads": "EmailRep reputation API key"},
-          "greynoise_key": {"default": "", "reads": "GreyNoise community / enterprise API key"},
-          "urlscan_key": {"default": "", "reads": "urlscan.io API submission key"},
-          "netlas_key": {"default": "", "reads": "Netlas.io attack surface API key"},
-          "malwarebazaar_key": {"default": "", "reads": "MalwareBazaar Auth-Key"}
+          "abuseipdb_key": {
+            "default": "",
+            "reads": "AbuseIPDB API v2 authentication token"
+          },
+          "talos_reputation": {
+            "default": "true",
+            "reads": "Cisco Talos reputation check toggle"
+          },
+          "shodan_key": {
+            "default": "",
+            "reads": "Shodan API authentication key"
+          },
+          "censys_enabled": {
+            "default": "true",
+            "reads": "Censys search integration toggle"
+          },
+          "censys_api_id": {
+            "default": "",
+            "reads": "Censys API ID credential"
+          },
+          "censys_secret": {
+            "default": "",
+            "reads": "Censys API secret credential"
+          },
+          "pulsedive_key": {
+            "default": "",
+            "reads": "Pulsedive API key"
+          },
+          "onyphe_key": {
+            "default": "",
+            "reads": "Onyphe OSINT API key"
+          },
+          "emailrep_key": {
+            "default": "",
+            "reads": "EmailRep reputation API key"
+          },
+          "greynoise_key": {
+            "default": "",
+            "reads": "GreyNoise community / enterprise API key"
+          },
+          "urlscan_key": {
+            "default": "",
+            "reads": "urlscan.io API submission key"
+          },
+          "netlas_key": {
+            "default": "",
+            "reads": "Netlas.io attack surface API key"
+          },
+          "malwarebazaar_key": {
+            "default": "",
+            "reads": "MalwareBazaar Auth-Key"
+          }
         }
       }
     }

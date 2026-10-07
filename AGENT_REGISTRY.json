@@ -5,10 +5,10 @@
     {
       "id": "codex-primary",
       "role": "primary",
-      "taskId": "DN-014",
-      "status": "idle",
-      "heartbeatUtc": "2026-10-05T03:33:40Z",
-      "notes": "DN-014 system commit and performance release are published. Code `d82fb04` adds system-wide GetPerformanceInfo counters/sixth gauge; `1750c70` fixes embedded version 0.1.14 and release notes. Stable release v0.1.14 asset digest/size match local ZIP. Serial Release build passes with 0 warnings/errors; all 117 tests pass. Local 769-entry package hashes match staging and desktop/service startup passed. Next: native Performance/save-picker click-through, per-core CPU, physical disk I/O and pagefile storage metrics; preserve unknown states and keep main feature status in-progress for incomplete v29 parity. [2026-10-06: marked idle by claude-parity-audit; agent ran out of usage. Its uncommitted work was committed as-is and pushed.]"
+      "taskId": "DN-010",
+      "status": "active",
+      "heartbeatUtc": "2026-10-07T20:20:27Z",
+      "notes": "DN-005 verified slice badcf28: clean Debug build, 879 working-tree tests. DN-010 claimed for owner-authorized v0.1.16 clean release packaging/publishing. Keep DN-008/AntiStalker drafts intact. See newest SHARED_CONTEXT checkpoint."
     },
     {
       "id": "v29_action_map",

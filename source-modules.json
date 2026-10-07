@@ -79,9 +79,9 @@
   {
     "family": "Core Engines & Detection Modules",
     "module": "sigma_engine.py",
-    "description": "Sigma rule ingestion (24 bundled rules + `sigma_rules/` YAML/JSON loader) matched against process cmdlines and PowerShell 4104 script blocks.",
+    "description": "Partial parity: bundled YAML rule ingestion plus bounded PowerShell 4104 matching, in-memory script analysis, stable findings, and bounded dedup. Process-command-line matching is not collected; broader source/rule acceptance remains.",
     "sourceStatus": "Active",
-    "migrationStatus": "planned"
+    "migrationStatus": "in-progress"
   },
   {
     "family": "Core Engines & Detection Modules",
@@ -163,23 +163,23 @@
   {
     "family": "Core Engines & Detection Modules",
     "module": "amsi_integration.py",
-    "description": "AMSI integration: AmsiScanString via ctypes + 22-pattern script-block analyzer.",
+    "description": "Partial parity: service-local AMSI string/buffer scans with HRESULT-aware unavailable results, full malware verdict range, serialized context lifetime, bounded retry, and persistent UI health. No script text is persisted or exported.",
     "sourceStatus": "Active",
-    "migrationStatus": "planned"
+    "migrationStatus": "in-progress"
   },
   {
     "family": "Core Engines & Detection Modules",
     "module": "event_push_monitor.py",
-    "description": "v29 push delivery, 4104-to-Sigma/AMSI bridge, and low-latency hostile-event subscription; still outstanding in Downpour Next.",
+    "description": "Partial parity: Windows EventLogWatcher metadata push, bounded queues, polling fallback, owner-approved local 4104 Sigma/AMSI bridge, and explicit loss/source health. Complete v29 source coverage remains.",
     "sourceStatus": "Active",
-    "migrationStatus": "planned"
+    "migrationStatus": "in-progress"
   },
   {
     "family": "Core Engines & Detection Modules",
     "module": "sysmon_monitor.py",
-    "description": "Sysmon event log monitor (process/network/file/DNS/registry) via wevtutil.",
+    "description": "Partial parity: native EventLogWatcher plus 15-second bounded polling, metadata-only catalog, review alerts for IDs 8/9/25 through strict contracts, and sensor/persistence health. Clipboard activity is excluded; richer behavioral fields and ETW remain.",
     "sourceStatus": "Active (wired via security monitors v29.55)",
-    "migrationStatus": "planned"
+    "migrationStatus": "in-progress"
   },
   {
     "family": "Core Engines & Detection Modules",
@@ -877,9 +877,9 @@
   {
     "family": "Detection Content & Data",
     "module": "sigma_rules/",
-    "description": "19 Sigma YAML rule files plus README; v29 loads these via sigma_engine.py. Downpour Next SigmaEngine.LoadFromYamlFiles exists but has no caller.",
+    "description": "Bundled v29 YAML rules loaded from the install directory, with parser/file-size bounds and unsupported-rule reporting. Complete process-field coverage and rule lifecycle remain.",
     "sourceStatus": "Active",
-    "migrationStatus": "planned"
+    "migrationStatus": "in-progress"
   },
   {
     "family": "Detection Content & Data",

@@ -1,5 +1,46 @@
 # Downpour Next shared context
 
+## 2026-10-07 verified DN-005 slice and active DN-010 release (codex-primary)
+
+Code commit: `badcf28` (18 files below), on main. Restore succeeded; final Debug build succeeded with 0 warnings/errors; final working-tree Debug suite: 879 passed, 0 failed, 0 skipped. Focused new regressions: 38 passed. `git diff --check` passed under normal repository CRLF settings; an earlier check with core.autocrlf=false incorrectly classified CRLF as whitespace and is not a source failure. v29 and the pre-existing DN-008/AntiStalker drafts are unchanged. Source inventory, parity route status, SECURITY.md and feature/action docs have been reconciled; see CONTINUATION_AUDIT.md for explicit remaining gaps.
+
+DN-005 remains in_progress for full v29 detection parity. codex-primary has claimed DN-010 to build and publish v0.1.16 from a clean committed checkout; package validation, clean Release test count, smoke, asset hash and remote publication are pending. GitHub origin/main matched the baseline before this commit. Preserve all uncommitted action/AntiStalker work.
+
+Commands completed: `dotnet restore Downpour.slnx`; `dotnet build Downpour.slnx -c Debug --no-restore`; `dotnet test Downpour.slnx -c Debug --no-build --no-restore`; focused test filters Sigma/SensorAvailability/CapabilityRegistry and AmsiSession/SysmonAlert/DetectionHealth; `git fetch origin`; `git diff --check`; focused `git add`; `git commit`. Next safe task: clean restore/Release build/test/package, native startup plus read-only snapshot smoke, then publish and digest verification. Signing, admin helper, full CIS/AEGIS and broader parity remain unfinished.
+
+Exact code files:
+- `Directory.Build.props`
+- `src/Downpour.Contracts/ForensicBundle.cs`
+- `src/Downpour.Contracts/ServiceHealthSnapshot.cs`
+- `src/Downpour.Core/ForensicEvidenceCollector.cs`
+- `src/Downpour.Service/AmsiIntegration.cs`
+- `src/Downpour.Service/AmsiSession.cs`
+- `src/Downpour.Service/ScriptBlockSource.cs`
+- `src/Downpour.Service/SecurityAlertRepository.cs`
+- `src/Downpour.Service/SecurityAlertSnapshotStore.cs`
+- `src/Downpour.Service/SigmaAmsiEventProcessor.cs`
+- `src/Downpour.Service/SigmaAmsiPushWorker.cs`
+- `src/Downpour.Service/SysmonAlertBatch.cs`
+- `src/Downpour.Service/SysmonProvider.cs`
+- `src/Downpour.Service/SysmonPushWorker.cs`
+- `tests/Downpour.Tests/AmsiSessionTests.cs`
+- `tests/Downpour.Tests/CapabilityRegistryTests.cs`
+- `tests/Downpour.Tests/DetectionHealthTests.cs`
+- `tests/Downpour.Tests/SysmonAlertTests.cs`
+
+
+
+## 2026-10-07 active continuation checkpoint (codex-primary, DN-005)
+
+The owner confirmed v2 is the working repository, v29 is the read-only behavior reference, requested continued functional parity without simulated protection, explicit admin elevation for privileged operations, a new GitHub release, and continuous handoff updates. Full parity is still unfinished. `antigravity-worker` is listed active on DN-008; its host-isolation/anti-stalker drafts are preserved and excluded from this agent's release until separately verified.
+
+Baseline: `dotnet restore Downpour.slnx` passed; `dotnet build Downpour.slnx -c Debug --no-restore` passed with 0 warnings/errors. Baseline Debug tests: 840 passed, 1 failed (draft AntiStalker adds route 39 while CapabilityRegistryTests expects exactly 38). The route test now permits extensions while retaining route/status/uniqueness assertions; focused Sigma/SensorAvailability/CapabilityRegistry run: 32 passed.
+
+Current edits: `AmsiIntegration.cs`, new `AmsiSession.cs`, `ServiceHealthSnapshot.cs`, `SysmonProvider.cs`, `SysmonPushWorker.cs`, new `SysmonAlertBatch.cs`, `SigmaAmsiEventProcessor.cs`, `SigmaAmsiPushWorker.cs`, `SecurityAlertSnapshotStore.cs`, `CapabilityRegistryTests.cs`, queue/registry/context/TODO. AMSI unavailable scans are distinct from clean/not-detected; native context lifecycle is locked and provider retries bounded. Sysmon catalog labels corrected from Microsoft's reference; metadata-only review events 8/9/25 now have a validated alert route, real periodic polling, and visible health warnings. Routine telemetry is not promoted to malware; clipboard activity is excluded. Script-block dedup is bounded to 4096 entries and health survives unrelated alert publications. Changes are not yet committed; final tests and clean-release validation are pending.
+
+Next safe task: add deterministic AMSI/Sysmon/dedup/health regressions, run full Debug checks, reconcile source tracking, commit only owned files, then build/test/publish a clean v0.1.16 checkout. GitHub CLI is authenticated as the repository owner; the latest remote release is still v0.1.14, with v0.1.15 packages only local. Do not overwrite, reset, or stage DN-008/AntiStalker drafts.
+
+
 **Updated:** 2026-10-07 (antigravity-worker: DN-008 Phase 3 Firewall Actions Broker completed, DN-008 Phase 2 Process Termination Broker completed, DN-026 Authenticode YARA skip completed, MiroFish Swarm Intelligence CIS integration completed, DN-009 Tools slice completed, DN-009 CIS slice completed, DN-009 Defense Suite slice completed, DN-009 Parental Controls slice completed, DN-009 Emergency slice completed, DN-009 IoT slice completed, DN-009 VPN slice completed, DN-009 Memory slice completed, DN-009 Ransomware slice completed, DN-009 Sandbox slice completed, DN-009 Forensics slice completed, DN-029 completed, DN-009 Cleanup Center slice completed; claude-parity-audit: DN-008 phase 1 quarantine live, DN-016/018/019/022/023/024/028 done)
 
 **Repository:** public [christiand0797/downpour-next](https://github.com/christiand0797/downpour-next)
