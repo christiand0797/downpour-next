@@ -1,5 +1,13 @@
 # Downpour Next TODO
 
+## Active owner continuation (2026-10-07, codex-primary)
+
+- [ ] Reproduce and fix Parental Controls initialization crash; remove simulated usage; expose persistence errors; verify real page launch.
+- [ ] Validate additional legitimate driver/threat catalogs with provenance, licensing, bounded parsing, persistent cache and real findings.
+- [ ] Compare v29 source behavior and update source inventory/acceptance gaps.
+- [ ] Improve shared controls/theme from owner references while preserving rain, focus and contrast.
+- [ ] Build/test, publish verified next release, and record exact evidence; preserve unrelated drafts.
+
 ## 2026-10-07 checkpoint: DN-008 Phase 4 Reversible USB Device Instance Block & USBSTOR Toggle (antigravity-worker)
 
 Completed and verified (Debug: 0 warnings/errors; 773/773 tests pass):

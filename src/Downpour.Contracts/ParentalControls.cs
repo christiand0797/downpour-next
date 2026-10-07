@@ -51,7 +51,8 @@ public sealed record ScreenTimeStatus(
     int TodayLimitMinutes,
     int RemainingMinutes,
     bool IsLimitExceeded,
-    double WarningPercent);
+    double WarningPercent,
+    bool HasUsageMeasurement = true);
 
 /// <summary>
 /// Assessment of Windows hosts file DNS filtering posture.

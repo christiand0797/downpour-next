@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page x:Class="Downpour_Desktop.Pages.AntiStalkerPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      mc:Ignorable="d">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Padding="28,24,28,36" Spacing="18" MaxWidth="1120" HorizontalAlignment="Left">
+            <Grid ColumnSpacing="16">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                <StackPanel Spacing="5">
+                    <TextBlock Text="PROTECTION  /  ANTI-STALKER" Style="{StaticResource SubtitleTextBlockStyle}" />
+                    <TextBlock Text="Is anyone watching this PC?" Style="{StaticResource TitleTextBlockStyle}" />
+                    <TextBlock Text="Checks every 10 seconds for anything that can see your screen, camera, or microphone, track your location, or control this PC from somewhere else, and keeps a log of when it starts and stops. Everything stays on this PC." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                </StackPanel>
+                <Button Grid.Column="1" x:Name="RefreshButton" Content="Refresh" Click="Refresh_Click" VerticalAlignment="Top" />
+            </Grid>
+
+            <Border x:Name="SummaryCard" Padding="16" CornerRadius="10" BorderThickness="1" Background="#A80B1524" BorderBrush="#3D46C5D8">
+                <StackPanel Spacing="4">
+                    <TextBlock x:Name="SummaryHeadline" Text="Checking…" FontSize="16" FontWeight="SemiBold" TextWrapping="Wrap" />
+                    <TextBlock x:Name="SummaryDetail" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+
+            <TextBlock Text="Right now" Style="{StaticResource SubtitleTextBlockStyle}" />
+            <Grid x:Name="StatusGrid" ColumnSpacing="10" RowSpacing="10">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+            </Grid>
+
+            <TextBlock Text="Watch log" Style="{StaticResource SubtitleTextBlockStyle}" />
+            <TextBlock Text="Every time something started or stopped watching or controlling this PC while Downpour was running, newest first. Saved locally in the protected Downpour folder." FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+            <TextBlock x:Name="LogEmpty" Text="Nothing has been logged yet." Foreground="{ThemeResource TextFillColorTertiaryBrush}" Visibility="Collapsed" />
+            <StackPanel x:Name="LogPanel" Spacing="6" />
+
+            <TextBlock Text="Programs that can watch or control this PC" Style="{StaticResource SubtitleTextBlockStyle}" />
+            <TextBlock x:Name="SoftwareEmpty" Text="No remote-control or monitoring software is running or installed." Foreground="{ThemeResource TextFillColorTertiaryBrush}" Visibility="Collapsed" />
+            <StackPanel x:Name="SoftwarePanel" Spacing="6" />
+
+            <TextBlock Text="Windows usage records" Style="{StaticResource SubtitleTextBlockStyle}" />
+            <TextBlock Text="Windows keeps the last time each app used the camera, microphone, screen capture, or location, even from before Downpour was installed. Unfamiliar apps here deserve a closer look." FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+            <StackPanel x:Name="UsagePanel" Spacing="6" />
+
+            <Border Padding="14" CornerRadius="10" Background="#A80B1524" BorderBrush="#3D46C5D8" BorderThickness="1">
+                <StackPanel Spacing="6">
+                    <TextBlock Text="What this can and cannot see" FontWeight="SemiBold" Foreground="#FFFFC76A" />
+                    <TextBlock FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"
+                               Text="Camera, microphone, and location use are recorded by Windows for every app. Screen capture is recorded only for apps that use Windows' official capture feature; programs that copy the screen another way (many remote-control tools and spyware) are found by name instead, as are Remote Desktop sessions. Hidden or renamed spyware can evade name checks, and phones are not covered." />
+                    <TextBlock Text="If you think someone is stalking you" FontWeight="SemiBold" Margin="0,6,0,0" Foreground="#FFFFC76A" />
+                    <TextBlock FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"
+                               Text="Removing monitoring software can alert the person who installed it. If you may be in danger, consider talking to a domestic-violence or victim-support service first and using a different, trusted device to plan. Change important passwords from that device, turn on two-step sign-in, and check Settings &gt; Privacy &amp; security for app permissions. The Coalition Against Stalkerware (stopstalkerware.org) has guidance." />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

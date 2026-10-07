@@ -1,5 +1,9 @@
 # Downpour Next shared context
 
+## 2026-10-07 active continuation: Parental Controls crash, databases, theme
+
+codex-primary owns DN-009. User reports navigation crash; identified initialization-time slider event calling RefreshPosture before LogTextBox exists, with the catch path dereferencing that same missing control. Also found simulated usage and swallowed configuration write failures. Reproduce via a catalog-only --open-route shortcut, repair lifecycle and honest data states, validate persistence, then continue sourced driver/threat intelligence and cyan/violet shared controls preserving rain. Research official LOLDrivers, Microsoft vulnerable-driver rules, abuse.ch API requirements; do not equate more source names with functioning integrations. Existing DN-008/AntiStalker drafts remain untouched/excluded. Latest published build remains v0.1.17/e8ce959; no new release yet. Native route click-through was never previously verified. Keep this checkpoint current before any pause.
+
 ## 2026-10-07 final published handoff (codex-primary, idle)
 
 Latest release v0.1.17 is published at https://github.com/christiand0797/downpour-next/releases/tag/v0.1.17 (2026-10-07T21:08:25Z). Tag source e8ce959; GitHub latest endpoint, all three asset sizes/digests, and ZIP content type/state verified. ZIP SHA-256 `B035C921C7F9A1BF1DB7222448EEECD6C3C5E43932A6F60B9BC8C77FA843DBB2`, 259,783,061 bytes. Main pushed through 793725a before final documentation handoff. All source/build/test/package/smoke/integrity evidence and exact owned file inventory are in `docs/CONTINUATION_HANDOFF_2026-10-07.md`. The final handoff docs will also be pushed on main. Registry codex-primary is idle; no actively owned process remains running.

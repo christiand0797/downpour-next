@@ -1,5 +1,10 @@
 using Downpour.Service;
 
+// Scheduled automatic release of host isolation (registered by HostIsolationExecutor). Exactly one fixed switch,
+// no other arguments accepted; it removes the isolation rules and exits without starting the service.
+if (args is [TaskSchedulerIsolationRelease.ReleaseSwitch])
+    return HostIsolationExecutor.ReleaseFromScheduledTask();
+
 var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddWindowsService(options =>
 {
@@ -44,6 +49,9 @@ builder.Services.AddSingleton<FirewallActionHandler>();
 builder.Services.AddSingleton<IUsbDeviceBackend, WindowsUsbDeviceBackend>();
 builder.Services.AddSingleton<UsbActionExecutor>();
 builder.Services.AddSingleton<UsbActionHandler>();
+builder.Services.AddSingleton<HostIsolationExecutor>();
+builder.Services.AddSingleton<HostIsolationHandler>();
+builder.Services.AddSingleton<AntiStalkerProvider>();
 builder.Services.AddSingleton<IAuthenticodeVerifier, AuthenticodeVerifier>();
 builder.Services.AddSingleton<IYaraScannerBackend>(provider => new YaraScannerHost(provider.GetRequiredService<ILogger<YaraScannerHost>>()));
 builder.Services.AddSingleton(provider => new YaraScanCoordinator(provider.GetRequiredService<IYaraScannerBackend>(),
@@ -80,7 +88,10 @@ builder.Services.AddHostedService<QuarantineActionPipeWorker>();
 builder.Services.AddHostedService<ProcessTerminationActionPipeWorker>();
 builder.Services.AddHostedService<FirewallActionPipeWorker>();
 builder.Services.AddHostedService<UsbActionPipeWorker>();
+builder.Services.AddHostedService<HostIsolationPipeWorker>();
+builder.Services.AddHostedService<AntiStalkerMonitor>();
 builder.Services.AddHostedService<YaraScanPipeWorker>();
 
 var host = builder.Build();
 host.Run();
+return 0;

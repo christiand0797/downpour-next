@@ -145,7 +145,7 @@ public sealed partial class FirewallPage : Page
             },
             PrimaryButtonText = "Inspect & Preview",
             CloseButtonText = "Cancel",
-            DefaultButton = ContentDialogButton.Primary,
+            DefaultButton = ContentDialogButton.Close,
             XamlRoot = this.XamlRoot
         };
 

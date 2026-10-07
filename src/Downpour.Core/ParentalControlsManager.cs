@@ -64,13 +64,15 @@ public sealed class ParentalControlsManager
     /// Gets the current parental controls configuration.
     /// </summary>
     public ParentalControlsConfig CurrentConfig => _config;
+    public string? ConfigurationWarning { get; private set; }
 
     /// <summary>
     /// Updates the active configuration and saves to disk.
     /// </summary>
     public void SaveConfig(ParentalControlsConfig newConfig)
     {
-        _config = newConfig;
+        ValidateConfig(newConfig);
+        var temporaryPath = _configFilePath + "." + Guid.NewGuid().ToString("N") + ".tmp";
         try
         {
             var dir = Path.GetDirectoryName(_configFilePath);
@@ -80,12 +82,36 @@ public sealed class ParentalControlsManager
             }
 
             string json = JsonConvert.SerializeObject(newConfig, Formatting.Indented);
-            File.WriteAllText(_configFilePath, json);
+            File.WriteAllText(temporaryPath, json);
+            File.Move(temporaryPath, _configFilePath, overwrite: true);
+            _config = newConfig;
+            ConfigurationWarning = null;
         }
-        catch
+        finally
         {
-            // Fallback for restricted storage environments
+            if (File.Exists(temporaryPath)) File.Delete(temporaryPath);
         }
+    }
+
+    public static void ValidateConfig(ParentalControlsConfig config)
+    {
+        ArgumentNullException.ThrowIfNull(config);
+        if (string.IsNullOrWhiteSpace(config.ProfileName) || config.ProfileName.Length > 80 ||
+            config.ProfileName.Any(char.IsControl) || config.ScreenTime is null || config.WebFilter is null || config.AppRestrictions is null)
+            throw new ArgumentException("A profile name of 1–80 characters and all policy sections are required.");
+        var schedule = config.ScreenTime;
+        if (schedule.WeekdayLimitMinutes is < 0 or > 1440 || schedule.WeekendLimitMinutes is < 0 or > 1440 ||
+            !TimeSpan.TryParseExact(schedule.BedtimeStart, @"hh\:mm", CultureInfo.InvariantCulture, out _) ||
+            !TimeSpan.TryParseExact(schedule.BedtimeEnd, @"hh\:mm", CultureInfo.InvariantCulture, out _))
+            throw new ArgumentException("Daily limits must be 0–1440 minutes and bedtime must use HH:MM (24-hour time).");
+        if (config.WebFilter.CustomBlockedDomains is null || config.WebFilter.CustomBlockedDomains.Count > 1000 ||
+            config.WebFilter.CustomBlockedDomains.Any(d => string.IsNullOrWhiteSpace(d) || d.Length > 253 ||
+                d.Any(char.IsWhiteSpace) || Uri.CheckHostName(CleanDomain(d)) != UriHostNameType.Dns))
+            throw new ArgumentException("Enter at most 1,000 valid domain names, without spaces.");
+        if (config.AppRestrictions.BlockedExecutableNames is null || config.AppRestrictions.BlockedExecutableNames.Count > 200 ||
+            config.AppRestrictions.BlockedExecutableNames.Any(n => string.IsNullOrWhiteSpace(n) || n.Length > 128 ||
+                n.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0))
+            throw new ArgumentException("Enter at most 200 executable file names, without directory paths.");
     }
 
     /// <summary>
@@ -117,8 +143,8 @@ public sealed class ParentalControlsManager
         // Bedtime evaluation
         bool isCurfew = IsTimeWithinCurfew(now.TimeOfDay, schedule.BedtimeStart, schedule.BedtimeEnd);
         string curfewMessage = isCurfew
-            ? $"Bedtime curfew is active ({schedule.BedtimeStart} to {schedule.BedtimeEnd}). Computer access is restricted."
-            : $"Access allowed. Bedtime curfew starts at {schedule.BedtimeStart}.";
+            ? $"Within configured bedtime ({schedule.BedtimeStart} to {schedule.BedtimeEnd}). Access is not enforced."
+            : $"Outside configured bedtime. Next start: {schedule.BedtimeStart}. Access is not enforced.";
 
         return new ScreenTimeStatus(
             IsWithinCurfew: isCurfew,
@@ -188,8 +214,10 @@ public sealed class ParentalControlsManager
                     LastUpdatedUtc: null);
             }
 
+            if (new FileInfo(path).Length > 4 * 1024 * 1024) throw new IOException("Hosts file exceeds the inspection limit.");
             string content = File.ReadAllText(path);
-            bool hasMarker = content.Contains(HostsFilterMarkerStart, StringComparison.OrdinalIgnoreCase);
+            int markerStart = content.IndexOf(HostsFilterMarkerStart, StringComparison.OrdinalIgnoreCase);
+            bool hasMarker = markerStart >= 0 && content.IndexOf(HostsFilterMarkerEnd, markerStart, StringComparison.OrdinalIgnoreCase) > markerStart;
             int blockedCount = 0;
 
             if (hasMarker)
@@ -344,18 +372,20 @@ public sealed class ParentalControlsManager
     /// Captures a complete point-in-time posture snapshot for parental controls.
     /// </summary>
     public ParentalPostureSnapshot CapturePostureSnapshot(
-        int currentUsageMinutes = 0,
+        int? currentUsageMinutes = null,
         DateTimeOffset? evaluatedAt = null,
         IReadOnlyList<string>? simulatedProcesses = null,
         IReadOnlyList<ParentalActivityLogEntry>? logs = null)
     {
-        var now = evaluatedAt ?? DateTimeOffset.UtcNow;
-        var screenTime = EvaluateScreenTime(_config.ScreenTime, now, currentUsageMinutes);
+        var now = evaluatedAt ?? DateTimeOffset.Now;
+        var screenTime = EvaluateScreenTime(_config.ScreenTime with { Enabled = _config.Enabled && _config.ScreenTime.Enabled }, now, currentUsageMinutes ?? 0)
+            with { HasUsageMeasurement = currentUsageMinutes.HasValue };
+        if (!screenTime.HasUsageMeasurement) screenTime = screenTime with { RemainingMinutes = 0 };
         var hostsPosture = InspectHostsFile();
-        var restrictedApps = CheckActiveRestrictedApps(_config.AppRestrictions, simulatedProcesses);
+        var restrictedApps = CheckActiveRestrictedApps(_config.AppRestrictions with { Enabled = _config.Enabled && _config.AppRestrictions.Enabled }, simulatedProcesses);
 
         return new ParentalPostureSnapshot(
-            CapturedAtUtc: now,
+            CapturedAtUtc: now.ToUniversalTime(),
             Config: _config,
             ScreenTime: screenTime,
             HostsPosture: hostsPosture,
@@ -373,6 +403,7 @@ public sealed class ParentalControlsManager
         var sb = new StringBuilder();
 
         sb.AppendLine("# Parental Controls & Family Safety Posture Report");
+        sb.AppendLine("Configuration and read-only observations. This page does not enforce access, terminate apps, or apply DNS/SafeSearch policy.");
         sb.AppendLine();
         sb.AppendLine($"- **Profile**: `{snapshot.Config.ProfileName}`");
         sb.AppendLine($"- **Assessment Date**: `{snapshot.CapturedAtUtc:yyyy-MM-dd HH:mm:ss} UTC`");
@@ -382,8 +413,12 @@ public sealed class ParentalControlsManager
         sb.AppendLine();
         sb.AppendLine($"- **Schedule Active**: `{(snapshot.Config.ScreenTime.Enabled ? "Yes" : "No")}`");
         sb.AppendLine($"- **Today's Limit**: **{snapshot.ScreenTime.TodayLimitMinutes} minutes** ({(snapshot.CapturedAtUtc.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday ? "Weekend" : "Weekday")})");
-        sb.AppendLine($"- **Used Today**: **{snapshot.ScreenTime.TodayUsageMinutes} minutes** ({snapshot.ScreenTime.WarningPercent:F1}%)");
-        sb.AppendLine($"- **Remaining**: **{snapshot.ScreenTime.RemainingMinutes} minutes**");
+        if (snapshot.ScreenTime.HasUsageMeasurement)
+        {
+            sb.AppendLine($"- **Used Today**: **{snapshot.ScreenTime.TodayUsageMinutes} minutes** ({snapshot.ScreenTime.WarningPercent:F1}%)");
+            sb.AppendLine($"- **Remaining**: **{snapshot.ScreenTime.RemainingMinutes} minutes**");
+        }
+        else sb.AppendLine("- **Used Today / Remaining**: Unavailable — no consented screen-time measurement source is connected.");
         sb.AppendLine($"- **Bedtime Window**: `{snapshot.Config.ScreenTime.BedtimeStart} - {snapshot.Config.ScreenTime.BedtimeEnd}`");
         sb.AppendLine($"- **Curfew Status**: {(snapshot.ScreenTime.IsWithinCurfew ? "**ACTIVE CURFEW**" : "Open Access")}");
         sb.AppendLine();
@@ -397,7 +432,7 @@ public sealed class ParentalControlsManager
         sb.AppendLine($"- **Block Violence**: `{(snapshot.Config.WebFilter.BlockViolence ? "YES" : "NO")}`");
         sb.AppendLine($"- **Block Weapons**: `{(snapshot.Config.WebFilter.BlockWeapons ? "YES" : "NO")}`");
         sb.AppendLine($"- **Block Drugs**: `{(snapshot.Config.WebFilter.BlockDrugs ? "YES" : "NO")}`");
-        sb.AppendLine($"- **Total Blocked Domains**: **{domains.Count}**");
+        sb.AppendLine($"- **Configured Domains (not coverage or enforcement)**: **{domains.Count}**");
         sb.AppendLine($"- **Hosts File Integration**: `{(snapshot.HostsPosture.HasDownpourFilterMarker ? "ACTIVE (" + snapshot.HostsPosture.ActiveBlockedDomainsCount + " entries)" : "NOT APPLIED")}`");
         sb.AppendLine();
 
@@ -475,14 +510,17 @@ public sealed class ParentalControlsManager
         {
             if (File.Exists(_configFilePath))
             {
+                if (new FileInfo(_configFilePath).Length > 256 * 1024) throw new IOException("Configuration exceeds 256 KiB.");
                 string json = File.ReadAllText(_configFilePath);
-                var loaded = JsonConvert.DeserializeObject<ParentalControlsConfig>(json);
-                if (loaded is not null) return loaded;
+                var loaded = JsonConvert.DeserializeObject<ParentalControlsConfig>(json, new JsonSerializerSettings { MaxDepth = 16 });
+                if (loaded is null) throw new ArgumentException("Configuration is empty.");
+                ValidateConfig(loaded);
+                return loaded;
             }
         }
-        catch
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException or ArgumentException)
         {
-            // Use default on read failure
+            ConfigurationWarning = "Saved configuration could not be loaded. Defaults are shown; the existing file has not been changed.";
         }
 
         return new ParentalControlsConfig(

@@ -14,8 +14,8 @@
             </StackPanel>
             <Border Padding="14" CornerRadius="10" Background="#A80B1524" BorderBrush="#3D46C5D8" BorderThickness="1">
                 <StackPanel Spacing="6">
-                    <TextBlock Text="Phase 1 (Quarantine &amp; Restore), Phase 2 (Process Termination), Phase 3 (Firewall Protection), and Phase 4 (USB Device Block) Active" FontWeight="SemiBold" Foreground="#FFFFC76A" />
-                    <TextBlock Text="Quarantine files, terminate alerted processes, block malicious remote IPs, and block unauthorized USB devices with audited consent tokens (DN-008). System critical components, protected processes, local IP addresses, and human interface devices (keyboards/mice) are strictly protected. All actions require itemized operator review, single-use consent tokens, and tamper-evident audit logging." FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                    <TextBlock Text="Phase 1 (Quarantine &amp; Restore), Phase 2 (Process Termination), Phase 3 (Firewall Protection), Phase 4 (USB Device Block), and Phase 5 (Host Isolation) Active" FontWeight="SemiBold" Foreground="#FFFFC76A" />
+                    <TextBlock Text="Quarantine files, terminate alerted processes, block malicious remote IPs, block unauthorized USB devices, and engage emergency host isolation with audited consent tokens (DN-008). System critical components, protected processes, local IP addresses, and human interface devices (keyboards/mice) are strictly protected. Host isolation always expires (5 minutes to 24 hours) through a Windows scheduled task, even if Downpour is closed; it is refused if that release cannot be scheduled. Every action needs your review and a single-use confirmation, and is written to a local audit log. Most actions need Downpour to run as administrator." FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                 </StackPanel>
             </Border>
             <StackPanel Orientation="Horizontal" Spacing="12">
@@ -23,10 +23,13 @@
                 <Button x:Name="TerminateProcessButton" Content="Terminate process by PID…" Click="TerminateProcess_Click" />
                 <Button x:Name="BlockIpButton" Content="Block remote IP…" Click="BlockIp_Click" />
                 <Button x:Name="BlockUsbDeviceButton" Content="Block USB device…" Click="BlockUsbDevice_Click" />
+                <Button x:Name="IsolateHostButton" Content="Isolate host network…" Click="IsolateHost_Click" />
+                <Button x:Name="ReleaseIsolationButton" Content="Release host isolation…" Click="ReleaseIsolation_Click" Visibility="Collapsed" />
                 <Button x:Name="RefreshButton" Content="Refresh" Click="Refresh_Click" />
                 <ProgressRing x:Name="Busy" Width="22" Height="22" IsActive="False" VerticalAlignment="Center" />
                 <TextBlock x:Name="StatusText" Text="Loading…" VerticalAlignment="Center" TextWrapping="Wrap" />
             </StackPanel>
+            <InfoBar x:Name="HostIsolationBar" Severity="Error" IsOpen="False" IsClosable="False" Title="Host Network Isolated" />
             <InfoBar x:Name="RecoveryBar" Severity="Warning" IsOpen="False" IsClosable="True" Title="Interrupted actions were resolved" />
             <TextBlock Text="Quarantined files" Style="{StaticResource SubtitleTextBlockStyle}" />
             <TextBlock x:Name="EmptyText" Text="Nothing is quarantined." Foreground="{ThemeResource TextFillColorSecondaryBrush}" Visibility="Collapsed" />

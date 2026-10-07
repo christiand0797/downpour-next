@@ -218,6 +218,25 @@ public sealed class ActionPolicyValidator
                 rollbackSteps.Add("Re-enable the USBSTOR service via Downpour USB settings or Windows Services");
                 break;
 
+            case ActionKinds.IsolateHost:
+                effects.Add("Create inbound and outbound Windows Firewall isolation rules dropping all non-loopback network packets across all profiles");
+                effects.Add("Preserve local loopback traffic (127.0.0.1 and ::1) to ensure local IPC remains functional");
+                effects.Add("Engage automatic expiration timer to guarantee host network isolation automatically terminates");
+                effects.Add("Record host isolation event and expiration time in the append-only action audit log");
+                risks.Add("All external network connectivity, internet access, LAN communication, and remote access sessions will be severed immediately");
+                risks.Add("Active network connections will drop and cloud-dependent services will stop responding until isolation releases");
+                rollbackSteps.Add("Isolation automatically expires; operator can also manually release isolation at any time via Emergency or Remediation page");
+                break;
+
+            case ActionKinds.ReleaseHostIsolation:
+                effects.Add("Remove Windows Firewall host isolation rules across all network profiles");
+                effects.Add("Cancel active automatic expiration timer");
+                effects.Add("Restore standard inbound and outbound network connectivity");
+                effects.Add("Record isolation release event in the append-only action audit log");
+                risks.Add("If active malware or threat remains on the host, command-and-control communication may resume upon reconnection");
+                rollbackSteps.Add("Re-engage emergency host isolation if active malicious traffic or exfiltration continues");
+                break;
+
             default:
                 effects.Add($"Execute action '{request.ActionKind}' on '{request.ObjectId}'");
                 risks.Add("Action-specific risks not yet documented");

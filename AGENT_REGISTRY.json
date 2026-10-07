@@ -5,10 +5,10 @@
     {
       "id": "codex-primary",
       "role": "primary",
-      "taskId": "DN-010",
+      "taskId": "DN-009",
       "status": "idle",
-      "heartbeatUtc": "2026-10-07T21:11:00Z",
-      "notes": "Handoff: v0.1.17 published/verified at e8ce959; clean Release 870 tests, root Debug 893; native smoke, full-package integrity/live review and remote digests pass. Next safe task: narrow admin helper/installed-service boundary with denial/audit/timeout/recovery tests; preserve action/AntiStalker drafts. Exact files/commits/commands/failures in docs/CONTINUATION_HANDOFF_2026-10-07.md. Overall parity/signing/admin/native acceptance unfinished; CI account billing lock confirmed."
+      "heartbeatUtc": "2026-10-07T21:19:26Z",
+      "notes": "Out of usage 2026-10-07. Unfinished DN-009 work (Parental Controls crash fix, host isolation phase 5) completed and committed by claude-parity-audit; databases and theme continued by claude-parity-audit. Active owner continuation: Parental Controls crash, sourced driver/threat databases, v29 gap research and futuristic shared UI theme preserving rain. Exact checkpoints in SHARED_CONTEXT; preserve other drafts."
     },
     {
       "id": "v29_action_map",
@@ -101,10 +101,10 @@
     {
       "id": "claude-parity-audit",
       "role": "agent",
-      "taskId": "DN-026",
-      "status": "idle",
-      "heartbeatUtc": "2026-10-07T09:40:00Z",
-      "notes": "DN-026 YARA committed and pushed (see SHARED_CONTEXT). Next safe task: Authenticode skip for signed files, or DN-008 phase 2."
+      "taskId": "DN-009/DN-030",
+      "status": "active",
+      "heartbeatUtc": "2026-10-07T22:30:00Z",
+      "notes": "Wrapping up other agents' drafts (Parental Controls, host isolation), Anti-Stalker (DN-030), databases, futuristic theme."
     }
   ]
 }

@@ -12,6 +12,7 @@ namespace Downpour_Desktop.Pages;
 public sealed partial class EmergencyPage : Page
 {
     private readonly EmergencyResponseCoordinator _coordinator = new();
+    private readonly HostIsolationClient _isolationClient = new();
     private readonly ObservableCollection<EmergencyProcessRow> _processRows = [];
     private readonly List<EmergencyLogEntry> _logEntries = [];
     private EmergencySnapshot? _currentSnapshot;
@@ -45,6 +46,15 @@ public sealed partial class EmergencyPage : Page
 
             AppendLog("Posture Assessment", $"Assessment complete: {snapshot.ProcessCount} processes, {snapshot.SuspiciousProcessCount} suspicious flags, {snapshot.ConnectionCount} active TCP connections.",
                 snapshot.SuspiciousProcessCount > 0 ? EmergencyLogSeverity.Warning : EmergencyLogSeverity.Success);
+
+            var isoStatus = await _isolationClient.GetStatusAsync();
+            if (isoStatus?.IsIsolated == true)
+            {
+                StatusBadge.Background = new SolidColorBrush(ColorHelper.FromArgb(255, 185, 28, 28));
+                StatusBadgeText.Foreground = new SolidColorBrush(Colors.White);
+                StatusBadgeText.Text = $"ISOLATED (UNTIL {isoStatus.ActiveUntilUtc:HH:mm:ss} UTC)";
+                AppendLog("Host Network Status", $"Host network isolation is ACTIVE until {isoStatus.ActiveUntilUtc:HH:mm:ss} UTC (inbound/outbound non-loopback dropped, local loopback preserved).", EmergencyLogSeverity.Warning);
+            }
         }
         catch (Exception ex)
         {
@@ -115,7 +125,7 @@ public sealed partial class EmergencyPage : Page
             },
             PrimaryButtonText = "ACTIVATE LOCKDOWN",
             CloseButtonText = "Cancel",
-            DefaultButton = ContentDialogButton.Primary,
+            DefaultButton = ContentDialogButton.Close,
             XamlRoot = XamlRoot
         };
 
@@ -166,6 +176,28 @@ public sealed partial class EmergencyPage : Page
                 XamlRoot = XamlRoot
             };
             await resultDialog.ShowAsync();
+
+            if (OptIsolateNetwork.IsChecked == true)
+            {
+                var askIsolateDialog = new ContentDialog
+                {
+                    Title = "Engage Network Isolation?",
+                    Content = new TextBlock
+                    {
+                        Text = "Panic Lockdown completed. You selected 'Isolate network traffic (Guarded)'.\n\nWould you like to proceed with emergency host network isolation now? (Windows Firewall will drop all non-loopback traffic; Downpour IPC loopback is preserved; auto-expires in 30 minutes).",
+                        TextWrapping = TextWrapping.Wrap
+                    },
+                    PrimaryButtonText = "Proceed to Isolation",
+                    CloseButtonText = "Skip",
+                    DefaultButton = ContentDialogButton.Close,
+                    XamlRoot = XamlRoot
+                };
+
+                if (await askIsolateDialog.ShowAsync() == ContentDialogResult.Primary)
+                {
+                    ActionIsolateBtn_Click(sender, e);
+                }
+            }
         }
         catch (Exception ex)
         {
@@ -205,40 +237,223 @@ public sealed partial class EmergencyPage : Page
 
     private async void ActionIsolateBtn_Click(object sender, RoutedEventArgs e)
     {
-        var result = await _coordinator.ExecuteActionAsync(EmergencyActionType.IsolateNetwork, _currentSnapshot);
-        AppendLog(result.ActionTitle, result.Details, EmergencyLogSeverity.Warning);
+        var durationBox = new TextBox { Text = "30", Width = 80, HorizontalAlignment = HorizontalAlignment.Left };
+        var lockBox = new CheckBox { Content = "Lock Windows session immediately (user32.dll)", IsChecked = false };
+        var reasonBox = new TextBox { Text = "Incident containment", PlaceholderText = "Reason for host isolation" };
 
-        var dialog = new ContentDialog
+        var inputStack = new StackPanel { Spacing = 10 };
+        inputStack.Children.Add(new TextBlock { Text = "Emergency Host Network Isolation (DN-008 Phase 5)", FontWeight = Microsoft.UI.Text.FontWeights.SemiBold });
+        inputStack.Children.Add(new TextBlock { Text = "All inbound and outbound non-loopback network packets will be blocked by Windows Firewall.\nLocal loopback (127.0.0.1, ::1) is preserved so Downpour remains operational.\nIsolation MUST auto-expire (5 to 1440 minutes). Permanent isolation is strictly prohibited.", TextWrapping = TextWrapping.Wrap, Foreground = new SolidColorBrush(Colors.LightGray), FontSize = 12 });
+        inputStack.Children.Add(new TextBlock { Text = "Duration in minutes (5 - 1440):", Margin = new Thickness(0, 4, 0, 0) });
+        inputStack.Children.Add(durationBox);
+        inputStack.Children.Add(lockBox);
+        inputStack.Children.Add(new TextBlock { Text = "Operator audit reason:", Margin = new Thickness(0, 4, 0, 0) });
+        inputStack.Children.Add(reasonBox);
+
+        var requestDialog = new ContentDialog
         {
-            Title = "Network Isolation Guarded (DN-008)",
-            Content = new TextBlock
-            {
-                Text = "Host network isolation (disabling network adapters / applying total firewall block) is guarded under least-privilege policy.\n\nSystem-altering actions require an authorized Action Broker token under DN-008. In read-only mode, the isolation action was logged and validated without disconnecting your host.",
-                TextWrapping = TextWrapping.Wrap
-            },
-            CloseButtonText = "Understood",
+            Title = "Request Host Network Isolation",
+            Content = inputStack,
+            PrimaryButtonText = "Preview Isolation",
+            CloseButtonText = "Cancel",
+            DefaultButton = ContentDialogButton.Close,
             XamlRoot = XamlRoot
         };
-        await dialog.ShowAsync();
+
+        if (await requestDialog.ShowAsync() != ContentDialogResult.Primary)
+        {
+            AppendLog("Host Isolation", "Isolation request cancelled by operator.", EmergencyLogSeverity.Info);
+            return;
+        }
+
+        if (!int.TryParse(durationBox.Text.Trim(), out int durationMinutes) || durationMinutes < 5 || durationMinutes > 1440)
+        {
+            var invalidDialog = new ContentDialog
+            {
+                Title = "Invalid Duration",
+                Content = new TextBlock { Text = "Duration must be an integer between 5 and 1440 minutes (24 hours). Permanent isolation is strictly prohibited." },
+                CloseButtonText = "OK",
+                XamlRoot = XamlRoot
+            };
+            await invalidDialog.ShowAsync();
+            return;
+        }
+
+        bool lockWorkstation = lockBox.IsChecked == true;
+        string reason = string.IsNullOrWhiteSpace(reasonBox.Text) ? "Incident containment" : reasonBox.Text.Trim();
+
+        AppendLog("Host Isolation", $"Requesting preview from sensor service ({durationMinutes} minutes)...", EmergencyLogSeverity.Info);
+        var preview = await _isolationClient.PreviewIsolateAsync(durationMinutes, lockWorkstation, reason);
+
+        if (preview is null)
+        {
+            AppendLog("Host Isolation", "The sensor service did not respond. Verify service is running.", EmergencyLogSeverity.Critical);
+            var unreachDialog = new ContentDialog
+            {
+                Title = "Service Unreachable",
+                Content = new TextBlock { Text = "The Downpour sensor service did not respond. Host isolation requires the elevated background service." },
+                CloseButtonText = "OK",
+                XamlRoot = XamlRoot
+            };
+            await unreachDialog.ShowAsync();
+            return;
+        }
+
+        if (!preview.Accepted || preview.Preview is null)
+        {
+            AppendLog("Host Isolation Denied", preview.Message, EmergencyLogSeverity.Critical);
+            var deniedDialog = new ContentDialog
+            {
+                Title = "Isolation Denied",
+                Content = new TextBlock { Text = preview.Message },
+                CloseButtonText = "OK",
+                XamlRoot = XamlRoot
+            };
+            await deniedDialog.ShowAsync();
+            return;
+        }
+
+        var p = preview.Preview;
+        var detailsText = $"Isolation Duration: {p.DurationMinutes} minutes (Expires {p.ExpiresAtUtc:HH:mm:ss} UTC)\n" +
+                          $"Workstation Lock: {(p.LockWorkstation ? "Yes" : "No")}\n\n" +
+                          $"Expected Effects:\n• {string.Join("\n• ", p.ExpectedEffects)}\n\n" +
+                          $"Risks:\n• {string.Join("\n• ", p.Risks)}\n\n" +
+                          $"Rollback / Auto-Expiry:\n• {string.Join("\n• ", p.RollbackSteps)}\n\n" +
+                          "Consent token minted (valid for 60 seconds). Are you sure you want to isolate this host now?";
+
+        var confirmDialog = new ContentDialog
+        {
+            Title = "Confirm Emergency Host Isolation",
+            Content = new TextBlock { Text = detailsText, TextWrapping = TextWrapping.Wrap },
+            PrimaryButtonText = "CONFIRM ISOLATION",
+            CloseButtonText = "Cancel",
+            DefaultButton = ContentDialogButton.Close,
+            XamlRoot = XamlRoot
+        };
+
+        if (await confirmDialog.ShowAsync() != ContentDialogResult.Primary || p.ConsentToken is null)
+        {
+            AppendLog("Host Isolation", "Isolation confirmation cancelled. No changes made.", EmergencyLogSeverity.Info);
+            return;
+        }
+
+        AppendLog("Host Isolation", "Engaging emergency host isolation...", EmergencyLogSeverity.Warning);
+        var outcome = await _isolationClient.IsolateAsync(p.ConsentToken, p.DurationMinutes, p.LockWorkstation, reason);
+
+        if (outcome?.Accepted == true)
+        {
+            StatusBadge.Background = new SolidColorBrush(ColorHelper.FromArgb(255, 185, 28, 28));
+            StatusBadgeText.Foreground = new SolidColorBrush(Colors.White);
+            StatusBadgeText.Text = $"ISOLATED (UNTIL {outcome.ActiveUntilUtc:HH:mm:ss} UTC)";
+
+            string rulesStr = outcome.RulesCreated is not null ? string.Join(", ", outcome.RulesCreated) : "Downpour isolation rules";
+            AppendLog("Host Isolation", $"HOST ISOLATED. Block rules active until {outcome.ActiveUntilUtc:HH:mm:ss} UTC. Rules: {rulesStr}.", EmergencyLogSeverity.Critical);
+
+            var successDialog = new ContentDialog
+            {
+                Title = "Host Isolation Engaged",
+                Content = new TextBlock
+                {
+                    Text = $"Emergency host network isolation is now active.\n\nAll non-loopback inbound and outbound network traffic is blocked.\nLoopback (127.0.0.1, ::1) is preserved for Downpour IPC.\n\nAutomatic release scheduled for {outcome.ActiveUntilUtc:HH:mm:ss} UTC ({durationMinutes} minutes).\nYou can also release isolation manually at any time.",
+                    TextWrapping = TextWrapping.Wrap
+                },
+                CloseButtonText = "OK",
+                XamlRoot = XamlRoot
+            };
+            await successDialog.ShowAsync();
+        }
+        else
+        {
+            AppendLog("Host Isolation Failed", outcome?.Message ?? "No response received.", EmergencyLogSeverity.Critical);
+            var failDialog = new ContentDialog
+            {
+                Title = "Isolation Failed",
+                Content = new TextBlock { Text = outcome?.Message ?? "Failed to engage host isolation." },
+                CloseButtonText = "OK",
+                XamlRoot = XamlRoot
+            };
+            await failDialog.ShowAsync();
+        }
     }
 
     private async void ActionRestoreBtn_Click(object sender, RoutedEventArgs e)
     {
-        var result = await _coordinator.ExecuteActionAsync(EmergencyActionType.RestoreNetwork, _currentSnapshot);
-        AppendLog(result.ActionTitle, result.Details, EmergencyLogSeverity.Info);
+        AppendLog("Host Isolation", "Requesting release preview from sensor service...", EmergencyLogSeverity.Info);
+        var preview = await _isolationClient.PreviewReleaseAsync("Operator manual release");
 
-        var dialog = new ContentDialog
+        if (preview is null)
         {
-            Title = "Restore Network Guarded (DN-008)",
-            Content = new TextBlock
+            AppendLog("Host Isolation", "The sensor service did not respond.", EmergencyLogSeverity.Critical);
+            return;
+        }
+
+        if (!preview.Accepted || preview.Preview is null)
+        {
+            AppendLog("Release Denied", preview.Message, EmergencyLogSeverity.Warning);
+            var deniedDialog = new ContentDialog
             {
-                Text = "Network restoration is guarded under Action Broker policy (DN-008).\n\nIf you have emergency firewall blocks configured, modifying adapter states requires elevated Action Broker approval.",
-                TextWrapping = TextWrapping.Wrap
-            },
-            CloseButtonText = "Understood",
+                Title = "Release Preview Denied",
+                Content = new TextBlock { Text = preview.Message },
+                CloseButtonText = "OK",
+                XamlRoot = XamlRoot
+            };
+            await deniedDialog.ShowAsync();
+            return;
+        }
+
+        var p = preview.Preview;
+        var detailsText = $"Expected Effects:\n• {string.Join("\n• ", p.ExpectedEffects)}\n\n" +
+                          $"Risks:\n• {string.Join("\n• ", p.Risks)}\n\n" +
+                          "Consent token minted (valid for 60 seconds). Restore full host network connectivity now?";
+
+        var confirmDialog = new ContentDialog
+        {
+            Title = "Confirm Network Restoration",
+            Content = new TextBlock { Text = detailsText, TextWrapping = TextWrapping.Wrap },
+            PrimaryButtonText = "Restore Connectivity",
+            CloseButtonText = "Cancel",
+            DefaultButton = ContentDialogButton.Close,
             XamlRoot = XamlRoot
         };
-        await dialog.ShowAsync();
+
+        if (await confirmDialog.ShowAsync() != ContentDialogResult.Primary || p.ConsentToken is null)
+        {
+            AppendLog("Host Isolation", "Restoration cancelled by operator.", EmergencyLogSeverity.Info);
+            return;
+        }
+
+        AppendLog("Host Isolation", "Releasing host isolation rules...", EmergencyLogSeverity.Info);
+        var outcome = await _isolationClient.ReleaseAsync(p.ConsentToken, "Operator manual release");
+
+        if (outcome?.Accepted == true)
+        {
+            StatusBadge.Background = new SolidColorBrush(ColorHelper.FromArgb(255, 69, 10, 10));
+            StatusBadgeText.Foreground = new SolidColorBrush(ColorHelper.FromArgb(255, 248, 113, 113));
+            StatusBadgeText.Text = "ARMED";
+
+            AppendLog("Host Isolation", "Host isolation rules removed. Normal network connectivity restored.", EmergencyLogSeverity.Success);
+
+            var successDialog = new ContentDialog
+            {
+                Title = "Network Connectivity Restored",
+                Content = new TextBlock { Text = "Host isolation firewall rules have been removed and the auto-expiry timer cancelled. Normal network connectivity is restored." },
+                CloseButtonText = "OK",
+                XamlRoot = XamlRoot
+            };
+            await successDialog.ShowAsync();
+        }
+        else
+        {
+            AppendLog("Release Failed", outcome?.Message ?? "Failed to release isolation.", EmergencyLogSeverity.Critical);
+            var failDialog = new ContentDialog
+            {
+                Title = "Release Failed",
+                Content = new TextBlock { Text = outcome?.Message ?? "Failed to release host isolation." },
+                CloseButtonText = "OK",
+                XamlRoot = XamlRoot
+            };
+            await failDialog.ShowAsync();
+        }
     }
 
     private async void ActionKillBtn_Click(object sender, RoutedEventArgs e)
@@ -302,7 +517,7 @@ public sealed partial class EmergencyPage : Page
             },
             PrimaryButtonText = "Lock Session",
             CloseButtonText = "Cancel",
-            DefaultButton = ContentDialogButton.Primary,
+            DefaultButton = ContentDialogButton.Close,
             XamlRoot = XamlRoot
         };
 

@@ -113,7 +113,31 @@ public static class DefaultActionCatalog
                 TimeoutSeconds: 30,
                 RequiredPermission: "service-configure",
                 RequiredParameters: new[] { "enabled" },
-                AllowedObjectIdPatterns: new[] { "usbstor-", "obj-" })
+                AllowedObjectIdPatterns: new[] { "usbstor-", "obj-" }),
+
+            [ActionKinds.IsolateHost] = new ActionCatalogEntry(
+                ActionKind: ActionKinds.IsolateHost,
+                DisplayName: "Host Network Isolation",
+                Description: "Isolate the host by blocking all inbound and outbound network traffic via Windows Firewall with an enforced auto-expiry timer.",
+                Category: "Host Containment",
+                EnabledByDefault: false,
+                RequiresElevation: true,
+                TimeoutSeconds: 30,
+                RequiredPermission: "network-isolate",
+                RequiredParameters: new[] { "durationMinutes" },
+                AllowedObjectIdPatterns: new[] { "host-", "obj-" }),
+
+            [ActionKinds.ReleaseHostIsolation] = new ActionCatalogEntry(
+                ActionKind: ActionKinds.ReleaseHostIsolation,
+                DisplayName: "Release Host Network Isolation",
+                Description: "Remove Windows Firewall isolation block rules and restore normal network connectivity.",
+                Category: "Host Containment",
+                EnabledByDefault: false,
+                RequiresElevation: true,
+                TimeoutSeconds: 30,
+                RequiredPermission: "network-isolate",
+                RequiredParameters: Array.Empty<string>(),
+                AllowedObjectIdPatterns: new[] { "host-", "obj-" })
         };
 
         return new ActionCatalogSnapshot(
@@ -190,6 +214,22 @@ public static class DefaultActionCatalog
                 FeatureId: ActionKinds.SetUsbStorage,
                 DisplayName: "USB Mass Storage Toggle",
                 Description: "Allow enabling or disabling the Windows USBSTOR storage driver.",
+                Enabled: false,
+                RequiredPolicyVersion: CurrentPolicyVersion,
+                EnabledAtUtc: null),
+
+            [ActionKinds.IsolateHost] = new FeatureSwitch(
+                FeatureId: ActionKinds.IsolateHost,
+                DisplayName: "Host Network Isolation",
+                Description: "Allow emergency host network isolation with built-in auto-expiry.",
+                Enabled: false,
+                RequiredPolicyVersion: CurrentPolicyVersion,
+                EnabledAtUtc: null),
+
+            [ActionKinds.ReleaseHostIsolation] = new FeatureSwitch(
+                FeatureId: ActionKinds.ReleaseHostIsolation,
+                DisplayName: "Release Host Isolation",
+                Description: "Allow manual release of host network isolation before auto-expiry.",
                 Enabled: false,
                 RequiredPolicyVersion: CurrentPolicyVersion,
                 EnabledAtUtc: null)

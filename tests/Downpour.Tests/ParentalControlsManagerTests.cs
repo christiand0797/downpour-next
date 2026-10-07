@@ -6,6 +6,67 @@ namespace Downpour.Tests;
 
 public sealed class ParentalControlsManagerTests : IDisposable
 {
+    [Fact]
+    public void MissingUsageIsUnknownInSnapshotAndReport()
+    {
+        var manager = new ParentalControlsManager(Path.Combine(_testDirectory, "config.json"), Path.Combine(_testDirectory, "hosts"));
+        var snapshot = manager.CapturePostureSnapshot(simulatedProcesses: []);
+        Assert.False(snapshot.ScreenTime.HasUsageMeasurement);
+        Assert.Equal(0, snapshot.ScreenTime.RemainingMinutes);
+        Assert.Contains("Unavailable", manager.GenerateParentalPostureReport(snapshot));
+        Assert.DoesNotContain("Computer access is restricted", snapshot.ScreenTime.CurfewMessage);
+    }
+
+    [Fact]
+    public void FailedSaveDoesNotChangeActivePolicy()
+    {
+        var path = Path.Combine(_testDirectory, "blocked");
+        Directory.CreateDirectory(path);
+        var manager = new ParentalControlsManager(path);
+        var original = manager.CurrentConfig;
+        var error = Record.Exception(() => manager.SaveConfig(original with { ProfileName = "New policy" }));
+        Assert.True(error is IOException or UnauthorizedAccessException, error?.GetType().Name);
+        Assert.Equal(original, manager.CurrentConfig);
+    }
+
+    [Fact]
+    public void SaveRoundTripsAndRejectsInvalidPolicyWithoutOverwriting()
+    {
+        var path = Path.Combine(_testDirectory, "config.json");
+        var manager = new ParentalControlsManager(path);
+        var config = manager.CurrentConfig with { ProfileName = "Family review" };
+        manager.SaveConfig(config);
+        var saved = File.ReadAllText(path);
+        Assert.Equal("Family review", new ParentalControlsManager(path).CurrentConfig.ProfileName);
+        Assert.Throws<ArgumentException>(() => manager.SaveConfig(config with { ScreenTime = config.ScreenTime with { WeekdayLimitMinutes = -1 } }));
+        Assert.Throws<ArgumentException>(() => manager.SaveConfig(config with { ScreenTime = config.ScreenTime with { BedtimeStart = "25:00" } }));
+        Assert.Throws<ArgumentException>(() => manager.SaveConfig(config with { WebFilter = config.WebFilter with { CustomBlockedDomains = ["example.com\n127.0.0.1 injected.com"] } }));
+        Assert.Equal(saved, File.ReadAllText(path));
+    }
+
+    [Theory]
+    [InlineData("null")]
+    [InlineData("{\"Enabled\":true}")]
+    [InlineData("not json")]
+    public void InvalidConfigShowsWarningAndPreservesOriginal(string json)
+    {
+        var path = Path.Combine(_testDirectory, "config.json");
+        File.WriteAllText(path, json);
+        var manager = new ParentalControlsManager(path);
+        Assert.NotNull(manager.ConfigurationWarning);
+        Assert.NotNull(manager.CurrentConfig.ScreenTime);
+        Assert.Equal(json, File.ReadAllText(path));
+    }
+
+    [Fact]
+    public void IncompleteHostsMarkerIsNotReportedAsApplied()
+    {
+        var path = Path.Combine(_testDirectory, "hosts");
+        File.WriteAllText(path, ParentalControlsManager.HostsFilterMarkerStart + "\n127.0.0.1 example.com");
+        var manager = new ParentalControlsManager(Path.Combine(_testDirectory, "config.json"), path);
+        Assert.False(manager.InspectHostsFile().HasDownpourFilterMarker);
+    }
+
     private readonly string _testDirectory;
 
     public ParentalControlsManagerTests()
@@ -96,7 +157,8 @@ public sealed class ParentalControlsManagerTests : IDisposable
         Assert.Equal(expectedCurfew, status.IsWithinCurfew);
         if (expectedCurfew)
         {
-            Assert.Contains("Bedtime curfew is active", status.CurfewMessage);
+            // The page reports the configured bedtime honestly; it does not enforce access.
+            Assert.Contains("Within configured bedtime", status.CurfewMessage);
         }
     }
 

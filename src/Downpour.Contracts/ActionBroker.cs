@@ -101,8 +101,8 @@ public static class ActionKinds
     public const string BlockUsbDevice = "BlockUsbDevice";
     public const string UnblockUsbDevice = "UnblockUsbDevice";
     public const string SetUsbStorage = "SetUsbStorage";
-    // Future action kinds to be added in later phases:
-    // public const string IsolateHost = "IsolateHost";
+    public const string IsolateHost = "IsolateHost";
+    public const string ReleaseHostIsolation = "ReleaseHostIsolation";
 }
 
 /// <summary>

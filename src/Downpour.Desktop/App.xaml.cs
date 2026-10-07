@@ -130,5 +130,10 @@ public partial class App : Application
         _window.Closed += (_, _) => _minimizeWatcher?.Dispose();
         _window.Activate();
         _ = _sensorService.EnsureRunningAsync();
+        // A shortcut may open a registered route. ShowRoute resolves only catalogued pages;
+        // arguments never become commands, paths, or service operations.
+        var launchArguments = Environment.GetCommandLineArgs();
+        if (launchArguments.Length == 3 && launchArguments[1] == "--open-route" && launchArguments[2].Length <= 64)
+            NavigateToRoute(launchArguments[2]);
     }
 }

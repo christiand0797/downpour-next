@@ -21,10 +21,10 @@
                     <StackPanel Orientation="Horizontal" Spacing="10">
                         <TextBlock Text="Parental Controls &amp; Family Safety" FontSize="24" FontWeight="SemiBold" Foreground="#F3F4F6" />
                         <Border x:Name="MasterBadge" CornerRadius="4" Padding="8,2" VerticalAlignment="Center" Background="#065F46" BorderBrush="#059669" BorderThickness="1">
-                            <TextBlock x:Name="MasterBadgeText" Text="ACTIVE" FontSize="11" FontWeight="Bold" Foreground="#6EE7B7" />
+                            <TextBlock x:Name="MasterBadgeText" Text="REVIEW ONLY" FontSize="11" FontWeight="Bold" Foreground="#6EE7B7" />
                         </Border>
                     </StackPanel>
-                    <TextBlock Text="Screen time management, web content filtering, and application restriction posture."
+                    <TextBlock Text="Local policy configuration and read-only observations. No access enforcement."
                                FontSize="13" Foreground="#9CA3AF" />
                 </StackPanel>
 
@@ -51,7 +51,7 @@
             </Grid>
 
             <!-- Master Toggle & Profile Bar -->
-            <Border Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="8" Padding="14">
+            <Border Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource DownpourStrokeBrush}" BorderThickness="1" CornerRadius="8" Padding="14">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -59,11 +59,11 @@
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
-                        <CheckBox x:Name="MasterEnableCheckBox" Content="Enable Parental Controls" FontWeight="SemiBold"
-                                  IsChecked="True" Foreground="#F3F4F6" Checked="MasterEnableCheckBox_Checked" Unchecked="MasterEnableCheckBox_Unchecked" />
+                        <CheckBox x:Name="MasterEnableCheckBox" Content="Enable Policy Review" FontWeight="SemiBold"
+                                  IsChecked="True" Foreground="#F3F4F6" />
                         <TextBlock Text="|" Foreground="#374151" VerticalAlignment="Center" />
                         <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                            <TextBlock Text="Monitored Profile:" FontSize="13" Foreground="#9CA3AF" VerticalAlignment="Center" />
+                            <TextBlock Text="Policy name:" FontSize="13" Foreground="#9CA3AF" VerticalAlignment="Center" />
                             <TextBox x:Name="ProfileNameBox" Width="180" Text="Child Profile" FontSize="12" />
                         </StackPanel>
                     </StackPanel>
@@ -84,15 +84,15 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
-                <Border Grid.Column="0" Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="8" Padding="14">
+                <Border Grid.Column="0" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource DownpourStrokeBrush}" BorderThickness="1" CornerRadius="8" Padding="14">
                     <StackPanel Spacing="4">
                         <TextBlock Text="SCREEN TIME TODAY" FontSize="11" FontWeight="Bold" Foreground="#9CA3AF" />
-                        <TextBlock x:Name="MetricScreenTimeUsage" Text="45 / 120 min" FontSize="20" FontWeight="SemiBold" Foreground="#38BDF8" />
-                        <TextBlock x:Name="MetricScreenTimeRemaining" Text="75 min remaining" FontSize="12" Foreground="#6B7280" />
+                        <TextBlock x:Name="MetricScreenTimeUsage" Text="Not measured" FontSize="20" FontWeight="SemiBold" Foreground="#38BDF8" />
+                        <TextBlock x:Name="MetricScreenTimeRemaining" Text="Usage source unavailable" FontSize="12" Foreground="#AFC0D7" />
                     </StackPanel>
                 </Border>
 
-                <Border Grid.Column="1" Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="8" Padding="14">
+                <Border Grid.Column="1" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource DownpourStrokeBrush}" BorderThickness="1" CornerRadius="8" Padding="14">
                     <StackPanel Spacing="4">
                         <TextBlock Text="BEDTIME CURFEW" FontSize="11" FontWeight="Bold" Foreground="#9CA3AF" />
                         <TextBlock x:Name="MetricBedtimeWindow" Text="21:00 - 07:00" FontSize="20" FontWeight="SemiBold" Foreground="#FBBF24" />
@@ -100,19 +100,19 @@
                     </StackPanel>
                 </Border>
 
-                <Border Grid.Column="2" Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="8" Padding="14">
+                <Border Grid.Column="2" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource DownpourStrokeBrush}" BorderThickness="1" CornerRadius="8" Padding="14">
                     <StackPanel Spacing="4">
                         <TextBlock Text="WEB CATEGORIES" FontSize="11" FontWeight="Bold" Foreground="#9CA3AF" />
                         <TextBlock x:Name="MetricBlockedCategories" Text="5 Categories" FontSize="20" FontWeight="SemiBold" Foreground="#F87171" />
-                        <TextBlock x:Name="MetricBlockedDomainsCount" Text="38 domains cataloged" FontSize="12" Foreground="#6B7280" />
+                        <TextBlock x:Name="MetricBlockedDomainsCount" Text="Not yet evaluated" FontSize="12" Foreground="#AFC0D7" />
                     </StackPanel>
                 </Border>
 
-                <Border Grid.Column="3" Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="8" Padding="14">
+                <Border Grid.Column="3" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource DownpourStrokeBrush}" BorderThickness="1" CornerRadius="8" Padding="14">
                     <StackPanel Spacing="4">
                         <TextBlock Text="HOSTS DNS FILTER" FontSize="11" FontWeight="Bold" Foreground="#9CA3AF" />
                         <TextBlock x:Name="MetricHostsStatus" Text="NOT APPLIED" FontSize="20" FontWeight="SemiBold" Foreground="#9CA3AF" />
-                        <TextBlock Text="Requires DN-008 broker" FontSize="12" Foreground="#6B7280" />
+                        <TextBlock Text="Read-only hosts inspection" FontSize="12" Foreground="#AFC0D7" />
                     </StackPanel>
                 </Border>
             </Grid>
@@ -125,14 +125,14 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Left Column: Screen Time & Bedtime Scheduling -->
-                <Border Grid.Column="0" Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="8" Padding="16">
+                <Border Grid.Column="0" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource DownpourStrokeBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
                     <StackPanel Spacing="12">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <FontIcon Glyph="&#xE787;" FontSize="14" Foreground="#38BDF8" VerticalAlignment="Center" />
                             <TextBlock Text="Screen Time &amp; Bedtime Scheduling" FontSize="14" FontWeight="SemiBold" Foreground="#F3F4F6" />
                         </StackPanel>
 
-                        <CheckBox x:Name="ScreenTimeEnableCheckBox" Content="Enforce Daily Screen Time Limits" IsChecked="True" Foreground="#E5E7EB" />
+                        <CheckBox x:Name="ScreenTimeEnableCheckBox" Content="Configure Daily Limits" IsChecked="True" Foreground="#E5E7EB" />
 
                         <Grid ColumnSpacing="12" RowSpacing="10" Margin="0,4,0,0">
                             <Grid.ColumnDefinitions>
@@ -165,49 +165,37 @@
                             </StackPanel>
                         </Grid>
 
-                        <TextBlock Text="Simulate today's usage for evaluation:" FontSize="11" Foreground="#6B7280" Margin="0,6,0,0" />
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <Slider x:Name="UsageSimSlider" Minimum="0" Maximum="300" Value="45" Width="240" ValueChanged="UsageSimSlider_ValueChanged" />
-                            <TextBlock x:Name="UsageSimText" Text="45 min" FontSize="12" Foreground="#9CA3AF" VerticalAlignment="Center" />
-                        </StackPanel>
+                        <TextBlock Text="Usage is not measured. A consented usage source and enforcement broker are not connected. Bedtime is evaluated in local time." TextWrapping="Wrap" Foreground="#AFC0D7" />
                     </StackPanel>
                 </Border>
 
                 <!-- Right Column: Web Filtering & Categories -->
-                <Border Grid.Column="1" Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="8" Padding="16">
+                <Border Grid.Column="1" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource DownpourStrokeBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
                     <StackPanel Spacing="12">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <FontIcon Glyph="&#xE774;" FontSize="14" Foreground="#F87171" VerticalAlignment="Center" />
                             <TextBlock Text="Web Content Filtering" FontSize="14" FontWeight="SemiBold" Foreground="#F3F4F6" />
                         </StackPanel>
 
-                        <CheckBox x:Name="WebFilterEnableCheckBox" Content="Enforce Web Category Filtering" IsChecked="True" Foreground="#E5E7EB" />
+                        <CheckBox x:Name="WebFilterEnableCheckBox" Content="Configure Web Categories" IsChecked="True" Foreground="#E5E7EB" />
 
                         <StackPanel Spacing="6" Margin="0,2,0,0">
                             <CheckBox x:Name="BlockAdultCheckBox" Content="Block Adult &amp; Explicit Content" IsChecked="True" Foreground="#E5E7EB" />
                             <CheckBox x:Name="BlockGamblingCheckBox" Content="Block Gambling &amp; Betting Sites" IsChecked="True" Foreground="#E5E7EB" />
                             <CheckBox x:Name="BlockViolenceCheckBox" Content="Block Violent &amp; Graphic Material" IsChecked="True" Foreground="#E5E7EB" />
                             <CheckBox x:Name="BlockWeaponsCheckBox" Content="Block Weapons &amp; Firearms Trading" IsChecked="True" Foreground="#E5E7EB" />
-                            <CheckBox x:Name="BlockDrugsCheckBox" Content="Block Illicit Drugs &amp; Darknet Markets" IsChecked="True" Foreground="#E5E7EB" />
+                            <CheckBox x:Name="BlockDrugsCheckBox" Content="Include Legacy Substance Category" IsChecked="True" Foreground="#E5E7EB" />
                         </StackPanel>
 
-                        <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,8,0,0">
-                            <Button x:Name="ApplyWebFilterButton" Click="ApplyWebFilterButton_Click" Background="#450A0A" BorderBrush="#DC2626">
-                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <FontIcon Glyph="&#xE7BA;" FontSize="12" Foreground="#FCA5A5" />
-                                    <TextBlock Text="Apply Web Filter" Foreground="#FCA5A5" />
-                                </StackPanel>
-                            </Button>
-                            <Button x:Name="RemoveWebFilterButton" Click="RemoveWebFilterButton_Click">
-                                <TextBlock Text="Remove Filter" />
-                            </Button>
-                        </StackPanel>
+                        <TextBox x:Name="CustomDomainsBox" Header="Custom domains (one per line)" AcceptsReturn="True" MaxHeight="120" MaxLength="64000" TextWrapping="Wrap" />
+                        <TextBlock Text="Configuration preview only. DNS filtering, SafeSearch and app enforcement are unavailable until their administrator action workflow is implemented." TextWrapping="Wrap" Foreground="#AFC0D7" />
+
                     </StackPanel>
                 </Border>
             </Grid>
 
             <!-- Application Restrictions Card -->
-            <Border Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="8" Padding="16">
+            <Border Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource DownpourStrokeBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
                 <StackPanel Spacing="10">
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -218,12 +206,11 @@
                             <FontIcon Glyph="&#xE71D;" FontSize="14" Foreground="#A78BFA" VerticalAlignment="Center" />
                             <TextBlock Text="Application Restrictions &amp; Process Monitoring" FontSize="14" FontWeight="SemiBold" Foreground="#F3F4F6" />
                         </StackPanel>
-                        <CheckBox Grid.Column="1" x:Name="AppRestrictionEnableCheckBox" Content="Enforce Application Restrictions" IsChecked="True" Foreground="#E5E7EB" />
+                        <CheckBox Grid.Column="1" x:Name="AppRestrictionEnableCheckBox" Content="Review Configured Applications" IsChecked="True" Foreground="#E5E7EB" />
                     </Grid>
 
                     <TextBlock Text="Monitored Restricted Executables:" FontSize="12" Foreground="#9CA3AF" />
-                    <TextBlock x:Name="ConfiguredAppsListText" Text="discord.exe, steam.exe, epicgameslauncher.exe, robloxplayerbeta.exe, torrent.exe, utorrent.exe"
-                               FontSize="11" FontFamily="Consolas" Foreground="#60A5FA" TextWrapping="Wrap" />
+                    <TextBox x:Name="ConfiguredAppsBox" Header="Executable names (one per line)" AcceptsReturn="True" MaxLength="26000" MaxHeight="140" TextWrapping="Wrap" />
 
                     <Border Background="#1F2937" CornerRadius="6" Padding="10" Margin="0,4,0,0">
                         <StackPanel Orientation="Horizontal" Spacing="8">
@@ -235,14 +222,14 @@
             </Border>
 
             <!-- Activity & Audit Log -->
-            <Border Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="8" Padding="14">
+            <Border Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource DownpourStrokeBrush}" BorderThickness="1" CornerRadius="8" Padding="14">
                 <StackPanel Spacing="8">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="Parental Controls Activity &amp; Audit Log" FontSize="14" FontWeight="SemiBold" Foreground="#F3F4F6" />
+                        <TextBlock Grid.Column="0" Text="Session Review Log (latest 100 events)" FontSize="14" FontWeight="SemiBold" Foreground="#F3F4F6" />
                         <Button Grid.Column="1" Content="Clear Log" Click="ClearLogButton_Click" FontSize="11" Padding="8,3" />
                     </Grid>
                     <TextBox x:Name="LogTextBox" FontFamily="Consolas" FontSize="11" Height="130"

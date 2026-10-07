@@ -54,6 +54,7 @@ public sealed class SensorSettingsStore(string path)
                 SensorSettingKeys.ProcessTerminationActions => current with { ProcessTerminationActions = request.Value },
                 SensorSettingKeys.FirewallActions => current with { FirewallActions = request.Value },
                 SensorSettingKeys.UsbActions => current with { UsbActions = request.Value },
+                SensorSettingKeys.HostIsolationActions => current with { HostIsolationActions = request.Value },
                 _ => current with { IntelLookups = request.Value },
             };
             if (updated == current) return new(1, request.RequestId, true, "unchanged", current);
