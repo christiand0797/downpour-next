@@ -1,5 +1,15 @@
 # Downpour Next TODO
 
+## 2026-10-07 checkpoint: DN-009 Tools Launchpad Route Slice (antigravity-worker)
+
+Completed and verified (Debug: 0 warnings/errors; 648/648 tests pass):
+- DN-009 Tools Launchpad route slice: implemented `ToolsHubCoordinator` porting v29 `_build_tools_tab`.
+- Contracts in `src/Downpour.Contracts/ToolsHub.cs`: `OperationalToolCardInfo`, `SystemDiagnosticCheck`, and `ToolsHubSnapshot`.
+- Core engine in `src/Downpour.Core/ToolsHubCoordinator.cs`: operational status and telemetry aggregation for 9 security and operational subsystems (Remote Access, VPN, Parental Controls, Emergency, Cleanup, USB, IoT, Services, Settings); live host system diagnostics for host platform, storage free space headroom, active network stack adapters, and process working set memory footprint; and executive operations markdown report generator.
+- Desktop route `tools` in `ToolsPage.xaml/.cs`: operational status badge (`9 TOOLS OPERATIONAL`), 4 metrics (Operational Tools, System Health, Diagnostic Checks, Rapid Launchpads), 4-card live hardware diagnostics banner, 9 operational launchpad cards with category tags, telemetry details, and direct 1-click `Launch Tool` buttons navigating to dedicated routes via `App.NavigateToRoute`, and report clipboard export.
+- Wired `tools` route in `MainWindow.xaml.cs` (navigation and back-sync) and promoted to `in-progress` in `capabilities.json` and `parity-checklist.json`. All 38 application routes are now active.
+- 3 unit tests in `ToolsHubCoordinatorTests.cs` (9 tools verification, system diagnostics execution, and markdown report generation).
+
 ## 2026-10-07 checkpoint: DN-009 Cognitive Immune System Route Slice (antigravity-worker)
 
 Completed and verified (Debug: 0 warnings/errors; 645/645 tests pass):

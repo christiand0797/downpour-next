@@ -476,6 +476,8 @@ public sealed partial class MainWindow : Window
             NavFrame.Navigate(typeof(DefenseSuitePage));
         else if (capability.RouteId.Equals("cognitive-immune-system", StringComparison.OrdinalIgnoreCase))
             NavFrame.Navigate(typeof(CognitiveImmuneSystemPage));
+        else if (capability.RouteId.Equals("tools", StringComparison.OrdinalIgnoreCase))
+            NavFrame.Navigate(typeof(ToolsPage));
         else if (capability.RouteId.Equals("threats", StringComparison.OrdinalIgnoreCase))
             NavFrame.Navigate(typeof(TriagePage), TriagePage.ThreatsMode);
         else if (capability.RouteId.Equals("possible-threats", StringComparison.OrdinalIgnoreCase))

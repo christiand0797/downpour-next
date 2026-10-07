@@ -1,10 +1,60 @@
 # Downpour Next shared context
 
-**Updated:** 2026-10-07 (antigravity-worker: DN-009 CIS slice completed, DN-009 Defense Suite slice completed, DN-009 Parental Controls slice completed, DN-009 Emergency slice completed, DN-009 IoT slice completed, DN-009 VPN slice completed, DN-009 Memory slice completed, DN-009 Ransomware slice completed, DN-009 Sandbox slice completed, DN-009 Forensics slice completed, DN-029 completed, DN-009 Cleanup Center slice completed; claude-parity-audit: DN-008 phase 1 quarantine live, DN-016/018/019/022/023/024/028 done)
+**Updated:** 2026-10-07 (antigravity-worker: DN-009 Tools slice completed, DN-009 CIS slice completed, DN-009 Defense Suite slice completed, DN-009 Parental Controls slice completed, DN-009 Emergency slice completed, DN-009 IoT slice completed, DN-009 VPN slice completed, DN-009 Memory slice completed, DN-009 Ransomware slice completed, DN-009 Sandbox slice completed, DN-009 Forensics slice completed, DN-029 completed, DN-009 Cleanup Center slice completed; claude-parity-audit: DN-008 phase 1 quarantine live, DN-016/018/019/022/023/024/028 done)
 
 **Repository:** public [christiand0797/downpour-next](https://github.com/christiand0797/downpour-next)
 **Local path:** `C:\Users\purpl\Desktop\downpour v2`  
 **Branch:** `main`  
+
+## 2026-10-07 checkpoint: DN-009 Tools Launchpad Route Slice (antigravity-worker)
+
+**DN-009 Tools & Diagnostics Launchpad Route Slice completed:**
+- **Operations & Tools Hub Engine (`ToolsHubCoordinator`)**:
+  - Implemented operational launchpad coordinator porting v29 `_build_tools_tab`.
+  - Aggregated 9 Core Security & Operational Subsystems:
+    1. Remote Access Monitor (`remote-access`): RDP port 3389 listeners, NLA enforcement, and remote administration tools.
+    2. VPN & Tunnel Posture (`vpn`): tunnel interface inspection, DNS split-tunnel leak assessment, and egress connectivity.
+    3. Parental & Family Safety (`parental-controls`): daily screen time limits, bedtime curfew schedules, and web category filters.
+    4. Emergency Response Center (`emergency`): one-click panic lockdown, volatile forensic snapshots, and SHA-256 seals.
+    5. System & Disk Cleanup (`cleanup`): temporary files, crash dumps, WER logs, and Recycle Bin reclaimable storage.
+    6. USB Device Controller (`usb`): removable storage devices, volume formatting, and USB device policies.
+    7. IoT & Subnet Discovery (`iot`): native ARP subnet discovery, OUI vendor lookup, and botnet indicators.
+    8. Windows Services Manager (`services`): read-only service inventory, startup configurations, and process states.
+    9. Application Preferences (`settings`): dynamic weather storm canvas, rain drop density, and visual effects.
+  - Live Host System Diagnostics:
+    - Host Platform & OS Architecture verification.
+    - System Volume storage capacity & free space headroom check.
+    - Network stack interface enumeration and adapter status.
+    - Process memory working set baseline monitoring.
+  - Operations & Diagnostics Markdown Report Generator:
+    - Formats comprehensive executive operations report detailing all 9 subsystems and system diagnostic health.
+- **Desktop UI (`ToolsPage.xaml/.cs`)**:
+  - Operational health header with status badge (`9 TOOLS OPERATIONAL`).
+  - 4 overview metric cards (Operational Tools, System Health, Diagnostic Checks, Rapid Launchpads).
+  - Host System Diagnostics 4-card telemetry banner (Host Platform, Storage Capacity, Network Stack, Memory Baseline).
+  - 9 Operational Tool Launchpad cards with category tags, status badges, telemetry details, and direct 1-click `Launch Tool` buttons navigating to dedicated routes via `App.NavigateToRoute`.
+  - Header actions: Refresh Operations, Run Diagnostics, and Export Operations Report.
+- **Navigation & Parity Tracking**:
+  - Wired route `tools` in `MainWindow.xaml.cs`.
+  - Promoted route `tools` to `"in-progress"` in `capabilities.json` and `parity-checklist.json`.
+  - All 38 application routes in Downpour Next are now implemented and active!
+- **Testing & Verification**:
+  - Added unit tests in `ToolsHubCoordinatorTests.cs` (9 tools verification, system diagnostics execution, and markdown report generation).
+  - 648/648 solution tests pass cleanly with 0 warnings, 0 errors.
+
+**Files created/updated:**
+- `src/Downpour.Contracts/ToolsHub.cs`
+- `src/Downpour.Core/ToolsHubCoordinator.cs`
+- `src/Downpour.Desktop/Pages/ToolsPage.xaml`
+- `src/Downpour.Desktop/Pages/ToolsPage.xaml.cs`
+- `src/Downpour.Desktop/MainWindow.xaml.cs`
+- `capabilities.json`
+- `parity-checklist.json`
+- `tests/Downpour.Tests/ToolsHubCoordinatorTests.cs`
+- `WORK_QUEUE.json`
+- `AGENT_REGISTRY.json`
+- `SHARED_CONTEXT.md`
+- `TODO.md`
 
 ## 2026-10-07 checkpoint: DN-009 Cognitive Immune System Route Slice (antigravity-worker)
 
