@@ -27,7 +27,11 @@ public sealed record SystemHealthSnapshot(
     IReadOnlyList<double?>? PerCoreCpuPercent = null,
     ulong? PageFileTotalBytes = null,
     ulong? PageFileAvailableBytes = null,
-    IReadOnlyList<PhysicalDiskSnapshot>? PhysicalDisks = null);
+    IReadOnlyList<PhysicalDiskSnapshot>? PhysicalDisks = null,
+    double? GpuPercent = null,
+    ulong? GpuDedicatedMemoryBytes = null,
+    ulong? GpuSharedMemoryBytes = null,
+    double? ThermalZoneCelsius = null);
 
 public sealed record PhysicalDiskSnapshot(
     string InstanceName,

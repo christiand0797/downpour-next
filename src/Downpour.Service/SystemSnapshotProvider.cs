@@ -16,6 +16,7 @@ public sealed class SystemSnapshotProvider : IDisposable
     private ulong? _previousUser;
     private Dictionary<int, ProcessCpuSample> _previousProcessCpu = [];
     private readonly PhysicalDiskCounterReader _diskCounters = new();
+    private readonly GpuThermalCounterReader _gpuThermal = new();
 
     public SystemHealthSnapshot Capture()
     {
@@ -113,6 +114,7 @@ public sealed class SystemSnapshotProvider : IDisposable
 
         double? cpuPercent = ReadCpuPercent();
         var perCoreCpu = ReadPerCoreCpuPercent();
+        var gpuThermal = _gpuThermal.Read();
         return new SystemHealthSnapshot(
             1,
             DateTimeOffset.UtcNow,
@@ -130,10 +132,18 @@ public sealed class SystemSnapshotProvider : IDisposable
             perCoreCpu,
             pageFileTotal,
             pageFileAvailable,
-            physicalDisks);
+            physicalDisks,
+            gpuThermal.GpuPercent,
+            gpuThermal.GpuDedicatedBytes,
+            gpuThermal.GpuSharedBytes,
+            gpuThermal.ThermalZoneCelsius);
     }
 
-    public void Dispose() => _diskCounters.Dispose();
+    public void Dispose()
+    {
+        _diskCounters.Dispose();
+        _gpuThermal.Dispose();
+    }
 
     private static (ulong? LimitBytes, ulong? CommittedBytes) ReadSystemCommitUsage()
     {

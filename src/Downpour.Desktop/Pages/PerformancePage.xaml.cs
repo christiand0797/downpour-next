@@ -31,6 +31,9 @@ public sealed partial class PerformancePage : Page
     private readonly CircularGauge _sendGauge;
     private readonly CircularGauge _diskReadGauge;
     private readonly CircularGauge _diskWriteGauge;
+    private readonly CircularGauge _gpuGauge;
+    private readonly CircularGauge _gpuMemoryGauge;
+    private readonly CircularGauge _thermalGauge;
     private readonly List<CircularGauge> _perCoreGauges = [];
     private bool _requestInFlight;
     private bool _samplingPaused;
@@ -85,6 +88,12 @@ public sealed partial class PerformancePage : Page
         AddGauge(_commitGauge, 0, 2);
         AddGauge(_diskReadGauge, 1, 2);
         AddGauge(_diskWriteGauge, 2, 2);
+        _gpuGauge = new CircularGauge("GPU", Color.FromArgb(255, 80, 240, 120));
+        _gpuMemoryGauge = new CircularGauge("GPU MEMORY", Color.FromArgb(255, 80, 240, 120));
+        _thermalGauge = new CircularGauge("THERMAL ZONE", Color.FromArgb(255, 255, 100, 100));
+        AddGauge(_gpuGauge, 0, 3);
+        AddGauge(_gpuMemoryGauge, 1, 3);
+        AddGauge(_thermalGauge, 2, 3);
 
         // Initialize per-core CPU gauges (up to 16 cores)
         var coreCount = Environment.ProcessorCount;
@@ -217,6 +226,9 @@ public sealed partial class PerformancePage : Page
 
     private void ProcessList_SelectionChanged(object sender, Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs e)
     {
+        var hasSelection = ProcessList?.SelectedItem is PerformanceProcessRow;
+        if (OpenLocationButton is not null) OpenLocationButton.IsEnabled = hasSelection;
+        if (EndProcessButton is not null) EndProcessButton.IsEnabled = hasSelection;
         if (ProcessList?.SelectedItem is not PerformanceProcessRow row) return;
         _selectedProcessPid = row.ProcessId;
         if (_processNames.TryGetValue(row.ProcessId, out var name))
@@ -328,6 +340,7 @@ public sealed partial class PerformancePage : Page
                 CommitSummary.Text = "System commit counters unavailable";
                 PageFileSummary.Text = "Pagefile counters unavailable";
                 DiskIoSummary.Text = "Physical disk counters unavailable with the sensor offline";
+                ShowGpuAndThermal(null);
                 ProcessCount.Text = "—";
                 ConnectionCount.Text = "—";
                 UptimeValue.Text = FormatUptime(TimeSpan.FromMilliseconds(Math.Max(0, Environment.TickCount64)));
@@ -393,6 +406,7 @@ public sealed partial class PerformancePage : Page
                 _pageFileGauge.SetMetric(null, null);
                 PageFileSummary.Text = "Pagefile counters unavailable";
             }
+            ShowGpuAndThermal(snapshot);
             ProcessCount.Text = snapshot.ProcessCount.ToString("N0");
             UptimeValue.Text = FormatUptime(TimeSpan.FromMilliseconds(Math.Max(0, Environment.TickCount64)));
             StatusHeadline.Text = $"Live system sample · captured {captured:HH:mm:ss}";
@@ -502,6 +516,7 @@ public sealed partial class PerformancePage : Page
         catch (Exception exception)
         {
             ServiceState.Text = "SAMPLE UNAVAILABLE";
+            ShowGpuAndThermal(null);
             ServiceDot.Fill = new SolidColorBrush(Color.FromArgb(255, 255, 180, 85));
             StatusHeadline.Text = "Performance sample could not be read · values cleared";
             StatusDescription.Text = exception.Message.Length > 240 ? exception.Message[..240] : exception.Message;
@@ -530,6 +545,104 @@ public sealed partial class PerformancePage : Page
         finally
         {
             _requestInFlight = false;
+        }
+    }
+
+    private void OpenLocation_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        if (ProcessList?.SelectedItem is not PerformanceProcessRow row) return;
+        string? path = null;
+        try
+        {
+            using var process = System.Diagnostics.Process.GetProcessById(row.ProcessId);
+            path = process.MainModule?.FileName;
+        }
+        catch (Exception exception) when (exception is ArgumentException or InvalidOperationException or System.ComponentModel.Win32Exception or NotSupportedException)
+        {
+            ProcessActionStatus.Text = $"The program file of PID {row.ProcessId} cannot be read from this account (protected, elevated, or already exited).";
+            return;
+        }
+        if (string.IsNullOrEmpty(path) || !File.Exists(path))
+        {
+            ProcessActionStatus.Text = $"PID {row.ProcessId} has no program file that can be shown.";
+            return;
+        }
+        // Documented shell API; no command line is run.
+        ProcessActionStatus.Text = ShellSelect.Reveal(path) ? $"Showing {path}" : $"File Explorer could not show {path}.";
+    }
+
+    private async void EndProcess_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        if (ProcessList?.SelectedItem is not PerformanceProcessRow row) return;
+        DateTimeOffset startTime;
+        try
+        {
+            using var process = System.Diagnostics.Process.GetProcessById(row.ProcessId);
+            startTime = process.StartTime.ToUniversalTime();
+        }
+        catch (Exception exception) when (exception is ArgumentException or InvalidOperationException or System.ComponentModel.Win32Exception)
+        {
+            ProcessActionStatus.Text = $"PID {row.ProcessId} is no longer running or its start time cannot be read.";
+            return;
+        }
+
+        var client = new ProcessTerminationClient();
+        var preview = await client.PreviewTerminateAsync(row.ProcessId, startTime);
+        if (preview is null)
+        {
+            await App.EnsureSensorServiceAsync();
+            preview = await client.PreviewTerminateAsync(row.ProcessId, startTime);
+        }
+        if (preview is null) { ProcessActionStatus.Text = "The action broker is not reachable; ending processes needs the service this desktop started."; return; }
+        if (!preview.Accepted || preview.Preview?.ConsentToken is null) { ProcessActionStatus.Text = preview.Message; return; }
+
+        var p = preview.Preview;
+        var dialog = new ContentDialog
+        {
+            Title = "End this process?",
+            Content = new ScrollViewer
+            {
+                MaxHeight = 360,
+                Content = new TextBlock
+                {
+                    TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap,
+                    IsTextSelectionEnabled = true,
+                    Text = $"{p.ProcessName} (PID {p.ProcessId})\n{p.ImagePath}\nStarted {p.StartTimeUtc.ToLocalTime():g}\n\n• {string.Join("\n• ", p.Risks)}",
+                },
+            },
+            PrimaryButtonText = "End process",
+            CloseButtonText = "Cancel",
+            DefaultButton = ContentDialogButton.Close,
+            XamlRoot = XamlRoot,
+        };
+        if (await dialog.ShowAsync() != ContentDialogResult.Primary) { ProcessActionStatus.Text = "Cancelled. Nothing was changed."; return; }
+
+        var result = await client.TerminateAsync(row.ProcessId, startTime, p.ConsentToken);
+        ProcessActionStatus.Text = result?.Message ?? "The action broker did not confirm the result.";
+        await RefreshAsync();
+    }
+
+    /// <summary>GPU and thermal-zone gauges. Every value can be missing (no WDDM GPU counters, no ACPI thermal zones).</summary>
+    private void ShowGpuAndThermal(SystemHealthSnapshot? snapshot)
+    {
+        _gpuGauge.SetMetric(snapshot?.GpuPercent, snapshot?.GpuPercent is { } gpu ? $"{gpu:0}%" : null);
+        var dedicated = snapshot?.GpuDedicatedMemoryBytes;
+        var shared = snapshot?.GpuSharedMemoryBytes;
+        // Windows does not expose total GPU memory through these counters, so the ring stays empty and only usage is shown.
+        _gpuMemoryGauge.SetMetric(null, dedicated is { } d ? FormatBytes(d) : null);
+        GpuSummary.Text = snapshot is null ? "GPU counters unavailable with the sensor offline"
+            : snapshot.GpuPercent is null && dedicated is null ? "GPU counters are warming up or unavailable on this PC"
+            : $"GPU · busiest engine {(snapshot.GpuPercent is { } p ? $"{p:0}%" : "warming up")} · dedicated memory in use {(dedicated is { } dd ? FormatBytes(dd) : "unknown")} · shared {(shared is { } s ? FormatBytes(s) : "unknown")}";
+
+        if (snapshot?.ThermalZoneCelsius is { } celsius)
+        {
+            _thermalGauge.SetMetric(Math.Clamp(celsius, 0, 100), $"{celsius:0} °C");
+            ThermalSummary.Text = $"Thermal zone · {celsius:0.0} °C (hottest ACPI thermal zone reported by firmware; this is often a motherboard sensor, not the CPU die)";
+        }
+        else
+        {
+            _thermalGauge.SetMetric(null, null);
+            ThermalSummary.Text = "Temperature unavailable · this PC's firmware exposes no ACPI thermal zones to Windows";
         }
     }
 
@@ -983,4 +1096,25 @@ public sealed class PerformanceProcessRow : ObservableRow
     public string Detail { get => _detail; set => SetProperty(ref _detail, value); }
     public double MemoryShare { get => _memoryShare; set => SetProperty(ref _memoryShare, value); }
     public Microsoft.UI.Xaml.Visibility Visibility { get => _visibility; set => SetProperty(ref _visibility, value); }
+}
+
+/// <summary>Selects a file in File Explorer through the documented shell API (no process or command line is started by Downpour).</summary>
+internal static class ShellSelect
+{
+    public static bool Reveal(string path)
+    {
+        var item = ILCreateFromPathW(path);
+        if (item == IntPtr.Zero) return false;
+        try { return SHOpenFolderAndSelectItems(item, 0, IntPtr.Zero, 0) == 0; }
+        finally { ILFree(item); }
+    }
+
+    [System.Runtime.InteropServices.DllImport("shell32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
+    private static extern IntPtr ILCreateFromPathW(string path);
+
+    [System.Runtime.InteropServices.DllImport("shell32.dll")]
+    private static extern void ILFree(IntPtr pidl);
+
+    [System.Runtime.InteropServices.DllImport("shell32.dll")]
+    private static extern int SHOpenFolderAndSelectItems(IntPtr folder, uint count, IntPtr items, uint flags);
 }

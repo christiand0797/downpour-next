@@ -62,5 +62,7 @@ public sealed class SystemSnapshotClient
         snapshot.TopProcesses.All(process => process is not null && process.ProcessId > 0 && process.Name is { Length: > 0 and <= 128 } && !process.Name.Any(char.IsControl) &&
             process.WorkingSetBytes >= 0 && process.ThreadCount >= 0 && (process.CpuPercent is null || (process.CpuPercent >= 0 && process.CpuPercent <= 100))) &&
         (snapshot.PerCoreCpuPercent is null || snapshot.PerCoreCpuPercent.All(c => c is null || (c >= 0 && c <= 100))) &&
+        (snapshot.GpuPercent is null || (snapshot.GpuPercent >= 0 && snapshot.GpuPercent <= 100)) &&
+        (snapshot.ThermalZoneCelsius is null || (snapshot.ThermalZoneCelsius > 0 && snapshot.ThermalZoneCelsius < 125)) &&
         snapshot.Warnings.All(warning => warning is not null && warning.Length <= 512);
 }
