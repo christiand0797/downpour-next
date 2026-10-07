@@ -95,8 +95,8 @@
       "role": "primary",
       "taskId": "DN-009",
       "status": "idle",
-      "heartbeatUtc": "2026-10-07T13:00:00Z",
-      "notes": "Emergency Response route slice completed: implemented EmergencyResponseCoordinator (volatile system snapshots, SHA-256 seal, suspicious process and temp folder screening, guarded containment evaluation under DN-008, incident response report generation), EmergencyPage UI (full panic lockdown hero card, metrics, individual actions, suspicious process view, forensic seal card, event log, report export), and unit tests (588/588 tests pass). Ready for next route slice under DN-009."
+      "heartbeatUtc": "2026-10-07T14:00:00Z",
+      "notes": "Parental Controls route slice completed: implemented ParentalControlsManager (screen time schedule evaluation, bedtime curfew monitoring, web category filtering for adult/gambling/violence/weapons/drugs, hosts DNS blocklist inspection, restricted application monitoring), ParentalControlsPage UI (master enable toggle, profile settings, screen time metrics, bedtime banner, category toggles, guarded hosts filter actions under DN-008, activity log, markdown report export), and unit tests (600/600 tests pass). Ready for next route slice under DN-009."
     },
     {
       "id": "claude-parity-audit",

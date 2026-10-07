@@ -1,5 +1,15 @@
 # Downpour Next TODO
 
+## 2026-10-07 checkpoint: DN-009 Parental Controls Route Slice (antigravity-worker)
+
+Completed and verified (Debug: 0 warnings/errors; 600/600 tests pass):
+- DN-009 Parental Controls route slice: implemented `ParentalControlsManager` porting v29 `parental_controls.py` and `_build_parental_tab`.
+- Contracts in `src/Downpour.Contracts/ParentalControls.cs`: `ScreenTimeSchedule`, `WebFilterPolicy`, `AppRestrictionPolicy`, `ParentalControlsConfig`, `ScreenTimeStatus`, `HostsFileFilterPosture`, `ParentalActivityLogEntry`, and `ParentalPostureSnapshot`.
+- Core engine in `src/Downpour.Core/ParentalControlsManager.cs`: daily screen time schedule and bedtime curfew evaluator, web content category domains aggregator (`adult`, `gambling`, `violence`, `weapons`, `drugs`, and custom additions), read-only Windows hosts file DNS blocklist posture analyzer, idempotent hosts file format generator with markers, active restricted application process checker, and structured family safety markdown report generator.
+- Desktop route `parental-controls` in `ParentalControlsPage.xaml/.cs`: master enable toggle, monitored profile settings, live bedtime curfew banner, overview metric cards (Screen Time Usage, Bedtime Curfew, Web Categories, Hosts Filter Status), interactive screen time schedule editor with usage simulation slider, web filtering category toggles, guarded hosts file modification buttons under DN-008, application restriction overview with live running app detector, timestamped activity log, and Desktop report export.
+- Wired `parental-controls` route in `MainWindow.xaml.cs` (navigation and back-sync) and promoted to `in-progress` in `capabilities.json`, `parity-checklist.json`, and `source-modules.json` (`parental_controls.py`).
+- 12 unit tests in `ParentalControlsManagerTests.cs` (weekday/weekend screen time limits, bedtime curfew calculation, category domain aggregation, hosts file formatting idempotency and marker insertion, hosts file parsing, restricted application detection, and markdown report generation).
+
 ## 2026-10-07 checkpoint: DN-009 Emergency Response Route Slice (antigravity-worker)
 
 Completed and verified (Debug: 0 warnings/errors; 588/588 tests pass):

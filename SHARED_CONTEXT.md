@@ -6,6 +6,57 @@
 **Local path:** `C:\Users\purpl\Desktop\downpour v2`  
 **Branch:** `main`  
 
+## 2026-10-07 checkpoint: DN-009 Parental Controls Route Slice (antigravity-worker)
+
+**DN-009 Parental Controls Route Slice completed:**
+- **Parental Controls & Family Safety Engine (`ParentalControlsManager`)**:
+  - Implemented family safety manager porting v29 `parental_controls.py` and `_build_parental_tab`.
+  - Screen Time Scheduling & Bedtime Curfew:
+    - Daily screen time limit monitoring distinguishing weekday limits (default 120 min) and weekend limits (default 240 min).
+    - Overnight and daytime bedtime curfew evaluation (default 21:00 to 07:00) with remaining minutes calculation and limit-exceeded tracking.
+  - Web Content Filtering:
+    - Pre-compiled category domain dictionaries for high-risk categories: `adult`, `gambling`, `violence`, `weapons`, and `drugs`.
+    - Custom blocked domains support with URL protocol and path stripping.
+    - Read-only inspection of Windows hosts file (`C:\Windows\System32\drivers\etc\hosts`) checking for Downpour DNS redirection rules without modifying system files.
+    - Idempotent host file content generator with structured start and end markers (`# === DOWNPOUR NEXT - PARENTAL CONTROLS START ===`).
+  - Application Restrictions:
+    - Running process monitor checking for restricted executables (`discord.exe`, `steam.exe`, `epicgameslauncher.exe`, `robloxplayerbeta.exe`, `torrent.exe`, `utorrent.exe`).
+  - Action Broker Least-Privilege Integration (DN-008):
+    - System-changing hosts file writes and filter removals return clear guarded notices and require Action Broker authorization.
+  - Family Safety Markdown Report Generator:
+    - Formats comprehensive report including profile name, screen time metrics, active curfew, category filter state, blocked domain counts, running restricted apps, and activity audit log.
+- **Desktop UI (`ParentalControlsPage.xaml/.cs`)**:
+  - Master enable toggle and profile name configuration.
+  - Live bedtime curfew banner (Open Access vs Curfew Active).
+  - 4 overview metric cards (Screen Time Today, Bedtime Curfew, Web Categories, Hosts DNS Filter).
+  - Screen Time Scheduling editor with weekday/weekend limits, bedtime inputs, and interactive usage simulation slider.
+  - Web Content Filtering checklist with individual category toggles (Adult, Gambling, Violence, Weapons, Drugs).
+  - Guarded Apply/Remove Web Filter buttons with DN-008 security dialogs.
+  - Application Restrictions card showing configured apps and live detection status.
+  - Timestamped activity and audit log with clear option.
+  - Desktop report exporter.
+- **Navigation & Parity Tracking**:
+  - Wired route `parental-controls` in `MainWindow.xaml.cs` (navigation and back-sync).
+  - Promoted `parental-controls` to `"in-progress"` in `capabilities.json`, `parity-checklist.json`, and `source-modules.json` (`parental_controls.py`).
+- **Testing & Verification**:
+  - 12 unit tests in `ParentalControlsManagerTests.cs` (weekday/weekend screen time limits, bedtime curfew calculation, category domain aggregation, hosts file formatting idempotency and marker insertion, hosts file parsing, restricted application detection, and markdown report generation).
+  - 35/35 active route tests pass cleanly; 600/600 total tests pass.
+
+**Files created/updated:**
+- `src/Downpour.Contracts/ParentalControls.cs`
+- `src/Downpour.Core/ParentalControlsManager.cs`
+- `src/Downpour.Desktop/Pages/ParentalControlsPage.xaml`
+- `src/Downpour.Desktop/Pages/ParentalControlsPage.xaml.cs`
+- `src/Downpour.Desktop/MainWindow.xaml.cs`
+- `capabilities.json`
+- `parity-checklist.json`
+- `source-modules.json`
+- `tests/Downpour.Tests/ParentalControlsManagerTests.cs`
+- `WORK_QUEUE.json`
+- `AGENT_REGISTRY.json`
+- `SHARED_CONTEXT.md`
+- `TODO.md`
+
 ## 2026-10-07 checkpoint: DN-009 Emergency Response Route Slice (antigravity-worker)
 
 **DN-009 Emergency Response Route Slice completed:**

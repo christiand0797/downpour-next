@@ -1,0 +1,257 @@
+<Page
+    x:Class="Downpour_Desktop.Pages.ParentalControlsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="Transparent">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Spacing="16" Margin="24,16,24,24">
+
+            <!-- Header Section -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Spacing="4">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <TextBlock Text="Parental Controls &amp; Family Safety" FontSize="24" FontWeight="SemiBold" Foreground="#F3F4F6" />
+                        <Border x:Name="MasterBadge" CornerRadius="4" Padding="8,2" VerticalAlignment="Center" Background="#065F46" BorderBrush="#059669" BorderThickness="1">
+                            <TextBlock x:Name="MasterBadgeText" Text="ACTIVE" FontSize="11" FontWeight="Bold" Foreground="#6EE7B7" />
+                        </Border>
+                    </StackPanel>
+                    <TextBlock Text="Screen time management, web content filtering, and application restriction posture."
+                               FontSize="13" Foreground="#9CA3AF" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <Button x:Name="RefreshButton" Click="RefreshButton_Click">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <FontIcon Glyph="&#xE72C;" FontSize="13" />
+                            <TextBlock Text="Check Posture" />
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="SaveSettingsButton" Click="SaveSettingsButton_Click" Background="#065F46">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <FontIcon Glyph="&#xE74E;" FontSize="13" Foreground="#6EE7B7" />
+                            <TextBlock Text="Save Settings" Foreground="#6EE7B7" />
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="ExportReportButton" Click="ExportReportButton_Click">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <FontIcon Glyph="&#xEDE1;" FontSize="13" />
+                            <TextBlock Text="Export Report" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
+
+            <!-- Master Toggle & Profile Bar -->
+            <Border Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="8" Padding="14">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
+                        <CheckBox x:Name="MasterEnableCheckBox" Content="Enable Parental Controls" FontWeight="SemiBold"
+                                  IsChecked="True" Foreground="#F3F4F6" Checked="MasterEnableCheckBox_Checked" Unchecked="MasterEnableCheckBox_Unchecked" />
+                        <TextBlock Text="|" Foreground="#374151" VerticalAlignment="Center" />
+                        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                            <TextBlock Text="Monitored Profile:" FontSize="13" Foreground="#9CA3AF" VerticalAlignment="Center" />
+                            <TextBox x:Name="ProfileNameBox" Width="180" Text="Child Profile" FontSize="12" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                        <TextBlock x:Name="CurfewBanner" Text="Bedtime: Open Access" FontSize="12" FontWeight="SemiBold"
+                                   Foreground="#34D399" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Metrics Overview Cards -->
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="8" Padding="14">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="SCREEN TIME TODAY" FontSize="11" FontWeight="Bold" Foreground="#9CA3AF" />
+                        <TextBlock x:Name="MetricScreenTimeUsage" Text="45 / 120 min" FontSize="20" FontWeight="SemiBold" Foreground="#38BDF8" />
+                        <TextBlock x:Name="MetricScreenTimeRemaining" Text="75 min remaining" FontSize="12" Foreground="#6B7280" />
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="1" Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="8" Padding="14">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="BEDTIME CURFEW" FontSize="11" FontWeight="Bold" Foreground="#9CA3AF" />
+                        <TextBlock x:Name="MetricBedtimeWindow" Text="21:00 - 07:00" FontSize="20" FontWeight="SemiBold" Foreground="#FBBF24" />
+                        <TextBlock x:Name="MetricCurfewStatus" Text="Access Active" FontSize="12" Foreground="#34D399" />
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="2" Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="8" Padding="14">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="WEB CATEGORIES" FontSize="11" FontWeight="Bold" Foreground="#9CA3AF" />
+                        <TextBlock x:Name="MetricBlockedCategories" Text="5 Categories" FontSize="20" FontWeight="SemiBold" Foreground="#F87171" />
+                        <TextBlock x:Name="MetricBlockedDomainsCount" Text="38 domains cataloged" FontSize="12" Foreground="#6B7280" />
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="3" Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="8" Padding="14">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="HOSTS DNS FILTER" FontSize="11" FontWeight="Bold" Foreground="#9CA3AF" />
+                        <TextBlock x:Name="MetricHostsStatus" Text="NOT APPLIED" FontSize="20" FontWeight="SemiBold" Foreground="#9CA3AF" />
+                        <TextBlock Text="Requires DN-008 broker" FontSize="12" Foreground="#6B7280" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- Policy Controls Grid (Two Columns) -->
+            <Grid ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Left Column: Screen Time & Bedtime Scheduling -->
+                <Border Grid.Column="0" Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="8" Padding="16">
+                    <StackPanel Spacing="12">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE787;" FontSize="14" Foreground="#38BDF8" VerticalAlignment="Center" />
+                            <TextBlock Text="Screen Time &amp; Bedtime Scheduling" FontSize="14" FontWeight="SemiBold" Foreground="#F3F4F6" />
+                        </StackPanel>
+
+                        <CheckBox x:Name="ScreenTimeEnableCheckBox" Content="Enforce Daily Screen Time Limits" IsChecked="True" Foreground="#E5E7EB" />
+
+                        <Grid ColumnSpacing="12" RowSpacing="10" Margin="0,4,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <StackPanel Grid.Row="0" Grid.Column="0" Spacing="4">
+                                <TextBlock Text="Weekday Limit (Minutes):" FontSize="12" Foreground="#9CA3AF" />
+                                <TextBox x:Name="WeekdayLimitBox" Text="120" FontSize="12" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="0" Grid.Column="1" Spacing="4">
+                                <TextBlock Text="Weekend Limit (Minutes):" FontSize="12" Foreground="#9CA3AF" />
+                                <TextBox x:Name="WeekendLimitBox" Text="240" FontSize="12" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="1" Grid.Column="0" Spacing="4">
+                                <TextBlock Text="Bedtime Curfew Start (HH:MM):" FontSize="12" Foreground="#9CA3AF" />
+                                <TextBox x:Name="BedtimeStartBox" Text="21:00" FontSize="12" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="1" Grid.Column="1" Spacing="4">
+                                <TextBlock Text="Bedtime Curfew End (HH:MM):" FontSize="12" Foreground="#9CA3AF" />
+                                <TextBox x:Name="BedtimeEndBox" Text="07:00" FontSize="12" />
+                            </StackPanel>
+                        </Grid>
+
+                        <TextBlock Text="Simulate today's usage for evaluation:" FontSize="11" Foreground="#6B7280" Margin="0,6,0,0" />
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Slider x:Name="UsageSimSlider" Minimum="0" Maximum="300" Value="45" Width="240" ValueChanged="UsageSimSlider_ValueChanged" />
+                            <TextBlock x:Name="UsageSimText" Text="45 min" FontSize="12" Foreground="#9CA3AF" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Right Column: Web Filtering & Categories -->
+                <Border Grid.Column="1" Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="8" Padding="16">
+                    <StackPanel Spacing="12">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE774;" FontSize="14" Foreground="#F87171" VerticalAlignment="Center" />
+                            <TextBlock Text="Web Content Filtering" FontSize="14" FontWeight="SemiBold" Foreground="#F3F4F6" />
+                        </StackPanel>
+
+                        <CheckBox x:Name="WebFilterEnableCheckBox" Content="Enforce Web Category Filtering" IsChecked="True" Foreground="#E5E7EB" />
+
+                        <StackPanel Spacing="6" Margin="0,2,0,0">
+                            <CheckBox x:Name="BlockAdultCheckBox" Content="Block Adult &amp; Explicit Content" IsChecked="True" Foreground="#E5E7EB" />
+                            <CheckBox x:Name="BlockGamblingCheckBox" Content="Block Gambling &amp; Betting Sites" IsChecked="True" Foreground="#E5E7EB" />
+                            <CheckBox x:Name="BlockViolenceCheckBox" Content="Block Violent &amp; Graphic Material" IsChecked="True" Foreground="#E5E7EB" />
+                            <CheckBox x:Name="BlockWeaponsCheckBox" Content="Block Weapons &amp; Firearms Trading" IsChecked="True" Foreground="#E5E7EB" />
+                            <CheckBox x:Name="BlockDrugsCheckBox" Content="Block Illicit Drugs &amp; Darknet Markets" IsChecked="True" Foreground="#E5E7EB" />
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,8,0,0">
+                            <Button x:Name="ApplyWebFilterButton" Click="ApplyWebFilterButton_Click" Background="#450A0A" BorderBrush="#DC2626">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <FontIcon Glyph="&#xE7BA;" FontSize="12" Foreground="#FCA5A5" />
+                                    <TextBlock Text="Apply Web Filter" Foreground="#FCA5A5" />
+                                </StackPanel>
+                            </Button>
+                            <Button x:Name="RemoveWebFilterButton" Click="RemoveWebFilterButton_Click">
+                                <TextBlock Text="Remove Filter" />
+                            </Button>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- Application Restrictions Card -->
+            <Border Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="8" Padding="16">
+                <StackPanel Spacing="10">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE71D;" FontSize="14" Foreground="#A78BFA" VerticalAlignment="Center" />
+                            <TextBlock Text="Application Restrictions &amp; Process Monitoring" FontSize="14" FontWeight="SemiBold" Foreground="#F3F4F6" />
+                        </StackPanel>
+                        <CheckBox Grid.Column="1" x:Name="AppRestrictionEnableCheckBox" Content="Enforce Application Restrictions" IsChecked="True" Foreground="#E5E7EB" />
+                    </Grid>
+
+                    <TextBlock Text="Monitored Restricted Executables:" FontSize="12" Foreground="#9CA3AF" />
+                    <TextBlock x:Name="ConfiguredAppsListText" Text="discord.exe, steam.exe, epicgameslauncher.exe, robloxplayerbeta.exe, torrent.exe, utorrent.exe"
+                               FontSize="11" FontFamily="Consolas" Foreground="#60A5FA" TextWrapping="Wrap" />
+
+                    <Border Background="#1F2937" CornerRadius="6" Padding="10" Margin="0,4,0,0">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE783;" FontSize="14" Foreground="#34D399" VerticalAlignment="Center" />
+                            <TextBlock x:Name="RestrictedAppsStatusText" Text="Running restricted applications check: None detected." FontSize="12" Foreground="#F3F4F6" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Border>
+
+            <!-- Activity & Audit Log -->
+            <Border Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="8" Padding="14">
+                <StackPanel Spacing="8">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Parental Controls Activity &amp; Audit Log" FontSize="14" FontWeight="SemiBold" Foreground="#F3F4F6" />
+                        <Button Grid.Column="1" Content="Clear Log" Click="ClearLogButton_Click" FontSize="11" Padding="8,3" />
+                    </Grid>
+                    <TextBox x:Name="LogTextBox" FontFamily="Consolas" FontSize="11" Height="130"
+                             IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap"
+                             ScrollViewer.VerticalScrollBarVisibility="Auto" Background="#0A0F1D"
+                             Foreground="#38BDF8" BorderBrush="#1E293B" />
+                </StackPanel>
+            </Border>
+
+        </StackPanel>
+    </ScrollViewer>
+</Page>

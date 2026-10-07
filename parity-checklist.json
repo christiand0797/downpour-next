@@ -384,7 +384,7 @@
     },
     "parental-controls": {
       "title": "Parental Controls",
-      "currentStatus": "planned",
+      "currentStatus": "in-progress",
       "v29Workflows": [
         "Enable parental controls",
         "Screen time limits",

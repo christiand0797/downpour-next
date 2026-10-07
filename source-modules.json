@@ -437,8 +437,8 @@
     "family": "Utilities, Memory, & Dashboard",
     "module": "parental_controls.py",
     "description": "Web filtering and app execution restriction logic.",
-    "sourceStatus": "Active",
-    "migrationStatus": "planned"
+    "sourceStatus": "Ported to ParentalControlsManager / ParentalControlsPage (screen time, web filtering, app restrictions, posture report)",
+    "migrationStatus": "in-progress"
   },
   {
     "family": "Utilities, Memory, & Dashboard",
