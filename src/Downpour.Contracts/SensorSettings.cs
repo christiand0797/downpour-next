@@ -1,7 +1,7 @@
 namespace Downpour.Contracts;
 
 /// <summary>Service-side sensor settings that affect what data the service reads. See SECURITY.md "User-approved data handling".</summary>
-public sealed record SensorSettingsSnapshot(int SchemaVersion, bool ScriptBlockAnalysis, bool IntelLookups, IReadOnlyList<string>? IntelServicesConfigured = null, bool QuarantineActions = true, bool ProcessTerminationActions = true);
+public sealed record SensorSettingsSnapshot(int SchemaVersion, bool ScriptBlockAnalysis, bool IntelLookups, IReadOnlyList<string>? IntelServicesConfigured = null, bool QuarantineActions = true, bool ProcessTerminationActions = true, bool FirewallActions = true);
 
 /// <summary>
 /// Reads settings (Key = "get"), sets one allow-listed boolean key, or for "apiKey.{service}" keys stores
@@ -18,8 +18,9 @@ public static class SensorSettingKeys
     public const string IntelLookups = "intelLookups";
     public const string QuarantineActions = "quarantineActions";
     public const string ProcessTerminationActions = "processTerminationActions";
+    public const string FirewallActions = "firewallActions";
 
-    public static readonly IReadOnlySet<string> Writable = new HashSet<string>(StringComparer.Ordinal) { ScriptBlockAnalysis, IntelLookups, QuarantineActions, ProcessTerminationActions };
+    public static readonly IReadOnlySet<string> Writable = new HashSet<string>(StringComparer.Ordinal) { ScriptBlockAnalysis, IntelLookups, QuarantineActions, ProcessTerminationActions, FirewallActions };
     public const string ApiKeyPrefix = "apiKey.";
 
     public static string ApiKey(string service) => ApiKeyPrefix + service;

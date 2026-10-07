@@ -12,9 +12,13 @@
                 <StackPanel Spacing="4">
                     <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Foreground="#FF76DDF5" Text="DOWNPOUR  /  PROTECTION  /  FIREWALL" />
                     <TextBlock Style="{StaticResource TitleTextBlockStyle}" FontSize="30" Text="Firewall" />
-                    <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Windows Firewall profiles, rules, tamper indicators, and recently blocked connections (Security event 5157). Read-only." TextWrapping="Wrap" />
+                    <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Windows Firewall profiles, rules, tamper indicators, recently blocked connections, and audited remote IP blocking/rule cleanup (DN-008 Phase 3)." TextWrapping="Wrap" />
                 </StackPanel>
-                <Button Grid.Column="1" x:Name="RefreshButton" Content="Refresh" Click="Refresh_Click" VerticalAlignment="Center" />
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <Button x:Name="BlockIpButton" Content="Block Remote IP…" Click="BlockIp_Click" />
+                    <Button x:Name="CleanupLegacyButton" Content="Clean Up Legacy Rules" Click="CleanupLegacy_Click" Visibility="Collapsed" />
+                    <Button x:Name="RefreshButton" Content="Refresh" Click="Refresh_Click" />
+                </StackPanel>
             </Grid>
 
             <Border Padding="14,11" CornerRadius="10" Background="#B9081220" BorderBrush="#423EC5D8" BorderThickness="1">
@@ -75,7 +79,7 @@
                     <ListView.ItemTemplate>
                         <DataTemplate>
                             <Grid Padding="10,6" ColumnSpacing="12">
-                                <Grid.ColumnDefinitions><ColumnDefinition Width="3*" /><ColumnDefinition Width="90" /><ColumnDefinition Width="60" /><ColumnDefinition Width="70" /><ColumnDefinition Width="1.4*" /><ColumnDefinition Width="1.6*" /></Grid.ColumnDefinitions>
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="3*" /><ColumnDefinition Width="90" /><ColumnDefinition Width="60" /><ColumnDefinition Width="70" /><ColumnDefinition Width="1.4*" /><ColumnDefinition Width="1.6*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                                 <StackPanel>
                                     <TextBlock Text="{Binding Name}" FontSize="12" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
                                     <TextBlock Text="{Binding Application}" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" TextTrimming="CharacterEllipsis" />
@@ -85,6 +89,7 @@
                                 <TextBlock Grid.Column="3" Text="{Binding Protocol}" FontSize="11" />
                                 <TextBlock Grid.Column="4" Text="{Binding Ports}" FontSize="11" FontFamily="Consolas" TextTrimming="CharacterEllipsis" />
                                 <TextBlock Grid.Column="5" Text="{Binding Scope}" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
+                                <Button Grid.Column="6" Content="Remove" FontSize="11" Padding="8,2" Visibility="{Binding RemoveButtonVisibility}" Click="RemoveRule_Click" Tag="{Binding RawRuleName}" />
                             </Grid>
                         </DataTemplate>
                     </ListView.ItemTemplate>

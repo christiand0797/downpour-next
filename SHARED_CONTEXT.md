@@ -1,10 +1,39 @@
 # Downpour Next shared context
 
-**Updated:** 2026-10-07 (antigravity-worker: DN-008 Phase 2 Process Termination Broker completed, DN-026 Authenticode YARA skip completed, MiroFish Swarm Intelligence CIS integration completed, DN-009 Tools slice completed, DN-009 CIS slice completed, DN-009 Defense Suite slice completed, DN-009 Parental Controls slice completed, DN-009 Emergency slice completed, DN-009 IoT slice completed, DN-009 VPN slice completed, DN-009 Memory slice completed, DN-009 Ransomware slice completed, DN-009 Sandbox slice completed, DN-009 Forensics slice completed, DN-029 completed, DN-009 Cleanup Center slice completed; claude-parity-audit: DN-008 phase 1 quarantine live, DN-016/018/019/022/023/024/028 done)
+**Updated:** 2026-10-07 (antigravity-worker: DN-008 Phase 3 Firewall Actions Broker completed, DN-008 Phase 2 Process Termination Broker completed, DN-026 Authenticode YARA skip completed, MiroFish Swarm Intelligence CIS integration completed, DN-009 Tools slice completed, DN-009 CIS slice completed, DN-009 Defense Suite slice completed, DN-009 Parental Controls slice completed, DN-009 Emergency slice completed, DN-009 IoT slice completed, DN-009 VPN slice completed, DN-009 Memory slice completed, DN-009 Ransomware slice completed, DN-009 Sandbox slice completed, DN-009 Forensics slice completed, DN-029 completed, DN-009 Cleanup Center slice completed; claude-parity-audit: DN-008 phase 1 quarantine live, DN-016/018/019/022/023/024/028 done)
 
 **Repository:** public [christiand0797/downpour-next](https://github.com/christiand0797/downpour-next)
 **Local path:** `C:\Users\purpl\Desktop\downpour v2`  
 **Branch:** `main`  
+
+## 2026-10-07 checkpoint: DN-008 Phase 3 Firewall Actions Broker & Legacy Cleanup (antigravity-worker)
+
+**DN-008 Phase 3 Firewall Actions Broker completed:**
+- **Contracts (`FirewallActionContracts.cs`, `SensorSettings.cs`, `ActionBroker.cs`)**:
+  - `FirewallActionOperations`: `preview-block-ip`, `block-ip`, `preview-remove-rule`, `remove-rule`, `preview-cleanup-legacy`, `cleanup-legacy`.
+  - `FirewallActionRequest`, `FirewallActionPreview`, `FirewallActionResponse`.
+  - Added `FirewallActions = true` to `SensorSettingsSnapshot`, `SensorSettingKeys.FirewallActions`, and `Writable` set.
+  - Enabled `ActionKinds.BlockRemoteIp` and `ActionKinds.RemoveFirewallRule` in `ActionBroker`, `ActionCatalog`, and `ActionPolicyValidator`.
+- **Service Layer (`FirewallActionExecutor.cs`, `FirewallActionPipeWorker.cs`, `SensorSettingsStore.cs`)**:
+  - `FirewallActionExecutor`:
+    - Strict remote IP validation: rejects loopback (`127.0.0.1`, `::1`), wildcard (`0.0.0.0`, `::`), broadcast (`255.255.255.255`), link-local (`169.254.0.0/16`, `fe80::/10`), multicast, local machine adapter IP addresses, default gateway IP addresses, and configured DNS server addresses to prevent network lockout.
+    - Rule name removal validation: only permits deleting rules starting with `DownpourNext_` or matching legacy `^downpour` (checked via `FirewallRuleAnalyzer.IsDownpourRule`). All Windows system/third-party rules are immutably protected.
+    - Rule creation: creates inbound and outbound `DownpourNext_Block_{sanitizedIp}_{Direction}` block rules with expiration metadata in `Description`.
+    - Automated cleanup: `CleanupLegacyRules` removes leftover v29 rules; `CleanupExpiredRules` purges expired `DownpourNext_` rules on service startup/maintenance.
+    - Clean abstraction via `IFirewallPolicyBackend` (`WindowsFirewallPolicyBackend` COM and `InMemoryFirewallPolicyBackend` for testing).
+  - `FirewallActionPipeWorker`:
+    - Named pipe `Downpour.FirewallActions.v1` with Current-User ACL and 96 KiB max payload.
+    - Caller authentication via `ParentDesktopCallerVerifier`.
+    - Single-use 60-second consent tokens via `ActionConsentStore`.
+    - Audited logging to `state/action-audit.v1.jsonl`.
+- **Core Layer (`FirewallActionClient.cs`)**:
+  - Named pipe client with `PreviewBlockIpAsync`, `BlockIpAsync`, `PreviewRemoveRuleAsync`, `RemoveRuleAsync`, `PreviewCleanupLegacyAsync`, and `CleanupLegacyAsync`.
+- **Desktop UI Integration (`FirewallPage.xaml/.cs`, `RemediationPage.xaml/.cs`)**:
+  - `FirewallPage`: added "Block Remote IP…" button with IP/duration/reason modal, itemized consent preview, and confirmed execution; added "Clean Up Legacy Rules" button that lights up with count when v29 rules are detected; added "Remove" button per rule row for Downpour rules.
+  - `RemediationPage`: updated Phase 1, 2, and 3 banner; added "Block remote IP…" button.
+- **Testing & Verification**:
+  - Added unit test suite `FirewallActionTests.cs` (39 tests: remote IP validation edge cases, rule removal validation, block rule generation, legacy cleanup, expired rule purging, caller authentication rejection, disabled switch rejection, end-to-end preview + consent + execution + audit log verification).
+  - Solution build clean (0 errors, 0 warnings); all 734 tests passing.
 
 ## 2026-10-07 checkpoint: DN-008 Phase 2 Alert-driven Process Termination Broker (antigravity-worker)
 

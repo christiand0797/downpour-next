@@ -49,10 +49,12 @@ public sealed partial class RemediationPage : Page
             StatusText.Text = response.Message;
             QuarantineButton.IsEnabled = false;
             TerminateProcessButton.IsEnabled = false;
+            BlockIpButton.IsEnabled = false;
             return;
         }
         QuarantineButton.IsEnabled = response.ActionsEnabled;
         TerminateProcessButton.IsEnabled = response.ActionsEnabled;
+        BlockIpButton.IsEnabled = response.ActionsEnabled;
         StatusText.Text = response.ActionsEnabled ? "" : "Quarantine actions are turned off in Settings.";
         if (response.RecoveryNotes is { Count: > 0 } notes)
         {
@@ -323,6 +325,123 @@ public sealed partial class RemediationPage : Page
         }
     }
 
+    private async void BlockIp_Click(object sender, RoutedEventArgs e)
+    {
+        var ipBox = new TextBox { PlaceholderText = "e.g. 198.51.100.1 or 2001:db8::1" };
+        var durationCombo = new ComboBox
+        {
+            ItemsSource = new[] { "1 hour (60 min)", "24 hours (1440 min)", "7 days (10080 min)", "Permanent" },
+            SelectedIndex = 1
+        };
+        var reasonBox = new TextBox { PlaceholderText = "Optional reason (e.g. C2 indicator, port scan)" };
+
+        var dialog = new ContentDialog
+        {
+            Title = "Block Remote IP (DN-008 Phase 3)",
+            Content = new StackPanel
+            {
+                Spacing = 10,
+                Children =
+                {
+                    new TextBlock { Text = "Enter a specific remote IP address to block via Windows Firewall. Local network and critical services are strictly protected to prevent network lockout.", TextWrapping = TextWrapping.Wrap },
+                    new TextBlock { Text = "Remote IP Address:", FontWeight = Microsoft.UI.Text.FontWeights.SemiBold },
+                    ipBox,
+                    new TextBlock { Text = "Block Duration:", FontWeight = Microsoft.UI.Text.FontWeights.SemiBold },
+                    durationCombo,
+                    new TextBlock { Text = "Reason:", FontWeight = Microsoft.UI.Text.FontWeights.SemiBold },
+                    reasonBox
+                }
+            },
+            PrimaryButtonText = "Inspect & Preview",
+            CloseButtonText = "Cancel",
+            DefaultButton = ContentDialogButton.Primary,
+            XamlRoot = this.XamlRoot
+        };
+
+        if (await dialog.ShowAsync() != ContentDialogResult.Primary) return;
+
+        var ip = ipBox.Text.Trim();
+        if (string.IsNullOrWhiteSpace(ip)) return;
+
+        int durationMinutes = durationCombo.SelectedIndex switch
+        {
+            0 => 60,
+            1 => 1440,
+            2 => 10080,
+            3 => 0,
+            _ => 1440
+        };
+
+        var reason = reasonBox.Text.Trim();
+        var client = new FirewallActionClient();
+        var preview = await client.PreviewBlockIpAsync(ip, durationMinutes, reason);
+        if (preview is null)
+        {
+            await App.EnsureSensorServiceAsync();
+            preview = await client.PreviewBlockIpAsync(ip, durationMinutes, reason);
+        }
+
+        if (preview is null)
+        {
+            var unreachDialog = new ContentDialog
+            {
+                Title = "Service Unreachable",
+                Content = "The firewall action service endpoint is not reachable.",
+                CloseButtonText = "OK",
+                XamlRoot = this.XamlRoot
+            };
+            await unreachDialog.ShowAsync();
+            return;
+        }
+
+        if (!preview.Accepted || preview.Preview is null)
+        {
+            var deniedDialog = new ContentDialog
+            {
+                Title = "Block Denied",
+                Content = preview.Message,
+                CloseButtonText = "OK",
+                XamlRoot = this.XamlRoot
+            };
+            await deniedDialog.ShowAsync();
+            return;
+        }
+
+        var p = preview.Preview;
+        var detailsText = $"Target IP: {p.TargetIp}\n" +
+                          $"Duration: {(p.DurationMinutes > 0 ? $"{p.DurationMinutes} minutes" : "Permanent")}\n\n" +
+                          $"Rules to Create:\n• {string.Join("\n• ", p.RulesAffected)}\n\n" +
+                          $"Expected Effects:\n• {string.Join("\n• ", p.ExpectedEffects)}\n\n" +
+                          $"Risks:\n• {string.Join("\n• ", p.Risks)}\n\n" +
+                          "Consent token minted (valid for 60 seconds). Are you sure you want to block this remote IP?";
+
+        var confirmDialog = new ContentDialog
+        {
+            Title = "Confirm Firewall Remote IP Block",
+            Content = new TextBlock { Text = detailsText, TextWrapping = TextWrapping.Wrap },
+            PrimaryButtonText = "Block IP",
+            CloseButtonText = "Cancel",
+            DefaultButton = ContentDialogButton.Close,
+            XamlRoot = this.XamlRoot
+        };
+
+        if (await confirmDialog.ShowAsync() == ContentDialogResult.Primary && p.ConsentToken is not null)
+        {
+            SetBusy(true, $"Blocking remote IP {p.TargetIp}...");
+            var outcome = await client.BlockIpAsync(p.TargetIp!, p.ConsentToken, p.DurationMinutes, reason);
+            SetBusy(false, "");
+
+            var outcomeDialog = new ContentDialog
+            {
+                Title = outcome?.Accepted == true ? "Firewall Rules Created" : "Block Failed",
+                Content = outcome?.Message ?? "No response received from action service.",
+                CloseButtonText = "OK",
+                XamlRoot = this.XamlRoot
+            };
+            await outcomeDialog.ShowAsync();
+        }
+    }
+
     private void SetBusy(bool busy, string status)
     {
         _busy = busy;
@@ -332,6 +451,7 @@ public sealed partial class RemediationPage : Page
         {
             QuarantineButton.IsEnabled = false;
             TerminateProcessButton.IsEnabled = false;
+            BlockIpButton.IsEnabled = false;
         }
         if (status.Length > 0 || busy) StatusText.Text = status;
     }

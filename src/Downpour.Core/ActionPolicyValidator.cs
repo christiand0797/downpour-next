@@ -175,6 +175,23 @@ public sealed class ActionPolicyValidator
                 rollbackSteps.Add("Process termination is irreversible; restarted instances must be launched manually by the user");
                 break;
 
+            case ActionKinds.BlockRemoteIp:
+                effects.Add($"Create inbound and outbound Windows Firewall rules blocking remote IP '{request.ObjectId}'");
+                effects.Add("Drop all network packets to and from the target address across all network profiles");
+                effects.Add("Record firewall rule creation and duration in the append-only action audit log");
+                risks.Add("Any legitimate service or website hosted at the target IP will become unreachable");
+                risks.Add("If the target is a shared CDN or cloud provider, other co-hosted services may be affected");
+                rollbackSteps.Add("Remove the created firewall rules via the Firewall management page or wait for rule expiration");
+                break;
+
+            case ActionKinds.RemoveFirewallRule:
+                effects.Add($"Remove Downpour Windows Firewall rule '{request.ObjectId}'");
+                effects.Add("Restore standard network filtering behavior for matching network traffic");
+                effects.Add("Record firewall rule deletion in the append-only action audit log");
+                risks.Add("If the rule was actively blocking malicious traffic, that traffic will no longer be dropped");
+                rollbackSteps.Add("Re-create the firewall block rule if network traffic remains suspicious");
+                break;
+
             default:
                 effects.Add($"Execute action '{request.ActionKind}' on '{request.ObjectId}'");
                 risks.Add("Action-specific risks not yet documented");

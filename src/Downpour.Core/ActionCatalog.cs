@@ -53,7 +53,31 @@ public static class DefaultActionCatalog
                 TimeoutSeconds: 15,
                 RequiredPermission: "process-terminate",
                 RequiredParameters: new[] { "processId", "startTimeUtc" },
-                AllowedObjectIdPatterns: new[] { "obj-" })
+                AllowedObjectIdPatterns: new[] { "obj-" }),
+
+            [ActionKinds.BlockRemoteIp] = new ActionCatalogEntry(
+                ActionKind: ActionKinds.BlockRemoteIp,
+                DisplayName: "Block Remote IP",
+                Description: "Create inbound and outbound Windows Firewall rules to block all traffic to and from a specific remote IP address.",
+                Category: "Network Protection",
+                EnabledByDefault: false,
+                RequiresElevation: true,
+                TimeoutSeconds: 30,
+                RequiredPermission: "firewall-rule-create",
+                RequiredParameters: new[] { "targetIp" },
+                AllowedObjectIdPatterns: new[] { "ip-", "obj-" }),
+
+            [ActionKinds.RemoveFirewallRule] = new ActionCatalogEntry(
+                ActionKind: ActionKinds.RemoveFirewallRule,
+                DisplayName: "Remove Firewall Rule",
+                Description: "Remove a Windows Firewall rule previously created by Downpour or legacy Downpour v29.",
+                Category: "Network Protection",
+                EnabledByDefault: false,
+                RequiresElevation: true,
+                TimeoutSeconds: 30,
+                RequiredPermission: "firewall-rule-delete",
+                RequiredParameters: new[] { "ruleName" },
+                AllowedObjectIdPatterns: new[] { "rule-", "obj-" })
         };
 
         return new ActionCatalogSnapshot(
@@ -90,6 +114,22 @@ public static class DefaultActionCatalog
                 FeatureId: ActionKinds.TerminateProcess,
                 DisplayName: "Process Termination",
                 Description: "Allow terminating suspicious processes associated with verified security alerts.",
+                Enabled: false,
+                RequiredPolicyVersion: CurrentPolicyVersion,
+                EnabledAtUtc: null),
+
+            [ActionKinds.BlockRemoteIp] = new FeatureSwitch(
+                FeatureId: ActionKinds.BlockRemoteIp,
+                DisplayName: "Firewall IP Block",
+                Description: "Allow blocking malicious remote IP addresses via Windows Firewall.",
+                Enabled: false,
+                RequiredPolicyVersion: CurrentPolicyVersion,
+                EnabledAtUtc: null),
+
+            [ActionKinds.RemoveFirewallRule] = new FeatureSwitch(
+                FeatureId: ActionKinds.RemoveFirewallRule,
+                DisplayName: "Firewall Rule Removal",
+                Description: "Allow removing Downpour and legacy Downpour v29 firewall rules.",
                 Enabled: false,
                 RequiredPolicyVersion: CurrentPolicyVersion,
                 EnabledAtUtc: null)

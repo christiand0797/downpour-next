@@ -96,8 +96,10 @@ public static class ActionKinds
     public const string QuarantineFile = "QuarantineFile";
     public const string RestoreFile = "RestoreFile";
     public const string TerminateProcess = "TerminateProcess";
+    public const string BlockRemoteIp = "BlockRemoteIp";
+    public const string RemoveFirewallRule = "RemoveFirewallRule";
     // Future action kinds to be added in later phases:
-    // public const string BlockNetworkConnection = "BlockNetworkConnection";
+    // public const string BlockUsbDevice = "BlockUsbDevice";
     // public const string IsolateHost = "IsolateHost";
 }
 

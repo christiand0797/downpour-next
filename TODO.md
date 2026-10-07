@@ -1,5 +1,17 @@
 # Downpour Next TODO
 
+## 2026-10-07 checkpoint: DN-008 Phase 3 Firewall Actions Broker & Legacy Cleanup (antigravity-worker)
+
+Completed and verified (Debug: 0 warnings/errors; 734/734 tests pass):
+- Contracts in `src/Downpour.Contracts/FirewallActionContracts.cs`: `FirewallActionOperations`, `FirewallActionRequest`, `FirewallActionPreview`, `FirewallActionResponse`.
+- Sensor settings: added `FirewallActions` (default true) to `SensorSettingsSnapshot`, `SensorSettingKeys`, and writable list in `SensorSettingsStore`.
+- Action catalog & policy: enabled `ActionKinds.BlockRemoteIp` and `ActionKinds.RemoveFirewallRule` in `ActionBroker.cs`, `ActionCatalog.cs`, and `ActionPolicyValidator.cs`.
+- Service executor in `src/Downpour.Service/FirewallActionExecutor.cs`: strict remote IP deny-list (loopback, wildcard, broadcast, link-local, multicast, local host adapter, gateway, DNS servers to prevent lockout); rule removal validation (only allows rules starting with `DownpourNext_` or legacy `downpour`); inbound & outbound `DownpourNext_Block_{ip}` rules with expiration metadata; automated legacy rule cleanup; expired rule cleanup; `IFirewallPolicyBackend` abstraction.
+- Service IPC worker in `src/Downpour.Service/FirewallActionPipeWorker.cs`: `Downpour.FirewallActions.v1` named pipe, `ParentDesktopCallerVerifier` authentication, 60s single-use consent tokens, audited logging of previews/denials/executions to `state/action-audit.v1.jsonl`.
+- Core client in `src/Downpour.Core/FirewallActionClient.cs`: preview/execute for block IP, remove rule, and legacy rule cleanup.
+- Desktop UI in `FirewallPage.xaml/.cs` ("Block Remote IP…" button, "Clean Up Legacy Rules" button with rule count, individual rule row "Remove" button) and `RemediationPage.xaml/.cs` ("Block remote IP…" button, Phase 1-3 banner).
+- Unit tests in `tests/Downpour.Tests/FirewallActionTests.cs` (39 tests: remote IP validation edge cases, rule removal validation, block rule generation, legacy cleanup, expired rule purging, caller authentication rejection, disabled switch rejection, end-to-end preview + consent + execution + audit log verification).
+
 ## 2026-10-07 checkpoint: DN-008 Phase 2 Alert-driven Process Termination Broker (antigravity-worker)
 
 Completed and verified (Debug: 0 warnings/errors; 695/695 tests pass):

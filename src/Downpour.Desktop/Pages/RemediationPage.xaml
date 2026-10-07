@@ -14,13 +14,14 @@
             </StackPanel>
             <Border Padding="14" CornerRadius="10" Background="#A80B1524" BorderBrush="#3D46C5D8" BorderThickness="1">
                 <StackPanel Spacing="6">
-                    <TextBlock Text="Phase 1 (Quarantine &amp; Restore) and Phase 2 (Process Termination) Active" FontWeight="SemiBold" Foreground="#FFFFC76A" />
-                    <TextBlock Text="Quarantine files and terminate suspicious alerted processes with audited consent tokens (DN-008). Windows system components (csrss, lsass, services, wininit, winlogon, svchost, explorer) and Downpour binaries are immutably protected from termination. All actions require itemized review, PID + start-time binding, and tamper-evident audit logging." FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                    <TextBlock Text="Phase 1 (Quarantine &amp; Restore), Phase 2 (Process Termination), and Phase 3 (Firewall Protection) Active" FontWeight="SemiBold" Foreground="#FFFFC76A" />
+                    <TextBlock Text="Quarantine files, terminate alerted processes, and block malicious remote IPs with audited consent tokens (DN-008). System critical components, protected processes, and local host/gateway/DNS IP addresses are strictly protected from mutation. All actions require itemized operator review, single-use consent tokens, and tamper-evident audit logging." FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                 </StackPanel>
             </Border>
             <StackPanel Orientation="Horizontal" Spacing="12">
                 <Button x:Name="QuarantineButton" Content="Quarantine a file…" Click="Quarantine_Click" Style="{StaticResource AccentButtonStyle}" />
                 <Button x:Name="TerminateProcessButton" Content="Terminate process by PID…" Click="TerminateProcess_Click" />
+                <Button x:Name="BlockIpButton" Content="Block remote IP…" Click="BlockIp_Click" />
                 <Button x:Name="RefreshButton" Content="Refresh" Click="Refresh_Click" />
                 <ProgressRing x:Name="Busy" Width="22" Height="22" IsActive="False" VerticalAlignment="Center" />
                 <TextBlock x:Name="StatusText" Text="Loading…" VerticalAlignment="Center" TextWrapping="Wrap" />

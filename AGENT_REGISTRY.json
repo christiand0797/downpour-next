@@ -95,8 +95,8 @@
       "role": "primary",
       "taskId": "DN-008",
       "status": "active",
-      "heartbeatUtc": "2026-10-07T19:30:00Z",
-      "notes": "Completed DN-008 Phase 2 (Process Termination Broker with PID+creation time binding, immutable deny-list, 60s consent token, caller verification, audit logging, Remediation & Memory UI, 695/695 tests pass). Preparing DN-008 Phase 3 (Firewall block of remote IP with expiring DownpourNext_ rules and DOWNPOUR_* rule cleanup)."
+      "heartbeatUtc": "2026-10-07T20:00:00Z",
+      "notes": "Completed DN-008 Phase 3 (Firewall Actions Broker with remote IP deny-list, inbound/outbound DownpourNext_ block rules with expiration metadata, legacy downpour rule cleanup, expired rule purging, 60s consent tokens, caller verification, audit logging, FirewallPage & RemediationPage UI, 734/734 tests pass). Next: DN-008 Phase 4 (USB device block) or Phase 5 (host emergency isolation with auto-expiry)."
     },
     {
       "id": "claude-parity-audit",
