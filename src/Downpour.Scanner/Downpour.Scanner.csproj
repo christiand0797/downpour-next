@@ -1,0 +1,73 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <!--
+    YARA-X C API (DN-026, approved 2026-10-07). The official release zip is fetched at BUILD time only, from a pinned tag,
+    and both the zip and the extracted DLL are verified against the hashes below. The DLL hash is also embedded in the
+    scanner and checked again before the library is loaded. Nothing is downloaded at runtime. The cache folder is ignored by git.
+  -->
+  <PropertyGroup>
+    <YaraXVersion>1.21.0</YaraXVersion>
+    <YaraXCommit>7b2637d4655155fdfaf68177edadb9a39406ece0</YaraXCommit>
+    <YaraXZipUrl>https://github.com/VirusTotal/yara-x/releases/download/v$(YaraXVersion)/yara-x-capi-v$(YaraXVersion)-x86_64-pc-windows-msvc.zip</YaraXZipUrl>
+    <YaraXZipSha256>F84B84113B43A1F3A0846395F90D099BF217E8ED2808712A7BE66CE2A6AE7C2C</YaraXZipSha256>
+    <YaraXDllSha256>8566A23D8DF2BD76570CAF36E5587E8BC8A1E6B32F84CF88F59D2B753BB8E4AB</YaraXDllSha256>
+    <YaraXCacheDir>$(MSBuildThisFileDirectory)..\..\.cache\yara-x\$(YaraXVersion)\</YaraXCacheDir>
+    <YaraXDll>$(YaraXCacheDir)yara_x_capi.dll</YaraXDll>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyMetadata Include="YaraXVersion" Value="$(YaraXVersion)" />
+    <AssemblyMetadata Include="YaraXDllSha256" Value="$(YaraXDllSha256)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="rule_quality.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="yara_rules\*.yar">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Include="$(YaraXDll)" Condition="Exists('$(YaraXDll)')">
+      <Link>yara_x_capi.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+  </ItemGroup>
+
+  <Target Name="FetchYaraX" BeforeTargets="AssignTargetPaths;BeforeBuild" Condition="!Exists('$(YaraXDll)') And '$(SkipYaraXFetch)' != 'true'">
+    <DownloadFile SourceUrl="$(YaraXZipUrl)" DestinationFolder="$(YaraXCacheDir)" DestinationFileName="capi.zip" Retries="2" />
+    <GetFileHash Files="$(YaraXCacheDir)capi.zip" Algorithm="SHA256">
+      <Output TaskParameter="Hash" PropertyName="_YaraXZipHash" />
+    </GetFileHash>
+    <Delete Files="$(YaraXCacheDir)capi.zip" Condition="'$(_YaraXZipHash)' != '$(YaraXZipSha256)'" />
+    <Error Condition="'$(_YaraXZipHash)' != '$(YaraXZipSha256)'" Text="YARA-X zip hash mismatch: expected $(YaraXZipSha256), got $(_YaraXZipHash). The download was deleted." />
+    <Unzip SourceFiles="$(YaraXCacheDir)capi.zip" DestinationFolder="$(YaraXCacheDir)staging" Include="yara_x_capi.dll" />
+    <GetFileHash Files="$(YaraXCacheDir)staging\yara_x_capi.dll" Algorithm="SHA256">
+      <Output TaskParameter="Hash" PropertyName="_YaraXDllHash" />
+    </GetFileHash>
+    <Error Condition="'$(_YaraXDllHash)' != '$(YaraXDllSha256)'" Text="YARA-X DLL hash mismatch: expected $(YaraXDllSha256), got $(_YaraXDllHash)." />
+    <Copy SourceFiles="$(YaraXCacheDir)staging\yara_x_capi.dll" DestinationFolder="$(YaraXCacheDir)" />
+    <RemoveDir Directories="$(YaraXCacheDir)staging" />
+    <Delete Files="$(YaraXCacheDir)capi.zip" />
+    <ItemGroup>
+      <None Include="$(YaraXDll)">
+        <Link>yara_x_capi.dll</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </None>
+    </ItemGroup>
+  </Target>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Downpour.Contracts\Downpour.Contracts.csproj" />
+  </ItemGroup>
+</Project>

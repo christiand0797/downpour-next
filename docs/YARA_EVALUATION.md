@@ -1,6 +1,8 @@
 # YARA dependency evaluation (DN-026)
 
-**Status:** proposal for owner review. No YARA dependency has been added. The owner decided: "evaluate and propose" (SECURITY.md, 2026-10-07).
+**Status (2026-10-07):** approved and implemented (see `src/Downpour.Scanner`). Correction to the table below: since v1.x, YARA-X releases do ship the Windows C library (`yara-x-capi-*-x86_64-pc-windows-msvc.zip`), so the build uses that official asset, pinned by tag, commit, and SHA-256, instead of compiling with cargo-c. Measured result: all 179 v29 rules load after renaming unused patterns (`yara_rules/PROVENANCE.md`), but 108 of them match clean Windows system files, so those are low confidence (`rule_quality.json`, `tools/yara_rule_quality.py`).
+
+**Original status:** proposal for owner review. The owner decided: "evaluate and propose" (SECURITY.md, 2026-10-07).
 
 **Why YARA:** v29 scanned files with `yara_x_engine.py` (YARA-X, with a lenient compile and a yara-python fallback) over the 34 rule files in `yara_rules/`. The Scanner route in Downpour Next does PE metadata and hashing only.
 

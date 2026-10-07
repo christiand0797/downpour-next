@@ -91,20 +91,20 @@
       "notes": "DN-006 NVD/CPE integration completed. VulnerabilitiesPage UI integrated with NVD enrichment: added NvdClient, VulnerabilityMatchEngine, Enrich with NVD button, candidate rows display CVSS scores, NVD description, affected version analysis. Per-candidate \"Check NVD\" button added for on-demand NVD enrichment. KevCandidateRow extended with NVD data properties (CVSS scores, vectors, version analysis, HasNvdData flag). Build successful (0 errors, 0 warnings), 165/167 tests pass (2 pre-existing failures). Next: per-candidate \"Check NVD\" button for on-demand enrichment, additional OSINT feed integrations (URLhaus, Abuse.ch, etc.)."
     },
     {
-      "id": "claude-parity-audit",
-      "role": "agent",
-      "taskId": "DN-008",
-      "status": "idle",
-      "heartbeatUtc": "2026-10-07T12:00:00Z",
-      "notes": "Completed DN-025 (automatic intel lookups). Reviewed and fixed antigravity-worker commits (DNS baseline hashing, VSS honesty, Sigma dedupe); live 4104 check passed. Wrote docs/YARA_EVALUATION.md (DN-026) and docs/ACTION_BROKER_THREAT_MODEL.md (DN-008); both await owner decisions."
-    },
-    {
       "id": "antigravity-worker",
       "role": "primary",
       "taskId": "DN-009",
+      "status": "active",
+      "heartbeatUtc": "2026-10-07T12:30:00Z",
+      "notes": "Working on Emergency Response route slice under DN-009: EmergencyResponseCoordinator, forensic system snapshot preservation, process indicator screening, guarded lockdown and containment actions under DN-008, incident response report generation, and EmergencyPage UI."
+    },
+    {
+      "id": "claude-parity-audit",
+      "role": "agent",
+      "taskId": "DN-026",
       "status": "idle",
-      "heartbeatUtc": "2026-10-07T12:00:00Z",
-      "notes": "IoT route slice completed: implemented read-only IoTDeviceScanner (native Windows ARP table discovery without subprocesses, embedded OUI manufacturer database, device category classification, Mozi/Mirai/Kimwolf botnet indicator detection on sensitive ports, safe port probing), IoTPage UI (device list, deep inspection card, search & category filtering, guarded device blocking dialog under DN-008, report export), and unit tests (576/576 tests pass). Ready for next route slice under DN-009."
+      "heartbeatUtc": "2026-10-07T09:40:00Z",
+      "notes": "DN-026 YARA committed and pushed (see SHARED_CONTEXT). Next safe task: Authenticode skip for signed files, or DN-008 phase 2."
     }
   ]
 }

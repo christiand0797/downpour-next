@@ -51,6 +51,16 @@
 - `SHARED_CONTEXT.md`
 - `TODO.md`
 
+## 2026-10-07 checkpoint: DN-026 YARA scanning implemented (claude-parity-audit)
+
+- Engine: official YARA-X 1.21.0 C API (`yara_x_capi.dll`), fetched at build time by `src/Downpour.Scanner/Downpour.Scanner.csproj` into `.cache/yara-x/`, zip and DLL SHA-256 pinned; the scanner re-checks the DLL hash before `NativeLibrary.Load`. Own P/Invoke binding (`YaraX.cs`), no NuGet wrapper.
+- Isolation: `Downpour.Scanner.exe` (no args, stdin/stdout JSON lines) runs in a job object (1.5 GiB, one process, kill on close) started by `YaraScannerHost`; a hang or crash fails one file and restarts the helper.
+- Rules: 33 v29 files / 179 rules bundled in `src/Downpour.Scanner/yara_rules` (provenance and the `$_` unused-pattern renames in `PROVENANCE.md`). Measured on 4,389 clean System32 binaries, 108 rules matched clean files, so they are low confidence (`rule_quality.json`, regenerate with `python tools/yara_rule_quality.py`): shown in results, never raised to triage.
+- Service: `YaraScanCoordinator` (one job, file or folder, recursive optional, 100k files, no reparse points), pipe `Downpour.YaraScan.v1` (status/start/cancel), findings source `Downpour/Yara`. Desktop: YARA section on the Scanner (File Inspector) page.
+- Verified: 619 tests pass; live service scan raised a CRITICAL ransom-note finding and listed a low-confidence match without raising it; helper dies with the service. Found and fixed: pipe reply depth overflow that crashed the service.
+- Incident: another agent stashed and dropped this uncommitted work (`git stash -u` + `reset --hard`); recovered from the dangling stash commit. Agents: commit with a pathspec; never stash/reset/clean others' files.
+- Next: Authenticode check to skip Microsoft-signed files, DN-008 phase 2 (process termination).
+
 ## 2026-10-07 checkpoint: DN-008 phase 1 quarantine and restore ENABLED (claude-parity-audit)
 
 - Owner approved "build and switch on everything" phase by phase (SECURITY.md). Phase 1 is live: Remediation route quarantines a user-picked file and restores it, each with a preview dialog and a one-time 60 s consent token.

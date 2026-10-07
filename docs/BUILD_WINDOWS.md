@@ -12,10 +12,13 @@ dotnet build Downpour.slnx -c Release
 dotnet test Downpour.slnx -c Release
 dotnet publish src/Downpour.Desktop/Downpour.Desktop.csproj -c Release -r win-x64 -p:WindowsPackageType=None -p:WindowsAppSDKSelfContained=true -p:SelfContained=true -p:PublishTrimmed=false -o artifacts/DownpourNext-win-x64
 dotnet publish src/Downpour.Service/Downpour.Service.csproj -c Release -r win-x64 --self-contained true -o artifacts/DownpourNext-win-x64/service
+dotnet publish src/Downpour.Scanner/Downpour.Scanner.csproj -c Release -r win-x64 --self-contained true -o artifacts/DownpourNext-win-x64/service/scanner
 dotnet publish src/Downpour.UpdateHelper/Downpour.UpdateHelper.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o artifacts/DownpourNext-win-x64/update-helper
 Copy-Item Start-Downpour-Next.cmd artifacts/DownpourNext-win-x64/
 Copy-Item Start-Downpour-Next.bat artifacts/DownpourNext-win-x64/
 ```
+
+The YARA scanner (DN-026) needs `yara_x_capi.dll` from the official YARA-X v1.21.0 release. The `Downpour.Scanner` build downloads that release zip once into `.cache/yara-x/` (ignored by git), checks the zip and the DLL against the SHA-256 values pinned in `Downpour.Scanner.csproj`, and fails the build on any mismatch. At runtime the scanner checks the DLL hash again before loading it and never downloads anything. Offline builds can pass `-p:SkipYaraXFetch=true`; YARA scanning then reports itself unavailable.
 
 Trimming is disabled until the WinUI reflection and JSON paths have source-generated metadata and the Windows App SDK trim warnings have been resolved.
 

@@ -23,6 +23,7 @@
     <ProjectReference Include="..\..\src\Downpour.Core\Downpour.Core.csproj" />
     <ProjectReference Include="..\..\src\Downpour.Service\Downpour.Service.csproj" />
     <ProjectReference Include="..\..\src\Downpour.Contracts\Downpour.Contracts.csproj" />
+    <ProjectReference Include="..\..\src\Downpour.Scanner\Downpour.Scanner.csproj" />
     <Content Include="..\..\capabilities.json" Link="capabilities.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Downpour.Service\sigma_rules\**\*" Link="sigma_rules\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>

@@ -544,7 +544,7 @@
     {
       "id": "DN-026",
       "title": "YARA scanning",
-      "status": "ready",
+      "status": "in_progress",
       "priority": "medium",
       "acceptance": [
         "Dependency reviewed and version-pinned (e.g. libyara.NET or YARA-X binding)",
@@ -552,7 +552,7 @@
         "Scanner route recursive scope with bounds, cancellation, and progress",
         "No auto-quarantine"
       ],
-      "notes": "Scanner route parity. | Owner decision: evaluate and propose before adding a dependency. | Claimed by claude-parity-audit for the evaluation write-up. | 2026-10-07 evaluation written: docs/YARA_EVALUATION.md recommends YARA-X C API via own P/Invoke, DLL built in CI from a pinned tag, scanning in an isolated helper process. Awaiting owner approval of the native DLL and the helper-process design. | 2026-10-07 owner APPROVED option A (YARA-X C API, own P/Invoke, CI-built pinned DLL with hash pin, isolated scanner helper). Ready to implement.",
+      "notes": "Scanner route parity. | Owner decision: evaluate and propose before adding a dependency. | Claimed by claude-parity-audit for the evaluation write-up. | 2026-10-07 evaluation written: docs/YARA_EVALUATION.md recommends YARA-X C API via own P/Invoke, DLL built in CI from a pinned tag, scanning in an isolated helper process. Awaiting owner approval of the native DLL and the helper-process design. | 2026-10-07 owner APPROVED option A (YARA-X C API, own P/Invoke, CI-built pinned DLL with hash pin, isolated scanner helper). Ready to implement. | 2026-10-07 CLAIMED by claude-parity-audit, implementation in progress (src/Downpour.Scanner, YaraScan* in Service/Core/Contracts, ScannerPage). Other agents: do not stash, reset, or clean these files. | 2026-10-07 IMPLEMENTED: engine, isolated helper, pinned DLL, 179 rules (108 low confidence by measurement), pipe, triage findings, Scanner UI. Remaining before done: Authenticode skip for Microsoft-signed files, UI click-through, reduce rule noise at the source.",
       "files": []
     },
     {

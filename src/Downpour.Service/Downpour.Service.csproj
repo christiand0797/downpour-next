@@ -21,6 +21,18 @@
     <ProjectReference Include="..\Downpour.Contracts\Downpour.Contracts.csproj" />
   </ItemGroup>
 
+  <!-- The YARA helper is built alongside and copied to <service>\scanner so it runs as a separate, job-limited process. -->
+  <ItemGroup>
+    <ProjectReference Include="..\Downpour.Scanner\Downpour.Scanner.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <Target Name="CopyScannerHelper" AfterTargets="Build">
+    <ItemGroup>
+      <ScannerHelperFiles Include="..\Downpour.Scanner\bin\$(Configuration)\$(TargetFramework)\**\*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(ScannerHelperFiles)" DestinationFiles="@(ScannerHelperFiles->'$(OutDir)scanner\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+  </Target>
+
   <ItemGroup>
     <Content Include="sigma_rules\**\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
