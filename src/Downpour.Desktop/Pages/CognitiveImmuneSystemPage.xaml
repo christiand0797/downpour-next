@@ -1,0 +1,390 @@
+<Page
+    x:Class="Downpour_Desktop.Pages.CognitiveImmuneSystemPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="Transparent">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Spacing="16" Margin="24,16,24,24">
+
+            <!-- Header Section -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Spacing="4">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <TextBlock Text="Cognitive Immune System (CIS)" FontSize="24" FontWeight="SemiBold" Foreground="#F3F4F6" />
+                        <Border x:Name="StatusBadge" CornerRadius="4" Padding="8,2" VerticalAlignment="Center" Background="#064E3B" BorderBrush="#059669" BorderThickness="1">
+                            <TextBlock x:Name="StatusBadgeText" Text="ACTIVE &amp; ADAPTING" FontSize="11" FontWeight="Bold" Foreground="#34D399" />
+                        </Border>
+                    </StackPanel>
+                    <TextBlock Text="Bio-inspired artificial immune defense: clonal selection detectors, adversarial red teaming, evolutionary drift prediction, and honeytokens."
+                               FontSize="13" Foreground="#9CA3AF" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <Button x:Name="RefreshButton" Click="RefreshButton_Click">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <FontIcon Glyph="&#xE72C;" FontSize="13" />
+                            <TextBlock Text="Refresh Telemetry" />
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="RedTeamProbeButton" Click="RedTeamProbeButton_Click">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <FontIcon Glyph="&#xE7BA;" FontSize="13" Foreground="#F87171" />
+                            <TextBlock Text="Run Red Team Probe" />
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="ExportReportButton" Click="ExportReportButton_Click">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <FontIcon Glyph="&#xEDE1;" FontSize="13" />
+                            <TextBlock Text="Export CIS Report" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
+
+            <!-- Info Bar for Feedback -->
+            <InfoBar x:Name="NotificationInfoBar" IsOpen="False" Severity="Informational" Margin="0,0,0,4" />
+
+            <!-- Metrics Overview Cards -->
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="8" Padding="14">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="TOTAL DETECTORS" FontSize="11" FontWeight="Bold" Foreground="#9CA3AF" />
+                        <TextBlock x:Name="MetricTotalDetectors" Text="1,280" FontSize="22" FontWeight="SemiBold" Foreground="#38BDF8" />
+                        <TextBlock Text="Clonal selection pool" FontSize="12" Foreground="#6B7280" />
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="1" Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="8" Padding="14">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="MEMORY EPITOPES" FontSize="11" FontWeight="Bold" Foreground="#9CA3AF" />
+                        <TextBlock x:Name="MetricMemoryEpitopes" Text="342" FontSize="22" FontWeight="SemiBold" Foreground="#A78BFA" />
+                        <TextBlock Text="Catalogued threat signatures" FontSize="12" Foreground="#6B7280" />
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="2" Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="8" Padding="14">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="EVASION RESISTANCE" FontSize="11" FontWeight="Bold" Foreground="#9CA3AF" />
+                        <TextBlock x:Name="MetricResistanceScore" Text="94%" FontSize="22" FontWeight="SemiBold" Foreground="#34D399" />
+                        <TextBlock Text="Adversarial robustness" FontSize="12" Foreground="#6B7280" />
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="3" Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="8" Padding="14">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="PREDICTIVE HORIZON" FontSize="11" FontWeight="Bold" Foreground="#9CA3AF" />
+                        <TextBlock x:Name="MetricPredictiveHorizon" Text="48h (89%)" FontSize="22" FontWeight="SemiBold" Foreground="#FBBF24" />
+                        <TextBlock Text="Evolutionary drift model" FontSize="12" Foreground="#6B7280" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- Autonomous Subsystems Grid -->
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Subsystem 1: Adversarial Red Teamer -->
+                <Border Grid.Column="0" Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="8" Padding="14">
+                    <StackPanel Spacing="10">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Spacing="2">
+                                <TextBlock Text="Adversarial Red Teamer" FontSize="14" FontWeight="SemiBold" Foreground="#F3F4F6" />
+                                <TextBlock Text="Generates synthetic evasions &amp; perturbations" FontSize="11" Foreground="#9CA3AF" />
+                            </StackPanel>
+                            <Border x:Name="RedTeamerBadge" Grid.Column="1" Background="#374151" CornerRadius="3" Padding="6,2" VerticalAlignment="Center">
+                                <TextBlock x:Name="RedTeamerBadgeText" Text="STOPPED" FontSize="10" FontWeight="Bold" Foreground="#E5E7EB" />
+                            </Border>
+                        </Grid>
+
+                        <StackPanel Spacing="4">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
+                                <TextBlock Text="Probe Rounds:" FontSize="11" Foreground="#9CA3AF" />
+                                <TextBlock x:Name="RtProbeRoundsText" Text="0" FontSize="11" FontWeight="Bold" Foreground="#F3F4F6" Margin="6,0,0,0" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
+                                <TextBlock Text="Detections Intercepted:" FontSize="11" Foreground="#9CA3AF" />
+                                <TextBlock x:Name="RtDetectionsText" Text="0" FontSize="11" FontWeight="Bold" Foreground="#A78BFA" Margin="6,0,0,0" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
+                                <TextBlock Text="Last Execution:" FontSize="11" Foreground="#9CA3AF" />
+                                <TextBlock x:Name="RtLastRunText" Text="Never" FontSize="11" Foreground="#6B7280" Margin="6,0,0,0" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <Button x:Name="ToggleRedTeamerButton" Click="ToggleRedTeamerButton_Click" HorizontalAlignment="Stretch">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <FontIcon Glyph="&#xE768;" FontSize="11" />
+                                <TextBlock x:Name="ToggleRedTeamerButtonText" Text="Start Red Teamer" FontSize="11" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Border>
+
+                <!-- Subsystem 2: Threat Evolution Predictor -->
+                <Border Grid.Column="1" Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="8" Padding="14">
+                    <StackPanel Spacing="10">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Spacing="2">
+                                <TextBlock Text="Threat Evolution Predictor" FontSize="14" FontWeight="SemiBold" Foreground="#F3F4F6" />
+                                <TextBlock Text="Anticipates mutation &amp; drift trajectories" FontSize="11" Foreground="#9CA3AF" />
+                            </StackPanel>
+                            <Border x:Name="PredictorBadge" Grid.Column="1" Background="#064E3B" CornerRadius="3" Padding="6,2" VerticalAlignment="Center">
+                                <TextBlock x:Name="PredictorBadgeText" Text="ACTIVE" FontSize="10" FontWeight="Bold" Foreground="#34D399" />
+                            </Border>
+                        </Grid>
+
+                        <StackPanel Spacing="4">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
+                                <TextBlock Text="Drift Vectors Tracked:" FontSize="11" Foreground="#9CA3AF" />
+                                <TextBlock x:Name="TeDriftVectorsText" Text="18" FontSize="11" FontWeight="Bold" Foreground="#F3F4F6" Margin="6,0,0,0" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
+                                <TextBlock Text="Simulated Mutations:" FontSize="11" Foreground="#9CA3AF" />
+                                <TextBlock x:Name="TeMutationsText" Text="142" FontSize="11" FontWeight="Bold" Foreground="#FBBF24" Margin="6,0,0,0" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
+                                <TextBlock Text="Prediction Confidence:" FontSize="11" Foreground="#9CA3AF" />
+                                <TextBlock x:Name="TeConfidenceText" Text="89%" FontSize="11" FontWeight="Bold" Foreground="#34D399" Margin="6,0,0,0" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <Button x:Name="TogglePredictorButton" Click="TogglePredictorButton_Click" HorizontalAlignment="Stretch">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <FontIcon Glyph="&#xE768;" FontSize="11" />
+                                <TextBlock x:Name="TogglePredictorButtonText" Text="Stop Predictor" FontSize="11" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Border>
+
+                <!-- Subsystem 3: Semantic Integrity Verifier -->
+                <Border Grid.Column="2" Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="8" Padding="14">
+                    <StackPanel Spacing="10">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Spacing="2">
+                                <TextBlock Text="Semantic Integrity Verifier" FontSize="14" FontWeight="SemiBold" Foreground="#F3F4F6" />
+                                <TextBlock Text="Validates process &amp; memory invariants" FontSize="11" Foreground="#9CA3AF" />
+                            </StackPanel>
+                            <Border x:Name="VerifierBadge" Grid.Column="1" Background="#064E3B" CornerRadius="3" Padding="6,2" VerticalAlignment="Center">
+                                <TextBlock x:Name="VerifierBadgeText" Text="MONITORING" FontSize="10" FontWeight="Bold" Foreground="#34D399" />
+                            </Border>
+                        </Grid>
+
+                        <StackPanel Spacing="4">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
+                                <TextBlock Text="Verified Baseline Hashes:" FontSize="11" Foreground="#9CA3AF" />
+                                <TextBlock x:Name="SiHashesText" Text="156" FontSize="11" FontWeight="Bold" Foreground="#F3F4F6" Margin="6,0,0,0" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
+                                <TextBlock Text="Baseline Inconsistencies:" FontSize="11" Foreground="#9CA3AF" />
+                                <TextBlock x:Name="SiViolationsText" Text="0" FontSize="11" FontWeight="Bold" Foreground="#34D399" Margin="6,0,0,0" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
+                                <TextBlock Text="Integrity Posture:" FontSize="11" Foreground="#9CA3AF" />
+                                <TextBlock x:Name="SiStatusText" Text="Clean" FontSize="11" Foreground="#6B7280" Margin="6,0,0,0" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <Button x:Name="ToggleVerifierButton" Click="ToggleVerifierButton_Click" HorizontalAlignment="Stretch">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <FontIcon Glyph="&#xE768;" FontSize="11" />
+                                <TextBlock x:Name="ToggleVerifierButtonText" Text="Stop Verifier" FontSize="11" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- Detector Pool Statistics Grid -->
+            <Border Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="8" Padding="16">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="Artificial Immune Detector Pool Statistics" FontSize="14" FontWeight="SemiBold" Foreground="#F3F4F6" />
+
+                    <Grid ColumnSpacing="16" RowSpacing="10">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.Row="0" Grid.Column="0" Background="#1F2937" BorderBrush="#374151" BorderThickness="1" CornerRadius="6" Padding="10">
+                            <StackPanel Spacing="2">
+                                <TextBlock Text="Clonal Expansions" FontSize="10" Foreground="#9CA3AF" />
+                                <TextBlock x:Name="StatClonalExpansions" Text="47" FontSize="16" FontWeight="SemiBold" Foreground="#38BDF8" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Row="0" Grid.Column="1" Background="#1F2937" BorderBrush="#374151" BorderThickness="1" CornerRadius="6" Padding="10">
+                            <StackPanel Spacing="2">
+                                <TextBlock Text="Somatic Mutations" FontSize="10" Foreground="#9CA3AF" />
+                                <TextBlock x:Name="StatSomaticMutations" Text="112" FontSize="16" FontWeight="SemiBold" Foreground="#A78BFA" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Row="0" Grid.Column="2" Background="#1F2937" BorderBrush="#374151" BorderThickness="1" CornerRadius="6" Padding="10">
+                            <StackPanel Spacing="2">
+                                <TextBlock Text="Detectors Created" FontSize="10" Foreground="#9CA3AF" />
+                                <TextBlock x:Name="StatDetectorsCreated" Text="520" FontSize="16" FontWeight="SemiBold" Foreground="#34D399" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Row="0" Grid.Column="3" Background="#1F2937" BorderBrush="#374151" BorderThickness="1" CornerRadius="6" Padding="10">
+                            <StackPanel Spacing="2">
+                                <TextBlock Text="Detectors Retired" FontSize="10" Foreground="#9CA3AF" />
+                                <TextBlock x:Name="StatDetectorsRetired" Text="18" FontSize="16" FontWeight="SemiBold" Foreground="#9CA3AF" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Row="1" Grid.Column="0" Background="#1F2937" BorderBrush="#374151" BorderThickness="1" CornerRadius="6" Padding="10">
+                            <StackPanel Spacing="2">
+                                <TextBlock Text="Active Responses" FontSize="10" Foreground="#9CA3AF" />
+                                <TextBlock x:Name="StatActiveResponses" Text="4" FontSize="16" FontWeight="SemiBold" Foreground="#FBBF24" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Row="1" Grid.Column="1" Background="#1F2937" BorderBrush="#374151" BorderThickness="1" CornerRadius="6" Padding="10">
+                            <StackPanel Spacing="2">
+                                <TextBlock Text="Signal Queue" FontSize="10" Foreground="#9CA3AF" />
+                                <TextBlock x:Name="StatSignalQueue" Text="0" FontSize="16" FontWeight="SemiBold" Foreground="#34D399" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Row="1" Grid.Column="2" Background="#1F2937" BorderBrush="#374151" BorderThickness="1" CornerRadius="6" Padding="10">
+                            <StackPanel Spacing="2">
+                                <TextBlock Text="Threats Contained" FontSize="10" Foreground="#9CA3AF" />
+                                <TextBlock x:Name="StatThreatsContained" Text="14" FontSize="16" FontWeight="SemiBold" Foreground="#34D399" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Row="1" Grid.Column="3" Background="#1F2937" BorderBrush="#374151" BorderThickness="1" CornerRadius="6" Padding="10">
+                            <StackPanel Spacing="2">
+                                <TextBlock Text="Autoimmune Events" FontSize="10" Foreground="#9CA3AF" />
+                                <TextBlock x:Name="StatAutoimmuneEvents" Text="0" FontSize="16" FontWeight="SemiBold" Foreground="#34D399" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Deception Technology: Honeypots & Honeytokens -->
+            <Grid ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Honeypots List -->
+                <Border Grid.Column="0" Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="8" Padding="14">
+                    <StackPanel Spacing="10">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="Active Decoy Honeypots" FontSize="14" FontWeight="SemiBold" Foreground="#F3F4F6" />
+                            <Border Background="#064E3B" CornerRadius="4" Padding="6,1" VerticalAlignment="Center">
+                                <TextBlock Text="6 ARMED" FontSize="10" FontWeight="Bold" Foreground="#34D399" />
+                            </Border>
+                        </StackPanel>
+
+                        <ListView x:Name="HoneypotListView" SelectionMode="None" Height="220">
+                            <ListView.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="#1F2937" BorderBrush="#374151" BorderThickness="1" CornerRadius="6" Padding="8" Margin="0,2,0,2">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0" Spacing="2">
+                                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Foreground="#38BDF8" FontSize="12" />
+                                                    <TextBlock Text="{Binding ProtocolPort}" FontSize="11" Foreground="#9CA3AF" />
+                                                </StackPanel>
+                                                <TextBlock Text="{Binding Banner}" FontSize="10" FontFamily="Consolas" Foreground="#6B7280" />
+                                            </StackPanel>
+                                            <Border Grid.Column="1" Background="#111827" BorderBrush="#374151" BorderThickness="1" CornerRadius="3" Padding="6,2" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding InteractionSummary}" FontSize="10" FontWeight="Bold" Foreground="#34D399" />
+                                            </Border>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </StackPanel>
+                </Border>
+
+                <!-- Honeytokens List -->
+                <Border Grid.Column="1" Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="8" Padding="14">
+                    <StackPanel Spacing="10">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="Canary Honeytokens (Tripwires)" FontSize="14" FontWeight="SemiBold" Foreground="#F3F4F6" />
+                            <Border Background="#064E3B" CornerRadius="4" Padding="6,1" VerticalAlignment="Center">
+                                <TextBlock Text="6 DEPLOYED" FontSize="10" FontWeight="Bold" Foreground="#34D399" />
+                            </Border>
+                        </StackPanel>
+
+                        <ListView x:Name="HoneytokenListView" SelectionMode="None" Height="220">
+                            <ListView.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="#1F2937" BorderBrush="#374151" BorderThickness="1" CornerRadius="6" Padding="8" Margin="0,2,0,2">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0" Spacing="2">
+                                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                                    <TextBlock Text="{Binding Type}" FontWeight="SemiBold" Foreground="#FBBF24" FontSize="12" />
+                                                    <TextBlock Text="{Binding Description}" FontSize="11" Foreground="#9CA3AF" />
+                                                </StackPanel>
+                                                <TextBlock Text="{Binding Placement}" FontSize="10" Foreground="#6B7280" />
+                                            </StackPanel>
+                                            <Border Grid.Column="1" Background="#111827" BorderBrush="#374151" BorderThickness="1" CornerRadius="3" Padding="6,2" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding TriggerSummary}" FontSize="10" FontWeight="Bold" Foreground="#34D399" />
+                                            </Border>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+        </StackPanel>
+    </ScrollViewer>
+</Page>

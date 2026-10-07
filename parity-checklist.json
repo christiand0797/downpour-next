@@ -437,7 +437,7 @@
     },
     "cognitive-immune-system": {
       "title": "Cognitive Immune System",
-      "currentStatus": "planned",
+      "currentStatus": "in-progress",
       "v29Workflows": [
         "CIS status and detector statistics",
         "Adversarial red teamer toggle",

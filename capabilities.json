@@ -39,6 +39,6 @@
     { "routeId": "defense", "group": "Protection", "title": "Defense Suite", "icon": "E72E", "sourceMethod": "_build_defense_tab", "status": "in-progress", "description": "Executive Defense Suite: unified posture aggregation, attack surface exposure scoring, core pillar status (AEGIS, Ransomware, Hardening, Emergency), and native read-only MITRE ATT&CK watcher diagnostics." },
     { "routeId": "tools", "group": "Operations", "title": "Tools", "icon": "E713", "sourceMethod": "_build_tools_tab", "status": "planned", "description": "Supporting diagnostics and security utilities." },
     { "routeId": "settings", "group": "Operations", "title": "Settings", "icon": "E713", "sourceMethod": "_build_settings_tab", "status": "in-progress", "description": "Consolidated local preferences for weather visuals, reduced motion, and automatic storm cycling. Scanning, privacy-service, and response controls remain unported." },
-    { "routeId": "cognitive-immune-system", "group": "Protection", "title": "Cognitive Immune System", "icon": "E8A5", "sourceMethod": "_build_cis_tab", "status": "planned", "description": "Self-healing analysis and adaptive defense status." }
+    { "routeId": "cognitive-immune-system", "group": "Protection", "title": "Cognitive Immune System", "icon": "E8A5", "sourceMethod": "_build_cis_tab", "status": "in-progress", "description": "Bio-inspired artificial immune defense: clonal selection detector pool, Adversarial Red Teamer, Threat Evolution Predictor, Semantic Integrity Verifier, and canary honeytokens." }
   ]
 }
