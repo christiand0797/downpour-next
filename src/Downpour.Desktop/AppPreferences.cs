@@ -19,6 +19,7 @@ public static class AppPreferences
         ("minimizeToTray", true),
         ("soundAlarmEnabled", false),
         ("soundAlarmIncludesHigh", false),
+        ("ransomwareContentSampling", true),
     ];
 
     private static readonly Dictionary<string, bool> Values = Definitions.ToDictionary(d => d.Key, d => d.Default, StringComparer.Ordinal);
@@ -35,6 +36,7 @@ public static class AppPreferences
     public static bool MinimizeToTray { get => Values["minimizeToTray"]; set => Set("minimizeToTray", value); }
     public static bool SoundAlarmEnabled { get => Values["soundAlarmEnabled"]; set => Set("soundAlarmEnabled", value); }
     public static bool SoundAlarmIncludesHigh { get => Values["soundAlarmIncludesHigh"]; set => Set("soundAlarmIncludesHigh", value); }
+    public static bool RansomwareContentSampling { get => Values["ransomwareContentSampling"]; set => Set("ransomwareContentSampling", value); }
 
     public static void Load()
     {

@@ -79,6 +79,11 @@
                         <StackPanel Spacing="2"><TextBlock Text="Analyze PowerShell script blocks" FontWeight="SemiBold" /><TextBlock Text="Read PowerShell script text (Event 4104) and check it with Sigma rules and AMSI. The text is analyzed in memory only and is never saved, exported, or shown; alerts keep only the rule name." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" /></StackPanel>
                         <ToggleSwitch x:Name="ScriptBlockToggle" Grid.Column="1" IsOn="True" IsEnabled="False" OnContent="On" OffContent="Off" />
                     </Grid>
+                    <Grid ColumnSpacing="16">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                        <StackPanel Spacing="2"><TextBlock Text="Sample documents for ransomware checks" FontWeight="SemiBold" /><TextBlock Text="The Ransomware screen reads up to 64 KB of documents in protected folders (Documents, Desktop and similar) to detect encrypted files. Only an entropy score is kept. When off, it checks file names and extensions only." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" /></StackPanel>
+                        <ToggleSwitch x:Name="RansomwareSamplingToggle" Grid.Column="1" IsOn="True" OnContent="On" OffContent="Off" />
+                    </Grid>
                     <TextBlock x:Name="SensorSettingsState" FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" TextWrapping="Wrap" />
                 </StackPanel>
             </Border>

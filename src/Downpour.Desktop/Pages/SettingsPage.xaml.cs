@@ -26,6 +26,7 @@ public sealed partial class SettingsPage : Page
         MinimizeToTrayToggle.Toggled += (_, _) => Save(() => AppPreferences.MinimizeToTray = MinimizeToTrayToggle.IsOn);
         SoundAlarmToggle.Toggled += (_, _) => Save(() => AppPreferences.SoundAlarmEnabled = SoundAlarmToggle.IsOn);
         SoundHighToggle.Toggled += (_, _) => Save(() => AppPreferences.SoundAlarmIncludesHigh = SoundHighToggle.IsOn);
+        RansomwareSamplingToggle.Toggled += (_, _) => Save(() => AppPreferences.RansomwareContentSampling = RansomwareSamplingToggle.IsOn);
         ScriptBlockToggle.Toggled += async (_, _) => await SetSensorSettingAsync(Downpour.Contracts.SensorSettingKeys.ScriptBlockAnalysis, ScriptBlockToggle.IsOn);
         IntelLookupsToggle.Toggled += async (_, _) => await SetSensorSettingAsync(Downpour.Contracts.SensorSettingKeys.IntelLookups, IntelLookupsToggle.IsOn);
     }
@@ -149,6 +150,7 @@ public sealed partial class SettingsPage : Page
             MinimizeToTrayToggle.IsOn = AppPreferences.MinimizeToTray;
             SoundAlarmToggle.IsOn = AppPreferences.SoundAlarmEnabled;
             SoundHighToggle.IsOn = AppPreferences.SoundAlarmIncludesHigh;
+            RansomwareSamplingToggle.IsOn = AppPreferences.RansomwareContentSampling;
             SoundHighToggle.IsEnabled = SoundAlarmToggle.IsOn;
             NotificationState.Text = App.NotificationsUnavailable ?? "";
             _ = LoadSensorSettingsAsync();

@@ -71,8 +71,10 @@ public static class RansomwareDefenseInspector
         IReadOnlyList<string>? customDirectories = null,
         WindowsServiceInventoryClient? serviceClient = null,
         SecurityAlertClient? alertClient = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        bool sampleContents = true)
     {
+        // sampleContents: owner-approved document entropy sampling (SECURITY.md); false checks names and extensions only.
         var targetDirs = customDirectories ?? GetDefaultProtectedDirectories();
         var indicators = new ConcurrentBag<RansomwareThreatIndicator>();
 
@@ -136,7 +138,7 @@ public static class RansomwareDefenseInspector
                     }
 
                     // C. Sample file entropy for documents
-                    if (entropySamples < 15 && file.Length > 256 && file.Length <= MaxSampleFileSize)
+                    if (sampleContents && entropySamples < 15 && file.Length > 256 && file.Length <= MaxSampleFileSize)
                     {
                         var lowerExt = ext.ToLowerInvariant();
                         if (lowerExt is ".docx" or ".xlsx" or ".pdf" or ".txt" or ".csv" or ".rtf" or ".json")

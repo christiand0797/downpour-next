@@ -50,7 +50,7 @@ public sealed partial class RansomwarePage : Page
 
         try
         {
-            var posture = await RansomwareDefenseInspector.InspectAsync();
+            var posture = await RansomwareDefenseInspector.InspectAsync(sampleContents: AppPreferences.RansomwareContentSampling);
             _latestPosture = posture;
 
             // Overview counters
