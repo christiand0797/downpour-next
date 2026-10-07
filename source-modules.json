@@ -486,8 +486,8 @@
     "family": "Utilities, Memory, & Dashboard",
     "module": "file_sandbox.py",
     "description": "File sandboxing (2.1 KB).",
-    "sourceStatus": "Orphaned",
-    "migrationStatus": "orphaned"
+    "sourceStatus": "Ported to SafeFileSandbox / SandboxPage (read-only static analysis, entropy, PE & API indicators)",
+    "migrationStatus": "in-progress"
   },
   {
     "family": "Utilities, Memory, & Dashboard",

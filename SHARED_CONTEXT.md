@@ -1,10 +1,57 @@
 # Downpour Next shared context
 
-**Updated:** 2026-10-07 (antigravity-worker: DN-009 Forensics slice completed, DN-029 completed, DN-009 Cleanup Center slice completed; claude-parity-audit: DN-016/018/019/022/023/024/028 done)
+**Updated:** 2026-10-07 (antigravity-worker: DN-009 Sandbox slice completed, DN-009 Forensics slice completed, DN-029 completed, DN-009 Cleanup Center slice completed; claude-parity-audit: DN-016/018/019/022/023/024/028 done)
 
 **Repository:** public [christiand0797/downpour-next](https://github.com/christiand0797/downpour-next)
 **Local path:** `C:\Users\purpl\Desktop\downpour v2`  
 **Branch:** `main`  
+
+## 2026-10-07 checkpoint: DN-009 Sandbox Route Slice (antigravity-worker)
+
+**DN-009 Sandbox Route Slice completed:**
+- **Safe File Sandbox & Static Threat Analysis (`SafeFileSandbox`)**:
+  - Implemented strictly read-only, non-destructive static artifact review engine porting v29 `file_sandbox.py` and `_build_sandbox_tab`.
+  - Calculates Shannon entropy over byte distributions to detect packing and encryption.
+  - Computes triple cryptographic checksums (SHA-256, SHA-1, MD5).
+  - Performs PE header and section parsing:
+    - Architecture detection (x86, x64, ARM64), section counts, linker timestamp, and Authenticode certificate table detection.
+    - W^X violation detection (identifying sections marked both writable and executable).
+    - Known packer/protector section signature scanner (`.upx*`, `.aspack`, `.vmp`, `.themida`, `.pack`, `pecompact`, `.nsp`, `.mpress`, `.enigma`).
+  - Win32 API string pattern scanner (matching both ASCII and UTF-16LE):
+    - Process Injection (T1055): `VirtualAllocEx`, `WriteProcessMemory`, `CreateRemoteThread`, `QueueUserAPC`, `SetThreadContext`, `NtMapViewOfSection`, `ReflectiveLoader`.
+    - Spyware / Keylogger (T1056): `GetAsyncKeyState`, `GetKeyState`, `SetWindowsHookEx`, `RegisterHotKey`.
+    - Defense Evasion (T1562, T1497): `AmsiScanBuffer`, `EtwEventWrite`, `IsDebuggerPresent`, `CheckRemoteDebuggerPresent`.
+    - Credential Access (T1003): `MiniDumpWriteDump`.
+    - Execution & C2 (T1059, T1105): `powershell`, `-enc`, `cmd.exe`, `downloadstring`, `certutil`, `bitsadmin`, `mshta`.
+  - Risk scoring model (0-100) with combinatorial synergy boosts and verdict categorization (`CLEAN`, `SUSPICIOUS`, `MALICIOUS`).
+  - Generates formatted plain-text threat report with all metrics, checksums, indicators, and safety notices.
+- **Desktop UI (`SandboxPage.xaml/.cs`)**:
+  - Route `sandbox` displays sample picker, file metrics, dynamic verdict and entropy gauges, format metadata, and SHA-256 hash.
+  - Interactive indicators list with category badges, descriptions, and point weights.
+  - Key assessment findings and activity log/threat report preview.
+  - "Detonate in Sandbox" button triggers host-detonation guard dialog explaining that host execution is prohibited under least-privilege security policy and requires an isolated container broker (DN-008).
+  - "Export Threat Report" writes timestamped report file to Desktop or AppData Reports folder.
+- **Navigation & Parity Tracking**:
+  - Wired in `MainWindow.xaml.cs`.
+  - Promoted route `sandbox` to `"in-progress"` in `capabilities.json`, `parity-checklist.json`, and `source-modules.json` (`file_sandbox.py`).
+- **Testing & Verification**:
+  - Added 9 unit tests in `SafeFileSandboxTests.cs` (entropy calculation, non-PE hashing, PE header extraction, W^X detection, packer section detection, API pattern detection in ASCII/UTF-16, report generation, and oversize rejection).
+  - 447/447 solution tests pass with 0 warnings, 0 errors.
+
+**Files created/updated:**
+- `src/Downpour.Contracts/SandboxInspection.cs`
+- `src/Downpour.Core/SafeFileSandbox.cs`
+- `src/Downpour.Desktop/Pages/SandboxPage.xaml`
+- `src/Downpour.Desktop/Pages/SandboxPage.xaml.cs`
+- `src/Downpour.Desktop/MainWindow.xaml.cs`
+- `capabilities.json`
+- `parity-checklist.json`
+- `source-modules.json`
+- `tests/Downpour.Tests/SafeFileSandboxTests.cs`
+- `WORK_QUEUE.json`
+- `AGENT_REGISTRY.json`
+- `SHARED_CONTEXT.md`
+- `TODO.md`
 
 ## 2026-10-07 checkpoint: DN-009 Forensics Route Slice (antigravity-worker)
 

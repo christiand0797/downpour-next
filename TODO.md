@@ -1,5 +1,16 @@
 # Downpour Next TODO
 
+## 2026-10-07 checkpoint: DN-009 Sandbox Route Slice (antigravity-worker)
+
+Completed and verified (Debug: 0 warnings/errors; 447/447 tests pass):
+- DN-009 Sandbox route slice: implemented `SafeFileSandbox` porting v29 `file_sandbox.py` and `_build_sandbox_tab`.
+- Contracts in `src/Downpour.Contracts/SandboxInspection.cs`: `SandboxFileMetrics`, `SandboxPeDetails`, `SandboxTriggeredIndicator`, and `SandboxReport`.
+- Core engine in `src/Downpour.Core/SafeFileSandbox.cs`: Shannon entropy calculation ($\sum -p \log_2 p$), cryptographic multi-hash (SHA-256, SHA-1, MD5), PE header/section parsing (architecture, timestamp, Authenticode certificate table), W^X violation detection, known packer section scanner (`.upx*`, `.aspack`, `.vmp`, `.themida`, `.pack`, `pecompact`, `.nsp`, `.mpress`, `.enigma`), Win32 API string pattern scanner (Process Injection, Spyware/Keylogger, Defense Evasion, Credential Access, Execution & C2) supporting ASCII & UTF-16, risk scoring model (0-100), verdict classification (`CLEAN`, `SUSPICIOUS`, `MALICIOUS`), and formatted threat report generator.
+- Desktop route `sandbox` in `SandboxPage.xaml/.cs`: sample file picker (`FileOpenPicker` initialized with `App.MainWindowHandle`), static analysis trigger, dynamic verdict and entropy gauges, target sample metadata header, interactive indicators list with category badges and point weights, key assessment findings summary, activity log / threat report box, and report export.
+- Host Detonation Guard: "Detonate in Sandbox" button presents security protection notice stating host execution is prohibited under least-privilege security policy (AGENTS.md & SECURITY.md) and requires an isolated container broker (DN-008).
+- Wired `sandbox` route in `MainWindow.xaml.cs` and promoted to `in-progress` in `capabilities.json`, `parity-checklist.json`, and `source-modules.json` (`file_sandbox.py`).
+- 9 unit tests in `SafeFileSandboxTests.cs` (entropy validation, non-PE hashing, PE header extraction, W^X detection, packer section detection, API pattern detection in ASCII/UTF-16, report generation, and oversize rejection).
+
 ## 2026-10-07 checkpoint: DN-009 Forensics Route Slice (antigravity-worker)
 
 Completed and verified (Debug: 0 warnings/errors; 438/438 tests pass):
