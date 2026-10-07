@@ -6,9 +6,9 @@
       "id": "codex-primary",
       "role": "primary",
       "taskId": "DN-010",
-      "status": "active",
-      "heartbeatUtc": "2026-10-07T21:08:04Z",
-      "notes": "Active DN-010 final v0.1.17 publication: e8ce959, 870 clean Release tests, native smoke and whole-package integrity/live review pass, ZIP entries/hash verified. GitHub CI billing block reconfirmed. Preserve other drafts; SHARED_CONTEXT has evidence and next work."
+      "status": "idle",
+      "heartbeatUtc": "2026-10-07T21:11:00Z",
+      "notes": "Handoff: v0.1.17 published/verified at e8ce959; clean Release 870 tests, root Debug 893; native smoke, full-package integrity/live review and remote digests pass. Next safe task: narrow admin helper/installed-service boundary with denial/audit/timeout/recovery tests; preserve action/AntiStalker drafts. Exact files/commits/commands/failures in docs/CONTINUATION_HANDOFF_2026-10-07.md. Overall parity/signing/admin/native acceptance unfinished; CI account billing lock confirmed."
     },
     {
       "id": "v29_action_map",

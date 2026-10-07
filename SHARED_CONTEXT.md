@@ -1,5 +1,11 @@
 # Downpour Next shared context
 
+## 2026-10-07 final published handoff (codex-primary, idle)
+
+Latest release v0.1.17 is published at https://github.com/christiand0797/downpour-next/releases/tag/v0.1.17 (2026-10-07T21:08:25Z). Tag source e8ce959; GitHub latest endpoint, all three asset sizes/digests, and ZIP content type/state verified. ZIP SHA-256 `B035C921C7F9A1BF1DB7222448EEECD6C3C5E43932A6F60B9BC8C77FA843DBB2`, 259,783,061 bytes. Main pushed through 793725a before final documentation handoff. All source/build/test/package/smoke/integrity evidence and exact owned file inventory are in `docs/CONTINUATION_HANDOFF_2026-10-07.md`. The final handoff docs will also be pushed on main. Registry codex-primary is idle; no actively owned process remains running.
+
+Full parity is unfinished. Next safe task is a narrow admin-elevation/installed-service boundary with consent/denial/audit/timeout/recovery acceptance; telemetry must remain unelevated. CIS measured review/integrity is functional but not adaptive/deception parity. Host-isolation/AntiStalker drafts remain preserved and excluded. Remote CI is blocked by a confirmed GitHub account billing lock (run 37684720863). Native CIS click-through and other manual acceptance remain open. Resume from the handoff and WORK_QUEUE, not historical screen-completion claims.
+
 ## 2026-10-07 v0.1.17 archive and real integrity probe verified (codex-primary, DN-010)
 
 Source e8ce959; archive `artifacts/DownpourNext-win-x64-0.1.17.zip`: 259,783,061 bytes, SHA-256 `B035C921C7F9A1BF1DB7222448EEECD6C3C5E43932A6F60B9BC8C77FA843DBB2`. All 1,062 entries verified against staging; expanded total 660,035,420 bytes; 52 runtime components in SBOM. Evidence: `artifacts/v0.1.17-evidence.json` (ignored). Actual PackageIntegrityInspector matched all 1,061 manifest-listed files, 659,846,854 bytes hashed; manifest SHA-256 `388D1ED35E690315F11163CA781A9B6C2E5012921E96564DF4858E29FE565735`. Live probe returned 54/54 alert measurements with seven visible partial warnings (settings unavailable to standalone probe is correctly unknown), and a 6,849-byte local metadata report including integrity scope. No privileged operations; all owned processes stopped. Commands: dotnet run ignored v017-integration/Probe.csproj against fixed staging; metadata/archive script; native smoke; git diff --check.
