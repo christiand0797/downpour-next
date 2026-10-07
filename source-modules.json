@@ -31,8 +31,8 @@
     "family": "Core Engines & Detection Modules",
     "module": "ransomware_detector.py",
     "description": "Entropy monitoring, shadow copy watch, canary files/honeytokens.",
-    "sourceStatus": "Active",
-    "migrationStatus": "planned"
+    "sourceStatus": "Ported to RansomwareDefenseInspector / RansomwarePage",
+    "migrationStatus": "in-progress"
   },
   {
     "family": "Core Engines & Detection Modules",
@@ -577,8 +577,8 @@
     "family": "Detection Monitors",
     "module": "entropy_ransomware_detector.py",
     "description": "Hierarchical Entropy Disruption (HED) Ransomware Detector",
-    "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
-    "migrationStatus": "planned"
+    "sourceStatus": "Ported to RansomwareDefenseInspector (passive entropy disruption & sampling)",
+    "migrationStatus": "in-progress"
   },
   {
     "family": "Detection Monitors",
@@ -857,8 +857,8 @@
     "family": "Unwired v29 Modules",
     "module": "ransomware_canary.py",
     "description": "Ransomware Canary File System",
-    "sourceStatus": "Not reachable from v29 main (2026-10-06 audit)",
-    "migrationStatus": "orphaned"
+    "sourceStatus": "Ported to RansomwareDefenseInspector / RansomwarePage (canary decoys, integrity verification, entropy watch)",
+    "migrationStatus": "in-progress"
   },
   {
     "family": "Unwired v29 Modules",

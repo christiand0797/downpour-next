@@ -1,10 +1,55 @@
 # Downpour Next shared context
 
-**Updated:** 2026-10-07 (antigravity-worker: DN-009 Sandbox slice completed, DN-009 Forensics slice completed, DN-029 completed, DN-009 Cleanup Center slice completed; claude-parity-audit: DN-016/018/019/022/023/024/028 done)
+**Updated:** 2026-10-07 (antigravity-worker: DN-009 Ransomware slice completed, DN-009 Sandbox slice completed, DN-009 Forensics slice completed, DN-029 completed, DN-009 Cleanup Center slice completed; claude-parity-audit: DN-016/018/019/022/023/024/028 done)
 
 **Repository:** public [christiand0797/downpour-next](https://github.com/christiand0797/downpour-next)
 **Local path:** `C:\Users\purpl\Desktop\downpour v2`  
 **Branch:** `main`  
+
+## 2026-10-07 checkpoint: DN-009 Ransomware Route Slice (antigravity-worker)
+
+**DN-009 Ransomware Route Slice completed:**
+- **Ransomware Early Warning & Defense Inspector (`RansomwareDefenseInspector`)**:
+  - Implemented strictly read-only, non-destructive ransomware defense engine porting v29 `ransomware_detector.py`, `entropy_ransomware_detector.py`, `ransomware_canary.py`, and `_build_ransomware_tab`.
+  - Protected directory posture analysis: inspects user folders (Documents, Desktop, Pictures, Downloads, LocalAppData), file counts, storage consumption, and average Shannon entropy per folder.
+  - Canary token decoy file monitor:
+    - Verifies integrity, existence, and entropy of canary decoy tokens (`!_Budget_2026_FINAL.xlsx.canary`, `!_Contract_Draft_v3.docx.canary`, `!_Annual_Report.pdf.canary`, `!_Client_Database.csv.canary`, `!_Passwords.txt.canary`).
+    - Flags zero-byte truncations (`Tampered`) and high-entropy modifications ($\ge 7.5$) as `Encrypted` with instant CRITICAL alert escalation.
+  - Known ransom note detector: regex pattern scanner recognizing known ransom notes (`readme_for_decrypt.txt`, `restore-my-files.txt`, `_readme.txt`, `how_to_recover.html`, `decrypt_notes.txt`, `!-README-!.txt`, `decrypt_my_files.hta`, `files_encrypted.rtf`).
+  - Known ransomware extension detector: recognizes `.lockbit`, `.blackcat`, `.rhysida`, `.darkside`, `.crypted`, `.enc`, `.locked`, `.wnry`, `.coot`, `.djvu`, `.mallox`, `.phobos`, `.stop`, `.makop`, `.medusa`, `.akira`, `.wannacry`, `.conti`, `.hive`, `.babuk`.
+  - Volume Shadow Copy (VSS) resiliency & anti-recovery detection:
+    - Queries VSS service state via `WindowsServiceInventoryClient` (flags disabled startup type).
+    - Queries alerts and events for anti-recovery commands (`vssadmin delete shadows`, `wmic shadowcopy delete`, `bcdedit /set {default} recoveryenabled No`, `ignoreallfailures`, `wbadmin delete catalog`).
+  - Executive report generator: generates formatted plaintext threat summary and posture breakdown.
+- **Desktop UI (`RansomwarePage.xaml/.cs`)**:
+  - Route `ransomware` displays overall status banner (`PROTECTED`, `ELEVATED_RISK`, `UNDER_ATTACK`), protected directory count, total files monitored, and threat indicators count.
+  - Protected directories list and canary decoy list with live status badges.
+  - Threat indicators list with category and severity badges.
+  - VSS resiliency card and defense activity log / threat report box.
+  - "Deploy Canaries" creates benign canary decoy files in local app store.
+  - "Rollback Files" button is guarded with security dialog explaining automated rollback requires an audited action broker (DN-008).
+  - "Export Defense Report" saves timestamped report file to Desktop or AppData Reports folder.
+- **Navigation & Parity Tracking**:
+  - Wired in `MainWindow.xaml.cs`.
+  - Promoted route `ransomware` to `"in-progress"` in `capabilities.json`, `parity-checklist.json`, and `source-modules.json` (`ransomware_detector.py`, `entropy_ransomware_detector.py`, `ransomware_canary.py`).
+- **Testing & Verification**:
+  - Added unit tests in `RansomwareDefenseInspectorTests.cs` (directory enumeration, note regex recognition, extension recognition, attack detection, canary integrity and encryption detection, and report formatting).
+  - 476/476 solution tests pass with 0 warnings, 0 errors.
+
+**Files created/updated:**
+- `src/Downpour.Contracts/RansomwareDefense.cs`
+- `src/Downpour.Core/RansomwareDefenseInspector.cs`
+- `src/Downpour.Desktop/Pages/RansomwarePage.xaml`
+- `src/Downpour.Desktop/Pages/RansomwarePage.xaml.cs`
+- `src/Downpour.Desktop/MainWindow.xaml.cs`
+- `capabilities.json`
+- `parity-checklist.json`
+- `source-modules.json`
+- `tests/Downpour.Tests/RansomwareDefenseInspectorTests.cs`
+- `WORK_QUEUE.json`
+- `AGENT_REGISTRY.json`
+- `SHARED_CONTEXT.md`
+- `TODO.md`
 
 ## 2026-10-07 checkpoint: DN-009 Sandbox Route Slice (antigravity-worker)
 

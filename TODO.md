@@ -1,5 +1,15 @@
 # Downpour Next TODO
 
+## 2026-10-07 checkpoint: DN-009 Ransomware Route Slice (antigravity-worker)
+
+Completed and verified (Debug: 0 warnings/errors; 476/476 tests pass):
+- DN-009 Ransomware route slice: implemented `RansomwareDefenseInspector` porting v29 `ransomware_detector.py`, `entropy_ransomware_detector.py`, `ransomware_canary.py`, and `_build_ransomware_tab`.
+- Contracts in `src/Downpour.Contracts/RansomwareDefense.cs`: `RansomwareProtectedDirectory`, `RansomwareCanaryStatus`, `RansomwareThreatIndicator`, `VolumeShadowCopyPosture`, and `RansomwareDefensePosture`.
+- Core engine in `src/Downpour.Core/RansomwareDefenseInspector.cs`: protected directory posture enumeration, canary token decoy integrity and entropy evaluation, known ransom note detection regex, known ransomware extension detection, Volume Shadow Copy (VSS) status querying via `WindowsServiceInventoryClient`, anti-recovery command detection in alerts/events, and executive defense report generator.
+- Desktop route `ransomware` in `RansomwarePage.xaml/.cs`: posture overview banner (`PROTECTED`, `ELEVATED_RISK`, `UNDER_ATTACK`), protected directories list, canary decoys list with live status badges, threat indicators list, VSS resiliency status card, safe canary deployment, guarded rollback button, and defense report export.
+- Wired `ransomware` route in `MainWindow.xaml.cs` and promoted to `in-progress` in `capabilities.json`, `parity-checklist.json`, and `source-modules.json` (`ransomware_detector.py`, `entropy_ransomware_detector.py`, `ransomware_canary.py`).
+- 6 unit tests in `RansomwareDefenseInspectorTests.cs` (directory enumeration, note regex recognition, extension recognition, attack detection, canary integrity and encryption detection, and report formatting).
+
 ## 2026-10-07 checkpoint: DN-009 Sandbox Route Slice (antigravity-worker)
 
 Completed and verified (Debug: 0 warnings/errors; 447/447 tests pass):

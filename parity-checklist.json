@@ -205,7 +205,7 @@
     },
     "ransomware": {
       "title": "Ransomware",
-      "currentStatus": "planned",
+      "currentStatus": "in-progress",
       "v29Workflows": [
         "Monitoring toggle",
         "Protected directories management",

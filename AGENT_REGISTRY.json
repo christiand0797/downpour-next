@@ -103,8 +103,8 @@
       "role": "primary",
       "taskId": "DN-009",
       "status": "idle",
-      "heartbeatUtc": "2026-10-07T10:05:00Z",
-      "notes": "Sandbox route slice completed: implemented SafeFileSandbox (Shannon entropy, SHA-256/SHA-1/MD5, PE structure, W^X detection, packer section recognition, Win32 API string pattern scanner, risk scoring 0-100, verdict classification), SandboxPage UI (browse, static analysis, activity log, threat report export, host detonation safety guard), and 9 unit tests in SafeFileSandboxTests. All 447 tests pass. Ready for next route slice under DN-009."
+      "heartbeatUtc": "2026-10-07T10:25:00Z",
+      "notes": "Ransomware route slice completed: implemented read-only RansomwareDefenseInspector (protected directory posture, canary file decoy integrity review, VSS shadow-copy resiliency and anti-recovery command detection, entropy encryption disruption analysis, ransom note and extension pattern scanner), RansomwarePage UI (posture refresh, canary deployment, guarded rollback, report export), and unit tests (476/476 tests pass). Ready for next route slice under DN-009."
     }
   ]
 }
