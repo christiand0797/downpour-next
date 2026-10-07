@@ -403,8 +403,12 @@ public sealed class AuthenticodeVerifierTests
     [Theory]
     [InlineData("Microsoft Windows", true)]
     [InlineData("Microsoft Corporation", true)]
-    [InlineData("Microsoft Windows Production PCA 2011", true)]
+    [InlineData("Microsoft Windows Production PCA 2011", false)] // a CA, never a leaf signer
     [InlineData("Microsoft Windows Publisher", true)]
+    [InlineData("Microsoft Windows Hardware Compatibility Publisher", false)] // signs third-party drivers
+    [InlineData("Microsoft Windows Third Party Application Component", false)]
+    [InlineData("Microsoft Something LLC", false)]
+    [InlineData("Microsoft Corporation (CN=Evil Ltd)", false)]
     [InlineData("Google LLC", false)]
     [InlineData("Untrusted Signer", false)]
     [InlineData(null, false)]

@@ -136,13 +136,21 @@ public sealed class AuthenticodeVerifier : IAuthenticodeVerifier, IDisposable
     /// <summary>
     /// Checks whether the signer name matches Microsoft production signing authorities.
     /// </summary>
-    public static bool IsMicrosoftSignerName(string? signer)
+    public static bool IsMicrosoftSignerName(string? signer) =>
+        !string.IsNullOrWhiteSpace(signer) && MicrosoftLeafSigners.Contains(signer.Trim());
+
+    /// <summary>
+    /// Exact leaf-certificate common names that sign Microsoft's own code. Deliberately excludes names such as
+    /// "Microsoft Windows Hardware Compatibility Publisher" and "...Third Party Component", which Microsoft uses to sign
+    /// third-party drivers and components (including vulnerable drivers abused in BYOVD attacks). Skipping a file is
+    /// the risky outcome here, so anything not on this list is scanned.
+    /// </summary>
+    private static readonly HashSet<string> MicrosoftLeafSigners = new(StringComparer.OrdinalIgnoreCase)
     {
-        if (string.IsNullOrWhiteSpace(signer)) return false;
-        return signer.Contains("Microsoft Corporation", StringComparison.OrdinalIgnoreCase)
-            || signer.Contains("Microsoft Windows", StringComparison.OrdinalIgnoreCase)
-            || signer.StartsWith("Microsoft ", StringComparison.OrdinalIgnoreCase);
-    }
+        "Microsoft Corporation",
+        "Microsoft Windows",
+        "Microsoft Windows Publisher",
+    };
 
     private static bool IsPotentialSignedBinary(string filePath)
     {
@@ -179,14 +187,19 @@ public sealed class AuthenticodeVerifier : IAuthenticodeVerifier, IDisposable
         if (certContext == IntPtr.Zero) return null;
         using var certificate = new X509Certificate2(certContext);
         var name = certificate.GetNameInfo(X509NameType.SimpleName, false);
-        if (!string.IsNullOrWhiteSpace(name) && IsMicrosoftSignerName(name))
-            return name;
-        if (certificate.Subject.Contains("Microsoft Corporation", StringComparison.OrdinalIgnoreCase)
-            || certificate.Issuer.Contains("Microsoft Corporation", StringComparison.OrdinalIgnoreCase))
-        {
-            return string.IsNullOrWhiteSpace(name) ? certificate.Subject : $"{name} ({certificate.Subject})";
-        }
-        return string.IsNullOrWhiteSpace(name) ? certificate.Subject : name;
+        // Report the common name only when the leaf itself belongs to Microsoft Corporation (O=). A certificate merely
+        // issued by a Microsoft CA (e.g. the public Trusted Signing service) is not Microsoft's code.
+        var organization = certificate.SubjectName.EnumerateRelativeDistinguishedNames()
+            .Where(rdn => !rdn.HasMultipleElements && rdn.GetSingleElementType().Value == "2.5.4.10")
+            .Select(rdn => rdn.GetSingleElementValue())
+            .FirstOrDefault();
+        if (!string.Equals(organization, "Microsoft Corporation", StringComparison.Ordinal)) return certificate.Subject;
+        // Microsoft's own leaves use varied common names (".NET", "Microsoft Windows", ...), so the organization decides.
+        // Microsoft also signs third-party code under its organization; keep those names so they fail the allow-list.
+        return name is not null && (name.Contains("Hardware Compatibility", StringComparison.OrdinalIgnoreCase)
+                                    || name.Contains("Third Party", StringComparison.OrdinalIgnoreCase))
+            ? name
+            : "Microsoft Corporation";
     }
 
     public void Dispose()

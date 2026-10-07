@@ -366,7 +366,7 @@ public static class ForensicEvidenceCollector
             Hostname = Environment.MachineName,
             OsDescription = RuntimeInformation.OSDescription,
             OsArchitecture = RuntimeInformation.OSArchitecture.ToString(),
-            CollectorVersion = "Downpour Next v0.1.14",
+            CollectorVersion = "Downpour Next v0.1.15",
             CollectedAtUtc = DateTimeOffset.UtcNow,
             LocalIpAddresses = localIps.Count > 0 ? string.Join(", ", localIps.Distinct()) : "Unknown",
             MacAddresses = macAddresses.Count > 0 ? string.Join(", ", macAddresses.Distinct()) : "Unknown"

@@ -149,7 +149,8 @@ public sealed class ProcessTerminationActionPipeWorker(
     string pipeName = ProcessTerminationClient.PipeName) : BackgroundService
 {
     public const int MaximumRequestBytes = 96 * 1024;
-    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web) { MaxDepth = 4 };
+    // Replies nest Response -> Preview -> lists; keep headroom so a reply can never fail to serialize.
+    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web) { MaxDepth = 16 };
     private static readonly HashSet<string> AllowedProperties = new(StringComparer.Ordinal)
     {
         "schemaVersion", "requestId", "operation", "processId", "startTimeUtc", "alertId", "consentToken"
@@ -204,6 +205,11 @@ public sealed class ProcessTerminationActionPipeWorker(
             catch (IOException exception) when (!stoppingToken.IsCancellationRequested)
             {
                 logger.LogDebug(exception, "A process termination client disconnected before completion.");
+            }
+            catch (Exception exception) when (exception is JsonException or NotSupportedException or InvalidOperationException && !stoppingToken.IsCancellationRequested)
+            {
+                // A BackgroundService failure stops the whole host; one bad reply must not take the sensor service down.
+                logger.LogWarning(exception, "A process termination reply could not be written.");
             }
         }
     }

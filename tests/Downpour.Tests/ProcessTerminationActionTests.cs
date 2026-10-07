@@ -65,6 +65,31 @@ public sealed class ProcessTerminationActionTests : IDisposable
         Assert.NotEmpty(reason);
     }
 
+    [Theory]
+    [InlineData("svchost.exe", @"C:\Users\Public\AppData\Roaming\svchost.exe")]
+    [InlineData("explorer.exe", @"C:\Users\Public\Downloads\explorer.exe")]
+    [InlineData("lsass.exe", @"C:\ProgramData\lsass.exe")]
+    public void DenyReason_AllowsCriticalNamesRunningOutsideWindows(string processName, string imagePath)
+    {
+        // Masquerading malware must remain killable; only the copies Windows installs are protected.
+        Assert.Null(_executor.DenyReason(200, processName, imagePath));
+    }
+
+    [Fact]
+    public void DenyReason_FailsClosedWhenImagePathIsUnknown()
+    {
+        Assert.NotNull(_executor.DenyReason(201, "svchost.exe", null));
+    }
+
+    [Theory]
+    [InlineData("MsMpEng.exe", @"C:\ProgramData\Microsoft\Windows Defender\Platform\4.18.0-0\MsMpEng.exe")]
+    [InlineData("MsSense.exe", @"C:\Program Files\Windows Defender Advanced Threat Protection\MsSense.exe")]
+    [InlineData("SecurityHealthService.exe", @"C:\Windows\System32\SecurityHealthService.exe")]
+    public void DenyReason_ProtectsInstalledSecuritySoftware(string processName, string imagePath)
+    {
+        Assert.NotNull(_executor.DenyReason(202, processName, imagePath));
+    }
+
     [Fact]
     public void DenyReason_RejectsServiceOwnProcess()
     {

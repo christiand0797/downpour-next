@@ -5,7 +5,7 @@ public sealed class ForensicChainOfCustody
     public string Hostname { get; init; } = "";
     public string OsDescription { get; init; } = "";
     public string OsArchitecture { get; init; } = "";
-    public string CollectorVersion { get; init; } = "Downpour Next v0.1.14";
+    public string CollectorVersion { get; init; } = "Downpour Next v0.1.15";
     public DateTimeOffset CollectedAtUtc { get; init; } = DateTimeOffset.UtcNow;
     public string LocalIpAddresses { get; init; } = "";
     public string MacAddresses { get; init; } = "";

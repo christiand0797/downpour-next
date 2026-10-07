@@ -54,6 +54,25 @@ public sealed class ProcessTerminationExecutor
         "downpour.updatehelper"
     };
 
+    private static readonly HashSet<string> SecurityProductProcessNames = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "MsMpEng", "NisSrv", "MpDefenderCoreService", "MsSense", "SenseCncProxy", "SecurityHealthService",
+        "SecurityHealthSystray", "SgrmBroker", "MBAMService", "mbamtray", "ekrn", "avp", "bdservicehost", "ccSvcHst",
+        "mcshield", "AvastSvc", "AVGSvc", "SophosHealth", "CSFalconService", "SentinelAgent", "WRSA",
+    };
+
+    private static bool IsUnderWindowsDirectory(string imagePath) =>
+        IsUnder(imagePath, Environment.GetFolderPath(Environment.SpecialFolder.Windows));
+
+    private static bool IsUnderProtectedInstallRoot(string imagePath) =>
+        IsUnderWindowsDirectory(imagePath)
+        || IsUnder(imagePath, Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles))
+        || IsUnder(imagePath, Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86))
+        || IsUnder(imagePath, Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Microsoft", "Windows Defender"));
+
+    private static bool IsUnder(string path, string root) =>
+        !string.IsNullOrEmpty(root) && path.StartsWith(root.TrimEnd('\\') + "\\", StringComparison.OrdinalIgnoreCase);
+
     private readonly int? _parentProcessId;
 
     public ProcessTerminationExecutor(int? parentProcessId = null)
@@ -82,8 +101,13 @@ public sealed class ProcessTerminationExecutor
 
         if (name is not null)
         {
-            if (CriticalSystemProcessNames.Contains(name))
+            // Critical names are protected only where Windows installs them (or when the image path is unknown, failing
+            // closed). Malware commonly runs as "svchost.exe" or "explorer.exe" from user folders; that copy may be ended.
+            if (CriticalSystemProcessNames.Contains(name) && (string.IsNullOrWhiteSpace(imagePath) || IsUnderWindowsDirectory(imagePath)))
                 return $"Process '{name}' is an essential Windows operating system component and cannot be terminated.";
+
+            if (SecurityProductProcessNames.Contains(name) && (string.IsNullOrWhiteSpace(imagePath) || IsUnderProtectedInstallRoot(imagePath)))
+                return $"Process '{name}' belongs to installed security software and cannot be terminated.";
 
             if (DownpourProcessNames.Contains(name))
                 return $"Process '{name}' is a core Downpour application component and cannot be terminated.";
