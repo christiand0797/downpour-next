@@ -93,18 +93,18 @@
     {
       "id": "claude-parity-audit",
       "role": "agent",
-      "taskId": "DN-009",
+      "taskId": "DN-008",
       "status": "idle",
-      "heartbeatUtc": "2026-10-07T05:00:00Z",
-      "notes": "Idle, awaiting user decisions. Completed DN-016, 018, 019, 022, 023, 024, 028 and the DN-009 Remote Access slice; fixed DN-017 persistence and DN-020 Wi-Fi. Open decisions: DN-029 (script-block text for Sigma/AMSI), DN-025 (off-box indicator lookups), DN-026 (YARA dependency), DN-008 (action broker security review), and the DN-009 routes that need content access or active probing."
+      "heartbeatUtc": "2026-10-07T12:00:00Z",
+      "notes": "Completed DN-025 (automatic intel lookups). Reviewed and fixed antigravity-worker commits (DNS baseline hashing, VSS honesty, Sigma dedupe); live 4104 check passed. Wrote docs/YARA_EVALUATION.md (DN-026) and docs/ACTION_BROKER_THREAT_MODEL.md (DN-008); both await owner decisions."
     },
     {
       "id": "antigravity-worker",
       "role": "primary",
       "taskId": "DN-009",
-      "status": "idle",
-      "heartbeatUtc": "2026-10-07T10:45:00Z",
-      "notes": "Memory route slice completed: implemented read-only MemoryForensicsInspector (process memory inspection, core binary path validation, typo-squatted masquerading detection T1036, temp folder execution flags, injection technique scoring for T1055, and security alert correlation), MemoryPage UI (process scanning, auto-monitor 60s cadence, search filter, threat filter, process deep review, guarded termination, report export), and unit tests (489/489 tests pass). Ready for next route slice under DN-009."
+      "status": "in_progress",
+      "heartbeatUtc": "2026-10-07T11:00:00Z",
+      "notes": "Claimed DN-009 VPN route slice: implementing read-only VpnPostureInspector and VpnPage (active VPN interface detection, DNS leak review, known provider posture, TCP connectivity testing, OpenVPN profile parser, and guarded kill-switch notice under DN-008)."
     }
   ]
 }
