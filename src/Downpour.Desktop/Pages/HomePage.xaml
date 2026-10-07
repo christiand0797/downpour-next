@@ -84,6 +84,19 @@
             </Grid>
 
             <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                <Border Padding="15" CornerRadius="10" Background="{StaticResource DownpourSurfaceElevatedBrush}" BorderBrush="{StaticResource DownpourMutedStrokeBrush}" BorderThickness="1">
+                    <StackPanel Spacing="8"><TextBlock FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Open threats" /><TextBlock x:Name="ThreatsMetricValue" FontSize="22" FontWeight="SemiBold" Text="—" /><TextBlock x:Name="ThreatsMetricDetail" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Checking…" TextWrapping="Wrap" /></StackPanel>
+                </Border>
+                <Border Grid.Column="1" Padding="15" CornerRadius="10" Background="{StaticResource DownpourSurfaceElevatedBrush}" BorderBrush="{StaticResource DownpourMutedStrokeBrush}" BorderThickness="1">
+                    <StackPanel Spacing="8"><TextBlock FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Antivirus protection" /><TextBlock x:Name="AntivirusMetricValue" FontSize="22" FontWeight="SemiBold" Text="—" /><TextBlock x:Name="AntivirusMetricDetail" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Checking…" TextWrapping="Wrap" /></StackPanel>
+                </Border>
+                <Border Grid.Column="2" Padding="15" CornerRadius="10" Background="{StaticResource DownpourSurfaceElevatedBrush}" BorderBrush="{StaticResource DownpourMutedStrokeBrush}" BorderThickness="1">
+                    <StackPanel Spacing="8"><TextBlock FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Hardening findings" /><TextBlock x:Name="HardeningMetricValue" FontSize="22" FontWeight="SemiBold" Text="—" /><TextBlock x:Name="HardeningMetricDetail" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Checking…" TextWrapping="Wrap" /></StackPanel>
+                </Border>
+            </Grid>
+
+            <Grid ColumnSpacing="12">
                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                 <Border Padding="15" CornerRadius="10" Background="{StaticResource DownpourSurfaceElevatedBrush}" BorderBrush="{StaticResource DownpourMutedStrokeBrush}" BorderThickness="1">
                     <StackPanel Spacing="8"><TextBlock FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Processes observed" /><TextBlock x:Name="ProcessMetricValue" FontSize="22" FontWeight="SemiBold" Text="—" /><TextBlock x:Name="ProcessMetricDetail" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Waiting for the local service" TextWrapping="Wrap" /></StackPanel>

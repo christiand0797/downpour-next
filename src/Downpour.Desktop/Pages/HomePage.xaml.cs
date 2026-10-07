@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using Downpour.Contracts;
 using Downpour.Core;
 using Microsoft.UI;
 using Microsoft.UI.Dispatching;
@@ -19,6 +20,10 @@ public sealed partial class HomePage : Page
     private readonly Queue<ResourceSample> _history = new();
     private bool _snapshotRequestInFlight;
     private bool _updateRequestInFlight;
+    private bool _securityRequestInFlight;
+    private DateTimeOffset _hardeningCheckedAt = DateTimeOffset.MinValue;
+    private readonly SecurityAlertClient _alertClient = new();
+    private readonly HardeningPostureClient _hardeningClient = new();
     private CircularGauge? _cpuGauge;
     private CircularGauge? _memoryGauge;
     private ChartGrid? _resourceGrid;
@@ -38,9 +43,10 @@ public sealed partial class HomePage : Page
         _snapshotTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
         _snapshotTimer.Interval = TimeSpan.FromSeconds(3);
         _snapshotTimer.IsRepeating = true;
-        _snapshotTimer.Tick += async (_, _) => await RefreshSnapshotAsync();
+        _snapshotTimer.Tick += async (_, _) => { await RefreshSnapshotAsync(); await RefreshSecurityAsync(); };
         _snapshotTimer.Start();
         _ = RefreshSnapshotAsync();
+        _ = RefreshSecurityAsync();
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -102,6 +108,62 @@ public sealed partial class HomePage : Page
             return;
         }
         _ = DispatcherQueue.TryEnqueue(() => StormModeButton.Content = $"⛈  {StormModeController.Modes[mode]} · {(StormModeController.IsManual ? "MANUAL" : "AUTO")}");
+    }
+
+    /// <summary>
+    /// Security status from data the service already collects: open CRITICAL/HIGH or verified alerts (Threats), the
+    /// Security Center antivirus check, and hardening findings. Posture is re-read at most once a minute.
+    /// </summary>
+    private async Task RefreshSecurityAsync()
+    {
+        if (_securityRequestInFlight) return;
+        _securityRequestInFlight = true;
+        try
+        {
+            var alerts = await _alertClient.TryGetSnapshotAsync();
+            if (alerts is null)
+            {
+                ThreatsMetricValue.Text = "—";
+                ThreatsMetricDetail.Text = "Alert store unavailable while the sensor service is offline";
+            }
+            else
+            {
+                var open = alerts.Alerts.Where(a => a.State is "Open" or "Acknowledged").ToArray();
+                var threats = open.Count(SecurityFindingCatalog.IsThreat);
+                ThreatsMetricValue.Text = threats.ToString("N0");
+                ThreatsMetricDetail.Text = threats == 0
+                    ? $"No open threats · {open.Length - threats:N0} possible threats awaiting review"
+                    : $"{open.Count(a => a.Severity == "CRITICAL"):N0} critical · {open.Length - threats:N0} possible threats · open Triage to review";
+            }
+
+            if (DateTimeOffset.UtcNow - _hardeningCheckedAt < TimeSpan.FromMinutes(1)) return;
+            var posture = await _hardeningClient.TryGetSnapshotAsync();
+            if (posture is null)
+            {
+                AntivirusMetricValue.Text = "—";
+                AntivirusMetricDetail.Text = "Posture unavailable while the sensor service is offline";
+                HardeningMetricValue.Text = "—";
+                HardeningMetricDetail.Text = "Posture unavailable while the sensor service is offline";
+                return;
+            }
+            _hardeningCheckedAt = DateTimeOffset.UtcNow;
+            var antivirus = posture.Checks.FirstOrDefault(check => check.Id == "antivirus");
+            AntivirusMetricValue.Text = antivirus?.State switch
+            {
+                PostureStates.Pass => "On",
+                PostureStates.Finding => "At risk",
+                _ => "Unknown",
+            };
+            AntivirusMetricDetail.Text = antivirus?.Detail ?? "Not reported by this version of the service";
+            var findings = posture.Checks.Count(check => check.State == PostureStates.Finding);
+            var unknown = posture.Checks.Count(check => check.State == PostureStates.Unknown);
+            HardeningMetricValue.Text = findings.ToString("N0");
+            HardeningMetricDetail.Text = $"of {posture.Checks.Count} checks · {unknown} need administrator rights or are unreadable";
+        }
+        finally
+        {
+            _securityRequestInFlight = false;
+        }
     }
 
     private async Task RefreshSnapshotAsync()
