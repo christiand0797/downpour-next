@@ -1,5 +1,17 @@
 # Downpour Next TODO
 
+## 2026-10-07 checkpoint: DN-009 Forensics Route Slice (antigravity-worker)
+
+Completed and verified (Debug: 0 warnings/errors; 438/438 tests pass):
+- DN-009 Forensics route slice: implemented `ForensicEvidenceCollector` porting v29 `forensic_report.py` and `_build_forensics_tab`.
+- Contracts in `src/Downpour.Contracts/ForensicBundle.cs`: `ForensicChainOfCustody`, `ForensicArtifactItem`, `ForensicEvidenceBundle` with schema v1.
+- Core engine in `src/Downpour.Core/ForensicEvidenceCollector.cs`: gathers digital chain-of-custody (hostname, OS, architecture, collector version, local IPs, MACs, UTC timestamp) and queries security alerts, event logs, persistence autostart entries, blocked firewall connections, and network endpoints in parallel with bounded timeout.
+- Cryptographic integrity seal: computes canonical SHA-256 hash over chain-of-custody and evidence artifacts ensuring tamper-evidence and non-repudiation for legal proceedings.
+- Legal incident report generator: generates dark-themed executive HTML forensic report formatted for FBI IC3 filings, local police incident packages, and national CERT submissions. Generates raw JSON bundle and console/plain text summary.
+- Desktop route `forensics` in `ForensicsPage.xaml/.cs`: live evidence capture, overview cards (total items, critical/high count, attacker IPs), chain-of-custody card with SHA-256 seal, category & severity filtering, HTML legal report export, raw JSON export, and "Open FBI IC3" link (`https://www.ic3.gov`).
+- Wired `forensics` route in `MainWindow.xaml.cs` and promoted to `in-progress` in `capabilities.json`, `parity-checklist.json`, and `source-modules.json` (`forensic_report.py`).
+- 6 unit tests in `ForensicEvidenceCollectorTests.cs` (chain of custody, deterministic SHA-256 seal, JSON roundtrip, HTML sections and IC3 links, text summary, and offline resilience).
+
 ## 2026-10-07 checkpoint: DN-029 Verification and DN-009 Cleanup Center Slice (antigravity-worker)
 
 Completed and verified (Debug: 0 warnings/errors; 432/432 tests pass):

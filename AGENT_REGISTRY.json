@@ -103,8 +103,8 @@
       "role": "primary",
       "taskId": "DN-009",
       "status": "idle",
-      "heartbeatUtc": "2026-10-07T08:30:00Z",
-      "notes": "Completed DN-029 (unit tests for SensorSettingsStore, SensorSettingsPipeWorker, SigmaAmsiEventProcessor ScriptBlock; marked completed) and DN-009 Cleanup Center slice (read-only CleanupInspector, CleanupPage, space calculation across temp/cache/WER/dumps/SoftwareDistribution/RecycleBin, audit report export). 432/432 tests pass, 0 build warnings/errors."
+      "heartbeatUtc": "2026-10-07T09:30:00Z",
+      "notes": "Completed DN-009 Forensics route slice: implemented ForensicEvidenceCollector, ForensicsPage.xaml/.cs, cryptographic SHA-256 chain-of-custody seal, parallel sensor evidence collection, legal HTML incident report generator, raw JSON bundle export, FBI IC3 integration, and unit tests (438/438 tests pass, 0 warnings/errors)."
     }
   ]
 }

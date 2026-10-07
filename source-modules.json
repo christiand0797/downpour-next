@@ -774,7 +774,7 @@
     "module": "forensic_report.py",
     "description": "FORENSIC EVIDENCE COLLECTOR + LEGAL REPORT GENERATOR — v29.59",
     "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
-    "migrationStatus": "planned"
+    "migrationStatus": "in-progress"
   },
   {
     "family": "Utilities, Memory, & Dashboard",

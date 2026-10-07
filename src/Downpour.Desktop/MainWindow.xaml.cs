@@ -454,6 +454,8 @@ public sealed partial class MainWindow : Window
             NavFrame.Navigate(typeof(AegisPage));
         else if (capability.RouteId.Equals("cleanup", StringComparison.OrdinalIgnoreCase))
             NavFrame.Navigate(typeof(CleanupPage));
+        else if (capability.RouteId.Equals("forensics", StringComparison.OrdinalIgnoreCase))
+            NavFrame.Navigate(typeof(ForensicsPage));
         else if (capability.RouteId.Equals("threats", StringComparison.OrdinalIgnoreCase))
             NavFrame.Navigate(typeof(TriagePage), TriagePage.ThreatsMode);
         else if (capability.RouteId.Equals("possible-threats", StringComparison.OrdinalIgnoreCase))
@@ -517,6 +519,7 @@ public sealed partial class MainWindow : Window
         if (routeId is null && args.Content is InvestigationTimelinePage) routeId = "timeline";
         if (routeId is null && args.Content is AegisPage) routeId = "aegis";
         if (routeId is null && args.Content is CleanupPage) routeId = "cleanup";
+        if (routeId is null && args.Content is ForensicsPage) routeId = "forensics";
         if (routeId is null && args.Content is TriagePage) routeId = args.Parameter as string == TriagePage.PossibleMode ? "possible-threats" : "threats";
 
         if (routeId is null || !_routeItems.TryGetValue(routeId, out var item)) return;

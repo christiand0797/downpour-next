@@ -1,10 +1,53 @@
 # Downpour Next shared context
 
-**Updated:** 2026-10-07 (antigravity-worker: DN-029 completed, DN-009 Cleanup Center slice completed; claude-parity-audit: DN-016/018/019/022/023/024/028 done)
+**Updated:** 2026-10-07 (antigravity-worker: DN-009 Forensics slice completed, DN-029 completed, DN-009 Cleanup Center slice completed; claude-parity-audit: DN-016/018/019/022/023/024/028 done)
 
 **Repository:** public [christiand0797/downpour-next](https://github.com/christiand0797/downpour-next)
 **Local path:** `C:\Users\purpl\Desktop\downpour v2`  
 **Branch:** `main`  
+
+## 2026-10-07 checkpoint: DN-009 Forensics Route Slice (antigravity-worker)
+
+**DN-009 Forensics Route Slice completed:**
+- **Forensic Evidence Collection Engine (`ForensicEvidenceCollector`)**:
+  - Implemented strictly read-only, non-destructive digital forensics engine porting v29 `forensic_report.py` and `_build_forensics_tab`.
+  - Assembles digital chain of custody: MachineName, OSDescription, OSArchitecture, CollectorVersion ("Downpour Next v0.1.14"), Local IPs, Physical MAC addresses, and UTC collection timestamp.
+  - Queries system sensors in parallel with bounded timeouts:
+    - Security Alerts (`SecurityAlertClient`): Sigma, AMSI, and bridged detection events.
+    - Security Events (`SecurityEventClient`): Account compromise (4625/4720/4726/4732/4740), Defender tampering (5001/5007/5010/5012), RDP sessions (21/25/1149), Firewall (5152/5157), and audit clears (1102/104).
+    - Persistence entries (`PersistenceInventoryClient`): scans for autostart entries matching suspicious interpreters or directories (`powershell`, `cmd`, `wscript`, `cscript`, `mshta`, `certutil`, `bitsadmin`, `\temp\`, `\appdata\`) and surfaced findings (BYOVD drivers, DLL hijack shadows).
+    - Firewall inventory (`FirewallInventoryClient`): detects MpsSvc stopped state, risky inbound allow rules, and blocked connection events (5157).
+    - Network endpoints (`NetworkInventoryClient`): active established non-local connections.
+    - Driver inventory (`DriverInventoryClient`): driver path anomalies outside System32\drivers.
+  - Computes cryptographic SHA-256 digital integrity seal over the canonical evidence package for non-repudiation in legal proceedings.
+- **Reporting & Law Enforcement Submission**:
+  - Generates executive HTML forensic report with dark styling, metric cards, chain of custody table, SHA-256 seal badge, attacker IP table, persistence warnings, complete evidence catalog, and legal filing guidance.
+  - Generates machine-readable raw JSON evidence bundle (`downpour_forensic_bundle_{ts}.json`).
+  - Generates formatted plain text console summary matching v29 text output.
+- **Desktop UI (`ForensicsPage.xaml/.cs`)**:
+  - Route `forensics` displays live capture action, total evidence, critical/high counts, attacker IPs, chain-of-custody metadata, and filterable evidence table by category and severity.
+  - "Export Legal Report" (HTML) and "Export JSON Bundle" buttons write to Desktop or AppData Reports folder.
+  - "Open FBI IC3" button launches official complaint filing portal (`https://www.ic3.gov`).
+- **Navigation & Parity Tracking**:
+  - Wired in `MainWindow.xaml.cs`.
+  - Route `forensics` promoted to `"in-progress"` in `capabilities.json`, `parity-checklist.json`, and `source-modules.json` (`forensic_report.py`).
+- **Testing & Verification**:
+  - Added 6 unit tests in `ForensicEvidenceCollectorTests.cs` (chain of custody, deterministic SHA-256 seal, JSON roundtrip, HTML sections and IC3 links, text summary, and offline resilience).
+  - 438/438 solution tests pass with 0 warnings, 0 errors.
+
+**Files created/updated:**
+- `src/Downpour.Contracts/ForensicBundle.cs`
+- `src/Downpour.Core/ForensicEvidenceCollector.cs`
+- `src/Downpour.Desktop/Pages/ForensicsPage.xaml`
+- `src/Downpour.Desktop/Pages/ForensicsPage.xaml.cs`
+- `src/Downpour.Desktop/MainWindow.xaml.cs`
+- `capabilities.json`
+- `parity-checklist.json`
+- `source-modules.json`
+- `tests/Downpour.Tests/ForensicEvidenceCollectorTests.cs`
+- `TODO.md`
+- `WORK_QUEUE.json`
+- `AGENT_REGISTRY.json`
 
 ## 2026-10-07 checkpoint: DN-029 Verification and DN-009 Cleanup Center Slice (antigravity-worker)
 

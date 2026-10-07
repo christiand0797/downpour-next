@@ -271,7 +271,7 @@
     },
     "forensics": {
       "title": "Forensics",
-      "currentStatus": "planned",
+      "currentStatus": "in-progress",
       "v29Workflows": [
         "Collect evidence",
         "Generate legal report (forensic_report.py)",
