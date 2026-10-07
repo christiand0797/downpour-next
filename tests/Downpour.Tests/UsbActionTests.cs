@@ -62,7 +62,11 @@ public sealed class UsbActionTests : IDisposable
     [InlineData("Disk&Ven_SanDisk&Prod_Cruzer\\123\n45", null, false)] // Newline
     [InlineData("Disk&Ven_SanDisk&Prod_Cruzer&Rev_1.00\\0123456789ABCDEF", "SanDisk Cruzer", true)] // External USB flash drive
     [InlineData("USBSTOR\\Disk&Ven_Kingston&Prod_DataTraveler\\0011223344", "Kingston DataTraveler", true)] // USBSTOR instance
-    [InlineData("USB\\VID_0781&PID_5581\\AA010502201", "SanDisk Ultra USB 3.0", true)] // USB device instance
+    [InlineData("USB\\VID_0781&PID_5581\\AA010502201", "SanDisk Ultra USB 3.0", false)] // USB parent: refused, only USBSTOR functions
+    [InlineData("USB\\VID_046D&PID_C52B\\5&1", "USB Composite Device", false)] // Unifying receiver with a neutral name: lockout risk
+    [InlineData("USB\\VID_05E3&PID_0610\\6&2", "Generic USB Hub", false)] // Hub: would drop everything behind it
+    [InlineData("USB\\VID_8087&PID_0026\\5&3", "Intel(R) Wireless Bluetooth(R)", false)] // Bluetooth adapter: BT keyboards
+    [InlineData("CdRom&Ven_ASUS&Prod_SDRW\\123", "ASUS external DVD", true)] // Bare USBSTOR CdRom form
     public void ValidateDevice_EnforcesImmutableDenyList(string deviceId, string? friendlyName, bool shouldBeAllowed)
     {
         var (allowed, denyReason) = _executor.ValidateDevice(deviceId, friendlyName);
@@ -366,5 +370,53 @@ public sealed class UsbActionTests : IDisposable
             """u8.ToArray();
 
         Assert.Null(UsbActionPipeWorker.ParseStrictRequest(wrongSchema));
+    }
+}
+
+public sealed class UsbBlockHonestyTests
+{
+    [Fact]
+    public void BlockIsNotRecordedWhenWindowsRefusesToDisableTheDevice()
+    {
+        var folder = Path.Combine(Path.GetTempPath(), "downpour_usb_honesty_" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(folder);
+        try
+        {
+            var backend = new InMemoryUsbDeviceBackend { RefuseChanges = true };
+            backend.AddDevice(@"Disk&Ven_SanDisk&Prod_Cruzer\777");
+            var executor = new UsbActionExecutor(backend, Path.Combine(folder, "blocked.json"));
+            var (succeeded, code, _) = executor.BlockDevice(@"Disk&Ven_SanDisk&Prod_Cruzer\777", "Drive", null);
+            Assert.False(succeeded);
+            Assert.Equal("disable-failed", code);
+            Assert.False(executor.IsDeviceBlocked(@"USBSTOR\Disk&Ven_SanDisk&Prod_Cruzer\777"));
+
+            var (absentOk, absentCode, _) = executor.BlockDevice(@"USBSTOR\Disk&Ven_Other\888", "Unplugged", null);
+            Assert.False(absentOk);
+            Assert.Equal("device-not-present", absentCode);
+        }
+        finally
+        {
+            Directory.Delete(folder, true);
+        }
+    }
+
+    [Fact]
+    public void UnblockLeavesDevicesDownpourDidNotBlock()
+    {
+        var folder = Path.Combine(Path.GetTempPath(), "downpour_usb_honesty_" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(folder);
+        try
+        {
+            var backend = new InMemoryUsbDeviceBackend();
+            backend.AddDevice(@"USBSTOR\Disk&Ven_Admin\1", disabled: true); // disabled by someone else
+            var executor = new UsbActionExecutor(backend, Path.Combine(folder, "blocked.json"));
+            var (_, code, _) = executor.UnblockDevice(@"USBSTOR\Disk&Ven_Admin\1", null);
+            Assert.Equal("not-blocked", code);
+            Assert.True(backend.IsDeviceDisabled(@"USBSTOR\Disk&Ven_Admin\1"));
+        }
+        finally
+        {
+            Directory.Delete(folder, true);
+        }
     }
 }

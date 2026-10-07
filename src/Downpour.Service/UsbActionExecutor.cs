@@ -57,19 +57,8 @@ public sealed class WindowsUsbDeviceBackend : IUsbDeviceBackend
         if (CM_Locate_DevNode(out devInst, deviceId, CM_LOCATE_DEVNODE_PHANTOM) == CR_SUCCESS)
             return true;
 
-        // 2. If without prefix, try common enumerator prefixes
-        if (!deviceId.StartsWith("USB\\", StringComparison.OrdinalIgnoreCase) &&
-            !deviceId.StartsWith("USBSTOR\\", StringComparison.OrdinalIgnoreCase))
-        {
-            if (CM_Locate_DevNode(out devInst, $@"USBSTOR\{deviceId}", CM_LOCATE_DEVNODE_NORMAL) == CR_SUCCESS ||
-                CM_Locate_DevNode(out devInst, $@"USBSTOR\{deviceId}", CM_LOCATE_DEVNODE_PHANTOM) == CR_SUCCESS ||
-                CM_Locate_DevNode(out devInst, $@"USB\{deviceId}", CM_LOCATE_DEVNODE_NORMAL) == CR_SUCCESS ||
-                CM_Locate_DevNode(out devInst, $@"USB\{deviceId}", CM_LOCATE_DEVNODE_PHANTOM) == CR_SUCCESS)
-            {
-                return true;
-            }
-        }
-
+        // No guessing of other enumerator prefixes: the executor has already validated and normalized the exact ID,
+        // and a guessed "USB\..." match could resolve to a hub or input receiver that was never validated.
         devInst = 0;
         return false;
     }
@@ -155,15 +144,19 @@ public sealed class InMemoryUsbDeviceBackend : IUsbDeviceBackend
 
     public void AddDevice(string deviceId, bool disabled = false)
     {
-        _present.Add(deviceId);
-        if (disabled) _disabled.Add(deviceId);
+        var id = UsbActionExecutor.NormalizeDeviceId(deviceId);
+        _present.Add(id);
+        if (disabled) _disabled.Add(id);
     }
 
-    public bool IsDevicePresent(string deviceId) => _present.Contains(deviceId);
+    /// <summary>Simulates Windows refusing the change (e.g. not running as administrator).</summary>
+    public bool RefuseChanges { get; set; }
+
+    public bool IsDevicePresent(string deviceId) => _present.Contains(UsbActionExecutor.NormalizeDeviceId(deviceId));
 
     public bool DisableDevice(string deviceId)
     {
-        if (!_present.Contains(deviceId)) return false;
+        if (!_present.Contains(deviceId) || RefuseChanges) return false;
         _disabled.Add(deviceId);
         return true;
     }
@@ -175,7 +168,7 @@ public sealed class InMemoryUsbDeviceBackend : IUsbDeviceBackend
         return true;
     }
 
-    public bool IsDeviceDisabled(string deviceId) => _disabled.Contains(deviceId);
+    public bool IsDeviceDisabled(string deviceId) => _disabled.Contains(UsbActionExecutor.NormalizeDeviceId(deviceId));
 
     public bool GetUsbStorageEnabled() => _usbStorageEnabled;
 
@@ -234,6 +227,22 @@ public sealed class UsbActionExecutor
         }
     }
 
+    /// <summary>
+    /// The USB storage instance prefix. Blocking is allow-listed to these: a USB storage function cannot carry a keyboard
+    /// or mouse, whereas a "USB\VID_..." parent may be a hub, a Bluetooth adapter, or a composite receiver whose name
+    /// gives no hint that disabling it disconnects the keyboard and mouse.
+    /// </summary>
+    public const string StorageEnumeratorPrefix = "USBSTOR\\";
+
+    /// <summary>Accepts "USBSTOR\Disk&amp;..." or the bare "Disk&amp;..." / "CdRom&amp;..." form and returns the full instance ID.</summary>
+    public static string NormalizeDeviceId(string deviceId)
+    {
+        var trimmed = deviceId.Trim();
+        return trimmed.StartsWith("Disk&", StringComparison.OrdinalIgnoreCase) || trimmed.StartsWith("CdRom&", StringComparison.OrdinalIgnoreCase)
+            ? StorageEnumeratorPrefix + trimmed
+            : trimmed;
+    }
+
     public (bool Allowed, string? DenyReason) ValidateDevice(string? deviceId, string? friendlyName)
     {
         if (string.IsNullOrWhiteSpace(deviceId))
@@ -245,6 +254,10 @@ public sealed class UsbActionExecutor
 
         if (trimmed.IndexOfAny(['\r', '\n', '\0', '\t']) >= 0)
             return (false, "Device ID contains invalid control characters.");
+
+        trimmed = NormalizeDeviceId(trimmed);
+        if (!trimmed.StartsWith(StorageEnumeratorPrefix, StringComparison.OrdinalIgnoreCase))
+            return (false, "Only USB storage devices (USBSTOR) can be blocked. Hubs, receivers, adapters, and composite USB devices are refused because disabling them can disconnect your keyboard and mouse.");
 
         // 1. Root Hub protection
         if (trimmed.Contains("ROOT_HUB", StringComparison.OrdinalIgnoreCase) ||
@@ -305,7 +318,7 @@ public sealed class UsbActionExecutor
     public bool IsDeviceBlocked(string deviceId)
     {
         if (string.IsNullOrWhiteSpace(deviceId)) return false;
-        var trimmed = deviceId.Trim();
+        var trimmed = NormalizeDeviceId(deviceId);
         lock (_gate)
         {
             var list = _cachedBlocked ??= LoadBlockedList();
@@ -319,7 +332,7 @@ public sealed class UsbActionExecutor
         if (!allowed)
             return (false, "denied-protected-device", denyReason ?? "Device is protected.");
 
-        var trimmed = deviceId.Trim();
+        var trimmed = NormalizeDeviceId(deviceId);
         lock (_gate)
         {
             var list = _cachedBlocked ??= LoadBlockedList();
@@ -330,7 +343,14 @@ public sealed class UsbActionExecutor
 
             try
             {
-                _backend.DisableDevice(trimmed);
+                // Record a block only when Windows really disabled the device; otherwise the UI would claim protection
+                // that does not exist.
+                if (!_backend.DisableDevice(trimmed))
+                {
+                    return _backend.IsDevicePresent(trimmed)
+                        ? (false, "disable-failed", "Windows did not disable the device. Disabling devices requires running Downpour as administrator.")
+                        : (false, "device-not-present", "The device is not connected. Connect it and try again.");
+                }
             }
             catch (Exception ex)
             {
@@ -349,26 +369,24 @@ public sealed class UsbActionExecutor
         if (string.IsNullOrWhiteSpace(deviceId))
             return (false, "invalid-device-id", "Device ID cannot be null or empty.");
 
-        var trimmed = deviceId.Trim();
+        var trimmed = NormalizeDeviceId(deviceId);
         lock (_gate)
         {
             var list = _cachedBlocked ??= LoadBlockedList();
             var existing = list.FirstOrDefault(r => r.DeviceId.Equals(trimmed, StringComparison.OrdinalIgnoreCase));
             if (existing is null)
             {
-                // Not in our blocklist, but try re-enabling PnP device anyway
-                try
-                {
-                    _backend.EnableDevice(trimmed);
-                }
-                catch { }
-
-                return (true, "not-blocked", $"Device '{trimmed}' was not in the blocked list.");
+                // Only devices Downpour blocked are re-enabled; anything disabled by the user or another tool is left alone.
+                return (true, "not-blocked", $"Device '{trimmed}' was not blocked by Downpour; nothing was changed.");
             }
 
             try
             {
-                _backend.EnableDevice(trimmed);
+                // Keep the record unless Windows confirms the device is enabled, so a block is never silently forgotten.
+                if (!_backend.EnableDevice(trimmed))
+                    return _backend.IsDevicePresent(trimmed)
+                        ? (false, "enable-failed", "Windows did not re-enable the device. Re-enabling devices requires running Downpour as administrator.")
+                        : (false, "device-not-present", "Connect the device and try again; it stays blocked until Windows re-enables it.");
             }
             catch (Exception ex)
             {
@@ -389,8 +407,9 @@ public sealed class UsbActionExecutor
         try
         {
             _backend.SetUsbStorageEnabled(enabled);
-            var stateStr = enabled ? "enabled" : "disabled";
-            return (true, "updated", $"USB mass storage service (USBSTOR) has been {stateStr}.");
+            return enabled
+                ? (true, "updated", "The USB mass storage driver (USBSTOR) is enabled again for newly connected drives.")
+                : (true, "updated", "The USB mass storage driver (USBSTOR) is disabled for newly connected drives. Drives that are already connected, and fast drives that use the UAS driver (uaspstor), are not affected.");
         }
         catch (UnauthorizedAccessException ex)
         {
