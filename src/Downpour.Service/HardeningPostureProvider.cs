@@ -44,7 +44,8 @@ public sealed partial class HardeningPostureProvider
             VbsRegistryEnabled = ReadDword(@"SYSTEM\CurrentControlSet\Control\DeviceGuard", "EnableVirtualizationBasedSecurity"),
             HvciRegistryEnabled = ReadDword(@"SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\HypervisorEnforcedCodeIntegrity", "Enabled"),
             Smb1 = ReadDword(@"SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters", "SMB1"),
-            WindowsUpdateStart = ReadDword(@"SYSTEM\CurrentControlSet\Services\wuauserv", "Start")
+            WindowsUpdateStart = ReadDword(@"SYSTEM\CurrentControlSet\Services\wuauserv", "Start"),
+            AntivirusProducts = ReadAntivirusProducts(warnings)
         };
 
         return new HardeningPostureSnapshot(1, DateTimeOffset.UtcNow, elevated, HardeningPostureEvaluator.Evaluate(readings), warnings);
@@ -145,6 +146,31 @@ public sealed partial class HardeningPostureProvider
             warnings.Add($"Device Guard state unavailable ({ex.GetType().Name}); using registry configuration.");
         }
         return (null, null);
+    }
+
+    /// <summary>Windows Security Center (root\SecurityCenter2) is readable by standard users on client editions.</summary>
+    private static IReadOnlyList<AntivirusProductReading>? ReadAntivirusProducts(List<string> warnings)
+    {
+        try
+        {
+            using var searcher = Searcher(@"root\SecurityCenter2", "SELECT displayName, productState FROM AntiVirusProduct");
+            var products = new List<AntivirusProductReading>();
+            foreach (var item in searcher.Get())
+            {
+                using (item)
+                {
+                    var name = item["displayName"] as string;
+                    if (string.IsNullOrWhiteSpace(name) || item["productState"] is not uint state || products.Count >= 16) continue;
+                    products.Add(new AntivirusProductReading(name.Length > 64 ? name[..64] : name, (int)state));
+                }
+            }
+            return products;
+        }
+        catch (Exception ex) when (ex is ManagementException or COMException or UnauthorizedAccessException or TimeoutException)
+        {
+            warnings.Add($"Windows Security Center is unavailable ({ex.GetType().Name}); antivirus status is unknown.");
+            return null;
+        }
     }
 
     private static object? QueryFirst(string scope, string query, string property)

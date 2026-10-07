@@ -9,10 +9,10 @@ public sealed class HardeningPostureTests
     private static readonly PostureReadings Empty = new();
 
     [Fact]
-    public void EvaluateAlwaysReturnsTheEightV29ChecksInOrder()
+    public void EvaluateReturnsAntivirusThenTheEightV29ChecksInOrder()
     {
         var ids = HardeningPostureEvaluator.Evaluate(Empty).Select(check => check.Id);
-        Assert.Equal(["bitlocker", "secure-boot", "tpm", "lsa-ppl", "credential-guard", "vbs-hvci", "smb1", "patch-service"], ids);
+        Assert.Equal(["antivirus", "bitlocker", "secure-boot", "tpm", "lsa-ppl", "credential-guard", "vbs-hvci", "smb1", "patch-service"], ids);
     }
 
     [Theory]
@@ -104,6 +104,28 @@ public sealed class HardeningPostureTests
     public void PatchServiceMatchesV29(int? value, string state) =>
         Assert.Equal(state, HardeningPostureEvaluator.PatchService(Empty with { WindowsUpdateStart = value }).State);
 
+    [Theory]
+    [InlineData(0x061000, true, true)]   // real-time on, definitions current
+    [InlineData(0x061010, true, false)]  // on, out of date
+    [InlineData(0x060010, false, false)] // off, out of date (Malwarebytes sample from this PC)
+    [InlineData(0x061100, false, true)]  // snoozed (Windows Defender sample from this PC)
+    public void ProductStateDecoding(int state, bool realTime, bool current) =>
+        Assert.Equal((realTime, current), HardeningPostureEvaluator.DecodeProductState(state));
+
+    [Fact]
+    public void AntivirusCheckReflectsRealTimeProtection()
+    {
+        AntivirusProductReading Product(string name, int state) => new(name, state);
+        Assert.Equal(PostureStates.Unknown, HardeningPostureEvaluator.Antivirus(Empty).State);
+        Assert.Equal(PostureStates.Finding, HardeningPostureEvaluator.Antivirus(Empty with { AntivirusProducts = [] }).State);
+        var off = HardeningPostureEvaluator.Antivirus(Empty with { AntivirusProducts = [Product("Malwarebytes", 0x060010), Product("Windows Defender", 0x061100)] });
+        Assert.Equal(PostureStates.Finding, off.State);
+        Assert.Equal("HIGH", off.Severity);
+        Assert.Equal(PostureStates.Pass, HardeningPostureEvaluator.Antivirus(Empty with { AntivirusProducts = [Product("Windows Defender", 0x061000)] }).State);
+        var stale = HardeningPostureEvaluator.Antivirus(Empty with { AntivirusProducts = [Product("Windows Defender", 0x061010)] });
+        Assert.Equal("MEDIUM", stale.Severity);
+    }
+
     [Fact]
     public void UnreadableValuesNeverProduceFindingsExceptWhereV29TreatsAbsenceAsUnsafe()
     {
@@ -120,7 +142,7 @@ public sealed class HardeningPostureTests
     {
         var snapshot = new HardeningPostureProvider().Capture();
         Assert.True(HardeningPostureClient.IsValid(snapshot));
-        Assert.Equal(8, snapshot.Checks.Count);
+        Assert.Equal(9, snapshot.Checks.Count);
         // The patch-service and SMB1 checks read world-readable registry values and should never be unknown.
         Assert.NotEqual(PostureStates.Unknown, snapshot.Checks.Single(check => check.Id == "smb1").State);
         Assert.NotEqual(PostureStates.Unknown, snapshot.Checks.Single(check => check.Id == "patch-service").State);

@@ -25,10 +25,15 @@ public sealed record PostureReadings
     public int? HvciRegistryEnabled { get; init; }
     public int? Smb1 { get; init; }
     public int? WindowsUpdateStart { get; init; }
+    /// <summary>Windows Security Center AntiVirusProduct entries (display name, productState); null when unavailable (e.g. Windows Server).</summary>
+    public IReadOnlyList<AntivirusProductReading>? AntivirusProducts { get; init; }
 }
 
+public sealed record AntivirusProductReading(string Name, int ProductState);
+
 /// <summary>
-/// Grades platform posture with the same rules as v29 firmware_posture.py (eight checks), with two corrections:
+/// Grades platform posture: an antivirus real-time check from Windows Security Center, then the eight v29
+/// firmware_posture.py checks with two corrections:
 /// Credential Guard and HVCI prefer the running state from Win32_DeviceGuard over registry configuration, and
 /// TPM presence comes from TBS instead of treating "not owned" as "absent". Unreadable values are Unknown, never Finding.
 /// </summary>
@@ -36,8 +41,32 @@ public static class HardeningPostureEvaluator
 {
     public static IReadOnlyList<PostureCheck> Evaluate(PostureReadings r) =>
     [
-        BitLocker(r), SecureBoot(r), Tpm(r), LsaProtection(r), CredentialGuard(r), VbsHvci(r), Smb1(r), PatchService(r)
+        Antivirus(r), BitLocker(r), SecureBoot(r), Tpm(r), LsaProtection(r), CredentialGuard(r), VbsHvci(r), Smb1(r), PatchService(r)
     ];
+
+    /// <summary>
+    /// Decodes Security Center productState: bits 8-15 are the real-time state (0x10 on, 0x00 off, 0x01/0x11 expired or
+    /// snoozed) and bits 0-7 the definitions state (0x00 up to date, 0x10 out of date).
+    /// </summary>
+    public static (bool RealTimeOn, bool DefinitionsCurrent) DecodeProductState(int productState) =>
+        (((productState >> 8) & 0xFF) == 0x10, (productState & 0xFF) == 0x00);
+
+    internal static PostureCheck Antivirus(PostureReadings r)
+    {
+        const string title = "Antivirus real-time protection";
+        if (r.AntivirusProducts is null)
+            return Unknown("antivirus", title, "T1562.001", "Windows Security Center is not available on this edition of Windows.");
+        if (r.AntivirusProducts.Count == 0)
+            return Finding("antivirus", title, "HIGH", "T1562.001", "No antivirus product is registered with Windows Security Center.");
+        var states = r.AntivirusProducts.Select(p => (p.Name, State: DecodeProductState(p.ProductState))).ToArray();
+        var active = states.Where(p => p.State.RealTimeOn).ToArray();
+        var summary = string.Join("; ", states.Select(p => $"{p.Name}: real-time {(p.State.RealTimeOn ? "on" : "off")}, definitions {(p.State.DefinitionsCurrent ? "current" : "out of date")}"));
+        if (active.Length == 0)
+            return Finding("antivirus", title, "HIGH", "T1562.001", $"No antivirus is protecting this PC in real time ({summary}). Turn on real-time protection in Windows Security or your antivirus.");
+        if (active.All(p => !p.State.DefinitionsCurrent))
+            return Finding("antivirus", title, "MEDIUM", "T1562.001", $"Real-time protection is on but definitions are out of date ({summary}).");
+        return Pass("antivirus", title, "T1562.001", summary);
+    }
 
     internal static PostureCheck BitLocker(PostureReadings r) => r.BitLockerProtectionStatus switch
     {
