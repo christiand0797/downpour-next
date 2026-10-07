@@ -1,5 +1,16 @@
 # Downpour Next changelog
 
+## v0.1.16 — detection reliability and connected migration slices
+
+- Sysmon review events 8/9/25 now reach persisted alerts through validated catalog entries. Normal telemetry remains telemetry; labels are corrected, clipboard activity is excluded, real polling supplements subscriptions, and unavailable channels/queue/persistence failures are visible.
+- AMSI errors are unavailable rather than clean; the full malware result range is recognized. Native context lifetime, retry, dedup bounds, event identity and shared detection-health warnings have regression coverage.
+- Settings exposes real process, firewall and USB broker-policy switches alongside quarantine. Each action still requires a separate preview/confirmation and Windows permissions. Privacy/action text now describes the actual local data and action paths.
+- Includes the committed migration slices since v0.1.14: selected-file YARA-X scanning and bundled rules, consented PowerShell analysis, local posture/investigation routes, and consent/audit brokers for quarantine/restore, process termination, expiring IP firewall rules and reversible USB controls. These are functional slices, not complete v29 parity.
+- Centralized compiled version metadata at 0.1.16 and fixed portable WinUI theme-resource generation by setting deployment mode before build. Final desktop/service/scanner smoke passed; 179 YARA rules loaded and a benign fixture scanned without matches.
+- Clean Release build: 0 warnings/errors; 856 tests passed. Final text-only XAML publish succeeded; working-tree Debug tests: 879 passed, including 23 uncommitted draft tests excluded from the release. All 1,062 archive entries match their staging hashes.
+- Source: `ffc241d2806ccdf616c738c2ad5453d962eb4280`. Archive: `DownpourNext-win-x64-0.1.16.zip`, 259,810,553 bytes, SHA-256 `36503A9AEB68F67E763F13F4DACFC76C7161163F04A1C146FB071CBF085059EA`. Includes runtime SBOM and file manifest. Binaries remain unsigned.
+- Host isolation/AntiStalker drafts are excluded. Automatic admin elevation, full operational AEGIS/CIS, driver execution, installer/signing and complete native acceptance remain unfinished; see CONTINUATION_AUDIT.md. v0.1.15 was a local package milestone and was never published on GitHub.
+
 ## v0.1.15 — Disk telemetry and stable refresh updates
 
 - Added locale-independent Windows PhysicalDisk total read/write byte-rate counters, with unknown values during warm-up and when counters are unavailable.

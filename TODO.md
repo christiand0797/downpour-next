@@ -407,7 +407,7 @@ This checklist tracks current implementation state; the detailed order, dependen
 - [x] Baseline restore/build; identify stale route-count test and broken Sysmon-to-alert validation.
 - [x] Finish deterministic AMSI/Sysmon/dedup/health regressions and full Debug verification (badcf28; 879 tests).
 - [x] Reconcile current feature documentation and source tracking with actual implemented paths (CONTINUATION_AUDIT.md; broader per-workflow acceptance remains).
-- [ ] Commit owned DN-005 fixes; build/test/package from a clean committed checkout.
+- [x] Commit owned DN-005 fixes; build/test/package from a clean committed checkout (ffc241d; 856 clean tests; final native smoke passed).
 - [ ] Publish v0.1.16 to the configured GitHub repository, verify asset digest, smoke-test desktop/service/scanner, and record release evidence.
 - [ ] Continue complete v29 parity: real detection/correlation and sensors, admin elevation, recovery-safe actions, driver lifecycle, operational AEGIS/advanced workflows, installer/signing/accessibility. Demonstration metrics do not count as protection. Host-isolation draft remains gated by the four merge blockers in `docs/AGENT_COORDINATION.md`.
 

@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-06",
+  "updatedAt": "2026-10-07",
   "agents": [
     {
       "id": "codex-primary",
       "role": "primary",
       "taskId": "DN-010",
       "status": "active",
-      "heartbeatUtc": "2026-10-07T20:20:27Z",
-      "notes": "DN-005 verified slice badcf28: clean Debug build, 879 working-tree tests. DN-010 claimed for owner-authorized v0.1.16 clean release packaging/publishing. Keep DN-008/AntiStalker drafts intact. See newest SHARED_CONTEXT checkpoint."
+      "heartbeatUtc": "2026-10-07T20:47:16Z",
+      "notes": "DN-010 final ffc241d package verified; 856 Release tests; native smoke passed; 1062 ZIP entries checked. GitHub publication next. Preserve pre-existing drafts; SHARED_CONTEXT has exact handoff."
     },
     {
       "id": "v29_action_map",

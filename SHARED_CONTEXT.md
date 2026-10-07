@@ -1,5 +1,33 @@
 # Downpour Next shared context
 
+## 2026-10-07 final package smoke passed (codex-primary, DN-010)
+
+Final package source: `ffc241d2806ccdf616c738c2ad5453d962eb4280`. The final text-only Settings correction replaces stale claims about disabled actions/preferences-only storage. All four executables have version 0.1.16.0 and final source metadata. Clean Release build at `1f7f539`: 0 warnings/errors, 856/856 tests; final XAML publish at `ffc241d` succeeded. Working-tree Debug verification: 879/879 tests. Final packaged desktop/service/scanner smoke passed again: live schema-v1 system/alert pipes (six visible unavailable-source warnings), one owned child service, graceful shutdown, 179 YARA rules, benign scan without matches. All owned processes stopped. No privileged changes were executed.
+
+Package metadata/archive generation and per-entry SHA-256 verification are running via ignored `artifacts/v0.1.16-package.ps1`; evidence will be saved to `artifacts/v0.1.16-evidence.json`. Remote origin/main is an ancestor (5 local commits ahead, 0 behind); latest remote release is still v0.1.14. Next safe step: verify archive evidence, commit only owned documentation, push main, create v0.1.16 with ZIP/SBOM/checksums, verify remote tag/latest/asset digests, then record final publication and remaining next task. Avoid duplicate publication if resuming after the remote release already exists.
+
+## 2026-10-07 final release verification in progress (codex-primary, DN-010)
+
+Latest code commit `1f7f539` adds real Settings policy switches for process, firewall and USB actions using the existing typed service contract. Debug build: zero warnings/errors; working-tree Debug tests: 879 passed. Clean detached release checkout at `artifacts/downpour-v016-build` is now at `1f7f539`; final Release build/test and all four publishes are in progress. Do not publish the previous staging metadata yet: it still references `386688d`/`3f62c5d` and must be regenerated after final publish.
+
+Owned code commits: `badcf28`, `3f62c5d`, `1f7f539`; reconciled documentation commit `386688d`. Exact additional files since the detection checkpoint: `src/Downpour.Desktop/Downpour.Desktop.csproj`, `src/Downpour.Desktop/PortableUpdateInstaller.cs`, `src/Downpour.Desktop/Pages/SettingsPage.xaml`, `src/Downpour.Desktop/Pages/SettingsPage.xaml.cs`. Settings documentation is updated. Root DN-008/AntiStalker drafts remain unchanged and excluded. Next: finish clean Release checks, republish, regenerate dependency/file inventories, smoke final package, archive/hash/verify, push focused main commits and publish v0.1.16. Remaining feature/admin/signing acceptance is tracked explicitly in CONTINUATION_AUDIT and the queue.
+
+## 2026-10-07 release blocker resolved (codex-primary, DN-010)
+
+Fix commit `3f62c5d`: Release now sets WindowsPackageType=None and WindowsAppSDKSelfContained=true in the project before resource generation. A previous packaged-mode build had produced an app-only PRI; changing mode only at publish reused it. Cleaning/rebuilding with the consistent mode produces a 2,456,368-byte merged PRI (previous failing file: 272,456 bytes) including WinUI themes. DesktopRelease.CurrentVersion now derives from the assembly instead of hard-coded 0.1.15.
+
+Packaged smoke now passes: standalone service/system/alert pipes; desktop stays alive; exactly one owned service starts and supplies telemetry; graceful close stops that service; isolated YARA helper loads 179 rules and scans an owned benign fixture without matches, then exits cleanly. All smoke processes are stopped. No privileged action was executed. Clean final Release build/test and republish of the other executables with source metadata `3f62c5d`, followed by regenerated SBOM/manifest/archive and GitHub release, are next. Full route/high-DPI/UAC and clean-machine acceptance remain manual/unimplemented as tracked.
+
+
+## 2026-10-07 active release blocker (codex-primary, DN-010)
+
+Clean source `386688d` restores/builds in Release with zero warnings/errors; 856 clean committed tests pass (879 working-tree tests included 23 preserved draft tests). Desktop/service/scanner/updater self-contained publishes succeeded; all four EXEs have FileVersion 0.1.16.0. Staging: `artifacts/DownpourNext-win-x64-0.1.16` (1059 files before release metadata; 657,734,743 bytes). Runtime inventory/SBOM generated from .deps.json: 52 package/native components. No release is published yet.
+
+Smoke: standalone packaged service stays alive and schema-v1 system/alert pipes return data with six visible health warnings. Desktop exits with -1073741189 / 0xC000027B. Crash log: XamlParseException, Cannot locate resource ms-appx:///Microsoft.UI.Xaml/Themes/themeresources.xaml. Preserve `artifacts/v0.1.16-smoke.ps1`, `artifacts/v0.1.16-smoke/` logs and staging for diagnosis; do not publish until desktop startup and owned-service lifecycle pass. CurrentVersion in DesktopRelease is also still hard-coded to 0.1.15 and needs correction before release.
+
+Commands: clean dotnet restore; dotnet build Downpour.slnx -c Release --no-restore -m:1 with pinned YARA-X cache; dotnet test Downpour.slnx -c Release --no-build --no-restore; four dotnet publish commands per BUILD_WINDOWS (desktop WindowsAppSDKSelfContained true; helper PublishSingleFile true); packaged smoke harness. Next safe task: diagnose/fix WinUI PRI/deployment plus embedded release-version logic, re-commit source, rebuild clean package, regenerate SBOM/manifest and rerun smoke. Preserve other agents' drafts. Queue remains DN-010 in_progress; signing and full parity still unfinished.
+
+
 ## 2026-10-07 verified DN-005 slice and active DN-010 release (codex-primary)
 
 Code commit: `badcf28` (18 files below), on main. Restore succeeded; final Debug build succeeded with 0 warnings/errors; final working-tree Debug suite: 879 passed, 0 failed, 0 skipped. Focused new regressions: 38 passed. `git diff --check` passed under normal repository CRLF settings; an earlier check with core.autocrlf=false incorrectly classified CRLF as whitespace and is not a source failure. v29 and the pre-existing DN-008/AntiStalker drafts are unchanged. Source inventory, parity route status, SECURITY.md and feature/action docs have been reconciled; see CONTINUATION_AUDIT.md for explicit remaining gaps.
