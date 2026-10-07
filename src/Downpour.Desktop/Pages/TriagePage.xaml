@@ -45,6 +45,7 @@
                         <StackPanel Grid.Column="1" Spacing="2">
                             <TextBlock Text="{Binding Title}" FontSize="12" FontWeight="SemiBold" TextWrapping="Wrap" />
                             <TextBlock Text="{Binding Detail}" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding IndicatorText}" Visibility="{Binding IndicatorVisibility}" FontSize="11" FontFamily="Consolas" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" IsTextSelectionEnabled="True" />
                         </StackPanel>
                         <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Top">
                             <Button Content="Verify" ToolTipService.ToolTip="Confirm this is a real threat and move it to Threats" Tag="{Binding AlertId}" Visibility="{Binding VerifyVisibility}" Click="Verify_Click" Padding="7,5" FontSize="10" />
@@ -52,6 +53,8 @@
                             <Button Content="Mark FP" ToolTipService.ToolTip="Confirm a false positive; this exact finding is suppressed after three confirmations" Tag="{Binding AlertId}" IsEnabled="{Binding CanTriage}" Click="FalsePositive_Click" Padding="7,5" FontSize="10" />
                             <Button Content="Dismiss" ToolTipService.ToolTip="Dismiss this item only" Tag="{Binding AlertId}" IsEnabled="{Binding CanTriage}" Click="Dismiss_Click" Padding="7,5" FontSize="10" />
                             <Button Content="Reopen" ToolTipService.ToolTip="Reopen a dismissed item" Tag="{Binding AlertId}" Visibility="{Binding ReopenVisibility}" Click="Reopen_Click" Padding="7,5" FontSize="10" />
+                            <Button Content="Quarantine file…" ToolTipService.ToolTip="Review and quarantine the file named in this finding" Tag="{Binding AlertId}" Visibility="{Binding QuarantineVisibility}" Click="QuarantineIndicator_Click" Padding="7,5" FontSize="10" />
+                            <Button Content="Block IP…" ToolTipService.ToolTip="Review and block this remote IP in Windows Firewall for 24 hours" Tag="{Binding AlertId}" Visibility="{Binding BlockIpVisibility}" Click="BlockIndicator_Click" Padding="7,5" FontSize="10" />
                             <Button Content="Copy" ToolTipService.ToolTip="Copy details to the clipboard" Tag="{Binding AlertId}" Click="Copy_Click" Padding="7,5" FontSize="10" />
                         </StackPanel>
                     </Grid>

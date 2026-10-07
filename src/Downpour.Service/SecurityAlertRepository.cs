@@ -61,7 +61,11 @@ public sealed class SecurityAlertRepository(string databasePath)
                 "CREATE TABLE IF NOT EXISTS alert_fp_events (request_id TEXT PRIMARY KEY, alert_id TEXT NOT NULL, fingerprint TEXT NOT NULL, event_type TEXT NOT NULL CHECK(event_type IN ('confirm','rearm')), created_at_utc TEXT NOT NULL);" +
                 "CREATE TABLE IF NOT EXISTS alert_fp_applied (alert_id TEXT PRIMARY KEY, fingerprint TEXT NOT NULL);" +
                 // Additive (no migration): user verification moves an item from Possible Threats to Threats, as in v29.
-                "CREATE TABLE IF NOT EXISTS alert_verifications (alert_id TEXT PRIMARY KEY CHECK(length(alert_id)=64), verified_at_utc TEXT NOT NULL);",
+                "CREATE TABLE IF NOT EXISTS alert_verifications (alert_id TEXT PRIMARY KEY CHECK(length(alert_id)=64), verified_at_utc TEXT NOT NULL);" +
+                // Additive (no migration): the classified indicator of a finding, so Threats can offer a matching response.
+                "CREATE TABLE IF NOT EXISTS alert_indicators (alert_id TEXT PRIMARY KEY CHECK(length(alert_id)=64), " +
+                "kind TEXT NOT NULL CHECK(kind IN ('file','ip','domain','hash')), value TEXT NOT NULL CHECK(length(value) BETWEEN 1 AND 512), " +
+                "FOREIGN KEY(alert_id) REFERENCES alerts(alert_id) ON DELETE CASCADE);",
                 cancellationToken);
             var version = Convert.ToInt32(await ScalarAsync(connection, "SELECT MAX(version) FROM alert_schema;", cancellationToken));
             if (version == 1)
@@ -172,6 +176,17 @@ public sealed class SecurityAlertRepository(string databasePath)
                 command.Parameters.AddWithValue("$provider", identity);
                 command.Parameters.AddWithValue("$seen", seen);
                 await command.ExecuteNonQueryAsync(cancellationToken);
+                if (AlertIndicatorKinds.Classify(finding.Source, finding.Indicator) is { } kind)
+                {
+                    await using var indicator = connection.CreateCommand();
+                    indicator.Transaction = transaction;
+                    indicator.CommandText = "INSERT INTO alert_indicators(alert_id,kind,value) VALUES($id,$kind,$value) " +
+                        "ON CONFLICT(alert_id) DO UPDATE SET kind=excluded.kind, value=excluded.value;";
+                    indicator.Parameters.AddWithValue("$id", id);
+                    indicator.Parameters.AddWithValue("$kind", kind);
+                    indicator.Parameters.AddWithValue("$value", finding.Indicator!.Trim());
+                    await indicator.ExecuteNonQueryAsync(cancellationToken);
+                }
                 if (suppressionActive)
                     await ApplyFingerprintSuppressionAsync(connection, transaction, id, fingerprint, cancellationToken);
             }
@@ -190,8 +205,8 @@ public sealed class SecurityAlertRepository(string databasePath)
             var total = Convert.ToInt32(await ScalarAsync(connection, "SELECT COUNT(*) FROM alerts;", cancellationToken));
             var alerts = new List<SecurityAlert>(Math.Min(total, MaximumSnapshotAlerts));
             await using var command = connection.CreateCommand();
-            command.CommandText = "SELECT a.alert_id,a.title,a.severity,a.technique,a.log_name,a.provider,a.event_id,a.record_id,a.event_time_utc,a.first_seen_utc,a.last_seen_utc,a.occurrences,a.state,v.alert_id IS NOT NULL " +
-                "FROM alerts a LEFT JOIN alert_verifications v ON v.alert_id=a.alert_id ORDER BY a.last_seen_utc DESC,a.alert_id LIMIT $limit;";
+            command.CommandText = "SELECT a.alert_id,a.title,a.severity,a.technique,a.log_name,a.provider,a.event_id,a.record_id,a.event_time_utc,a.first_seen_utc,a.last_seen_utc,a.occurrences,a.state,v.alert_id IS NOT NULL,i.kind,i.value " +
+                "FROM alerts a LEFT JOIN alert_verifications v ON v.alert_id=a.alert_id LEFT JOIN alert_indicators i ON i.alert_id=a.alert_id ORDER BY a.last_seen_utc DESC,a.alert_id LIMIT $limit;";
             command.Parameters.AddWithValue("$limit", MaximumSnapshotAlerts);
             await using var reader = await command.ExecuteReaderAsync(cancellationToken);
             while (await reader.ReadAsync(cancellationToken))
@@ -199,7 +214,7 @@ public sealed class SecurityAlertRepository(string databasePath)
                 alerts.Add(new SecurityAlert(reader.GetString(0), reader.GetString(1), reader.GetString(2), reader.GetString(3),
                     reader.GetString(4), reader.GetString(5), reader.GetInt32(6), reader.IsDBNull(7) ? null : reader.GetInt64(7),
                     ParseUtc(reader.GetString(8)), ParseUtc(reader.GetString(9)), ParseUtc(reader.GetString(10)), reader.GetInt32(11), reader.GetString(12),
-                    reader.GetInt64(13) != 0));
+                    reader.GetInt64(13) != 0, reader.IsDBNull(14) ? null : reader.GetString(14), reader.IsDBNull(15) ? null : reader.GetString(15)));
             }
             return new SecurityAlertSnapshot(1, DateTimeOffset.UtcNow, total, alerts, []);
         }

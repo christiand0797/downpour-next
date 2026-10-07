@@ -12,8 +12,9 @@ namespace Downpour_Desktop.Pages;
 
 /// <summary>
 /// v29 Threats and Possible Threats over the local alert store. Threats are CRITICAL/HIGH or user-verified items;
-/// Possible Threats are the remaining open items awaiting verification. Response actions (kill, quarantine, block,
-/// isolate) are not offered until the audited action broker exists.
+/// Possible Threats are the remaining open items awaiting verification. Findings that name a file or a remote IP offer
+/// "Quarantine file" / "Block IP" through the audited action broker: a service-side preview, a confirmation dialog, and a
+/// one-time consent token, exactly as on the Remediation and Firewall pages.
 /// </summary>
 public sealed partial class TriagePage : Page
 {
@@ -138,6 +139,80 @@ public sealed partial class TriagePage : Page
     }
 }
 
+public sealed partial class TriagePage
+{
+    private async void QuarantineIndicator_Click(object sender, RoutedEventArgs e)
+    {
+        if (_busy || sender is not Button { Tag: string id } || _alerts.FirstOrDefault(a => a.AlertId == id) is not { IndicatorKind: AlertIndicatorKinds.File, Indicator: { } path } alert) return;
+        _busy = true;
+        try
+        {
+            var client = new QuarantineClient();
+            var preview = await client.PreviewQuarantineAsync(path);
+            if (preview is null) { await App.EnsureSensorServiceAsync(); preview = await client.PreviewQuarantineAsync(path); }
+            if (preview is null) { StatusDetail.Text = "The action broker is not reachable; quarantine needs the service this desktop started."; return; }
+            if (!preview.Accepted || preview.Preview?.ConsentToken is not { } token) { StatusDetail.Text = preview.Message; return; }
+            var p = preview.Preview;
+            if (!await ConfirmAsync("Quarantine this file?",
+                    $"{p.TargetPath}\n\nSize: {p.Size:N0} bytes\nSHA-256: {p.Sha256}\n\nFrom: {alert.Title}\n\nThe file is encrypted into Downpour's quarantine store and removed from its folder. You can restore it from Remediation.",
+                    "Quarantine"))
+            {
+                StatusDetail.Text = "Cancelled. Nothing was changed.";
+                return;
+            }
+            var result = await client.QuarantineAsync(p.TargetPath, token);
+            StatusDetail.Text = result?.Message ?? "The action broker did not confirm the result.";
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async void BlockIndicator_Click(object sender, RoutedEventArgs e)
+    {
+        const int durationMinutes = 1440;
+        if (_busy || sender is not Button { Tag: string id } || _alerts.FirstOrDefault(a => a.AlertId == id) is not { IndicatorKind: AlertIndicatorKinds.Ip, Indicator: { } ip } alert) return;
+        _busy = true;
+        try
+        {
+            var client = new FirewallActionClient();
+            var reason = alert.Title.Length > 120 ? alert.Title[..120] : alert.Title;
+            var preview = await client.PreviewBlockIpAsync(ip, durationMinutes, reason);
+            if (preview is null) { await App.EnsureSensorServiceAsync(); preview = await client.PreviewBlockIpAsync(ip, durationMinutes, reason); }
+            if (preview is null) { StatusDetail.Text = "The action broker is not reachable; firewall actions need the service this desktop started."; return; }
+            if (!preview.Accepted || preview.Preview?.ConsentToken is not { } token) { StatusDetail.Text = preview.Message; return; }
+            if (!await ConfirmAsync("Block this IP for 24 hours?",
+                    $"{ip}\n\nFrom: {alert.Title}\n\n• {string.Join("\n• ", preview.Preview.ExpectedEffects)}\n\nRisks:\n• {string.Join("\n• ", preview.Preview.Risks)}\n\nThe block is removed automatically after 24 hours, or sooner from the Firewall page.",
+                    "Block IP"))
+            {
+                StatusDetail.Text = "Cancelled. Nothing was changed.";
+                return;
+            }
+            var result = await client.BlockIpAsync(ip, token, durationMinutes, reason);
+            StatusDetail.Text = result?.Message ?? "The action broker did not confirm the result.";
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task<bool> ConfirmAsync(string title, string body, string primary)
+    {
+        var dialog = new ContentDialog
+        {
+            Title = title,
+            Content = new ScrollViewer { MaxHeight = 360, Content = new TextBlock { Text = body, TextWrapping = TextWrapping.Wrap, IsTextSelectionEnabled = true } },
+            PrimaryButtonText = primary,
+            CloseButtonText = "Cancel",
+            DefaultButton = ContentDialogButton.Close,
+            XamlRoot = XamlRoot,
+        };
+        return await dialog.ShowAsync() == ContentDialogResult.Primary;
+    }
+}
+
 public sealed class TriageRow(SecurityAlert alert)
 {
     public string AlertId => alert.AlertId;
@@ -147,6 +222,17 @@ public sealed class TriageRow(SecurityAlert alert)
     public string Detail => $"{SourceLabel(alert)} · {alert.Technique} · first {alert.FirstSeenUtc.ToLocalTime():MM-dd HH:mm} · last {alert.LastSeenUtc.ToLocalTime():MM-dd HH:mm}" +
         (alert.Occurrences > 1 ? $" · ×{alert.Occurrences}" : "");
     public bool CanTriage => alert.State is "Open" or "Acknowledged";
+    public string IndicatorText => alert.IndicatorKind switch
+    {
+        AlertIndicatorKinds.File => $"File: {alert.Indicator}",
+        AlertIndicatorKinds.Ip => $"IP: {alert.Indicator}",
+        AlertIndicatorKinds.Domain => $"Domain: {alert.Indicator}",
+        AlertIndicatorKinds.Hash => $"Hash: {alert.Indicator}",
+        _ => "",
+    };
+    public Visibility IndicatorVisibility => alert.Indicator is null ? Visibility.Collapsed : Visibility.Visible;
+    public Visibility QuarantineVisibility => CanTriage && alert.IndicatorKind == AlertIndicatorKinds.File ? Visibility.Visible : Visibility.Collapsed;
+    public Visibility BlockIpVisibility => CanTriage && alert.IndicatorKind == AlertIndicatorKinds.Ip ? Visibility.Visible : Visibility.Collapsed;
     public Visibility VerifyVisibility => CanTriage && !alert.IsVerified && !SecurityFindingCatalog.IsThreat(alert) ? Visibility.Visible : Visibility.Collapsed;
     public Visibility UnverifyVisibility => alert.IsVerified ? Visibility.Visible : Visibility.Collapsed;
     public Visibility ReopenVisibility => alert.State == "Suppressed" ? Visibility.Visible : Visibility.Collapsed;

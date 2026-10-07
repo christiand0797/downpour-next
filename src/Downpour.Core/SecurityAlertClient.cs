@@ -51,7 +51,9 @@ public sealed class SecurityAlertClient(string pipeName = SecurityAlertClient.Pi
                 alert.FirstSeenUtc.Offset != TimeSpan.Zero || alert.LastSeenUtc.Offset != TimeSpan.Zero || alert.EventTimeUtc.Offset != TimeSpan.Zero ||
                 alert.FirstSeenUtc > snapshot.CapturedAtUtc.AddMinutes(1) || alert.LastSeenUtc > snapshot.CapturedAtUtc.AddMinutes(1) ||
                 alert.FirstSeenUtc > alert.LastSeenUtc || alert.EventTimeUtc > snapshot.CapturedAtUtc.AddMinutes(1) ||
-                !(IsValidEventAlert(alert) || IsValidFindingAlert(alert)))
+                !(IsValidEventAlert(alert) || IsValidFindingAlert(alert)) ||
+                (alert.IndicatorKind is null) != (alert.Indicator is null) ||
+                (alert.IndicatorKind is not null && (!AlertIndicatorKinds.All.Contains(alert.IndicatorKind) || !Bounded(alert.Indicator!, 512))))
                 return false;
         }
         return snapshot.Warnings.All(warning => Bounded(warning, 512, allowEmpty: true));
