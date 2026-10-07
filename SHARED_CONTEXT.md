@@ -1,10 +1,55 @@
 # Downpour Next shared context
 
-**Updated:** 2026-10-07 (antigravity-worker: DN-009 VPN slice completed, DN-009 Memory slice completed, DN-009 Ransomware slice completed, DN-009 Sandbox slice completed, DN-009 Forensics slice completed, DN-029 completed, DN-009 Cleanup Center slice completed; claude-parity-audit: DN-016/018/019/022/023/024/028 done)
+**Updated:** 2026-10-07 (antigravity-worker: DN-009 IoT slice completed, DN-009 VPN slice completed, DN-009 Memory slice completed, DN-009 Ransomware slice completed, DN-009 Sandbox slice completed, DN-009 Forensics slice completed, DN-029 completed, DN-009 Cleanup Center slice completed; claude-parity-audit: DN-008 phase 1 quarantine live, DN-016/018/019/022/023/024/028 done)
 
 **Repository:** public [christiand0797/downpour-next](https://github.com/christiand0797/downpour-next)
 **Local path:** `C:\Users\purpl\Desktop\downpour v2`  
 **Branch:** `main`  
+
+## 2026-10-07 checkpoint: DN-009 IoT Devices Route Slice (antigravity-worker)
+
+**DN-009 IoT Devices Route Slice completed:**
+- **IoT Discovery & Threat Engine (`IoTDeviceScanner`)**:
+  - Implemented strictly read-only local subnet IoT device scanner and botnet detector porting v29 `iot_scanner.py` and `_build_iot_tab`.
+  - Native Subnet Discovery:
+    - Direct Windows kernel ARP table inspection via P/Invoke `GetIpNetTable` in `iphlpapi.dll` without any `arp -a` or `cmd.exe` subprocesses.
+    - Resolves IP and MAC addresses with zero network PTR lookup delays.
+  - MAC OUI Manufacturer Fingerprinting:
+    - Embedded database of top IoT, smart home, IP camera, and networking manufacturers (`Espressif Systems`, `Gaoshengda`, `Tuya Smart`, `TP-Link`, `Netgear`, `ASUS`, `Xiaomi`, `Realtek`, `Ring/Amazon`, `Google Nest`, `Apple`, `Samsung`, `LG`, `Sony`, `Nintendo`, `Hikvision`, `Dahua`, `Reolink`, `Ubiquiti`, `MikroTik`, `Cisco`, `Raspberry Pi`, `Arduino`).
+  - Botnet Threat & Vulnerability Detection:
+    - Identifies signature botnet ports from v29: Mozi botnet DHT C2 (9999), Kimwolf/botnet ADB exposure (5555/5556), Mirai Telnet spreader (23/2323), TR-069 exploitation (7547), Huawei HG532 RCE (37215), and Metasploit/RAT staging (4444).
+    - Device categorization (Smart Home / IoT Controller, IP Camera / Surveillance, Router / Network Infrastructure, Single-Board Computer, Mobile / Smart Device).
+    - Safe port probing with explicit 400ms connection timeouts.
+  - Audit Report Exporter:
+    - Generates markdown formatted audit report of discovered subnet devices, manufacturers, threat scores, and botnet indicators.
+- **Desktop UI (`IoTPage.xaml/.cs`)**:
+  - Route `iot` displays 4 overview metric cards (Discovered Devices, Botnet Threats, Smart Home / IoT, Cameras & DVRs).
+  - Search box and category filter dropdown (All Devices, Threats Only, Smart Home Only, Cameras Only).
+  - Devices ListView with IP, MAC, vendor, category, open ports, threat level badges (`CRITICAL`, `HIGH`, `MEDIUM`, `LOW`, `CLEAN`), and risk scores (0-100).
+  - Selected device deep inspection card with detailed breakdown of services, botnet flags, and recommended isolation steps.
+  - Guarded "Block Device" button displaying security notice that firewall / router ACL modifications require DN-008 action broker.
+  - "Export Report" button saving audit markdown report to Desktop.
+- **Navigation & Parity Tracking**:
+  - Wired in `MainWindow.xaml.cs`.
+  - Promoted route `iot` to `"in-progress"` in `capabilities.json`, `parity-checklist.json`, and `source-modules.json` (`iot_scanner.py`).
+- **Testing & Verification**:
+  - Added unit tests in `IoTDeviceScannerTests.cs` (OUI vendor resolution, unknown MAC handling, device categorization, report generation format, and local network scan execution).
+  - 576/576 solution tests pass with 0 warnings, 0 errors.
+
+**Files created/updated:**
+- `src/Downpour.Contracts/IoTInspection.cs`
+- `src/Downpour.Core/IoTDeviceScanner.cs`
+- `src/Downpour.Desktop/Pages/IoTPage.xaml`
+- `src/Downpour.Desktop/Pages/IoTPage.xaml.cs`
+- `src/Downpour.Desktop/MainWindow.xaml.cs`
+- `capabilities.json`
+- `parity-checklist.json`
+- `source-modules.json`
+- `tests/Downpour.Tests/IoTDeviceScannerTests.cs`
+- `WORK_QUEUE.json`
+- `AGENT_REGISTRY.json`
+- `SHARED_CONTEXT.md`
+- `TODO.md`
 
 ## 2026-10-07 checkpoint: DN-008 phase 1 quarantine and restore ENABLED (claude-parity-audit)
 

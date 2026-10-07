@@ -1,5 +1,15 @@
 # Downpour Next TODO
 
+## 2026-10-07 checkpoint: DN-009 IoT Devices Route Slice (antigravity-worker)
+
+Completed and verified (Debug: 0 warnings/errors; 576/576 tests pass):
+- DN-009 IoT Devices route slice: implemented `IoTDeviceScanner` porting v29 `iot_scanner.py` and `_build_iot_tab`.
+- Contracts in `src/Downpour.Contracts/IoTInspection.cs`: `IoTDevice`, `IoTSummary`, and `IoTSnapshot`.
+- Core engine in `src/Downpour.Core/IoTDeviceScanner.cs`: native local ARP table discovery via P/Invoke `GetIpNetTable` without subprocesses, embedded OUI manufacturer database, device category classification, Mozi/Mirai/Kimwolf botnet indicator detection on signature ports (9999, 5555, 2323, 7547, 4444), safe port probing, and markdown report generator.
+- Desktop route `iot` in `IoTPage.xaml/.cs`: 4 overview metric cards, live device list with IP, MAC, vendor, category, open ports, threat level badges (`CRITICAL`, `HIGH`, `MEDIUM`, `LOW`, `CLEAN`), and risk scores, search & category filters, deep inspection card, guarded device blocking dialog under DN-008, and report export to Desktop.
+- Wired `iot` route in `MainWindow.xaml.cs` and promoted to `in-progress` in `capabilities.json`, `parity-checklist.json`, and `source-modules.json` (`iot_scanner.py`).
+- 11 unit tests in `IoTDeviceScannerTests.cs` (OUI vendor resolution, unknown MAC handling, device categorization, report generation format, and local network scan execution).
+
 ## 2026-10-07 checkpoint: DN-009 VPN Route Slice (antigravity-worker)
 
 Completed and verified (Debug: 0 warnings/errors; 529/529 tests pass):

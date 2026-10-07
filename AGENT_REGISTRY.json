@@ -103,8 +103,8 @@
       "role": "primary",
       "taskId": "DN-009",
       "status": "idle",
-      "heartbeatUtc": "2026-10-07T11:20:00Z",
-      "notes": "VPN route slice completed: implemented read-only VpnPostureInspector (active network and tunnel adapter enumeration, provider identification, DNS split-tunnel leak assessment, non-ICMP TCP port 443 egress connectivity probing, and OpenVPN .ovpn profile parsing), VpnPage UI (posture badges, overview metrics, adapter list, DNS leak details, connectivity testing, .ovpn import, guarded kill-switch dialog under DN-008, report export), and unit tests (529/529 tests pass). Ready for next route slice under DN-009."
+      "heartbeatUtc": "2026-10-07T12:00:00Z",
+      "notes": "IoT route slice completed: implemented read-only IoTDeviceScanner (native Windows ARP table discovery without subprocesses, embedded OUI manufacturer database, device category classification, Mozi/Mirai/Kimwolf botnet indicator detection on sensitive ports, safe port probing), IoTPage UI (device list, deep inspection card, search & category filtering, guarded device blocking dialog under DN-008, report export), and unit tests (576/576 tests pass). Ready for next route slice under DN-009."
     }
   ]
 }

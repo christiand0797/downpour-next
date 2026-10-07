@@ -318,8 +318,8 @@
     "family": "Scanners & Profilers",
     "module": "iot_scanner.py",
     "description": "IoT device fingerprinting, Mozi/Kimwolf detection on local subnets.",
-    "sourceStatus": "Active",
-    "migrationStatus": "planned"
+    "sourceStatus": "Ported to IoTDeviceScanner / IoTPage (local ARP discovery, OUI vendor fingerprinting, botnet detection)",
+    "migrationStatus": "in-progress"
   },
   {
     "family": "Scanners & Profilers",

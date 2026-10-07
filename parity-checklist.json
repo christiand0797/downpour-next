@@ -328,7 +328,7 @@
     },
     "iot": {
       "title": "IoT Devices",
-      "currentStatus": "planned",
+      "currentStatus": "in-progress",
       "v29Workflows": [
         "Device discovery",
         "Device details",
