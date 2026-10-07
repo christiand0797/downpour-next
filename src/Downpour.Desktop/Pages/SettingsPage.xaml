@@ -83,6 +83,54 @@
                 </StackPanel>
             </Border>
             <Border Padding="18" CornerRadius="12" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource DownpourStrokeBrush}" BorderThickness="1">
+                <StackPanel Spacing="12">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Threat intelligence lookups" FontSize="18" FontWeight="SemiBold" />
+                        <TextBlock Text="Automatically check public IP addresses, file hashes, and DNS-flagged domains from open alerts with the services below, using your own API keys. Private, loopback, and local-network addresses are never sent. Keys are encrypted for your Windows account and never shown again after saving." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                    </StackPanel>
+                    <Grid ColumnSpacing="16">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                        <StackPanel Spacing="2"><TextBlock Text="Automatic lookups" FontWeight="SemiBold" /><TextBlock Text="Every 5 minutes, at most 25 lookups per run, cached for 24 hours and within each service's free-tier limits. Malicious or suspicious results appear in Threats." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" /></StackPanel>
+                        <ToggleSwitch x:Name="IntelLookupsToggle" Grid.Column="1" IsOn="True" IsEnabled="False" OnContent="On" OffContent="Off" />
+                    </Grid>
+                    <Grid ColumnSpacing="10">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="110" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="140" /></Grid.ColumnDefinitions>
+                        <TextBlock Text="VirusTotal" VerticalAlignment="Center" FontWeight="SemiBold" />
+                        <PasswordBox x:Name="VirusTotalKeyBox" Grid.Column="1" PlaceholderText="Paste API key" MaxLength="256" />
+                        <Button Grid.Column="2" Content="Save" Tag="VirusTotal" Click="SaveIntelKey_Click" />
+                        <Button Grid.Column="3" Content="Remove" Tag="VirusTotal" Click="RemoveIntelKey_Click" />
+                        <TextBlock x:Name="VirusTotalKeyState" Grid.Column="4" VerticalAlignment="Center" FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Not configured" />
+                    </Grid>
+                    <Grid ColumnSpacing="10">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="110" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="140" /></Grid.ColumnDefinitions>
+                        <TextBlock Text="AbuseIPDB" VerticalAlignment="Center" FontWeight="SemiBold" />
+                        <PasswordBox x:Name="AbuseIpDbKeyBox" Grid.Column="1" PlaceholderText="Paste API key" MaxLength="256" />
+                        <Button Grid.Column="2" Content="Save" Tag="AbuseIPDB" Click="SaveIntelKey_Click" />
+                        <Button Grid.Column="3" Content="Remove" Tag="AbuseIPDB" Click="RemoveIntelKey_Click" />
+                        <TextBlock x:Name="AbuseIpDbKeyState" Grid.Column="4" VerticalAlignment="Center" FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Not configured" />
+                    </Grid>
+                    <Grid ColumnSpacing="10">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="110" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="140" /></Grid.ColumnDefinitions>
+                        <TextBlock Text="GreyNoise" VerticalAlignment="Center" FontWeight="SemiBold" />
+                        <PasswordBox x:Name="GreyNoiseKeyBox" Grid.Column="1" PlaceholderText="Paste API key" MaxLength="256" />
+                        <Button Grid.Column="2" Content="Save" Tag="GreyNoise" Click="SaveIntelKey_Click" />
+                        <Button Grid.Column="3" Content="Remove" Tag="GreyNoise" Click="RemoveIntelKey_Click" />
+                        <TextBlock x:Name="GreyNoiseKeyState" Grid.Column="4" VerticalAlignment="Center" FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Not configured" />
+                    </Grid>
+                    <StackPanel Spacing="4">
+                        <TextBlock x:Name="IntelRunState" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                        <TextBlock Text="RECENT RESULTS" FontSize="11" FontWeight="SemiBold" CharacterSpacing="85" Foreground="#FF91AFC2" />
+                        <ItemsControl ItemsSource="{x:Bind IntelResults}">
+                            <ItemsControl.ItemTemplate><DataTemplate><TextBlock Text="{Binding}" FontSize="12" TextWrapping="Wrap" /></DataTemplate></ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Text="OUTBOUND LOOKUPS (WHAT WAS SENT)" FontSize="11" FontWeight="SemiBold" CharacterSpacing="85" Foreground="#FF91AFC2" />
+                        <ItemsControl ItemsSource="{x:Bind IntelLog}">
+                            <ItemsControl.ItemTemplate><DataTemplate><TextBlock Text="{Binding}" FontSize="11" FontFamily="Consolas" Foreground="{ThemeResource TextFillColorSecondaryBrush}" /></DataTemplate></ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+            <Border Padding="18" CornerRadius="12" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource DownpourStrokeBrush}" BorderThickness="1">
                 <StackPanel Spacing="8">
                     <TextBlock Text="Privacy &amp; data" FontSize="18" FontWeight="SemiBold" />
                     <TextBlock Text="This build stores only the preferences above in the current user's app settings. No usage analytics, clipboard data, browser data, command lines, or file contents are collected. PowerShell script text is analyzed in memory when the setting above is on, and is never stored." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />

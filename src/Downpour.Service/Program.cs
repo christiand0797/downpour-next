@@ -29,6 +29,8 @@ builder.Services.AddSingleton<WirelessInventoryProvider>();
 builder.Services.AddSingleton<RemoteAccessProvider>();
 builder.Services.AddSingleton(DnsInventoryProvider.CreateForCurrentUser());
 builder.Services.AddSingleton(SensorSettingsStore.CreateForCurrentUser());
+builder.Services.AddSingleton(IntelKeyStore.CreateForCurrentUser());
+builder.Services.AddSingleton(IntelResultStore.CreateForCurrentUser());
 builder.Services.AddHostedService<SnapshotPipeWorker>();
 builder.Services.AddHostedService<DriverInventoryPipeWorker>();
 builder.Services.AddHostedService<DriverPackageInventoryPipeWorker>();
@@ -54,6 +56,8 @@ builder.Services.AddHostedService<DnsInventoryPipeWorker>();
 builder.Services.AddHostedService<SecurityFindingBridgeWorker>();
 builder.Services.AddHostedService<RemoteAccessPipeWorker>();
 builder.Services.AddHostedService<SensorSettingsPipeWorker>();
+builder.Services.AddHostedService<IntelLookupWorker>();
+builder.Services.AddHostedService<IntelPipeWorker>();
 
 var host = builder.Build();
 host.Run();

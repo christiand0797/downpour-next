@@ -19,8 +19,9 @@ public static class SecurityFindingCatalog
     public const string Amsi = "Downpour/Amsi";
     public const string RemoteAccess = "Downpour/RemoteAccess";
     public const string Dns = "Downpour/Dns";
+    public const string Intel = "Downpour/Intel";
 
-    public static readonly IReadOnlySet<string> Sources = new HashSet<string>(StringComparer.Ordinal) { Hardening, Firewall, Persistence, Usb, Wireless, Sigma, Amsi, RemoteAccess, Dns };
+    public static readonly IReadOnlySet<string> Sources = new HashSet<string>(StringComparer.Ordinal) { Hardening, Firewall, Persistence, Usb, Wireless, Sigma, Amsi, RemoteAccess, Dns, Intel };
     public static readonly IReadOnlySet<string> Severities = new HashSet<string>(StringComparer.Ordinal) { "CRITICAL", "HIGH", "MEDIUM", "LOW" };
 
     public static bool IsFinding(string logName) => Sources.Contains(logName);

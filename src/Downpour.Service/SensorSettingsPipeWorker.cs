@@ -8,6 +8,7 @@ namespace Downpour.Service;
 /// <summary>Reads or sets one allow-listed sensor setting. Newline-delimited JSON, 1 KiB cap, strict parsing, current-user ACL.</summary>
 public sealed class SensorSettingsPipeWorker(
     SensorSettingsStore store,
+    IntelKeyStore keys,
     ILogger<SensorSettingsPipeWorker> logger,
     string pipeName = SensorSettingsClient.PipeName) : BackgroundService
 {
@@ -30,9 +31,10 @@ public sealed class SensorSettingsPipeWorker(
                 var request = line is null ? null : ParseStrictRequest(line);
                 var response = request is null
                     ? new SensorSettingResponse(1, Guid.Empty, false, "invalid-request", null)
-                    : store.Apply(request);
+                    : Handle(request);
                 if (request is not null && response.ResultCode == "updated")
-                    logger.LogInformation("Sensor setting {Key} set to {Value} by the local desktop.", request.Key, request.Value);
+                    // Never log the secret; only which setting changed.
+                    logger.LogInformation("Sensor setting {Key} changed by the local desktop.", request.Key);
                 await JsonSerializer.SerializeAsync(pipe, response, JsonOptions, stoppingToken);
                 await pipe.WriteAsync(new byte[] { (byte)'\n' }, stoppingToken);
                 await pipe.FlushAsync(stoppingToken);
@@ -43,6 +45,21 @@ public sealed class SensorSettingsPipeWorker(
                 logger.LogDebug(exception, "A sensor settings client disconnected before completion.");
             }
         }
+    }
+
+    private SensorSettingResponse Handle(SensorSettingRequest request)
+    {
+        SensorSettingResponse response;
+        if (SensorSettingKeys.IsApiKey(request.Key, out var service))
+        {
+            var stored = keys.Set(service, request.Value ? request.Secret : null);
+            response = new SensorSettingResponse(1, request.RequestId, stored, stored ? "updated" : "invalid-request", store.Current);
+        }
+        else
+        {
+            response = store.Apply(request);
+        }
+        return response.Settings is null ? response : response with { Settings = response.Settings with { IntelServicesConfigured = keys.ConfiguredServices } };
     }
 
     private static async Task<byte[]?> ReadLineAsync(Stream pipe, CancellationToken token)
@@ -70,15 +87,25 @@ public sealed class SensorSettingsPipeWorker(
             var values = new Dictionary<string, JsonElement>(StringComparer.Ordinal);
             foreach (var property in root.EnumerateObject())
                 if (!values.TryAdd(property.Name, property.Value)) return null;
-            if (values.Count != 4
+            var name0 = values.TryGetValue("key", out var keyProbe) && keyProbe.ValueKind == JsonValueKind.String ? keyProbe.GetString() ?? "" : "";
+            var isApiKey = SensorSettingKeys.IsApiKey(name0, out _);
+            string? secret = null;
+            if (isApiKey && values.TryGetValue("secret", out var secretElement))
+            {
+                if (secretElement.ValueKind == JsonValueKind.Null) secret = null;
+                else if (secretElement.ValueKind == JsonValueKind.String && (secretElement.GetString()?.Length ?? 0) <= IntelKeyStore.MaximumKeyLength) secret = secretElement.GetString();
+                else return null;
+            }
+            if (values.Count != (isApiKey && values.ContainsKey("secret") ? 5 : 4)
                 || !values.TryGetValue("schemaVersion", out var schema) || !schema.TryGetInt32(out var version) || version != 1
                 || !values.TryGetValue("requestId", out var id) || id.ValueKind != JsonValueKind.String || !Guid.TryParseExact(id.GetString(), "D", out var requestId)
                 || !values.TryGetValue("key", out var key) || key.ValueKind != JsonValueKind.String
                 || !values.TryGetValue("value", out var value) || value.ValueKind is not (JsonValueKind.True or JsonValueKind.False))
                 return null;
             var name = key.GetString() ?? "";
-            if (name != SensorSettingKeys.Get && !SensorSettingKeys.Writable.Contains(name)) return null;
-            return new SensorSettingRequest(version, requestId, name, value.GetBoolean());
+            if (name != SensorSettingKeys.Get && !SensorSettingKeys.Writable.Contains(name) && !isApiKey) return null;
+            if (isApiKey && value.GetBoolean() && string.IsNullOrEmpty(secret)) return null;
+            return new SensorSettingRequest(version, requestId, name, value.GetBoolean(), isApiKey ? secret : null);
         }
         catch (JsonException)
         {

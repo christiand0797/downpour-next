@@ -6,6 +6,10 @@ namespace Downpour_Desktop.Pages;
 public sealed partial class SettingsPage : Page
 {
     private readonly Downpour.Core.SensorSettingsClient _sensorSettings = new();
+    private readonly Downpour.Core.IntelClient _intel = new();
+
+    public System.Collections.ObjectModel.ObservableCollection<string> IntelResults { get; } = [];
+    public System.Collections.ObjectModel.ObservableCollection<string> IntelLog { get; } = [];
     private bool _loading;
 
     public SettingsPage()
@@ -23,6 +27,7 @@ public sealed partial class SettingsPage : Page
         SoundAlarmToggle.Toggled += (_, _) => Save(() => AppPreferences.SoundAlarmEnabled = SoundAlarmToggle.IsOn);
         SoundHighToggle.Toggled += (_, _) => Save(() => AppPreferences.SoundAlarmIncludesHigh = SoundHighToggle.IsOn);
         ScriptBlockToggle.Toggled += async (_, _) => await SetSensorSettingAsync(Downpour.Contracts.SensorSettingKeys.ScriptBlockAnalysis, ScriptBlockToggle.IsOn);
+        IntelLookupsToggle.Toggled += async (_, _) => await SetSensorSettingAsync(Downpour.Contracts.SensorSettingKeys.IntelLookups, IntelLookupsToggle.IsOn);
     }
 
     private async Task LoadSensorSettingsAsync()
@@ -40,11 +45,15 @@ public sealed partial class SettingsPage : Page
             {
                 ScriptBlockToggle.IsOn = settings.ScriptBlockAnalysis;
                 ScriptBlockToggle.IsEnabled = true;
+                IntelLookupsToggle.IsOn = settings.IntelLookups;
+                IntelLookupsToggle.IsEnabled = true;
+                ShowConfiguredKeys(settings.IntelServicesConfigured ?? []);
                 SensorSettingsState.Text = "";
             }
             else
             {
                 ScriptBlockToggle.IsEnabled = false;
+                IntelLookupsToggle.IsEnabled = false;
                 SensorSettingsState.Text = "The sensor service is not reachable, so its settings cannot be shown or changed.";
             }
         }
@@ -52,6 +61,61 @@ public sealed partial class SettingsPage : Page
         {
             _loading = false;
         }
+    }
+
+    private (PasswordBox Box, TextBlock State)? KeyControls(string service) => service switch
+    {
+        Downpour.Contracts.IntelServices.VirusTotal => (VirusTotalKeyBox, VirusTotalKeyState),
+        Downpour.Contracts.IntelServices.AbuseIpDb => (AbuseIpDbKeyBox, AbuseIpDbKeyState),
+        Downpour.Contracts.IntelServices.GreyNoise => (GreyNoiseKeyBox, GreyNoiseKeyState),
+        _ => null
+    };
+
+    private void ShowConfiguredKeys(IReadOnlyList<string> configured)
+    {
+        foreach (var service in Downpour.Contracts.IntelServices.All)
+            if (KeyControls(service) is { } controls)
+                controls.State.Text = configured.Contains(service) ? "Configured" : "Not configured";
+    }
+
+    private async void SaveIntelKey_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: string service } || KeyControls(service) is not { } controls) return;
+        var key = controls.Box.Password.Trim();
+        controls.Box.Password = "";
+        if (key.Length == 0) { controls.State.Text = "Paste a key first"; return; }
+        var response = await _sensorSettings.SetApiKeyAsync(service, key);
+        controls.State.Text = response is { Accepted: true } ? "Configured" : "Not saved";
+        if (response?.Settings is { } settings) ShowConfiguredKeys(settings.IntelServicesConfigured ?? []);
+    }
+
+    private async void RemoveIntelKey_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: string service } || KeyControls(service) is not { } controls) return;
+        var response = await _sensorSettings.ClearApiKeyAsync(service);
+        if (response?.Settings is { } settings) ShowConfiguredKeys(settings.IntelServicesConfigured ?? []);
+        else controls.State.Text = "Not removed";
+    }
+
+    private async Task LoadIntelStatusAsync()
+    {
+        var snapshot = await _intel.TryGetSnapshotAsync();
+        IntelResults.Clear();
+        IntelLog.Clear();
+        if (snapshot is null)
+        {
+            IntelRunState.Text = "Intel lookup status is unavailable while the sensor service is offline.";
+            return;
+        }
+        IntelRunState.Text = snapshot.LastRunUtc is { } last
+            ? $"Last run {last.ToLocalTime():MM-dd HH:mm}: {snapshot.LastRunStatus}"
+            : snapshot.LastRunStatus;
+        foreach (var result in snapshot.Results.Where(r => r.Verdict != Downpour.Contracts.IntelVerdicts.Clean).Take(20))
+            IntelResults.Add($"{result.Verdict} · {result.Indicator} · {result.Service}: {result.Summary}");
+        if (IntelResults.Count == 0) IntelResults.Add(snapshot.Results.Count == 0 ? "No results yet." : $"{snapshot.Results.Count} indicators checked; none flagged.");
+        foreach (var record in snapshot.RecentLookups.Take(15))
+            IntelLog.Add($"{record.SentAtUtc.ToLocalTime():MM-dd HH:mm:ss}  {record.Service,-10} {record.IndicatorKind,-6} {record.Outcome}");
+        if (IntelLog.Count == 0) IntelLog.Add("Nothing has been sent.");
     }
 
     private async Task SetSensorSettingAsync(string key, bool value)
@@ -88,6 +152,7 @@ public sealed partial class SettingsPage : Page
             SoundHighToggle.IsEnabled = SoundAlarmToggle.IsOn;
             NotificationState.Text = App.NotificationsUnavailable ?? "";
             _ = LoadSensorSettingsAsync();
+            _ = LoadIntelStatusAsync();
         }
         finally
         {

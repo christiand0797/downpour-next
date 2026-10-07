@@ -7,7 +7,11 @@ namespace Downpour.Core;
 public sealed class SensorSettingsClient(string pipeName = SensorSettingsClient.PipeName)
 {
     public const string PipeName = "Downpour.SensorSettings.v1";
-    private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web) { MaxDepth = 4 };
+    private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web)
+    {
+        MaxDepth = 4,
+        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+    };
 
     public Task<SensorSettingResponse?> GetAsync(CancellationToken cancellationToken = default) =>
         SendAsync(new SensorSettingRequest(1, Guid.NewGuid(), SensorSettingKeys.Get, false), cancellationToken);
@@ -15,6 +19,17 @@ public sealed class SensorSettingsClient(string pipeName = SensorSettingsClient.
     public Task<SensorSettingResponse?> SetAsync(string key, bool value, CancellationToken cancellationToken = default) =>
         SensorSettingKeys.Writable.Contains(key)
             ? SendAsync(new SensorSettingRequest(1, Guid.NewGuid(), key, value), cancellationToken)
+            : Task.FromResult<SensorSettingResponse?>(null);
+
+    /// <summary>Stores an API key in the service (DPAPI). The key is sent once over the local ACL'd pipe and never returned.</summary>
+    public Task<SensorSettingResponse?> SetApiKeyAsync(string service, string key, CancellationToken cancellationToken = default) =>
+        IntelServices.All.Contains(service) && key.Length is > 0 and <= 256
+            ? SendAsync(new SensorSettingRequest(1, Guid.NewGuid(), SensorSettingKeys.ApiKey(service), true, key), cancellationToken)
+            : Task.FromResult<SensorSettingResponse?>(null);
+
+    public Task<SensorSettingResponse?> ClearApiKeyAsync(string service, CancellationToken cancellationToken = default) =>
+        IntelServices.All.Contains(service)
+            ? SendAsync(new SensorSettingRequest(1, Guid.NewGuid(), SensorSettingKeys.ApiKey(service), false), cancellationToken)
             : Task.FromResult<SensorSettingResponse?>(null);
 
     private async Task<SensorSettingResponse?> SendAsync(SensorSettingRequest request, CancellationToken cancellationToken)
