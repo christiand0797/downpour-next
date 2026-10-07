@@ -166,8 +166,13 @@ public sealed class YaraScannerHostTests : IDisposable
     public async Task HelperKilledMidSessionIsRestartedOnNextFile()
     {
         Assert.Null((await _host.EnsureStartedAsync(CancellationToken.None)).Fatal);
-        foreach (var process in System.Diagnostics.Process.GetProcessesByName("Downpour.Scanner"))
-            if (process.MainModule?.FileName?.StartsWith(AppContext.BaseDirectory, StringComparison.OrdinalIgnoreCase) == true) process.Kill();
+        // Kill only this host's helper; other test runs (or agents) may share the same output folder.
+        var helperId = Assert.IsType<int>(_host.HelperProcessId);
+        using (var helper = System.Diagnostics.Process.GetProcessById(helperId))
+        {
+            helper.Kill();
+            helper.WaitForExit(5000);
+        }
         var file = Path.Combine(_folder, "after.txt");
         File.WriteAllText(file, "hello");
         var first = await _host.ScanAsync(file, CancellationToken.None);

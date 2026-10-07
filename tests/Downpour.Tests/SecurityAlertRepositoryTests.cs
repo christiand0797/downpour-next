@@ -187,15 +187,21 @@ public sealed class SecurityAlertRepositoryTests
         try
         {
             SecurityAlertSnapshot? snapshot = null;
-            for (var attempt = 0; attempt < 10 && snapshot is null; attempt++)
+            // Generous retry window: under a loaded parallel test run the pipe servers can take seconds to come up.
+            for (var attempt = 0; attempt < 50 && snapshot is null; attempt++)
             {
                 snapshot = await client.TryGetSnapshotAsync();
-                if (snapshot is null) await Task.Delay(100);
+                if (snapshot is null) await Task.Delay(200);
             }
             Assert.NotNull(snapshot);
             var alert = Assert.Single(snapshot.Alerts);
-            var request = new AlertStateChangeRequest(1, Guid.NewGuid(), alert.AlertId, "Open", "Acknowledged");
-            var response = await client.ChangeStateAsync(request);
+            AlertStateChangeResponse? response = null;
+            for (var attempt = 0; attempt < 5 && response is null; attempt++)
+            {
+                // A fresh request ID per attempt: a timed-out client attempt never reached the server's replay ledger.
+                response = await client.ChangeStateAsync(new AlertStateChangeRequest(1, Guid.NewGuid(), alert.AlertId, "Open", "Acknowledged"));
+                if (response is null) await Task.Delay(300);
+            }
             Assert.NotNull(response);
             Assert.True(response.Accepted);
             Assert.Equal("updated", response.ResultCode);

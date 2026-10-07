@@ -33,6 +33,9 @@ public sealed class YaraScannerHost(ILogger<YaraScannerHost> logger, string? sca
 
     public ScannerReady? Ready { get; private set; }
 
+    /// <summary>Process ID of the running helper, if any (diagnostics and tests).</summary>
+    internal int? HelperProcessId => _process is { HasExited: false } process ? process.Id : null;
+
     public static string DefaultPath()
     {
         var baseDirectory = AppContext.BaseDirectory;
