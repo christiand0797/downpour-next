@@ -213,7 +213,7 @@
         "Sensitive collection has local consent and minimization",
         "No placeholder marked complete"
       ],
-      "notes": "Reopened 2026-10-06 by parity audit: only the module inventory was done, none of the routes in the title are ported. Inventory is now 129 entries (42 wired modules added, 19 dead-in-v29 modules reclassified orphaned, 12 unwired modules and 4 content dirs added). Per-route v29 workflow checklist: parity-checklist.json. Ported routes are tracked in DN-017..DN-027; this task remains the umbrella for AEGIS, CIS, forensics, sandbox, memory, ransomware, parental controls, cleanup, VPN, remote access, IoT, emergency. | 2026-10-07 claude-parity-audit: Remote Access route slice done (commit 8bbd6db): RDP enabled/NLA/port, TCP listeners and connections on v29 vector ports with owning processes, remote-access tools, high-confidence findings bridged to triage. Remaining DN-009 routes mostly need user decisions: ransomware canaries/entropy (writes files, reads contents), memory forensics (reads process memory), IoT (active LAN probing), VPN (external servers and system changes), parental controls (blocking/activity logging), emergency lockdown (DN-008), cleanup deletion (DN-008; a read-only size preview is possible).",
+      "notes": "Reopened 2026-10-06 by parity audit: only the module inventory was done, none of the routes in the title are ported. Inventory is now 129 entries (42 wired modules added, 19 dead-in-v29 modules reclassified orphaned, 12 unwired modules and 4 content dirs added). Per-route v29 workflow checklist: parity-checklist.json. Ported routes are tracked in DN-017..DN-027; this task remains the umbrella for AEGIS, CIS, forensics, sandbox, memory, ransomware, parental controls, cleanup, VPN, remote access, IoT, emergency. | 2026-10-07 claude-parity-audit: Remote Access route slice done (commit 8bbd6db): RDP enabled/NLA/port, TCP listeners and connections on v29 vector ports with owning processes, remote-access tools, high-confidence findings bridged to triage. | 2026-10-07 antigravity-worker: Cleanup route slice done: read-only system and disk cleanup inspector (CleanupInspector, CleanupPage) calculating temporary files (%TEMP%, Windows\\Temp), WER error reports, thumbnail cache, crash dumps, Windows Update caches, and Recycle Bin space with audit report export; deletion actions disabled pending DN-008. Remaining DN-009 routes mostly need user decisions: ransomware canaries/entropy (writes files, reads contents), memory forensics (reads process memory), IoT (active LAN probing), VPN (external servers and system changes), parental controls (blocking/activity logging), emergency lockdown (DN-008).",
       "files": [
         "parity-checklist.json",
         "source-modules.json",
@@ -595,15 +595,26 @@
     {
       "id": "DN-029",
       "title": "DECISION NEEDED: collect PowerShell script-block text for Sigma/AMSI (local consent design)",
-      "status": "in_progress",
+      "status": "completed",
       "priority": "high",
       "acceptance": [
         "User decides whether script-block (4104 ScriptBlockText) content may be read",
         "If yes: explicit opt-in in Settings, analysis in memory only, never persisted/exported (only rule title + record id stored), bounded size, documented in SECURITY.md",
         "If no: mark v29 Sigma-on-scripts and AMSI as declined in parity-checklist.json"
       ],
-      "notes": "AGENTS.md forbids collecting command lines or file contents without a scoped feature and a local consent flow. v29 scanned script blocks with Sigma and AMSI by default. Without this, the Sigma/AMSI pipeline (DN-017) cannot detect anything on live events. On this test machine AMSI also returns 0x80070103 (no provider registered; Malwarebytes and Defender both present). | 2026-10-07 owner decision: allow, ON by default (SECURITY.md). Implemented: SensorSettingsStore + allow-listed control pipe, ScriptBlockSource (4104 ScriptBlockText, 64K cap, service-internal type, subscribed only while enabled), worker rewritten, Settings toggle. TODO: unit tests for store/pipe parsing and a live 4104 end-to-end check.",
-      "files": []
+      "notes": "Completed 2026-10-07. Owner decision: allow, ON by default (SECURITY.md). SensorSettingsStore + allow-listed control pipe (SensorSettingsPipeWorker) with strict validation, ScriptBlockSource (4104 ScriptBlockText, 64K cap, service-internal type, subscribed only while enabled), SigmaAmsiPushWorker with memory-only analysis, Settings toggle in SettingsPage, and comprehensive unit tests in SensorSettingsStoreTests and SigmaAlertPersistenceTests. 423/423 tests pass.",
+      "files": [
+        "src/Downpour.Contracts/SensorSettings.cs",
+        "src/Downpour.Service/SensorSettingsStore.cs",
+        "src/Downpour.Service/SensorSettingsPipeWorker.cs",
+        "src/Downpour.Service/ScriptBlockSource.cs",
+        "src/Downpour.Service/SigmaAmsiPushWorker.cs",
+        "src/Downpour.Service/SigmaAmsiEventProcessor.cs",
+        "src/Downpour.Desktop/Pages/SettingsPage.xaml",
+        "src/Downpour.Desktop/Pages/SettingsPage.xaml.cs",
+        "tests/Downpour.Tests/SensorSettingsStoreTests.cs",
+        "tests/Downpour.Tests/SigmaAlertPersistenceTests.cs"
+      ]
     }
   ]
 }

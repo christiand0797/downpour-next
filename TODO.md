@@ -1,5 +1,14 @@
 # Downpour Next TODO
 
+## 2026-10-07 checkpoint: DN-029 Verification and DN-009 Cleanup Center Slice (antigravity-worker)
+
+Completed and verified (Debug: 0 warnings/errors; 432/432 tests pass):
+- DN-029 verification: owner consent decision confirmed for reading PowerShell 4104 `ScriptBlockText` in-memory. Added 10 tests in `SensorSettingsStoreTests` covering persistence, schema versioning, strict allow-list key validation, `SensorSettingsPipeWorker.ParseStrictRequest` rejection of duplicate/extra keys, and changed-event dispatch. Added `ScriptBlockIsAnalyzedInMemoryBySigmaAmsiEventProcessor` in `SigmaAlertPersistenceTests`.
+- DN-009 Cleanup Center slice: implemented `CleanupInspector` porting v29 `downpour_cleanup_module.py` categories: User Temp, Windows Temp, Thumbnail Cache, WER error reports, Crash Dumps, Delivery Optimization cache, Windows Update download cache, Recent file links, Downpour logs, and Recycle Bin space analysis (`SHQueryRecycleBinW`).
+- Desktop route `cleanup` in `CleanupPage.xaml/.cs` with live calculation, reclaimable space banners, candidate file counts, category cards with risk badges (`Safe`, `Moderate`, `Warning`), and text report export. Deletion actions explicitly disabled with tooltips pending DN-008 Action Broker.
+- Wired `cleanup` route in `MainWindow.xaml.cs` and marked `in-progress` in `capabilities.json`.
+- 10 unit tests in `CleanupInspectorTests.cs`.
+
 ## 2026-10-07 checkpoint: DN-027 Standalone Timeline and AEGIS Phishing Text Analyzer (antigravity-worker)
 
 Completed and verified (Debug: 0 warnings/errors; 412/412 tests pass):

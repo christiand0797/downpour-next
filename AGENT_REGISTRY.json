@@ -101,10 +101,10 @@
     {
       "id": "antigravity-worker",
       "role": "primary",
-      "taskId": "DN-027",
+      "taskId": "DN-009",
       "status": "idle",
-      "heartbeatUtc": "2026-10-07T07:30:00Z",
-      "notes": "Completed DN-027 (standalone timeline with brute force, account manipulation, service installation, task persistence, credential burst, and firewall change pattern detection, quick filters, and executive HTML report export; Project AEGIS architecture view and Layer 4 local NLP phishing analyzer with zero network calls). 412/412 tests pass, 0 build warnings/errors."
+      "heartbeatUtc": "2026-10-07T08:30:00Z",
+      "notes": "Completed DN-029 (unit tests for SensorSettingsStore, SensorSettingsPipeWorker, SigmaAmsiEventProcessor ScriptBlock; marked completed) and DN-009 Cleanup Center slice (read-only CleanupInspector, CleanupPage, space calculation across temp/cache/WER/dumps/SoftwareDistribution/RecycleBin, audit report export). 432/432 tests pass, 0 build warnings/errors."
     }
   ]
 }
