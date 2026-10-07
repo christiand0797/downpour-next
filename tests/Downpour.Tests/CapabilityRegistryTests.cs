@@ -11,7 +11,12 @@ public sealed class CapabilityRegistryTests
 
         var capabilities = CapabilityRegistry.Load(path);
 
-        Assert.Equal(38, capabilities.Count);
+        string[] requiredRoutes = ["dashboard", "threats", "remediation", "possible-threats", "processes", "drivers",
+            "driver-packages", "network", "security-events", "alerts", "scanner", "intel", "threat-intel", "vulnerabilities",
+            "hardening", "performance", "ransomware", "firewall", "wifi", "dns", "aegis", "memory", "forensics", "hunt",
+            "sandbox", "services", "usb", "iot", "timeline", "remote-access", "cleanup", "vpn", "parental-controls",
+            "emergency", "defense", "tools", "settings", "cognitive-immune-system"];
+        Assert.All(requiredRoutes, route => Assert.Contains(capabilities, item => item.RouteId == route));
         Assert.Equal(capabilities.Count, capabilities.Select(item => item.RouteId).Distinct(StringComparer.OrdinalIgnoreCase).Count());
         Assert.Equal(capabilities.Count, capabilities.Select(item => item.Title).Distinct(StringComparer.OrdinalIgnoreCase).Count());
         Assert.Contains(capabilities, item => item.RouteId == "dashboard" && item.Status == "prototype");

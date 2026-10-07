@@ -486,6 +486,9 @@ public sealed class SecurityAlertRepository(string databasePath)
             var bucket = timestamp.UtcDateTime.Ticks / TimeSpan.FromMinutes(5).Ticks;
             return $"burst\0{observation.LogName}\0{observation.EventId}\0{bucket}";
         }
+        // Sysmon record IDs can restart after a log clear. Keep distinct event times distinct.
+        if (observation.LogName.Equals(SysmonCatalog.LogName, StringComparison.OrdinalIgnoreCase) && observation.RecordId is { } sysmonRecord)
+            return $"sysmon\0{observation.EventId}\0{sysmonRecord}\0{observation.CreatedAtUtc!.Value.UtcTicks}";
         if (observation.RecordId is { } recordId)
             return $"record\0{observation.LogName}\0{observation.EventId}\0{recordId}";
         var fallbackTime = observation.CreatedAtUtc!.Value.ToUniversalTime().ToString("yyyyMMddHHmm");

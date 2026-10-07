@@ -190,7 +190,7 @@ public static class SecurityEventCatalog
         Rules.Keys.OrderBy(key => key.Log, StringComparer.OrdinalIgnoreCase).ThenBy(key => key.Id).ToArray();
 
     public static bool TryGetRule(string logName, int eventId, out SecurityEventRule rule) =>
-        Rules.TryGetValue((logName, eventId), out rule!);
+        Rules.TryGetValue((logName, eventId), out rule!) || SysmonCatalog.TryGetAlertRule(logName, eventId, out rule!);
 
     private sealed class LogEventKeyComparer : IEqualityComparer<(string Log, int Id)>
     {
@@ -224,56 +224,42 @@ public sealed record SysmonSnapshot(
 
 public static class SysmonCatalog
 {
-    private static readonly IReadOnlyDictionary<(string Log, int Id), SysmonRule> Rules =
-        new Dictionary<(string Log, int Id), SysmonRule>(new LogEventKeyComparer())
-        {
-            [("Microsoft-Windows-Sysmon/Operational", 1)] = new("CRITICAL", "T1543.003", "Process creation"),
-            [("Microsoft-Windows-Sysmon/Operational", 2)] = new("HIGH", "T1543.003", "File creation time modification"),
-            [("Microsoft-Windows-Sysmon/Operational", 3)] = new("HIGH", "T1070.004", "Network connection"),
-            [("Microsoft-Windows-Sysmon/Operational", 4)] = new("MEDIUM", "T1105", "File creation"),
-            [("Microsoft-Windows-Sysmon/Operational", 5)] = new("MEDIUM", "T1070.004", "Process termination"),
-            [("Microsoft-Windows-Sysmon/Operational", 6)] = new("MEDIUM", "T1105", "Driver load"),
-            [("Microsoft-Windows-Sysmon/Operational", 7)] = new("HIGH", "T1105", "Image load"),
-            [("Microsoft-Windows-Sysmon/Operational", 8)] = new("HIGH", "T1055", "CreateRemoteThread"),
-            [("Microsoft-Windows-Sysmon/Operational", 9)] = new("CRITICAL", "T1106", "RawAccessRead"),
-            [("Microsoft-Windows-Sysmon/Operational", 10)] = new("HIGH", "T1106", "Process access"),
-            [("Microsoft-Windows-Sysmon/Operational", 11)] = new("HIGH", "T1106", "File creation"),
-            [("Microsoft-Windows-Sysmon/Operational", 12)] = new("HIGH", "T1070.004", "File creation time modification"),
-            [("Microsoft-Windows-Sysmon/Operational", 13)] = new("HIGH", "T1106", "Registry creation/deletion"),
-            [("Microsoft-Windows-Sysmon/Operational", 14)] = new("HIGH", "T1106", "Registry value modification"),
-            [("Microsoft-Windows-Sysmon/Operational", 15)] = new("HIGH", "T1106", "File stream creation"),
-            [("Microsoft-Windows-Sysmon/Operational", 16)] = new("HIGH", "T1106", "Named pipe creation"),
-            [("Microsoft-Windows-Sysmon/Operational", 17)] = new("HIGH", "T1106", "WMI event filter"),
-            [("Microsoft-Windows-Sysmon/Operational", 18)] = new("HIGH", "T1106", "WMI event consumer"),
-            [("Microsoft-Windows-Sysmon/Operational", 19)] = new("HIGH", "T1106", "WMI filter to consumer binding"),
-            [("Microsoft-Windows-Sysmon/Operational", 20)] = new("HIGH", "T1106", "WMI event filter"),
-            [("Microsoft-Windows-Sysmon/Operational", 21)] = new("MEDIUM", "T1106", "File deletion"),
-            [("Microsoft-Windows-Sysmon/Operational", 22)] = new("HIGH", "T1106", "File deletion"),
-            [("Microsoft-Windows-Sysmon/Operational", 23)] = new("HIGH", "T1106", "File deletion"),
-            [("Microsoft-Windows-Sysmon/Operational", 24)] = new("HIGH", "T1106", "File deletion"),
-            [("Microsoft-Windows-Sysmon/Operational", 25)] = new("MEDIUM", "T1106", "File deletion"),
-            [("Microsoft-Windows-Sysmon/Operational", 26)] = new("MEDIUM", "T1106", "File deletion"),
-            [("Microsoft-Windows-Sysmon/Operational", 255)] = new("HIGH", "T1027", "Sysmon configuration state change"),
-            [("Microsoft-Windows-Sysmon/Operational", 256)] = new("HIGH", "T1027", "Sysmon configuration state change"),
-            [("Microsoft-Windows-Sysmon/Operational", 257)] = new("HIGH", "T1027", "Sysmon configuration state change"),
-            [("Microsoft-Windows-Sysmon/Operational", 258)] = new("HIGH", "T1027", "Sysmon configuration state change"),
-        };
-
-    public static IReadOnlyCollection<int> WatchedEventIds => Rules.Keys.Select(key => key.Id).Distinct().Order().ToArray();
-
-    public static IReadOnlyCollection<(string LogName, int EventId)> WatchedEvents =>
-        Rules.Keys.OrderBy(key => key.Log, StringComparer.OrdinalIgnoreCase).ThenBy(key => key.Id).ToArray();
-
-    public static bool TryGetRule(string logName, int eventId, out SysmonRule rule) =>
-        Rules.TryGetValue((logName, eventId), out rule!);
-
-    private sealed class LogEventKeyComparer : IEqualityComparer<(string Log, int Id)>
+    public const string LogName = "Microsoft-Windows-Sysmon/Operational";
+    public const string ProviderName = "Microsoft-Windows-Sysmon";
+    // Metadata alone is not a malicious verdict. These events warrant review without collecting event bodies.
+    private static readonly IReadOnlyDictionary<int, SecurityEventRule> AlertRules = new Dictionary<int, SecurityEventRule>
     {
-        public bool Equals((string Log, int Id) x, (string Log, int Id) y) =>
-            x.Id == y.Id && StringComparer.OrdinalIgnoreCase.Equals(x.Log, y.Log);
-
-        public int GetHashCode((string Log, int Id) value) =>
-            HashCode.Combine(StringComparer.OrdinalIgnoreCase.GetHashCode(value.Log), value.Id);
+        [8] = new("MEDIUM", "T1055", "Sysmon remote thread creation recorded; review required"),
+        [9] = new("MEDIUM", "T1006", "Sysmon raw disk access recorded; review required"),
+        [25] = new("HIGH", "T1055", "Sysmon process image tampering recorded; review required"),
+    };
+    private static readonly IReadOnlyDictionary<int, string> Summaries = new Dictionary<int, string>
+    {
+        [1] = "Process creation", [2] = "File creation time modification", [3] = "Network connection",
+        [4] = "Sysmon service state change", [5] = "Process termination", [6] = "Driver load", [7] = "Image load",
+        [8] = "Remote thread creation", [9] = "Raw disk access", [10] = "Process access", [11] = "File creation",
+        [12] = "Registry object creation or deletion", [13] = "Registry value set", [14] = "Registry key or value rename",
+        [15] = "File stream creation", [16] = "Sysmon configuration change", [17] = "Named pipe creation",
+        [18] = "Named pipe connection", [19] = "WMI event filter registration", [20] = "WMI event consumer registration",
+        [21] = "WMI consumer to filter binding", [22] = "DNS query", [23] = "File deletion archived by Sysmon",
+        // Event 24 would reveal clipboard activity and is deliberately excluded by the privacy policy.
+        [25] = "Process image tampering", [26] = "File deletion detected", [255] = "Sysmon internal error",
+    };
+    public static IReadOnlyCollection<int> WatchedEventIds => Summaries.Keys.Order().ToArray();
+    public static IReadOnlyCollection<(string LogName, int EventId)> WatchedEvents =>
+        Summaries.Keys.Order().Select(id => (LogName, id)).ToArray();
+    public static bool TryGetRule(string logName, int eventId, out SysmonRule rule)
+    {
+        rule = null!;
+        if (!string.Equals(logName, LogName, StringComparison.OrdinalIgnoreCase) || !Summaries.TryGetValue(eventId, out var summary)) return false;
+        var isAlert = AlertRules.TryGetValue(eventId, out var alert);
+        rule = new(isAlert ? alert!.Severity : "LOW", isAlert ? alert!.Technique : "N/A", summary);
+        return true;
+    }
+    public static bool TryGetAlertRule(string logName, int eventId, out SecurityEventRule rule)
+    {
+        rule = null!;
+        return string.Equals(logName, LogName, StringComparison.OrdinalIgnoreCase) && AlertRules.TryGetValue(eventId, out rule!);
     }
 }
 

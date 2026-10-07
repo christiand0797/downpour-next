@@ -25,9 +25,10 @@ internal static class ScriptBlockSource
             "Event/EventData/Data[@Name='MessageTotal']",
             "Event/EventData/Data[@Name='ScriptBlockText']",
         });
+        EventLogWatcher? watcher = null;
         try
         {
-            var watcher = new EventLogWatcher(new EventLogQuery(LogName, PathType.LogName, "*[System[(EventID=4104)]]"), null, readExistingEvents: false);
+            watcher = new EventLogWatcher(new EventLogQuery(LogName, PathType.LogName, "*[System[(EventID=4104)]]"), null, readExistingEvents: false);
             watcher.EventRecordWritten += (_, args) =>
             {
                 if (args.EventException is not null)
@@ -35,8 +36,8 @@ internal static class ScriptBlockSource
                     onWarning("A PowerShell script-block event could not be read.");
                     return;
                 }
-                using var record = args.EventRecord as EventLogRecord;
-                if (record is null) return;
+                using var eventRecord = args.EventRecord;
+                if (eventRecord is not EventLogRecord record) return;
                 try
                 {
                     var values = record.GetPropertyValues(selector);
@@ -46,19 +47,30 @@ internal static class ScriptBlockSource
                     var created = record.TimeCreated is { } time ? new DateTimeOffset(time.ToUniversalTime(), TimeSpan.Zero) : (DateTimeOffset?)null;
                     onBlock(new ScriptBlock(record.RecordId, created, text, ToInt(values[0]), ToInt(values[1])));
                 }
-                catch (Exception exception) when (exception is EventLogException or InvalidOperationException or ArgumentException)
+                catch (Exception exception) when (exception is EventLogException or InvalidOperationException or ArgumentException or ObjectDisposedException)
                 {
                     onWarning("A PowerShell script-block event could not be parsed.");
                 }
             };
             watcher.Enabled = true;
-            return watcher;
+            return new Subscription(watcher, selector);
         }
         catch (Exception exception) when (exception is EventLogNotFoundException or EventLogException or UnauthorizedAccessException
             or InvalidOperationException or System.Security.SecurityException)
         {
+            watcher?.Dispose();
+            selector.Dispose();
             onWarning($"PowerShell script-block subscription is unavailable ({exception.GetType().Name}).");
             return null;
+        }
+    }
+
+    private sealed class Subscription(EventLogWatcher watcher, EventLogPropertySelector selector) : IDisposable
+    {
+        public void Dispose()
+        {
+            try { watcher.Dispose(); }
+            finally { selector.Dispose(); }
         }
     }
 

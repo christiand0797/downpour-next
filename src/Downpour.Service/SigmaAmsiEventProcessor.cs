@@ -13,10 +13,21 @@ public sealed class SigmaAmsiEventProcessor
     private readonly ILogger<SigmaAmsiEventProcessor> _logger;
     private readonly List<SigmaRule> _sigmaRules;
     private readonly ConcurrentDictionary<string, DateTimeOffset> _recentAlerts = new();
+    private readonly object _dedupGate = new();
+    private readonly Func<string, string, AmsiScanOutcome> _scan;
+    private readonly TimeProvider _time;
+    internal const int MaximumDedupEntries = 4096;
+    internal int DedupEntryCount => _recentAlerts.Count;
+    internal string? AmsiWarning { get; private set; }
 
-    public SigmaAmsiEventProcessor(ILogger<SigmaAmsiEventProcessor> logger)
+    public SigmaAmsiEventProcessor(ILogger<SigmaAmsiEventProcessor> logger) : this(logger, null, null) { }
+
+    internal SigmaAmsiEventProcessor(ILogger<SigmaAmsiEventProcessor> logger,
+        Func<string, string, AmsiScanOutcome>? scan, TimeProvider? timeProvider = null)
     {
         _logger = logger;
+        _scan = scan ?? ((text, name) => AmsiIntegration.ScanStringWithStatus(text, name));
+        _time = timeProvider ?? TimeProvider.System;
         
         var builtin = SigmaEngine.GetBuiltinRules();
         var rulesDir = SigmaEngine.GetDefaultRulesDirectory();
@@ -52,8 +63,9 @@ public sealed class SigmaAmsiEventProcessor
         _sigmaRules = [..builtin.Where(rule => !bundledTitles.Contains(rule.Title)), ..bundled];
         
         // Initialize AMSI
-        if (!AmsiIntegration.Initialize("DownpourNext-SigmaAmsi"))
+        if (scan is null && !AmsiIntegration.Initialize("DownpourNext-SigmaAmsi"))
         {
+            AmsiWarning = "AMSI is unavailable: " + AmsiIntegration.DescribeInitializeFailure(AmsiIntegration.LastInitializeResult) + ". Sigma analysis remains active.";
             _logger.LogWarning("AMSI is unavailable: {Reason}. PowerShell script blocks are still checked with Sigma rules; AMSI verdicts are skipped.",
                 AmsiIntegration.DescribeInitializeFailure(AmsiIntegration.LastInitializeResult));
         }
@@ -79,28 +91,28 @@ public sealed class SigmaAmsiEventProcessor
         {
             // The observation summary contains the script block text
             var scriptContent = observation.Summary;
+            if (scriptContent.Length > ScriptBlockSource.MaximumTextChars)
+                scriptContent = scriptContent[..ScriptBlockSource.MaximumTextChars];
             if (!string.IsNullOrWhiteSpace(scriptContent))
             {
                 // Run Sigma rule matching against all loaded rules
                 var sigmaMatches = SigmaEngine.Match(scriptContent, _sigmaRules);
                 foreach (var match in sigmaMatches)
                 {
-                    var alert = CreateAlertFromSigmaMatch(observation, match, scriptContent);
+                    var alert = CreateAlertFromSigmaMatch(observation, match);
                     if (alert != null) alerts.Add(alert);
                 }
 
                 // Run AMSI scan
-                var amsiResult = AmsiIntegration.ScanString(scriptContent, $"PowerShell-4104-{observation.RecordId}");
-                var amsiVerdict = AmsiIntegration.InterpretResult(amsiResult);
+                var scanOutcome = _scan(scriptContent, $"PowerShell-4104-{observation.RecordId}");
+                AmsiWarning = scanOutcome.Succeeded ? null : "AMSI scan is unavailable: " +
+                    AmsiIntegration.DescribeInitializeFailure(scanOutcome.HResult) + ". Sigma analysis remains active.";
+                var amsiVerdict = scanOutcome.Verdict;
                 
                 if (amsiVerdict == AmsiIntegration.AmsiVerdict.Detected || amsiVerdict == AmsiVerdict.BlockedByAdmin)
                 {
-                    var alert = CreateAlertFromAmsiDetection(observation, scriptContent, amsiVerdict);
+                    var alert = CreateAlertFromAmsiDetection(observation, amsiVerdict);
                     if (alert != null) alerts.Add(alert);
-                }
-                else if (amsiVerdict == AmsiIntegration.AmsiVerdict.Detected)
-                {
-                    _logger.LogInformation("AMSI detected malicious content in PowerShell script block (RecordId: {RecordId})", observation.RecordId);
                 }
             }
         }
@@ -108,19 +120,13 @@ public sealed class SigmaAmsiEventProcessor
         return alerts;
     }
 
-    private SecurityAlert? CreateAlertFromSigmaMatch(SecurityEventObservation observation, SigmaMatch match, string scriptContent)
+    private SecurityAlert? CreateAlertFromSigmaMatch(SecurityEventObservation observation, SigmaMatch match)
     {
         // Deduplicate: don't generate duplicate alerts for the same rule/script within 5 minutes
-        var dedupKey = $"sigma-{match.RuleId}-{observation.RecordId}";
-        if (_recentAlerts.TryGetValue(dedupKey, out var lastAlert) && 
-            DateTimeOffset.UtcNow - lastAlert < TimeSpan.FromMinutes(5))
-        {
-            return null;
-        }
-        _recentAlerts[dedupKey] = DateTimeOffset.UtcNow;
+        var dedupKey = $"sigma-{match.RuleId}-{observation.RecordId}-{observation.CreatedAtUtc?.UtcTicks}";
+        if (!Remember(dedupKey)) return null;
 
-        var alertId = ComputeAlertId("sigma", match.RuleId, observation.RecordId ?? 0);
-        var matchedSnippet = match.MatchedText.Length > 200 ? match.MatchedText[..200] + "..." : match.MatchedText;
+        var alertId = ComputeAlertId("sigma", $"{match.RuleId}-{observation.CreatedAtUtc?.UtcTicks}", observation.RecordId ?? 0);
 
         return new SecurityAlert(
             AlertId: alertId,
@@ -145,20 +151,13 @@ public sealed class SigmaAmsiEventProcessor
             State: "Open");
     }
 
-    private SecurityAlert? CreateAlertFromAmsiDetection(SecurityEventObservation observation, string scriptContent, AmsiIntegration.AmsiVerdict verdict)
+    private SecurityAlert? CreateAlertFromAmsiDetection(SecurityEventObservation observation, AmsiIntegration.AmsiVerdict verdict)
     {
-        var dedupKey = $"amsi-{observation.RecordId}";
-        if (_recentAlerts.TryGetValue(dedupKey, out var lastAlert) && 
-            DateTimeOffset.UtcNow - lastAlert < TimeSpan.FromMinutes(5))
-        {
-            return null;
-        }
-        _recentAlerts[dedupKey] = DateTimeOffset.UtcNow;
-
-        var alertId = ComputeAlertId("amsi", observation.RecordId?.ToString() ?? "unknown", observation.RecordId ?? 0);
+        var dedupKey = $"amsi-{observation.RecordId}-{observation.CreatedAtUtc?.UtcTicks}";
+        if (!Remember(dedupKey)) return null;
         
         return new SecurityAlert(
-            AlertId: ComputeAlertId("amsi", observation.RecordId?.ToString() ?? "unknown", observation.RecordId ?? 0),
+            AlertId: ComputeAlertId("amsi", $"{observation.CreatedAtUtc?.UtcTicks}", observation.RecordId ?? 0),
             Title: $"AMSI Detection: {verdict}",
             Severity: verdict == AmsiIntegration.AmsiVerdict.BlockedByAdmin ? "CRITICAL" : "HIGH",
             Technique: "T1059.001",
@@ -181,12 +180,29 @@ public sealed class SigmaAmsiEventProcessor
         return Convert.ToHexString(hash);
     }
 
+    private bool Remember(string key)
+    {
+        lock (_dedupGate)
+        {
+            var now = _time.GetUtcNow();
+            CleanupOldEntries(TimeSpan.FromMinutes(5));
+            if (_recentAlerts.ContainsKey(key)) return false;
+            if (_recentAlerts.Count >= MaximumDedupEntries)
+            {
+                var oldest = _recentAlerts.MinBy(item => item.Value).Key;
+                _recentAlerts.TryRemove(oldest, out _);
+            }
+            _recentAlerts[key] = now;
+            return true;
+        }
+    }
+
     /// <summary>Cleans up old deduplication entries.</summary>
     public void CleanupOldEntries(TimeSpan maxAge)
     {
-        var cutoff = DateTimeOffset.UtcNow - maxAge;
+        var cutoff = _time.GetUtcNow() - maxAge;
         var keysToRemove = _recentAlerts
-            .Where(kvp => kvp.Value < cutoff)
+            .Where(kvp => kvp.Value <= cutoff)
             .Select(kvp => kvp.Key)
             .ToList();
         

@@ -34,6 +34,8 @@ public sealed class SigmaAmsiPushWorker(
             AllowSynchronousContinuations = false
         });
         var processor = new SigmaAmsiEventProcessor(processorLogger);
+        void PublishAmsiHealth() => alertSnapshots.SetSourceWarnings("AMSI",
+            processor.AmsiWarning is { } warning && settings.Current.ScriptBlockAnalysis ? [warning] : []);
 
         void Apply(SensorSettingsSnapshot current)
         {
@@ -43,7 +45,12 @@ public sealed class SigmaAmsiPushWorker(
                 {
                     _subscription = ScriptBlockSource.Subscribe(
                         block => { if (!channel.Writer.TryWrite(block)) Interlocked.Increment(ref _dropped); },
-                        warning => logger.LogWarning("{Warning}", warning));
+                        warning =>
+                        {
+                            alertSnapshots.SetSourceWarnings("Script-block analysis", [warning]);
+                            logger.LogWarning("{Warning}", warning);
+                        });
+                    if (_subscription is not null) alertSnapshots.SetSourceWarnings("Script-block analysis", []);
                     logger.LogInformation("PowerShell script-block analysis {State}.", _subscription is null ? "could not start" : "is on");
                 }
                 else if (!current.ScriptBlockAnalysis && _subscription is not null)
@@ -52,6 +59,8 @@ public sealed class SigmaAmsiPushWorker(
                     _subscription = null;
                     logger.LogInformation("PowerShell script-block analysis is off; the subscription was closed.");
                 }
+                if (!current.ScriptBlockAnalysis) alertSnapshots.SetSourceWarnings("Script-block analysis", []);
+                PublishAmsiHealth();
             }
         }
 
@@ -90,8 +99,13 @@ public sealed class SigmaAmsiPushWorker(
                         await alerts.IngestFindingsAsync(findings, DateTimeOffset.UtcNow, stoppingToken);
                         alertSnapshots.Publish(await alerts.ReadSnapshotAsync(stoppingToken));
                     }
+                    PublishAmsiHealth();
                     var dropped = Interlocked.Exchange(ref _dropped, 0);
-                    if (dropped > 0) logger.LogWarning("{Dropped} PowerShell script blocks were dropped because the analysis queue was full.", dropped);
+                    if (dropped > 0)
+                    {
+                        alertSnapshots.SetSourceWarnings("Script-block delivery", ["PowerShell analysis queue overflowed; some script blocks were not analyzed."]);
+                        logger.LogWarning("{Dropped} PowerShell script blocks were dropped because the analysis queue was full.", dropped);
+                    }
                 }
                 catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested) { break; }
                 catch (Exception exception)

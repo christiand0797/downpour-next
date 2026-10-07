@@ -3,7 +3,7 @@ using Downpour.Contracts;
 
 namespace Downpour.Service;
 
-/// <summary>Reads Sysmon event log for process creation, network connections, file creation, registry modifications, and other security-relevant events.<//// </summary>
+/// <summary>Reads bounded, metadata-only Sysmon events without collecting event bodies.</summary>
 public sealed class SysmonProvider
 {
     public const int MaximumEvents = 256;
@@ -12,8 +12,7 @@ public sealed class SysmonProvider
 
     private static readonly EventSource[] Sources =
     [
-        new("Microsoft-Windows-Sysmon/Operational", [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26]),
-        new("Microsoft-Windows-Sysmon/Operational", [255, 256, 257, 258]),
+        new(SysmonCatalog.LogName, SysmonCatalog.WatchedEventIds.ToArray()),
     ];
 
     public SysmonSnapshot Capture()
@@ -145,7 +144,8 @@ public sealed class SysmonProvider
     public static SysmonObservation? CreateObservation(
         string logName, string? provider, int eventId, long? recordId, DateTimeOffset? createdAtUtc)
     {
-        if (!SysmonCatalog.TryGetRule(logName, eventId, out var rule)) return null;
+        if (!SysmonCatalog.TryGetRule(logName, eventId, out var rule) ||
+            !string.Equals(provider, SysmonCatalog.ProviderName, StringComparison.OrdinalIgnoreCase)) return null;
 
         return new SysmonObservation(
             logName,
@@ -172,7 +172,9 @@ public sealed class SysmonProvider
 
         using var reader = new EventLogReader(query);
         var results = new List<SysmonObservation>(MaximumEventsPerSource);
-        while (results.Count < MaximumEventsPerSource && reader.ReadEvent() is { } record)
+        var elapsed = System.Diagnostics.Stopwatch.StartNew();
+        while (results.Count < MaximumEventsPerSource && elapsed.Elapsed < TimeSpan.FromSeconds(1) &&
+            reader.ReadEvent(TimeSpan.FromMilliseconds(100)) is { } record)
         {
             using (record)
             {
