@@ -21,12 +21,14 @@ public sealed class DnsInventoryProvider(string baselinePath)
         return new DnsInventoryProvider(path);
     }
 
+    // DNS_CACHE_ENTRY as returned by the undocumented DnsGetCacheDataTable: { pNext, pszName, wType, wDataLength, dwFlags }.
+    // An extra pointer field here previously shifted wType, so every record read as type 19788. Verified live: the layout
+    // below yields A (1), AAAA (28), PTR (12), and TXT (16) records.
     [StructLayout(LayoutKind.Sequential)]
     private struct NativeDnsCacheEntry
     {
         public IntPtr pNext;
         public IntPtr pszName;
-        public IntPtr pszName2;
         public ushort wType;
         public ushort wDataLength;
         public uint dwFlags;

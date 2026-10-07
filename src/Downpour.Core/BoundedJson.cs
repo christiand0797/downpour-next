@@ -32,6 +32,23 @@ public static class BoundedJson
         return Deserialize<T>(payload.ToArray());
     }
 
+    /// <summary>
+    /// Reads one length-prefixed message (4-byte little-endian length, then exactly that many JSON bytes), the framing the
+    /// DNS, USB, Wi-Fi, and driver-package pipe workers write. Reading such a stream with <see cref="DeserializeAsync{T}"/>
+    /// treats the prefix as JSON and always fails.
+    /// </summary>
+    public static async Task<T?> DeserializeFramedAsync<T>(Stream source, CancellationToken cancellationToken)
+    {
+        var lengthBytes = new byte[4];
+        await source.ReadExactlyAsync(lengthBytes, cancellationToken).ConfigureAwait(false);
+        var length = System.Buffers.Binary.BinaryPrimitives.ReadInt32LittleEndian(lengthBytes);
+        if (length is <= 0 or > MaximumPayloadBytes)
+            throw new InvalidDataException("The framed JSON message length is outside the configured limit.");
+        var payload = new byte[length];
+        await source.ReadExactlyAsync(payload, cancellationToken).ConfigureAwait(false);
+        return Deserialize<T>(payload);
+    }
+
     public static T? Deserialize<T>(ReadOnlyMemory<byte> payload)
     {
         if (payload.Length is 0 or > MaximumPayloadBytes)

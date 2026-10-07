@@ -21,7 +21,7 @@ public sealed class UsbInventoryClient(string pipeName = UsbInventoryClient.Pipe
             timeout.CancelAfter(TimeSpan.FromSeconds(15));
             await using var pipe = new NamedPipeClientStream(".", pipeName, PipeDirection.In, PipeOptions.Asynchronous);
             await pipe.ConnectAsync(timeout.Token);
-            var snapshot = await BoundedJson.DeserializeAsync<UsbSnapshot>(pipe, timeout.Token);
+            var snapshot = await BoundedJson.DeserializeFramedAsync<UsbSnapshot>(pipe, timeout.Token);
             return IsValid(snapshot) ? snapshot : null;
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)

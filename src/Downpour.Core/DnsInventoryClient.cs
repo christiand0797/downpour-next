@@ -20,7 +20,7 @@ public sealed class DnsInventoryClient(string pipeName = DnsInventoryClient.Pipe
             timeout.CancelAfter(TimeSpan.FromSeconds(15));
             await using var pipe = new NamedPipeClientStream(".", pipeName, PipeDirection.In, PipeOptions.Asynchronous);
             await pipe.ConnectAsync(timeout.Token);
-            var snapshot = await BoundedJson.DeserializeAsync<DnsCacheSnapshot>(pipe, timeout.Token);
+            var snapshot = await BoundedJson.DeserializeFramedAsync<DnsCacheSnapshot>(pipe, timeout.Token);
             return IsValid(snapshot) ? snapshot : null;
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
