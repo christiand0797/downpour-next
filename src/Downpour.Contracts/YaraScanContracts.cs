@@ -27,7 +27,7 @@ public static class YaraScanOperations
     public static readonly IReadOnlySet<string> All = new HashSet<string>(StringComparer.Ordinal) { Status, Start, Cancel };
 }
 
-public sealed record YaraScanRequest(int SchemaVersion, Guid RequestId, string Operation, string? Path = null, bool Recursive = false);
+public sealed record YaraScanRequest(int SchemaVersion, Guid RequestId, string Operation, string? Path = null, bool Recursive = false, bool SkipMicrosoftSigned = true);
 
 public sealed record YaraScanFinding(string Path, long Size, IReadOnlyList<YaraRuleMatch> Matches);
 
@@ -45,7 +45,8 @@ public sealed record YaraScanJob(
     DateTimeOffset StartedAtUtc,
     DateTimeOffset? FinishedAtUtc,
     string? Message,
-    IReadOnlyList<YaraScanFinding> Findings);
+    IReadOnlyList<YaraScanFinding> Findings,
+    bool SkipMicrosoftSigned = true);
 
 public sealed record YaraScanResponse(
     int SchemaVersion,

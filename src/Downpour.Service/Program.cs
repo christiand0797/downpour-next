@@ -37,9 +37,11 @@ builder.Services.AddSingleton<ActionConsentStore>(_ => new ActionConsentStore())
 builder.Services.AddSingleton(ActionAuditLog.CreateForCurrentUser());
 builder.Services.AddSingleton<IActionCallerVerifier, ParentDesktopCallerVerifier>();
 builder.Services.AddSingleton<QuarantineActionHandler>();
+builder.Services.AddSingleton<IAuthenticodeVerifier, AuthenticodeVerifier>();
 builder.Services.AddSingleton<IYaraScannerBackend>(provider => new YaraScannerHost(provider.GetRequiredService<ILogger<YaraScannerHost>>()));
 builder.Services.AddSingleton(provider => new YaraScanCoordinator(provider.GetRequiredService<IYaraScannerBackend>(),
-    provider.GetRequiredService<SecurityAlertRepository>(), provider.GetRequiredService<ILogger<YaraScanCoordinator>>()));
+    provider.GetRequiredService<SecurityAlertRepository>(), provider.GetRequiredService<ILogger<YaraScanCoordinator>>(),
+    provider.GetRequiredService<IAuthenticodeVerifier>()));
 builder.Services.AddHostedService<SnapshotPipeWorker>();
 builder.Services.AddHostedService<DriverInventoryPipeWorker>();
 builder.Services.AddHostedService<DriverPackageInventoryPipeWorker>();

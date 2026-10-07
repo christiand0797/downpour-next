@@ -76,6 +76,7 @@
                 <Button x:Name="YaraFileButton" Content="Scan a file…" Click="YaraFile_Click" />
                 <Button x:Name="YaraFolderButton" Content="Scan a folder…" Click="YaraFolder_Click" />
                 <CheckBox x:Name="YaraRecursive" Content="Include subfolders" IsChecked="True" />
+                <CheckBox x:Name="YaraSkipSigned" Content="Skip Microsoft-signed files" IsChecked="True" />
                 <Button x:Name="YaraCancelButton" Content="Cancel" Click="YaraCancel_Click" Visibility="Collapsed" />
             </StackPanel>
             <ProgressBar x:Name="YaraProgress" IsIndeterminate="True" Visibility="Collapsed" />

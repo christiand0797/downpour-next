@@ -28,6 +28,7 @@ public sealed class CognitiveImmuneSystemCoordinator
     private bool _verifierMonitoring = true;
     private int _verifiedHashes = 156;
     private int _integrityViolations = 0;
+    private readonly SwarmSimulationEngine _swarmEngine = new();
 
     private readonly List<CisDeceptionEvent> _deceptionEvents = new();
     private readonly List<CisHoneypotInfo> _honeypots = new();
@@ -180,6 +181,23 @@ public sealed class CognitiveImmuneSystemCoordinator
         {
             _verifierMonitoring = !_verifierMonitoring;
             return _verifierMonitoring;
+        }
+    }
+
+    /// <summary>
+    /// Executes a MiroFish-inspired multi-agent swarm intelligence simulation round,
+    /// predicting emergent threat drift vectors and updating the predictive horizon.
+    /// </summary>
+    public SwarmPredictionReport RunSwarmSimulation(int rounds = 3)
+    {
+        lock (_lock)
+        {
+            var report = _swarmEngine.Simulate(rounds);
+            _threatDriftVectors = report.Projected48hDriftVectors;
+            _simulatedMutations += rounds * 28;
+            _predictiveConfidence = (int)(report.ThreatConsensusRatio * 100);
+            _redTeamerResistanceScore = report.EvasionResistanceScore;
+            return report;
         }
     }
 

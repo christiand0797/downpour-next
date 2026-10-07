@@ -199,11 +199,11 @@ public sealed class YaraScanCoordinatorTests : IDisposable
         try { Directory.Delete(_folder, true); } catch (IOException) { }
     }
 
-    private YaraScanCoordinator Create(FakeBackend backend) => new(backend, (findings, _) =>
+    private YaraScanCoordinator Create(FakeBackend backend, IAuthenticodeVerifier? authenticode = null) => new(backend, (findings, _) =>
     {
         lock (_ingested) _ingested.AddRange(findings);
         return Task.CompletedTask;
-    }, NullLogger<YaraScanCoordinator>.Instance);
+    }, NullLogger<YaraScanCoordinator>.Instance, authenticode);
 
     [Fact]
     public async Task RecursiveScanCountsFilesAndRaisesFindings()
@@ -300,6 +300,58 @@ public sealed class YaraScanCoordinatorTests : IDisposable
         }
     }
 
+    [Fact]
+    public async Task FolderScanSkipsMicrosoftSignedFilesWhenEnabled()
+    {
+        File.WriteAllText(Path.Combine(_folder, "signed.dll"), "EVIL");
+        File.WriteAllText(Path.Combine(_folder, "unsigned.dll"), "EVIL");
+        var verifier = new FakeAuthenticodeVerifier(path => Path.GetFileName(path).Equals("signed.dll", StringComparison.OrdinalIgnoreCase));
+        var coordinator = Create(new FakeBackend(), verifier);
+        Assert.True(coordinator.Start(_folder, recursive: false, skipMicrosoftSigned: true).Started);
+        await coordinator.Completion;
+
+        var job = coordinator.Current!;
+        Assert.Equal("completed", job.State);
+        Assert.Equal(1, job.FilesScanned);
+        Assert.Equal(1, job.FilesSkipped);
+        var finding = Assert.Single(job.Findings);
+        Assert.EndsWith("unsigned.dll", finding.Path);
+    }
+
+    [Fact]
+    public async Task FolderScanDoesNotSkipMicrosoftSignedFilesWhenDisabled()
+    {
+        File.WriteAllText(Path.Combine(_folder, "signed.dll"), "EVIL");
+        File.WriteAllText(Path.Combine(_folder, "unsigned.dll"), "EVIL");
+        var verifier = new FakeAuthenticodeVerifier(path => Path.GetFileName(path).Equals("signed.dll", StringComparison.OrdinalIgnoreCase));
+        var coordinator = Create(new FakeBackend(), verifier);
+        Assert.True(coordinator.Start(_folder, recursive: false, skipMicrosoftSigned: false).Started);
+        await coordinator.Completion;
+
+        var job = coordinator.Current!;
+        Assert.Equal("completed", job.State);
+        Assert.Equal(2, job.FilesScanned);
+        Assert.Equal(0, job.FilesSkipped);
+        Assert.Equal(2, job.Findings.Count);
+    }
+
+    [Fact]
+    public async Task SingleFileScanDoesNotSkipEvenIfMicrosoftSigned()
+    {
+        var file = Path.Combine(_folder, "signed.dll");
+        File.WriteAllText(file, "EVIL");
+        var verifier = new FakeAuthenticodeVerifier(_ => true);
+        var coordinator = Create(new FakeBackend(), verifier);
+        Assert.True(coordinator.Start(file, recursive: false, skipMicrosoftSigned: true).Started);
+        await coordinator.Completion;
+
+        var job = coordinator.Current!;
+        Assert.Equal("completed", job.State);
+        Assert.Equal(1, job.FilesScanned);
+        Assert.Equal(0, job.FilesSkipped);
+        Assert.Single(job.Findings);
+    }
+
     [Theory]
     [InlineData("relative")]
     [InlineData("C:\\x.txt:ads")]
@@ -309,12 +361,19 @@ public sealed class YaraScanCoordinatorTests : IDisposable
     [Theory]
     [InlineData("{\"schemaVersion\":1,\"requestId\":\"6f9619ff-8b86-d011-b42d-00cf4fc964ff\",\"operation\":\"status\"}", true)]
     [InlineData("{\"schemaVersion\":1,\"requestId\":\"6f9619ff-8b86-d011-b42d-00cf4fc964ff\",\"operation\":\"start\",\"path\":\"C:\\\\Users\",\"recursive\":true}", true)]
+    [InlineData("{\"schemaVersion\":1,\"requestId\":\"6f9619ff-8b86-d011-b42d-00cf4fc964ff\",\"operation\":\"start\",\"path\":\"C:\\\\Users\",\"recursive\":true,\"skipMicrosoftSigned\":false}", true)]
     [InlineData("{\"schemaVersion\":1,\"requestId\":\"6f9619ff-8b86-d011-b42d-00cf4fc964ff\",\"operation\":\"start\"}", false)]
     [InlineData("{\"schemaVersion\":1,\"requestId\":\"6f9619ff-8b86-d011-b42d-00cf4fc964ff\",\"operation\":\"start\",\"path\":\"C:\\\\Users\",\"recursive\":\"yes\"}", false)]
+    [InlineData("{\"schemaVersion\":1,\"requestId\":\"6f9619ff-8b86-d011-b42d-00cf4fc964ff\",\"operation\":\"start\",\"path\":\"C:\\\\Users\",\"skipMicrosoftSigned\":\"invalid\"}", false)]
     [InlineData("{\"schemaVersion\":1,\"requestId\":\"6f9619ff-8b86-d011-b42d-00cf4fc964ff\",\"operation\":\"quarantine\"}", false)]
     [InlineData("{\"schemaVersion\":1,\"requestId\":\"6f9619ff-8b86-d011-b42d-00cf4fc964ff\",\"operation\":\"status\",\"extra\":1}", false)]
     public void PipeParserIsStrict(string json, bool valid) =>
         Assert.Equal(valid, YaraScanPipeWorker.ParseStrictRequest(Encoding.UTF8.GetBytes(json)) is not null);
+
+    private sealed class FakeAuthenticodeVerifier(Func<string, bool> predicate) : IAuthenticodeVerifier
+    {
+        public bool IsMicrosoftSigned(string filePath) => predicate(filePath);
+    }
 
     private sealed class FakeBackend : IYaraScannerBackend
     {
@@ -336,5 +395,84 @@ public sealed class YaraScanCoordinatorTests : IDisposable
         }
 
         public void Dispose() { }
+    }
+}
+
+public sealed class AuthenticodeVerifierTests
+{
+    [Theory]
+    [InlineData("Microsoft Windows", true)]
+    [InlineData("Microsoft Corporation", true)]
+    [InlineData("Microsoft Windows Production PCA 2011", true)]
+    [InlineData("Microsoft Windows Publisher", true)]
+    [InlineData("Google LLC", false)]
+    [InlineData("Untrusted Signer", false)]
+    [InlineData(null, false)]
+    [InlineData("", false)]
+    [InlineData("   ", false)]
+    public void IsMicrosoftSignerNameClassification(string? signer, bool expected) =>
+        Assert.Equal(expected, AuthenticodeVerifier.IsMicrosoftSignerName(signer));
+
+    [Fact]
+    public void VerifyEmbeddedSignatureValidatesRealWindowsBinary()
+    {
+        var dotnet = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "dotnet", "dotnet.exe");
+        if (!File.Exists(dotnet)) return;
+
+        var valid = AuthenticodeVerifier.VerifyEmbeddedSignature(dotnet, out var signer);
+        Assert.True(valid);
+        Assert.True(AuthenticodeVerifier.IsMicrosoftSignerName(signer));
+    }
+
+    [Fact]
+    public void VerifyEmbeddedSignatureRejectsUnsignedFile()
+    {
+        var tempFile = Path.Combine(Path.GetTempPath(), $"downpour-unsigned-{Guid.NewGuid():N}.exe");
+        File.WriteAllBytes(tempFile, [0x4D, 0x5A, 0x90, 0x00]); // MZ stub without signature
+        try
+        {
+            var valid = AuthenticodeVerifier.VerifyEmbeddedSignature(tempFile, out var signer);
+            Assert.False(valid);
+            Assert.Null(signer);
+        }
+        finally
+        {
+            File.Delete(tempFile);
+        }
+    }
+
+    [Fact]
+    public void IsMicrosoftSignedReturnsTrueForInboxWindowsBinary()
+    {
+        using var verifier = new AuthenticodeVerifier();
+        var notepad = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "notepad.exe");
+        if (File.Exists(notepad))
+        {
+            Assert.True(verifier.IsMicrosoftSigned(notepad));
+        }
+
+        var cmd = Path.Combine(Environment.SystemDirectory, "cmd.exe");
+        if (File.Exists(cmd))
+        {
+            Assert.True(verifier.IsMicrosoftSigned(cmd));
+        }
+    }
+
+    [Fact]
+    public void IsMicrosoftSignedReturnsFalseForUnsignedAndMissingFiles()
+    {
+        using var verifier = new AuthenticodeVerifier();
+        Assert.False(verifier.IsMicrosoftSigned(Path.Combine(Path.GetTempPath(), "non_existent_file.exe")));
+
+        var tempTxt = Path.Combine(Path.GetTempPath(), $"test-{Guid.NewGuid():N}.txt");
+        File.WriteAllText(tempTxt, "not an executable");
+        try
+        {
+            Assert.False(verifier.IsMicrosoftSigned(tempTxt));
+        }
+        finally
+        {
+            File.Delete(tempTxt);
+        }
     }
 }

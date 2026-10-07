@@ -139,7 +139,7 @@ public sealed partial class ScannerPage : Page
             picker.FileTypeFilter.Add("*");
             WinRT.Interop.InitializeWithWindow.Initialize(picker, App.MainWindowHandle);
             var file = await picker.PickSingleFileAsync();
-            if (file is not null && !string.IsNullOrEmpty(file.Path)) await StartYaraAsync(file.Path, false);
+            if (file is not null && !string.IsNullOrEmpty(file.Path)) await StartYaraAsync(file.Path, false, false);
         }
         catch (Exception exception) when (exception is COMException or InvalidOperationException or UnauthorizedAccessException)
         {
@@ -155,7 +155,7 @@ public sealed partial class ScannerPage : Page
             picker.FileTypeFilter.Add("*");
             WinRT.Interop.InitializeWithWindow.Initialize(picker, App.MainWindowHandle);
             var folder = await picker.PickSingleFolderAsync();
-            if (folder is not null && !string.IsNullOrEmpty(folder.Path)) await StartYaraAsync(folder.Path, YaraRecursive.IsChecked == true);
+            if (folder is not null && !string.IsNullOrEmpty(folder.Path)) await StartYaraAsync(folder.Path, YaraRecursive.IsChecked == true, YaraSkipSigned.IsChecked == true);
         }
         catch (Exception exception) when (exception is COMException or InvalidOperationException or UnauthorizedAccessException)
         {
@@ -163,9 +163,9 @@ public sealed partial class ScannerPage : Page
         }
     }
 
-    private async Task StartYaraAsync(string path, bool recursive)
+    private async Task StartYaraAsync(string path, bool recursive, bool skipMicrosoftSigned = true)
     {
-        var response = await _yara.StartAsync(path, recursive);
+        var response = await _yara.StartAsync(path, recursive, skipMicrosoftSigned);
         if (response is null) { YaraStatusText.Text = "The sensor service did not respond."; return; }
         if (!response.Accepted) { YaraStatusText.Text = response.Message; return; }
         _renderedFindings = -1;

@@ -15,6 +15,7 @@ public sealed partial class CognitiveImmuneSystemPage : Page
     private readonly ObservableCollection<HoneypotItemViewModel> _honeypotItems = new();
     private readonly ObservableCollection<HoneytokenItemViewModel> _honeytokenItems = new();
     private CisSnapshot? _currentSnapshot;
+    private SwarmPredictionReport? _latestSwarmReport;
 
     public CognitiveImmuneSystemPage()
     {
@@ -125,6 +126,67 @@ public sealed partial class CognitiveImmuneSystemPage : Page
             NotificationInfoBar.IsOpen = true;
             NotificationInfoBar.Severity = InfoBarSeverity.Error;
             NotificationInfoBar.Title = "Export Failed";
+            NotificationInfoBar.Message = ex.Message;
+        }
+    }
+
+    private async void SwarmSimButton_Click(object sender, RoutedEventArgs e)
+    {
+        SwarmSimButton.IsEnabled = false;
+        RunSwarmButton.IsEnabled = false;
+        try
+        {
+            var report = await Task.Run(() => _coordinator.RunSwarmSimulation(3));
+            _latestSwarmReport = report;
+            RefreshUi();
+
+            SwarmStatusBadgeText.Text = $"SIMULATED ({report.RoundsSimulated} ROUNDS)";
+            SwarmConsensusText.Text = $"{report.ThreatConsensusRatio:P0}";
+            SwarmResistanceText.Text = $"{report.EvasionResistanceScore}%";
+            SwarmDriftVectorsText.Text = $"{report.Projected48hDriftVectors} (48h)";
+            SwarmLastRunText.Text = report.GeneratedAtUtc.ToString("HH:mm:ss UTC");
+            SwarmExecutiveSnippetText.Text = string.Join(" • ", report.EmergentVulnerabilities);
+            CopySwarmReportButton.IsEnabled = true;
+
+            NotificationInfoBar.IsOpen = true;
+            NotificationInfoBar.Severity = InfoBarSeverity.Success;
+            NotificationInfoBar.Title = "Swarm Intelligence Simulation Complete";
+            NotificationInfoBar.Message = $"MiroFish OASIS engine completed {report.RoundsSimulated} rounds across {report.ActiveAgentsCount} agents. Equilibrium consensus: {report.ThreatConsensusRatio:P0}.";
+        }
+        catch (Exception ex)
+        {
+            NotificationInfoBar.IsOpen = true;
+            NotificationInfoBar.Severity = InfoBarSeverity.Error;
+            NotificationInfoBar.Title = "Swarm Simulation Failed";
+            NotificationInfoBar.Message = ex.Message;
+        }
+        finally
+        {
+            SwarmSimButton.IsEnabled = true;
+            RunSwarmButton.IsEnabled = true;
+        }
+    }
+
+    private void CopySwarmReportButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_latestSwarmReport is null) return;
+
+        try
+        {
+            var package = new DataPackage();
+            package.SetText(_latestSwarmReport.ExecutiveSummary);
+            Clipboard.SetContent(package);
+
+            NotificationInfoBar.IsOpen = true;
+            NotificationInfoBar.Severity = InfoBarSeverity.Success;
+            NotificationInfoBar.Title = "Swarm Report Copied";
+            NotificationInfoBar.Message = "MiroFish prediction and emergent threat forecast report copied to clipboard.";
+        }
+        catch (Exception ex)
+        {
+            NotificationInfoBar.IsOpen = true;
+            NotificationInfoBar.Severity = InfoBarSeverity.Error;
+            NotificationInfoBar.Title = "Copy Failed";
             NotificationInfoBar.Message = ex.Message;
         }
     }

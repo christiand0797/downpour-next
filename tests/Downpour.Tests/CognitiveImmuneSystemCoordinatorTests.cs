@@ -151,4 +151,27 @@ public sealed class CognitiveImmuneSystemCoordinatorTests
         Assert.Contains("ssh_honeypot", report);
         Assert.Contains("fake_aws_creds", report);
     }
+
+    [Fact]
+    public void RunSwarmSimulation_UpdatesCoordinatorMetricsAndProducesReport()
+    {
+        var coordinator = new CognitiveImmuneSystemCoordinator();
+        var report = coordinator.RunSwarmSimulation(rounds: 3);
+
+        Assert.NotNull(report);
+        Assert.StartsWith("SWARM-", report.SimulationId);
+        Assert.Equal(3, report.RoundsSimulated);
+        Assert.Equal(8, report.ActiveAgentsCount);
+        Assert.InRange(report.ThreatConsensusRatio, 0.1, 1.0);
+        Assert.InRange(report.EvasionResistanceScore, 80, 100);
+        Assert.NotEmpty(report.EmergentVulnerabilities);
+        Assert.NotEmpty(report.RemediationRecommendations);
+        Assert.Contains("MiroFish Swarm Intelligence Prediction Report", report.ExecutiveSummary);
+        Assert.Equal(8, report.Agents.Count);
+        Assert.True(report.KeyInteractions.Count > 0);
+
+        var snapshot = coordinator.GetSnapshot();
+        Assert.Equal(report.Projected48hDriftVectors, snapshot.Predictor.ThreatDriftVectorsCount);
+        Assert.Equal(report.EvasionResistanceScore, snapshot.RedTeamer.EvasionResistanceScore);
+    }
 }

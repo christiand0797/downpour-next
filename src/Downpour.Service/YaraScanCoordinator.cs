@@ -11,7 +11,11 @@ namespace Downpour.Service;
 /// "Downpour/Yara" findings in triage (CRITICAL/HIGH in Threats, the rest in Possible Threats); low-confidence rules
 /// are listed in the scan results only.
 /// </summary>
-public sealed class YaraScanCoordinator(IYaraScannerBackend backend, Func<IReadOnlyList<SecurityFindingObservation>, CancellationToken, Task> ingest, ILogger<YaraScanCoordinator> logger)
+public sealed class YaraScanCoordinator(
+    IYaraScannerBackend backend,
+    Func<IReadOnlyList<SecurityFindingObservation>, CancellationToken, Task> ingest,
+    ILogger<YaraScanCoordinator> logger,
+    IAuthenticodeVerifier? authenticode = null)
 {
     public const int MaximumFiles = 100_000;
     public const int MaximumFindings = 500;
@@ -20,14 +24,18 @@ public sealed class YaraScanCoordinator(IYaraScannerBackend backend, Func<IReadO
     private CancellationTokenSource? _cancel;
     private Task _running = Task.CompletedTask;
 
-    public YaraScanCoordinator(IYaraScannerBackend backend, SecurityAlertRepository alerts, ILogger<YaraScanCoordinator> logger)
-        : this(backend, (findings, token) => alerts.IngestFindingsAsync(findings, DateTimeOffset.UtcNow, token), logger) { }
+    public YaraScanCoordinator(
+        IYaraScannerBackend backend,
+        SecurityAlertRepository alerts,
+        ILogger<YaraScanCoordinator> logger,
+        IAuthenticodeVerifier? authenticode = null)
+        : this(backend, (findings, token) => alerts.IngestFindingsAsync(findings, DateTimeOffset.UtcNow, token), logger, authenticode) { }
 
     public YaraScanJob? Current { get { lock (_gate) return _job; } }
 
     public Task Completion { get { lock (_gate) return _running; } }
 
-    public (bool Started, string Code, string Message) Start(string root, bool recursive)
+    public (bool Started, string Code, string Message) Start(string root, bool recursive, bool skipMicrosoftSigned = true)
     {
         if (!IsSafeRoot(root)) return (false, "invalid-path", "Choose a local file or folder.");
         var full = Path.GetFullPath(root);
@@ -38,9 +46,9 @@ public sealed class YaraScanCoordinator(IYaraScannerBackend backend, Func<IReadO
             if (_job is { State: "starting" or "running" }) return (false, "busy", "A scan is already running.");
             _cancel?.Dispose();
             _cancel = new CancellationTokenSource();
-            _job = new YaraScanJob(Guid.NewGuid(), full, recursive && !isFile, "starting", 0, 0, 0, 0, null, DateTimeOffset.UtcNow, null, null, []);
+            _job = new YaraScanJob(Guid.NewGuid(), full, recursive && !isFile, "starting", 0, 0, 0, 0, null, DateTimeOffset.UtcNow, null, null, [], skipMicrosoftSigned);
             var token = _cancel.Token;
-            _running = Task.Run(() => RunAsync(full, isFile, recursive && !isFile, token));
+            _running = Task.Run(() => RunAsync(full, isFile, recursive && !isFile, skipMicrosoftSigned, token));
         }
         return (true, "started", "Scan started.");
     }
@@ -60,7 +68,7 @@ public sealed class YaraScanCoordinator(IYaraScannerBackend backend, Func<IReadO
         lock (_gate) if (_job is not null) _job = change(_job);
     }
 
-    private async Task RunAsync(string root, bool isFile, bool recursive, CancellationToken token)
+    private async Task RunAsync(string root, bool isFile, bool recursive, bool skipMicrosoftSigned, CancellationToken token)
     {
         var findings = new List<YaraScanFinding>();
         try
@@ -90,6 +98,14 @@ public sealed class YaraScanCoordinator(IYaraScannerBackend backend, Func<IReadO
                     break;
                 }
                 Update(job => job with { FilesQueued = count, CurrentFile = Path.GetFileName(file) });
+
+                // Skip Microsoft-signed binaries during folder scans to reduce false positive noise and scan latency
+                if (!isFile && skipMicrosoftSigned && authenticode is not null && authenticode.IsMicrosoftSigned(file))
+                {
+                    Update(job => job with { FilesSkipped = job.FilesSkipped + 1 });
+                    continue;
+                }
+
                 var result = await backend.ScanAsync(file, token);
                 switch (result.Status)
                 {
@@ -151,7 +167,7 @@ public sealed class YaraScanPipeWorker(
     private const int MaximumRequestBytes = 64 * 1024;
     // Response -> Job -> Findings[] -> Matches[] -> Tags[] nests about 8 levels; 16 leaves headroom.
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web) { MaxDepth = 16 };
-    private static readonly HashSet<string> AllowedProperties = new(StringComparer.Ordinal) { "schemaVersion", "requestId", "operation", "path", "recursive" };
+    private static readonly HashSet<string> AllowedProperties = new(StringComparer.Ordinal) { "schemaVersion", "requestId", "operation", "path", "recursive", "skipMicrosoftSigned" };
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -191,7 +207,7 @@ public sealed class YaraScanPipeWorker(
     {
         var (accepted, code, message) = request.Operation switch
         {
-            YaraScanOperations.Start => coordinator.Start(request.Path!, request.Recursive),
+            YaraScanOperations.Start => coordinator.Start(request.Path!, request.Recursive, request.SkipMicrosoftSigned),
             YaraScanOperations.Cancel => coordinator.Cancel() ? (true, "cancelling", "Cancelling the scan.") : (false, "not-running", "No scan is running."),
             _ => (true, "status", ""),
         };
@@ -244,8 +260,14 @@ public sealed class YaraScanPipeWorker(
                 if (recursiveElement.ValueKind is not (JsonValueKind.True or JsonValueKind.False)) return null;
                 recursive = recursiveElement.GetBoolean();
             }
+            var skipMicrosoftSigned = true;
+            if (values.TryGetValue("skipMicrosoftSigned", out var skipElement))
+            {
+                if (skipElement.ValueKind is not (JsonValueKind.True or JsonValueKind.False)) return null;
+                skipMicrosoftSigned = skipElement.GetBoolean();
+            }
             if (operation.GetString() == YaraScanOperations.Start && path is null) return null;
-            return new YaraScanRequest(1, requestId, operation.GetString()!, path, recursive);
+            return new YaraScanRequest(1, requestId, operation.GetString()!, path, recursive, skipMicrosoftSigned);
         }
         catch (JsonException)
         {

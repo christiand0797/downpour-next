@@ -1,5 +1,27 @@
 # Downpour Next TODO
 
+## 2026-10-07 checkpoint: MiroFish Swarm Intelligence Integration in CIS (antigravity-worker)
+
+Completed and verified (Debug: 0 warnings/errors; 673/673 tests pass):
+- MiroFish Swarm Intelligence Multi-Agent Engine: implemented `SwarmSimulationEngine` inspired by the MiroFish OASIS collective intelligence paradigm, simulating 8 specialized cybersecurity archetypes (`ADV-01`, `ADV-02`, `DEF-01`, `DEF-02`, `FOR-01`, `IMM-01`, `DEC-01`, `SYN-01`).
+- Contracts in `src/Downpour.Contracts/SwarmIntelligence.cs`: `SwarmAgentArchetype`, `SwarmAgentState`, `SwarmInteraction`, and `SwarmPredictionReport`.
+- Core engine in `src/Downpour.Core/SwarmSimulationEngine.cs`: multi-round adversary-defender-deception interaction cycles, consensus equilibrium scoring, 48h emergent threat drift forecasting, and executive Markdown report synthesis.
+- CIS Coordinator in `src/Downpour.Core/CognitiveImmuneSystemCoordinator.cs`: wired `RunSwarmSimulation(rounds)` updating drift vectors, mutations, and predictive confidence.
+- Desktop UI in `CognitiveImmuneSystemPage.xaml/.cs`: added dedicated Swarm Intelligence & Multi-Agent Consensus card, consensus & resistance metric cards, emergent vulnerability projection snippet, "Run Swarm Sim" button in header & card, and "Copy Swarm Report" clipboard export.
+- Unit tests in `SwarmSimulationEngineTests.cs` (archetypes, interactions, multi-round consensus, clamping) and `CognitiveImmuneSystemCoordinatorTests.cs`.
+
+## 2026-10-07 checkpoint: DN-026 Authenticode Signature Verification for YARA (antigravity-worker)
+
+Completed and verified (Debug: 0 warnings/errors; 673/673 tests pass):
+- DN-026 Authenticode Signature Verification for YARA folder scanning: implemented `AuthenticodeVerifier` implementing `IAuthenticodeVerifier`.
+- High-speed PE heuristic filter: checks extensions (`.exe`, `.dll`, `.sys`, `.scr`, etc.) and `MZ` magic header before Win32 P/Invoke.
+- Dual-layer signature verification: embedded signature verification via `WinVerifyTrust` (`WINTRUST_ACTION_GENERIC_VERIFY_V2`), fallback to Windows Security Catalog verification via `CryptCATAdmin*` (`CatalogSignatureVerifier`) for inbox system binaries.
+- Microsoft signer identification: validates `Subject` (`O=Microsoft Corporation`, `CN=Microsoft`) and `Issuer`.
+- YARA Contracts & Client: added `SkipMicrosoftSigned = true` to `YaraScanRequest` and `YaraScanJob`.
+- Scanner Coordinator: injected `IAuthenticodeVerifier` into `YaraScanCoordinator`, skipping signed binaries during folder scans (`FilesSkipped++`), and respecting single-file scan overrides.
+- Scanner UI: added "Skip Microsoft-signed files" checkbox (`YaraSkipSigned`, default checked) on `ScannerPage.xaml/.cs`.
+- Unit tests in `YaraScannerTests.cs` (embedded/catalog verification, folder skip, single-file override).
+
 ## 2026-10-07 checkpoint: DN-009 Tools Launchpad Route Slice (antigravity-worker)
 
 Completed and verified (Debug: 0 warnings/errors; 648/648 tests pass):

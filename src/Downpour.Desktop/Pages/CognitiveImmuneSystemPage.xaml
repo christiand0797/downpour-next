@@ -47,6 +47,12 @@
                             <TextBlock Text="Export CIS Report" />
                         </StackPanel>
                     </Button>
+                    <Button x:Name="SwarmSimButton" Click="SwarmSimButton_Click">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <FontIcon Glyph="&#xE90A;" FontSize="13" Foreground="#38BDF8" />
+                            <TextBlock Text="Run Swarm Sim" />
+                        </StackPanel>
+                    </Button>
                 </StackPanel>
             </Grid>
 
@@ -300,6 +306,89 @@
                             </StackPanel>
                         </Border>
                     </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- MiroFish Swarm Intelligence & Multi-Agent Consensus -->
+            <Border Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="8" Padding="16">
+                <StackPanel Spacing="12">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Spacing="2">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="MiroFish Swarm Intelligence &amp; Multi-Agent Consensus" FontSize="14" FontWeight="SemiBold" Foreground="#F3F4F6" />
+                                <Border Background="#1E3A8A" CornerRadius="4" Padding="6,1" VerticalAlignment="Center">
+                                    <TextBlock x:Name="SwarmStatusBadgeText" Text="8 OASIS AGENTS READY" FontSize="10" FontWeight="Bold" Foreground="#60A5FA" />
+                                </Border>
+                            </StackPanel>
+                            <TextBlock Text="Decentralized multi-agent simulation forecasting emergent LOLBin evasions, honeytoken trip rates, and 48-hour threat drift." FontSize="11" Foreground="#9CA3AF" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                            <Button x:Name="CopySwarmReportButton" Click="CopySwarmReportButton_Click" IsEnabled="False">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <FontIcon Glyph="&#xE8C8;" FontSize="12" />
+                                    <TextBlock Text="Copy Swarm Report" FontSize="11" />
+                                </StackPanel>
+                            </Button>
+                            <Button x:Name="RunSwarmButton" Click="SwarmSimButton_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <FontIcon Glyph="&#xE90A;" FontSize="12" Foreground="#38BDF8" />
+                                    <TextBlock Text="Simulate Swarm (3 Rounds)" FontSize="11" />
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.Column="0" Background="#1F2937" BorderBrush="#374151" BorderThickness="1" CornerRadius="6" Padding="10">
+                            <StackPanel Spacing="2">
+                                <TextBlock Text="Consensus Equilibrium" FontSize="10" Foreground="#9CA3AF" />
+                                <TextBlock x:Name="SwarmConsensusText" Text="Pending Sim" FontSize="16" FontWeight="SemiBold" Foreground="#38BDF8" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Column="1" Background="#1F2937" BorderBrush="#374151" BorderThickness="1" CornerRadius="6" Padding="10">
+                            <StackPanel Spacing="2">
+                                <TextBlock Text="Swarm Resistance" FontSize="10" Foreground="#9CA3AF" />
+                                <TextBlock x:Name="SwarmResistanceText" Text="94%" FontSize="16" FontWeight="SemiBold" Foreground="#34D399" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Column="2" Background="#1F2937" BorderBrush="#374151" BorderThickness="1" CornerRadius="6" Padding="10">
+                            <StackPanel Spacing="2">
+                                <TextBlock Text="Projected Drift Vectors" FontSize="10" Foreground="#9CA3AF" />
+                                <TextBlock x:Name="SwarmDriftVectorsText" Text="18 (48h)" FontSize="16" FontWeight="SemiBold" Foreground="#FBBF24" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Column="3" Background="#1F2937" BorderBrush="#374151" BorderThickness="1" CornerRadius="6" Padding="10">
+                            <StackPanel Spacing="2">
+                                <TextBlock Text="Last Simulation Run" FontSize="10" Foreground="#9CA3AF" />
+                                <TextBlock x:Name="SwarmLastRunText" Text="Never" FontSize="14" FontWeight="SemiBold" Foreground="#E5E7EB" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <!-- Latest Key Interaction / Emergent Finding Snippet -->
+                    <Border Background="#1F2937" BorderBrush="#374151" BorderThickness="1" CornerRadius="6" Padding="10">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Emergent Vulnerability Projection &amp; Consensus Summary" FontSize="11" FontWeight="SemiBold" Foreground="#F3F4F6" />
+                            <TextBlock x:Name="SwarmExecutiveSnippetText"
+                                       Text="Execute swarm simulation to generate cross-agent behavioral consensus and forecast emergent threat drift vectors."
+                                       FontSize="11" Foreground="#9CA3AF" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
             </Border>
 

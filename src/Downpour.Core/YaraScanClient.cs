@@ -18,8 +18,8 @@ public sealed class YaraScanClient(string pipeName = YaraScanClient.PipeName)
     public Task<YaraScanResponse?> StatusAsync(CancellationToken cancellationToken = default) =>
         SendAsync(new(1, Guid.NewGuid(), YaraScanOperations.Status), cancellationToken);
 
-    public Task<YaraScanResponse?> StartAsync(string path, bool recursive, CancellationToken cancellationToken = default) =>
-        SendAsync(new(1, Guid.NewGuid(), YaraScanOperations.Start, path, recursive), cancellationToken);
+    public Task<YaraScanResponse?> StartAsync(string path, bool recursive, bool skipMicrosoftSigned = true, CancellationToken cancellationToken = default) =>
+        SendAsync(new(1, Guid.NewGuid(), YaraScanOperations.Start, path, recursive, skipMicrosoftSigned), cancellationToken);
 
     public Task<YaraScanResponse?> CancelAsync(CancellationToken cancellationToken = default) =>
         SendAsync(new(1, Guid.NewGuid(), YaraScanOperations.Cancel), cancellationToken);
