@@ -394,7 +394,7 @@
     },
     "emergency": {
       "title": "Emergency Response",
-      "currentStatus": "planned",
+      "currentStatus": "in-progress",
       "v29Workflows": [
         "Full emergency lockdown (panic)",
         "Individual emergency actions",

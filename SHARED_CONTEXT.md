@@ -6,6 +6,56 @@
 **Local path:** `C:\Users\purpl\Desktop\downpour v2`  
 **Branch:** `main`  
 
+## 2026-10-07 checkpoint: DN-009 Emergency Response Route Slice (antigravity-worker)
+
+**DN-009 Emergency Response Route Slice completed:**
+- **Emergency Containment & Forensic Engine (`EmergencyResponseCoordinator`)**:
+  - Implemented incident response coordinator porting v29 `emergency_response.py` and `_build_emergency_tab`.
+  - Volatile System Snapshots:
+    - Captures running processes with PID, Process Name, executable path, memory footprint (WorkingSet64), and start time.
+    - Captures active TCP connection endpoints and states via managed `IPGlobalProperties`.
+    - Computes a deterministic SHA-256 cryptographic forensic seal ensuring chain-of-custody tamper evidence.
+    - Automatically persists JSON snapshots to `%LOCALAPPDATA%\DownpourNext\emergency_snapshots\emergency_snapshot_{id}_{timestamp}.json`.
+  - Suspicious Process Screening:
+    - Identifies known exploitation tools (`mimikatz`, `psexec`, `procdump`, `lazagne`, `nc.exe`, `netcat`, `ncat`, `chisel`, `socat`, `cobaltstrike`, `bloodhound`, `sharphound`, `rubeus`, `seatbelt`).
+    - Detects execution from suspicious temporary paths (`%TEMP%`, `\AppData\Local\Temp\`, `\Users\Public\`).
+    - Maps findings to MITRE ATT&CK techniques (T1003, T1036, T1059, T1572).
+  - Least-Privilege Action Broker Integration (DN-008):
+    - System-changing containment actions (Host Network Isolation, Process Termination, Adapter Restoration) return explicit `GuardedPendingAuthorization` status.
+    - Read-only actions (Snapshot preservation, volatile forensics packaging, IR report export) execute immediately.
+    - Workstation lock invokes native Windows `user32.dll` `LockWorkStation()` upon explicit confirmation.
+  - Incident Response (IR) Report Generator:
+    - Produces comprehensive Markdown report containing executive summary, cryptographic forensic seal, suspicious process table with MITRE tags, active TCP endpoints, DN-008 guard status, and audit log.
+- **Desktop UI (`EmergencyPage.xaml/.cs`)**:
+    - ARMED status badge and Panic Lockdown Hero Card with prominent red activation button and containment checklist.
+    - 4 overview metric cards (Suspicious Processes, Active TCP Sessions, Running Processes, Saved Snapshots).
+    - Individual Containment Actions bar (Snapshot, Isolate, Restore, Kill, Forensics, Lock Session).
+    - Suspicious process screening ListView with PID, name, path, memory, and MITRE badges.
+    - Forensic Evidence Seal card displaying Response ID, captured timestamp, host information, SHA-256 seal, and file path.
+    - Live timestamped monospace Emergency Event Log with clear log option.
+    - Desktop IR Report export.
+- **Navigation & Parity Tracking**:
+    - Wired route `emergency` into `MainWindow.xaml.cs` (navigation and back-sync).
+    - Promoted route `emergency` to `"in-progress"` in `capabilities.json`, `parity-checklist.json`, and `source-modules.json` (`emergency_response.py`).
+- **Testing & Verification**:
+    - 12 unit tests in `EmergencyResponseCoordinatorTests.cs` (snapshot capture and JSON serialization, indicator screening, guarded action policy enforcement under DN-008, full lockdown execution, and IR markdown report formatting).
+    - 33/33 active route tests pass cleanly.
+
+**Files created/updated:**
+- `src/Downpour.Contracts/EmergencyResponse.cs`
+- `src/Downpour.Core/EmergencyResponseCoordinator.cs`
+- `src/Downpour.Desktop/Pages/EmergencyPage.xaml`
+- `src/Downpour.Desktop/Pages/EmergencyPage.xaml.cs`
+- `src/Downpour.Desktop/MainWindow.xaml.cs`
+- `capabilities.json`
+- `parity-checklist.json`
+- `source-modules.json`
+- `tests/Downpour.Tests/EmergencyResponseCoordinatorTests.cs`
+- `WORK_QUEUE.json`
+- `AGENT_REGISTRY.json`
+- `SHARED_CONTEXT.md`
+- `TODO.md`
+
 ## 2026-10-07 checkpoint: DN-009 IoT Devices Route Slice (antigravity-worker)
 
 **DN-009 IoT Devices Route Slice completed:**

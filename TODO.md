@@ -1,5 +1,15 @@
 # Downpour Next TODO
 
+## 2026-10-07 checkpoint: DN-009 Emergency Response Route Slice (antigravity-worker)
+
+Completed and verified (Debug: 0 warnings/errors; 588/588 tests pass):
+- DN-009 Emergency Response route slice: implemented `EmergencyResponseCoordinator` porting v29 `emergency_response.py` and `_build_emergency_tab`.
+- Contracts in `src/Downpour.Contracts/EmergencyResponse.cs`: `EmergencyProcessInfo`, `EmergencyConnectionInfo`, `EmergencySnapshot`, `EmergencyLogEntry`, `EmergencyActionResult`, and `EmergencyLockdownOutcome`.
+- Core engine in `src/Downpour.Core/EmergencyResponseCoordinator.cs`: volatile process enumeration and memory inspection, active TCP endpoint enumeration, suspicious process screening (known attack tools like mimikatz, psexec, procdump, nc.exe, ncat, chisel, socat; temporary directory execution in Temp/Public), deterministic SHA-256 forensic seal computation, automated JSON snapshot serialization to LocalAppData, guarded containment evaluation under DN-008, safe Windows session lock, and structured Incident Response (IR) markdown report generator.
+- Desktop route `emergency` in `EmergencyPage.xaml/.cs`: ARMED status badge, Full Emergency Lockdown hero card with panic button and containment options, overview metrics (suspicious processes, active TCP sessions, total processes, saved snapshots), individual containment actions (Snapshot, Isolate, Restore, Kill, Forensics, Lock), suspicious process screening list with MITRE tags and memory footprint, forensic snapshot seal details card, and live timestamped event log.
+- Wired `emergency` route in `MainWindow.xaml.cs` and promoted to `in-progress` in `capabilities.json`, `parity-checklist.json`, and `source-modules.json` (`emergency_response.py`).
+- 12 unit tests in `EmergencyResponseCoordinatorTests.cs` (snapshot capture and JSON persistence, process indicator screening, guarded action policy enforcement under DN-008, full panic lockdown execution, and IR markdown report formatting).
+
 ## 2026-10-07 checkpoint: DN-009 IoT Devices Route Slice (antigravity-worker)
 
 Completed and verified (Debug: 0 warnings/errors; 576/576 tests pass):

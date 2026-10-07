@@ -248,8 +248,8 @@
     "family": "Threat Intelligence & Remediation",
     "module": "emergency_response.py",
     "description": "Incident response automation and isolation protocols.",
-    "sourceStatus": "Active",
-    "migrationStatus": "planned"
+    "sourceStatus": "Ported to EmergencyResponseCoordinator / EmergencyPage (incident lockdown, snapshots, process screening, guarded containment)",
+    "migrationStatus": "in-progress"
   },
   {
     "family": "Monitors & Sensors",

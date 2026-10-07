@@ -468,6 +468,8 @@ public sealed partial class MainWindow : Window
             NavFrame.Navigate(typeof(RemediationPage));
         else if (capability.RouteId.Equals("iot", StringComparison.OrdinalIgnoreCase))
             NavFrame.Navigate(typeof(IoTPage));
+        else if (capability.RouteId.Equals("emergency", StringComparison.OrdinalIgnoreCase))
+            NavFrame.Navigate(typeof(EmergencyPage));
         else if (capability.RouteId.Equals("threats", StringComparison.OrdinalIgnoreCase))
             NavFrame.Navigate(typeof(TriagePage), TriagePage.ThreatsMode);
         else if (capability.RouteId.Equals("possible-threats", StringComparison.OrdinalIgnoreCase))
@@ -538,6 +540,7 @@ public sealed partial class MainWindow : Window
         if (routeId is null && args.Content is VpnPage) routeId = "vpn";
         if (routeId is null && args.Content is RemediationPage) routeId = "remediation";
         if (routeId is null && args.Content is IoTPage) routeId = "iot";
+        if (routeId is null && args.Content is EmergencyPage) routeId = "emergency";
         if (routeId is null && args.Content is TriagePage) routeId = args.Parameter as string == TriagePage.PossibleMode ? "possible-threats" : "threats";
 
         if (routeId is null || !_routeItems.TryGetValue(routeId, out var item)) return;
