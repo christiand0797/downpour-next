@@ -30,6 +30,9 @@ public sealed partial class SettingsPage : Page
         ScriptBlockToggle.Toggled += async (_, _) => await SetSensorSettingAsync(Downpour.Contracts.SensorSettingKeys.ScriptBlockAnalysis, ScriptBlockToggle.IsOn);
         IntelLookupsToggle.Toggled += async (_, _) => await SetSensorSettingAsync(Downpour.Contracts.SensorSettingKeys.IntelLookups, IntelLookupsToggle.IsOn);
         QuarantineActionsToggle.Toggled += async (_, _) => await SetSensorSettingAsync(Downpour.Contracts.SensorSettingKeys.QuarantineActions, QuarantineActionsToggle.IsOn);
+        ProcessActionsToggle.Toggled += async (_, _) => await SetSensorSettingAsync(Downpour.Contracts.SensorSettingKeys.ProcessTerminationActions, ProcessActionsToggle.IsOn);
+        FirewallActionsToggle.Toggled += async (_, _) => await SetSensorSettingAsync(Downpour.Contracts.SensorSettingKeys.FirewallActions, FirewallActionsToggle.IsOn);
+        UsbActionsToggle.Toggled += async (_, _) => await SetSensorSettingAsync(Downpour.Contracts.SensorSettingKeys.UsbActions, UsbActionsToggle.IsOn);
     }
 
     private async Task LoadSensorSettingsAsync()
@@ -51,6 +54,12 @@ public sealed partial class SettingsPage : Page
                 IntelLookupsToggle.IsEnabled = true;
                 QuarantineActionsToggle.IsOn = settings.QuarantineActions;
                 QuarantineActionsToggle.IsEnabled = true;
+                ProcessActionsToggle.IsOn = settings.ProcessTerminationActions;
+                ProcessActionsToggle.IsEnabled = true;
+                FirewallActionsToggle.IsOn = settings.FirewallActions;
+                FirewallActionsToggle.IsEnabled = true;
+                UsbActionsToggle.IsOn = settings.UsbActions;
+                UsbActionsToggle.IsEnabled = true;
                 ShowConfiguredKeys(settings.IntelServicesConfigured ?? []);
                 SensorSettingsState.Text = "";
             }
@@ -59,6 +68,9 @@ public sealed partial class SettingsPage : Page
                 ScriptBlockToggle.IsEnabled = false;
                 IntelLookupsToggle.IsEnabled = false;
                 QuarantineActionsToggle.IsEnabled = false;
+                ProcessActionsToggle.IsEnabled = false;
+                FirewallActionsToggle.IsEnabled = false;
+                UsbActionsToggle.IsEnabled = false;
                 SensorSettingsState.Text = "The sensor service is not reachable, so its settings cannot be shown or changed.";
             }
         }

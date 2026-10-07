@@ -89,6 +89,21 @@
                         <StackPanel Spacing="2"><TextBlock Text="Allow quarantine actions" FontWeight="SemiBold" /><TextBlock Text="Lets the Remediation page quarantine and restore files you choose. Each action still asks for your confirmation and is recorded. When off, the service refuses every quarantine and restore request." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" /></StackPanel>
                         <ToggleSwitch x:Name="QuarantineActionsToggle" Grid.Column="1" IsOn="True" IsEnabled="False" OnContent="On" OffContent="Off" />
                     </Grid>
+                    <Grid ColumnSpacing="16">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                        <StackPanel Spacing="2"><TextBlock Text="Allow process termination" FontWeight="SemiBold" /><TextBlock Text="Permits ending a reviewed process after its own confirmation. Protected processes remain denied. Turning this off makes the service refuse termination requests." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" /></StackPanel>
+                        <ToggleSwitch x:Name="ProcessActionsToggle" Grid.Column="1" IsOn="True" IsEnabled="False" OnContent="On" OffContent="Off" />
+                    </Grid>
+                    <Grid ColumnSpacing="16">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                        <StackPanel Spacing="2"><TextBlock Text="Allow firewall actions" FontWeight="SemiBold" /><TextBlock Text="Permits confirmed, expiring IP blocks and removal of Downpour rules when Windows grants access. Automatic expiry continues when this switch is off." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" /></StackPanel>
+                        <ToggleSwitch x:Name="FirewallActionsToggle" Grid.Column="1" IsOn="True" IsEnabled="False" OnContent="On" OffContent="Off" />
+                    </Grid>
+                    <Grid ColumnSpacing="16">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                        <StackPanel Spacing="2"><TextBlock Text="Allow USB actions" FontWeight="SemiBold" /><TextBlock Text="Permits confirmed blocks or restores of approved USB storage and mass-storage policy changes when Windows grants access. Input devices and hubs remain protected." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" /></StackPanel>
+                        <ToggleSwitch x:Name="UsbActionsToggle" Grid.Column="1" IsOn="True" IsEnabled="False" OnContent="On" OffContent="Off" />
+                    </Grid>
                     <TextBlock x:Name="SensorSettingsState" FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" TextWrapping="Wrap" />
                 </StackPanel>
             </Border>
