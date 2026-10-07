@@ -41,6 +41,18 @@ public static class DefaultActionCatalog
                 TimeoutSeconds: 30,
                 RequiredPermission: "file-write",
                 RequiredParameters: new[] { "sourcePath", "quarantineId" },
+                AllowedObjectIdPatterns: new[] { "obj-" }),
+
+            [ActionKinds.TerminateProcess] = new ActionCatalogEntry(
+                ActionKind: ActionKinds.TerminateProcess,
+                DisplayName: "Terminate Process",
+                Description: "Terminate an evasive or suspicious process named in an open security alert.",
+                Category: "Process Management",
+                EnabledByDefault: false,
+                RequiresElevation: false,
+                TimeoutSeconds: 15,
+                RequiredPermission: "process-terminate",
+                RequiredParameters: new[] { "processId", "startTimeUtc" },
                 AllowedObjectIdPatterns: new[] { "obj-" })
         };
 
@@ -70,6 +82,14 @@ public static class DefaultActionCatalog
                 FeatureId: ActionKinds.RestoreFile,
                 DisplayName: "File Restore",
                 Description: "Allow restoring quarantined files from encrypted storage.",
+                Enabled: false,
+                RequiredPolicyVersion: CurrentPolicyVersion,
+                EnabledAtUtc: null),
+
+            [ActionKinds.TerminateProcess] = new FeatureSwitch(
+                FeatureId: ActionKinds.TerminateProcess,
+                DisplayName: "Process Termination",
+                Description: "Allow terminating suspicious processes associated with verified security alerts.",
                 Enabled: false,
                 RequiredPolicyVersion: CurrentPolicyVersion,
                 EnabledAtUtc: null)

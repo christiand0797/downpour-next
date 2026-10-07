@@ -1,5 +1,16 @@
 # Downpour Next TODO
 
+## 2026-10-07 checkpoint: DN-008 Phase 2 Alert-driven Process Termination Broker (antigravity-worker)
+
+Completed and verified (Debug: 0 warnings/errors; 695/695 tests pass):
+- Contracts in `src/Downpour.Contracts/ProcessTerminationContracts.cs`: `ProcessTerminationOperations`, `ProcessTerminationRequest`, `ProcessTerminationPreview`, `ProcessTerminationResponse`.
+- Sensor settings: added `ProcessTerminationActions` (default true) to `SensorSettingsSnapshot`, `SensorSettingKeys`, and writable list in `SensorSettingsStore`.
+- Service executor in `src/Downpour.Service/ProcessTerminationExecutor.cs`: immutable system deny-list (PIDs 0/4, `csrss`, `lsass`, `services`, `wininit`, `winlogon`, `smss`, `svchost`, `dwm`, `fontdrvhost`, `explorer`, service self PID, parent desktop PID, Downpour binaries); process inspection via `OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION)`, `QueryFullProcessImageNameW`, `GetExitCodeProcess`, and `GetProcessTimes` creation time binding within 3s tolerance; process termination via `OpenProcess(PROCESS_TERMINATE)`, `TerminateProcess`, `WaitForSingleObject`.
+- Service IPC worker in `src/Downpour.Service/ProcessTerminationActionPipeWorker.cs`: `Downpour.ProcessTerminationActions.v1` named pipe, `ParentDesktopCallerVerifier` authentication, 60s single-use consent token, audited logging of previews/denials/terminations to `state/action-audit.v1.jsonl`.
+- Core client & policy in `src/Downpour.Core/ProcessTerminationClient.cs`, `ActionCatalog.cs`, `ActionPolicyValidator.cs`.
+- Desktop UI in `RemediationPage.xaml/.cs` (terminate by PID button, input prompt, preview dialog, execution) and `MemoryPage.xaml.cs` (process list item kill button, preview dialog, audited execution, automated list refresh).
+- Unit tests in `tests/Downpour.Tests/ProcessTerminationActionTests.cs` (17 deny-list cases, self-PID, nonexistent PID, start-time mismatch, denied caller, disabled feature switch, end-to-end preview + consent + real process termination).
+
 ## 2026-10-07 checkpoint: MiroFish Swarm Intelligence Integration in CIS (antigravity-worker)
 
 Completed and verified (Debug: 0 warnings/errors; 673/673 tests pass):

@@ -93,10 +93,10 @@
     {
       "id": "antigravity-worker",
       "role": "primary",
-      "taskId": "DN-026",
-      "status": "idle",
-      "heartbeatUtc": "2026-10-07T18:30:00Z",
-      "notes": "Completed DN-026 (Authenticode signature verification to skip Microsoft-signed binaries during YARA folder scans) and MiroFish multi-agent swarm intelligence simulation engine integrated into CIS with UI and tests. 673/673 tests pass with 0 errors/warnings. Next safe task: DN-008 Phase 2 (Alert-driven Process Termination Broker with PID+start-time binding and immutable system deny-list)."
+      "taskId": "DN-008",
+      "status": "active",
+      "heartbeatUtc": "2026-10-07T19:30:00Z",
+      "notes": "Completed DN-008 Phase 2 (Process Termination Broker with PID+creation time binding, immutable deny-list, 60s consent token, caller verification, audit logging, Remediation & Memory UI, 695/695 tests pass). Preparing DN-008 Phase 3 (Firewall block of remote IP with expiring DownpourNext_ rules and DOWNPOUR_* rule cleanup)."
     },
     {
       "id": "claude-parity-audit",

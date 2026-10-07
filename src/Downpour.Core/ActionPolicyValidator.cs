@@ -166,6 +166,15 @@ public sealed class ActionPolicyValidator
                 rollbackSteps.Add("Quarantine the file again if restore is incomplete");
                 break;
 
+            case ActionKinds.TerminateProcess:
+                effects.Add($"Terminate running process with PID {request.ObjectId}");
+                effects.Add("Halt all threads and reclaim allocated process memory");
+                effects.Add("Record termination outcome in the append-only action audit log");
+                risks.Add("Terminating a process may cause unsaved data loss in the target application");
+                risks.Add("Terminating an unverified process can disrupt dependent background services");
+                rollbackSteps.Add("Process termination is irreversible; restarted instances must be launched manually by the user");
+                break;
+
             default:
                 effects.Add($"Execute action '{request.ActionKind}' on '{request.ObjectId}'");
                 risks.Add("Action-specific risks not yet documented");

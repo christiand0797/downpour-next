@@ -196,26 +196,113 @@ public sealed partial class MemoryPage : Page
 
     private async void KillProcess_Click(object sender, RoutedEventArgs e)
     {
-        try
+        var target = ProcessesList.SelectedItem as ProcessMemoryRow;
+        if (target is null)
         {
-            var target = ProcessesList.SelectedItem as ProcessMemoryRow;
-            var targetInfo = target is not null
-                ? $"Selected target: {target.ProcessName} (PID {target.ProcessId}).\r\n\r\n"
-                : "No specific process currently selected.\r\n\r\n";
-
-            var dialog = new ContentDialog
+            var noSelectionDialog = new ContentDialog
             {
-                Title = "Process Termination Guarded",
-                Content = $"{targetInfo}Process termination, thread suspension, and memory modification are guarded under Downpour's least-privilege security policy (AGENTS.md & SECURITY.md).\r\n\r\nKilling processes requires an audited action broker (DN-008) with authenticated operator consent.\r\n\r\nPassive volatile memory inspection and injection pattern scoring remain active.",
+                Title = "No Process Selected",
+                Content = "Please select a process from the list to review and terminate.",
                 CloseButtonText = "OK",
                 XamlRoot = this.XamlRoot
             };
-            await dialog.ShowAsync();
+            await noSelectionDialog.ShowAsync();
+            return;
         }
-        catch
+
+        DateTimeOffset startTime = DateTimeOffset.MinValue;
+        try
         {
-            StatusHeadline.Text = "Process Termination Guarded";
-            StatusDetail.Text = "Process killing is disabled pending audited action broker (DN-008).";
+            using var proc = System.Diagnostics.Process.GetProcessById(target.ProcessId);
+            startTime = proc.StartTime.ToUniversalTime();
+        }
+        catch (Exception ex)
+        {
+            StatusHeadline.Text = "Process Not Found";
+            StatusDetail.Text = $"Process {target.ProcessName} (PID {target.ProcessId}) is no longer active ({ex.Message}).";
+            return;
+        }
+
+        try
+        {
+            var client = new ProcessTerminationClient();
+            var preview = await client.PreviewTerminateAsync(target.ProcessId, startTime);
+            if (preview is null)
+            {
+                await App.EnsureSensorServiceAsync();
+                preview = await client.PreviewTerminateAsync(target.ProcessId, startTime);
+            }
+
+            if (preview is null)
+            {
+                var errorDialog = new ContentDialog
+                {
+                    Title = "Service Unreachable",
+                    Content = "The Downpour action broker endpoint is not reachable. Process termination requires the local service that this desktop started.",
+                    CloseButtonText = "OK",
+                    XamlRoot = this.XamlRoot
+                };
+                await errorDialog.ShowAsync();
+                return;
+            }
+
+            if (!preview.Accepted || preview.Preview is null)
+            {
+                var deniedDialog = new ContentDialog
+                {
+                    Title = "Process Termination Denied",
+                    Content = preview.Message,
+                    CloseButtonText = "OK",
+                    XamlRoot = this.XamlRoot
+                };
+                await deniedDialog.ShowAsync();
+                return;
+            }
+
+            var previewData = preview.Preview;
+            var effectsList = string.Join("\n• ", previewData.ExpectedEffects);
+            var risksList = string.Join("\n• ", previewData.Risks);
+            var contentText = $"Target: {previewData.ProcessName} (PID {previewData.ProcessId})\n" +
+                              $"Image: {previewData.ImagePath}\n" +
+                              $"Started: {previewData.StartTimeUtc:yyyy-MM-dd HH:mm:ss} UTC\n\n" +
+                              $"Expected Effects:\n• {effectsList}\n\n" +
+                              $"Risks & Warnings:\n• {risksList}\n\n" +
+                              "Terminating a process is irreversible and may result in unsaved data loss in the application. Do you wish to proceed?";
+
+            var confirmDialog = new ContentDialog
+            {
+                Title = "Confirm Process Termination (DN-008 Phase 2)",
+                Content = new TextBlock { Text = contentText, TextWrapping = TextWrapping.Wrap },
+                PrimaryButtonText = "Terminate Process",
+                CloseButtonText = "Cancel",
+                DefaultButton = ContentDialogButton.Close,
+                XamlRoot = this.XamlRoot
+            };
+
+            var dialogResult = await confirmDialog.ShowAsync();
+            if (dialogResult == ContentDialogResult.Primary && previewData.ConsentToken is not null)
+            {
+                StatusHeadline.Text = "Terminating Process...";
+                StatusDetail.Text = $"Executing audited termination for {previewData.ProcessName} (PID {target.ProcessId})...";
+
+                var result = await client.TerminateAsync(target.ProcessId, startTime, previewData.ConsentToken);
+                if (result is not null && result.Accepted)
+                {
+                    StatusHeadline.Text = "Process Terminated";
+                    StatusDetail.Text = result.Message;
+                    await ScanProcessesAsync();
+                }
+                else
+                {
+                    StatusHeadline.Text = "Termination Failed";
+                    StatusDetail.Text = result?.Message ?? "Action endpoint failed to confirm termination.";
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusHeadline.Text = "Termination Error";
+            StatusDetail.Text = ex.Message;
         }
     }
 

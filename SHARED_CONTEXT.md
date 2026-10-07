@@ -1,10 +1,39 @@
 # Downpour Next shared context
 
-**Updated:** 2026-10-07 (antigravity-worker: DN-026 Authenticode YARA skip completed, MiroFish Swarm Intelligence CIS integration completed, DN-009 Tools slice completed, DN-009 CIS slice completed, DN-009 Defense Suite slice completed, DN-009 Parental Controls slice completed, DN-009 Emergency slice completed, DN-009 IoT slice completed, DN-009 VPN slice completed, DN-009 Memory slice completed, DN-009 Ransomware slice completed, DN-009 Sandbox slice completed, DN-009 Forensics slice completed, DN-029 completed, DN-009 Cleanup Center slice completed; claude-parity-audit: DN-008 phase 1 quarantine live, DN-016/018/019/022/023/024/028 done)
+**Updated:** 2026-10-07 (antigravity-worker: DN-008 Phase 2 Process Termination Broker completed, DN-026 Authenticode YARA skip completed, MiroFish Swarm Intelligence CIS integration completed, DN-009 Tools slice completed, DN-009 CIS slice completed, DN-009 Defense Suite slice completed, DN-009 Parental Controls slice completed, DN-009 Emergency slice completed, DN-009 IoT slice completed, DN-009 VPN slice completed, DN-009 Memory slice completed, DN-009 Ransomware slice completed, DN-009 Sandbox slice completed, DN-009 Forensics slice completed, DN-029 completed, DN-009 Cleanup Center slice completed; claude-parity-audit: DN-008 phase 1 quarantine live, DN-016/018/019/022/023/024/028 done)
 
 **Repository:** public [christiand0797/downpour-next](https://github.com/christiand0797/downpour-next)
 **Local path:** `C:\Users\purpl\Desktop\downpour v2`  
 **Branch:** `main`  
+
+## 2026-10-07 checkpoint: DN-008 Phase 2 Alert-driven Process Termination Broker (antigravity-worker)
+
+**DN-008 Phase 2 Process Termination Broker completed:**
+- **Contracts (`ProcessTerminationContracts.cs`)**:
+  - `ProcessTerminationOperations`: constants `preview` and `terminate`.
+  - `ProcessTerminationRequest`: includes `Operation`, `TargetPid`, `ExpectedStartTimeUtc`, `Reason`, `ConsentToken`.
+  - `ProcessTerminationPreview`: includes `Allowed`, `TargetPid`, `ProcessName`, `ImagePath`, `StartTimeUtc`, `ExpectedEffects`, `PotentialRisks`, `DenialReason`, `ConsentToken`.
+  - `ProcessTerminationResponse`: execution result with `Success`, `TargetPid`, `ProcessName`, `ExitCode`, `ErrorMessage`.
+  - Sensor settings: added `ProcessTerminationActions = true` to `SensorSettingsSnapshot`, `SensorSettingKeys.ProcessTerminationActions`, and writable set.
+- **Service Layer (`ProcessTerminationExecutor.cs`, `ProcessTerminationActionPipeWorker.cs`)**:
+  - `ProcessTerminationExecutor`:
+    - Immutable deny-list: PIDs 0 and 4, system-critical binaries (`csrss`, `lsass`, `services`, `wininit`, `winlogon`, `smss`, `svchost`, `dwm`, `fontdrvhost`, `explorer`), current service process PID, parent desktop process PID, and Downpour binaries.
+    - Process inspection with PID + Creation Time binding: calls `OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION)`, `QueryFullProcessImageNameW`, `GetExitCodeProcess`, and `GetProcessTimes` (validating creation time within 3s tolerance to eliminate PID reuse race conditions).
+    - Termination execution: calls `OpenProcess(PROCESS_TERMINATE)`, `TerminateProcess(hProcess, 1)`, and `WaitForSingleObject(2000)`.
+  - `ProcessTerminationActionPipeWorker`:
+    - Named pipe `Downpour.ProcessTerminationActions.v1` with Current-User ACL and 96 KiB max payload.
+    - Caller authentication via `ParentDesktopCallerVerifier`: confirms caller is parent `Downpour.Desktop.exe` started before service from install directory.
+    - Single-use 60-second consent token minted during preview bound to `pid|startTicks|imagePath`, verified and consumed on execute.
+    - Audited logging to `state/action-audit.v1.jsonl` covering all previews, denials, and termination outcomes.
+- **Core Layer (`ProcessTerminationClient.cs`, `ActionCatalog.cs`, `ActionPolicyValidator.cs`)**:
+  - `ProcessTerminationClient`: IPC client providing `PreviewTerminateAsync` and `TerminateAsync`.
+  - Enabled `ActionKinds.TerminateProcess` in `ActionBroker`, `ActionCatalog`, and `ActionPolicyValidator`.
+- **Desktop UI Integration (`RemediationPage.xaml/.cs`, `MemoryPage.xaml.cs`)**:
+  - `RemediationPage`: updated Phase 1 & 2 banner, added "Terminate process by PID…" button with PID input prompt, service-side preview, itemized consent dialog with effects & risks, and audited termination.
+  - `MemoryPage`: wired "Kill Process" button on process list selection to inspect target, request service preview, display operator confirmation dialog, execute audited termination, and auto-refresh the process table.
+- **Testing & Verification**:
+  - Unit test suite `ProcessTerminationActionTests.cs` covering system & protected deny-list (17 test cases), service self-PID denial, nonexistent PID, start-time mismatch, caller verification denial, disabled feature switch, and end-to-end preview + consent token validation + real process termination.
+  - Build clean (0 warnings, 0 errors); all 695 tests passing across solution.
 
 ## 2026-10-07 checkpoint: MiroFish Swarm Intelligence Integration in CIS (antigravity-worker)
 

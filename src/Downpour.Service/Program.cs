@@ -37,6 +37,8 @@ builder.Services.AddSingleton<ActionConsentStore>(_ => new ActionConsentStore())
 builder.Services.AddSingleton(ActionAuditLog.CreateForCurrentUser());
 builder.Services.AddSingleton<IActionCallerVerifier, ParentDesktopCallerVerifier>();
 builder.Services.AddSingleton<QuarantineActionHandler>();
+builder.Services.AddSingleton<ProcessTerminationExecutor>();
+builder.Services.AddSingleton<ProcessTerminationActionHandler>();
 builder.Services.AddSingleton<IAuthenticodeVerifier, AuthenticodeVerifier>();
 builder.Services.AddSingleton<IYaraScannerBackend>(provider => new YaraScannerHost(provider.GetRequiredService<ILogger<YaraScannerHost>>()));
 builder.Services.AddSingleton(provider => new YaraScanCoordinator(provider.GetRequiredService<IYaraScannerBackend>(),
@@ -70,6 +72,7 @@ builder.Services.AddHostedService<SensorSettingsPipeWorker>();
 builder.Services.AddHostedService<IntelLookupWorker>();
 builder.Services.AddHostedService<IntelPipeWorker>();
 builder.Services.AddHostedService<QuarantineActionPipeWorker>();
+builder.Services.AddHostedService<ProcessTerminationActionPipeWorker>();
 builder.Services.AddHostedService<YaraScanPipeWorker>();
 
 var host = builder.Build();

@@ -41,15 +41,18 @@ public sealed partial class RemediationPage : Page
         {
             StatusText.Text = "The sensor service is not reachable. Quarantine needs the service that this desktop started.";
             QuarantineButton.IsEnabled = false;
+            TerminateProcessButton.IsEnabled = false;
             return;
         }
         if (!response.Accepted)
         {
             StatusText.Text = response.Message;
             QuarantineButton.IsEnabled = false;
+            TerminateProcessButton.IsEnabled = false;
             return;
         }
         QuarantineButton.IsEnabled = response.ActionsEnabled;
+        TerminateProcessButton.IsEnabled = response.ActionsEnabled;
         StatusText.Text = response.ActionsEnabled ? "" : "Quarantine actions are turned off in Settings.";
         if (response.RecoveryNotes is { Count: > 0 } notes)
         {
@@ -197,12 +200,139 @@ public sealed partial class RemediationPage : Page
         return await dialog.ShowAsync() == ContentDialogResult.Primary;
     }
 
+    private async void TerminateProcess_Click(object sender, RoutedEventArgs e)
+    {
+        var inputTextBox = new TextBox { PlaceholderText = "Enter target process PID (e.g. 1234)" };
+        var inputDialog = new ContentDialog
+        {
+            Title = "Terminate Process by PID",
+            Content = new StackPanel
+            {
+                Spacing = 10,
+                Children =
+                {
+                    new TextBlock { Text = "Enter the Process ID (PID) of the suspicious process to review and terminate under Action Broker policy (DN-008 Phase 2):", TextWrapping = TextWrapping.Wrap },
+                    inputTextBox
+                }
+            },
+            PrimaryButtonText = "Inspect & Preview",
+            CloseButtonText = "Cancel",
+            DefaultButton = ContentDialogButton.Primary,
+            XamlRoot = this.XamlRoot
+        };
+
+        if (await inputDialog.ShowAsync() != ContentDialogResult.Primary) return;
+        if (!int.TryParse(inputTextBox.Text.Trim(), out var pid) || pid <= 0)
+        {
+            var invalidPidDialog = new ContentDialog
+            {
+                Title = "Invalid PID",
+                Content = "Please enter a valid positive integer process ID.",
+                CloseButtonText = "OK",
+                XamlRoot = this.XamlRoot
+            };
+            await invalidPidDialog.ShowAsync();
+            return;
+        }
+
+        DateTimeOffset startTime = DateTimeOffset.MinValue;
+        try
+        {
+            using var proc = System.Diagnostics.Process.GetProcessById(pid);
+            startTime = proc.StartTime.ToUniversalTime();
+        }
+        catch (Exception ex)
+        {
+            var notFoundDialog = new ContentDialog
+            {
+                Title = "Process Not Found",
+                Content = $"Process with PID {pid} is not currently running ({ex.Message}).",
+                CloseButtonText = "OK",
+                XamlRoot = this.XamlRoot
+            };
+            await notFoundDialog.ShowAsync();
+            return;
+        }
+
+        var client = new ProcessTerminationClient();
+        var preview = await client.PreviewTerminateAsync(pid, startTime);
+        if (preview is null)
+        {
+            await App.EnsureSensorServiceAsync();
+            preview = await client.PreviewTerminateAsync(pid, startTime);
+        }
+
+        if (preview is null)
+        {
+            var unreachDialog = new ContentDialog
+            {
+                Title = "Service Unreachable",
+                Content = "The process termination action service endpoint is not reachable.",
+                CloseButtonText = "OK",
+                XamlRoot = this.XamlRoot
+            };
+            await unreachDialog.ShowAsync();
+            return;
+        }
+
+        if (!preview.Accepted || preview.Preview is null)
+        {
+            var deniedDialog = new ContentDialog
+            {
+                Title = "Termination Denied",
+                Content = preview.Message,
+                CloseButtonText = "OK",
+                XamlRoot = this.XamlRoot
+            };
+            await deniedDialog.ShowAsync();
+            return;
+        }
+
+        var p = preview.Preview;
+        var detailsText = $"Process: {p.ProcessName} (PID {p.ProcessId})\n" +
+                          $"Path: {p.ImagePath}\n" +
+                          $"Started: {p.StartTimeUtc:yyyy-MM-dd HH:mm:ss} UTC\n\n" +
+                          $"Expected Effects:\n• {string.Join("\n• ", p.ExpectedEffects)}\n\n" +
+                          $"Risks:\n• {string.Join("\n• ", p.Risks)}\n\n" +
+                          "Consent token minted (valid for 60 seconds). Are you sure you want to terminate this process?";
+
+        var confirmDialog = new ContentDialog
+        {
+            Title = "Confirm Process Termination (DN-008 Phase 2)",
+            Content = new TextBlock { Text = detailsText, TextWrapping = TextWrapping.Wrap },
+            PrimaryButtonText = "Terminate Process",
+            CloseButtonText = "Cancel",
+            DefaultButton = ContentDialogButton.Close,
+            XamlRoot = this.XamlRoot
+        };
+
+        if (await confirmDialog.ShowAsync() == ContentDialogResult.Primary && p.ConsentToken is not null)
+        {
+            SetBusy(true, $"Terminating process {p.ProcessName} (PID {pid})...");
+            var outcome = await client.TerminateAsync(pid, startTime, p.ConsentToken);
+            SetBusy(false, "");
+
+            var outcomeDialog = new ContentDialog
+            {
+                Title = outcome?.Accepted == true ? "Process Terminated" : "Termination Failed",
+                Content = outcome?.Message ?? "No response received from action service.",
+                CloseButtonText = "OK",
+                XamlRoot = this.XamlRoot
+            };
+            await outcomeDialog.ShowAsync();
+        }
+    }
+
     private void SetBusy(bool busy, string status)
     {
         _busy = busy;
         Busy.IsActive = busy;
         RefreshButton.IsEnabled = !busy;
-        if (busy) QuarantineButton.IsEnabled = false;
+        if (busy)
+        {
+            QuarantineButton.IsEnabled = false;
+            TerminateProcessButton.IsEnabled = false;
+        }
         if (status.Length > 0 || busy) StatusText.Text = status;
     }
 
