@@ -6,7 +6,8 @@ namespace Downpour_Desktop;
 
 internal static class DesktopRelease
 {
-    public static Version CurrentVersion { get; } = new(0, 1, 15);
+    public static Version CurrentVersion { get; } = typeof(DesktopRelease).Assembly.GetName().Version
+        is { } version ? new(version.Major, version.Minor, version.Build) : new(0, 0, 0);
 }
 
 internal sealed record UpdateInstallResult(bool Updated, bool UpToDate, string Message);
