@@ -412,7 +412,7 @@ public static class RansomwareDefenseInspector
         }
         catch
         {
-            vssStatus = "Protected / Running (Local Default)";
+            vssStatus = "Unknown (service inventory unavailable)";
         }
 
         // 2. Query Alerts for VSS destruction patterns
@@ -453,7 +453,7 @@ public static class RansomwareDefenseInspector
         }
         catch
         {
-            // Offline sensor alert query ignored
+            evidence.Add("Security alerts could not be read, so shadow-copy deletion activity was not checked.");
         }
 
         return new VolumeShadowCopyPosture(vssStatus, hasTampering, evidence);

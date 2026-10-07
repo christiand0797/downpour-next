@@ -67,11 +67,12 @@ public sealed class DnsInventoryProvider(string baselinePath)
                 else if (scored.Score >= DgaDetector.AlertThreshold)
                     mediumRiskCount++;
 
-                newlySeen.Add(name);
+                var hashed = HashDomain(name);
+                newlySeen.Add(hashed);
 
                 // TOFU baseline logic:
                 // If not in baseline and not first run, alert!
-                if (!isFirstRun && !known.Contains(name) && scored.Score >= DgaDetector.AlertThreshold)
+                if (!isFirstRun && !known.Contains(hashed) && scored.Score >= DgaDetector.AlertThreshold)
                 {
                     if (findings.Count < MaximumFindings)
                     {
@@ -86,7 +87,7 @@ public sealed class DnsInventoryProvider(string baselinePath)
                     }
                 }
 
-                known.Add(name);
+                known.Add(hashed);
             }
 
             // Update baseline
@@ -158,46 +159,54 @@ public sealed class DnsInventoryProvider(string baselinePath)
         return list;
     }
 
+    /// <summary>
+    /// The baseline stores SHA-256 hashes of lower-cased domain names, never the names. A plain list of every
+    /// resolved domain would be a browsing history on disk (AGENTS.md: no precise user activity).
+    /// </summary>
+    internal static string HashDomain(string domain) =>
+        Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(domain.Trim().ToLowerInvariant()))).ToLowerInvariant();
+
+    private static bool IsHash(string value) => value.Length == 64 && value.All(ch => ch is >= '0' and <= '9' or >= 'a' and <= 'f');
+
     private (HashSet<string> domains, bool isFirstRun) LoadBaseline()
     {
         try
         {
-            if (!File.Exists(baselinePath))
-                return (new HashSet<string>(StringComparer.OrdinalIgnoreCase), true);
+            var info = new FileInfo(baselinePath);
+            if (!info.Exists || info.Length > 8 * 1024 * 1024 || (info.Attributes & FileAttributes.ReparsePoint) != 0)
+                return (new HashSet<string>(StringComparer.Ordinal), true);
 
-            var json = File.ReadAllText(baselinePath);
-            var model = JsonSerializer.Deserialize<DnsBaselineModel>(json);
+            var model = JsonSerializer.Deserialize<DnsBaselineModel>(File.ReadAllText(baselinePath));
             if (model?.Domains == null)
-                return (new HashSet<string>(StringComparer.OrdinalIgnoreCase), true);
+                return (new HashSet<string>(StringComparer.Ordinal), true);
 
-            return (new HashSet<string>(model.Domains, StringComparer.OrdinalIgnoreCase), false);
+            // Earlier builds stored plaintext names; hash them and rewrite the file once.
+            var hashes = new HashSet<string>(model.Domains.Select(d => IsHash(d) ? d : HashDomain(d)), StringComparer.Ordinal);
+            if (model.Domains.Any(d => !IsHash(d))) SaveBaseline(hashes);
+            return (hashes, false);
         }
-        catch
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
         {
-            return (new HashSet<string>(StringComparer.OrdinalIgnoreCase), true);
+            return (new HashSet<string>(StringComparer.Ordinal), true);
         }
     }
 
-    private void SaveBaseline(IEnumerable<string> domains)
+    private void SaveBaseline(IEnumerable<string> hashes)
     {
+        var temporary = baselinePath + ".tmp";
         try
         {
             var dir = Path.GetDirectoryName(baselinePath);
             if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
-
-            var model = new DnsBaselineModel
-            {
-                UpdatedUtc = DateTimeOffset.UtcNow,
-                Count = domains.Count(),
-                Domains = domains.OrderBy(d => d, StringComparer.OrdinalIgnoreCase).ToList()
-            };
-
-            var json = JsonSerializer.Serialize(model, new JsonSerializerOptions { WriteIndented = true });
-            File.WriteAllText(baselinePath, json);
+            var list = hashes.OrderBy(h => h, StringComparer.Ordinal).ToList();
+            var model = new DnsBaselineModel { UpdatedUtc = DateTimeOffset.UtcNow, Count = list.Count, Domains = list };
+            File.WriteAllText(temporary, JsonSerializer.Serialize(model));
+            File.Move(temporary, baselinePath, overwrite: true);
         }
-        catch
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            // Defensive: baseline save failures never crash capture
+            // Baseline save failures never fail the capture; new domains are compared again next time.
+            try { File.Delete(temporary); } catch (IOException) { } catch (UnauthorizedAccessException) { }
         }
     }
 
@@ -205,6 +214,7 @@ public sealed class DnsInventoryProvider(string baselinePath)
     {
         public DateTimeOffset UpdatedUtc { get; set; }
         public int Count { get; set; }
+        /// <summary>SHA-256 hashes of lower-cased domain names.</summary>
         public List<string> Domains { get; set; } = [];
     }
 }
