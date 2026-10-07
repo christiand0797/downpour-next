@@ -1,10 +1,60 @@
 # Downpour Next shared context
 
-**Updated:** 2026-10-07 (antigravity-worker: DN-009 Memory slice completed, DN-009 Ransomware slice completed, DN-009 Sandbox slice completed, DN-009 Forensics slice completed, DN-029 completed, DN-009 Cleanup Center slice completed; claude-parity-audit: DN-016/018/019/022/023/024/028 done)
+**Updated:** 2026-10-07 (antigravity-worker: DN-009 VPN slice completed, DN-009 Memory slice completed, DN-009 Ransomware slice completed, DN-009 Sandbox slice completed, DN-009 Forensics slice completed, DN-029 completed, DN-009 Cleanup Center slice completed; claude-parity-audit: DN-016/018/019/022/023/024/028 done)
 
 **Repository:** public [christiand0797/downpour-next](https://github.com/christiand0797/downpour-next)
 **Local path:** `C:\Users\purpl\Desktop\downpour v2`  
 **Branch:** `main`  
+
+## 2026-10-07 checkpoint: DN-009 VPN Route Slice (antigravity-worker)
+
+**DN-009 VPN Route Slice completed:**
+- **VPN Posture & DNS Leak Engine (`VpnPostureInspector`)**:
+  - Implemented strictly read-only VPN interface inspection and DNS leak detector porting v29 `downpour_vpn_module.py` and `_build_vpn_tab`.
+  - Discovered Network Interface Posture:
+    - Enumerates network adapters via native .NET `NetworkInterface.GetAllNetworkInterfaces()`, extracting IP configurations, gateways, and DNS resolvers.
+    - Accurately classifies VPN interfaces (tunnel/PPP interfaces, adapter keywords: `tun`, `tap`, `wg`, `wireguard`, `ppp`, `vpn`, `wintun`).
+    - Provider Identification: identifies known providers (`Mullvad`, `ProtonVPN`, `NordVPN`, `ExpressVPN`, `Surfshark`, `Tailscale`, `WireGuard`, `OpenVPN`, `Cisco AnyConnect`, `Fortinet`, `SonicWall`).
+  - DNS Split-Tunnel Leak Assessment:
+    - Compares active tunnel DNS resolvers against physical adapter DNS configurations (Ethernet, Wi-Fi).
+    - Identifies split-tunneling leaks where unencrypted DNS queries exit through physical ISP resolvers while VPN is connected.
+  - Safe TCP Egress Probing:
+    - Probes outbound TCP port 443 connectivity to standard benign endpoints (`1.1.1.1:443`, `8.8.8.8:443`, `www.microsoft.com:443`) matching v29 non-ICMP test.
+    - Measures round-trip latency without generating IDS alarms.
+  - OpenVPN Profile Parsing:
+    - Safe parser for `.ovpn` configuration files extracting `remote` host, port, protocol, and configuration parameters without running commands or shells.
+  - Audit Report Exporter:
+    - Generates markdown formatted audit report detailing adapter states, DNS resolvers, and kill-switch policy.
+- **Desktop UI (`VpnPage.xaml/.cs`)**:
+  - Status badges for VPN connection state (Connected / Disconnected) and DNS Leak risk (Protected / Split-Tunnel Risk).
+  - 4 overview metric cards (VPN status, DNS leak audit, adapter count, and egress connectivity).
+  - Network interface posture list with IP, DNS, gateway, status, and provider badges.
+  - DNS leak details card with specific findings and resolver counts.
+  - Egress connectivity probes list with latency metrics.
+  - Imported VPN profiles list.
+  - Guarded Kill-Switch button displaying dialog stating Windows Firewall changes require audited action broker (DN-008).
+  - Export audit report button saving to Desktop.
+- **Navigation & Parity Tracking**:
+  - Wired in `MainWindow.xaml.cs`.
+  - Promoted route `vpn` to `"in-progress"` in `capabilities.json`, `parity-checklist.json`, and `source-modules.json` (`downpour_vpn_module.py`).
+- **Testing & Verification**:
+  - Added unit tests in `VpnPostureInspectorTests.cs` (OpenVPN profile parsing, standalone port parsing, empty content handling, local posture evaluation, markdown report generation, and provider keyword detection).
+  - 529/529 solution tests pass with 0 warnings, 0 errors.
+
+**Files created/updated:**
+- `src/Downpour.Contracts/VpnPosture.cs`
+- `src/Downpour.Core/VpnPostureInspector.cs`
+- `src/Downpour.Desktop/Pages/VpnPage.xaml`
+- `src/Downpour.Desktop/Pages/VpnPage.xaml.cs`
+- `src/Downpour.Desktop/MainWindow.xaml.cs`
+- `capabilities.json`
+- `parity-checklist.json`
+- `source-modules.json`
+- `tests/Downpour.Tests/VpnPostureInspectorTests.cs`
+- `WORK_QUEUE.json`
+- `AGENT_REGISTRY.json`
+- `SHARED_CONTEXT.md`
+- `TODO.md`  
 
 ## 2026-10-07 checkpoint: DN-009 Memory Route Slice (antigravity-worker)
 

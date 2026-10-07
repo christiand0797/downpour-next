@@ -429,9 +429,9 @@
   {
     "family": "Utilities, Memory, & Dashboard",
     "module": "downpour_vpn_module.py",
-    "description": "VPN server fetching and configuration logic.",
-    "sourceStatus": "Active",
-    "migrationStatus": "planned"
+    "description": "VPN server fetching, DNS leak detection, and interface configuration logic.",
+    "sourceStatus": "Ported to VpnPostureInspector / VpnPage (active VPN interface detection, DNS leak checks, TCP egress probes, OpenVPN parser)",
+    "migrationStatus": "in-progress"
   },
   {
     "family": "Utilities, Memory, & Dashboard",

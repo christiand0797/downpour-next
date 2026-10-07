@@ -371,7 +371,7 @@
     },
     "vpn": {
       "title": "VPN",
-      "currentStatus": "planned",
+      "currentStatus": "in-progress",
       "v29Workflows": [
         "Server list with protocol/country/speed/source filters",
         "Connect fastest",

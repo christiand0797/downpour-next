@@ -1,5 +1,15 @@
 # Downpour Next TODO
 
+## 2026-10-07 checkpoint: DN-009 VPN Route Slice (antigravity-worker)
+
+Completed and verified (Debug: 0 warnings/errors; 529/529 tests pass):
+- DN-009 VPN route slice: implemented `VpnPostureInspector` porting v29 `downpour_vpn_module.py` and `_build_vpn_tab`.
+- Contracts in `src/Downpour.Contracts/VpnPosture.cs`: `VpnInterfaceInfo`, `DnsLeakAssessment`, `VpnProfileSummary`, `ConnectivityTestResult`, and `VpnPostureSnapshot`.
+- Core engine in `src/Downpour.Core/VpnPostureInspector.cs`: native network and tunnel adapter enumeration via `NetworkInterface.GetAllNetworkInterfaces()`, known provider identification (`Mullvad`, `ProtonVPN`, `NordVPN`, `WireGuard`, `Tailscale`, `OpenVPN`, etc.), DNS split-tunnel leak assessment, non-ICMP TCP port 443 egress connectivity probing (`1.1.1.1:443`, `8.8.8.8:443`, `www.microsoft.com:443`), safe OpenVPN `.ovpn` configuration file parser, and markdown report generator.
+- Desktop route `vpn` in `VpnPage.xaml/.cs`: connection status and DNS leak badges, overview metric cards, network interfaces list with IP/DNS/gateway/provider tags, DNS leak details with findings, TCP connectivity probes with latency, imported VPN profiles, guarded kill-switch button (DN-008), and report export to Desktop.
+- Wired `vpn` route in `MainWindow.xaml.cs` and promoted to `in-progress` in `capabilities.json`, `parity-checklist.json`, and `source-modules.json` (`downpour_vpn_module.py`).
+- 10 unit tests in `VpnPostureInspectorTests.cs` (OpenVPN profile parsing, standalone port parsing, empty content handling, local posture evaluation, markdown report generation, and provider keyword detection).
+
 ## 2026-10-07 checkpoint: DN-009 Memory Route Slice (antigravity-worker)
 
 Completed and verified (Debug: 0 warnings/errors; 489/489 tests pass):

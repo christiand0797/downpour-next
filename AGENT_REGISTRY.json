@@ -102,9 +102,9 @@
       "id": "antigravity-worker",
       "role": "primary",
       "taskId": "DN-009",
-      "status": "in_progress",
-      "heartbeatUtc": "2026-10-07T11:00:00Z",
-      "notes": "Claimed DN-009 VPN route slice: implementing read-only VpnPostureInspector and VpnPage (active VPN interface detection, DNS leak review, known provider posture, TCP connectivity testing, OpenVPN profile parser, and guarded kill-switch notice under DN-008)."
+      "status": "idle",
+      "heartbeatUtc": "2026-10-07T11:20:00Z",
+      "notes": "VPN route slice completed: implemented read-only VpnPostureInspector (active network and tunnel adapter enumeration, provider identification, DNS split-tunnel leak assessment, non-ICMP TCP port 443 egress connectivity probing, and OpenVPN .ovpn profile parsing), VpnPage UI (posture badges, overview metrics, adapter list, DNS leak details, connectivity testing, .ovpn import, guarded kill-switch dialog under DN-008, report export), and unit tests (529/529 tests pass). Ready for next route slice under DN-009."
     }
   ]
 }
