@@ -18,7 +18,7 @@ namespace Downpour_Desktop;
 /// also stated in text. Motion uses render transforms only, pauses when scrolled away or hidden, and stops entirely
 /// with Reduce motion.
 /// </summary>
-public sealed class BlossomScene : UserControl
+public sealed partial class BlossomScene : UserControl
 {
     private const double TreeSceneWidth = 1200;
     private const double TreeSceneHeight = 320;
@@ -97,7 +97,8 @@ public sealed class BlossomScene : UserControl
         DrawTree();
         _treeBox = new Viewbox { Stretch = Stretch.Uniform, Child = _treeScene, IsHitTestVisible = false };
         (_leftEye, _rightEye) = DrawCat();
-        _cat.RenderTransform = new ScaleTransform { ScaleX = CatScale, ScaleY = CatScale };
+        _cat.RenderTransform = new TransformGroup { Children = { _pose, new ScaleTransform { ScaleX = CatScale, ScaleY = CatScale } } };
+        InitPlay();
 
         _status = new TextBlock
         {
@@ -129,6 +130,7 @@ public sealed class BlossomScene : UserControl
 
         _overlay.Children.Add(_treeBox);
         _overlay.Children.Add(_cat);
+        _overlay.Children.Add(_fireflyLayer);
         _overlay.Children.Add(_petalLayer);
         _overlay.Children.Add(_labels);
         Content = _overlay;
@@ -197,6 +199,7 @@ public sealed class BlossomScene : UserControl
     private void UpdateStatus()
     {
         var mood = _threats > 0 ? $"on guard · {_threats} open threat{(_threats == 1 ? "" : "s")}"
+            : ActivityMood is { } playing ? playing
             : _load < 0.25 ? "calm" : _load < 0.55 ? "curious" : _load < 0.8 ? "restless" : "hunting the storm";
         _status.Text = $"LOAD {_load * 100:0}%  ·  KURO IS {mood.ToUpperInvariant()}";
     }
@@ -237,19 +240,24 @@ public sealed class BlossomScene : UserControl
             var y = perch.Y - 118 * CatScale;
             _controls.Clear();
             CollectControls(_content, 0);
-            var x = perch.X + perch.Width * 0.82 - 45 * CatScale;
+            _freeSpots.Clear();
             foreach (var fraction in new[] { 0.82, 0.7, 0.58, 0.46, 0.34, 0.22, 0.1 })
             {
                 var candidate = perch.X + perch.Width * fraction - 45 * CatScale;
-                var body = new Rect(candidate, y, 90 * CatScale, 118 * CatScale);
-                if (_controls.Any(control => Overlaps(control, body))) continue;
-                x = candidate;
-                break;
+                var body = new Rect(candidate - 6, y - 30, 102 * CatScale, 150 * CatScale); // room to hop and roll
+                if (!_controls.Any(control => Overlaps(control, body))) _freeSpots.Add(candidate);
             }
-            _catOrigin = new Point(x, y);
-            Canvas.SetLeft(_cat, x);
-            Canvas.SetTop(_cat, y);
-            _cat.Visibility = Visibility.Visible;
+            var x = _freeSpots.Count == 0 ? perch.X + perch.Width * 0.82 - 45 * CatScale
+                : _restX is { } rest ? _freeSpots.MinBy(spot => Math.Abs(spot - rest)) : _freeSpots[0];
+            if (_activity != CatActivity.Rolling) // never move him mid-roll
+            {
+                _restX = x;
+                _pose.TranslateX = 0;
+                _catOrigin = new Point(x, y);
+                Canvas.SetLeft(_cat, x);
+                Canvas.SetTop(_cat, y);
+                _cat.Visibility = Visibility.Visible;
+            }
         }
 
         // When cards move (resize, content change), petals resting on the old positions drift away.
@@ -447,7 +455,7 @@ public sealed class BlossomScene : UserControl
         // Head: wider than tall, with cheek ruff, rounded ears with pink inner ears and tufts.
         _headTilt.CenterX = 30;
         _headTilt.CenterY = 44;
-        var head = new Canvas { Width = 60, Height = 56, RenderTransform = new TransformGroup { Children = { _headTilt, _headShift } } };
+        var head = new Canvas { Width = 60, Height = 56, RenderTransform = new TransformGroup { Children = { _headTilt, _headShift, _headPose } } };
         Canvas.SetLeft(head, 15);
         Canvas.SetTop(head, 2);
         head.Children.Add(Ear(new Point(9, 26), new Point(13, 1), new Point(30, 17), _leftEar, 18, 20, rim));
@@ -677,6 +685,7 @@ public sealed class BlossomScene : UserControl
         var tailSpeed = 1.1 + _load * 4.5 + (_threats > 0 ? 2 : 0);
         _tailRotation.Angle = Math.Sin(_time * tailSpeed) * (22 + _load * 12) + Math.Sin(_time * tailSpeed * 2.3) * 4;
         SweepPetals();
+        AnimatePlay(dt);
 
         // Tail tip curls with the swish and gives an extra flick now and then (more often when restless).
         if (_time >= _nextFlick)
@@ -735,7 +744,7 @@ public sealed class BlossomScene : UserControl
             _nextSlowBlink = _time + 25 + _random.NextDouble() * 20;
         }
         var openness = _time < _slowBlinkUntil ? 0.15 + 0.85 * Math.Abs(Math.Cos((_slowBlinkUntil - _time) / 1.4 * Math.PI)) : _time < _blinkUntil ? 0.1 : 1;
-        _eyeScale.ScaleY = openness;
+        _eyeScale.ScaleY = Math.Min(openness, _eyeCap);
     }
 
     /// <summary>The top edge of the first card a petal crosses this frame, if any.</summary>
