@@ -191,7 +191,7 @@ public sealed class BlossomScene : UserControl
     {
         _threats = Math.Max(0, openThreats);
         UpdateStatus();
-        if (!_animate) SetEyes(_threats > 0);
+        if (!_animate) SetEyes(true);
     }
 
     private void UpdateStatus()
@@ -232,9 +232,20 @@ public sealed class BlossomScene : UserControl
 
         if (Bounds(_catPerch) is { } perch && perch.Width > 0)
         {
-            // Kuro sits near the right end of his card, paws on its top edge, tail hanging over the front.
-            var x = perch.X + perch.Width * 0.82 - 45 * CatScale;
+            // Kuro sits on the top edge of his card, tail hanging over the front, at the rightmost spot where his body
+            // does not cover a button or other control (header buttons often end just above the card).
             var y = perch.Y - 118 * CatScale;
+            _controls.Clear();
+            CollectControls(_content, 0);
+            var x = perch.X + perch.Width * 0.82 - 45 * CatScale;
+            foreach (var fraction in new[] { 0.82, 0.7, 0.58, 0.46, 0.34, 0.22, 0.1 })
+            {
+                var candidate = perch.X + perch.Width * fraction - 45 * CatScale;
+                var body = new Rect(candidate, y, 90 * CatScale, 118 * CatScale);
+                if (_controls.Any(control => Overlaps(control, body))) continue;
+                x = candidate;
+                break;
+            }
             _catOrigin = new Point(x, y);
             Canvas.SetLeft(_cat, x);
             Canvas.SetTop(_cat, y);
@@ -267,6 +278,29 @@ public sealed class BlossomScene : UserControl
             if (child is UIElement { Visibility: Visibility.Visible }) CollectSurfaces(child, depth + 1);
         }
     }
+
+    private readonly List<Rect> _controls = [];
+
+    /// <summary>Visible interactive controls in the page, so Kuro never sits in front of something you click.</summary>
+    private void CollectControls(DependencyObject parent, int depth)
+    {
+        if (depth > 12 || _controls.Count >= 200) return;
+        var count = VisualTreeHelper.GetChildrenCount(parent);
+        for (var i = 0; i < count; i++)
+        {
+            var child = VisualTreeHelper.GetChild(parent, i);
+            if (child is UIElement { Visibility: not Visibility.Visible }) continue;
+            if (child is Microsoft.UI.Xaml.Controls.Primitives.ButtonBase or ComboBox or ToggleSwitch or TextBox or Slider or HyperlinkButton
+                && child is FrameworkElement control && Bounds(control) is { } rect)
+            {
+                _controls.Add(rect);
+                continue;
+            }
+            CollectControls(child, depth + 1);
+        }
+    }
+
+    private static bool Overlaps(Rect a, Rect b) => a.X < b.X + b.Width && b.X < a.X + a.Width && a.Y < b.Y + b.Height && b.Y < a.Y + a.Height;
 
     private Rect? Bounds(FrameworkElement element)
     {
@@ -680,13 +714,13 @@ public sealed class BlossomScene : UserControl
         }
         _headTilt.Angle += ((_time < _tiltUntil ? _tiltTarget : 0) - _headTilt.Angle) * Math.Min(1, dt * 4);
 
-        // Glances back at you now and then; stays watching while threats are open.
+        // Faces you (owner request); now and then looks away at the blossoms for a moment, never while threats are open.
         if (_time >= _nextGlance)
         {
-            _glanceUntil = _time + 2.6;
-            _nextGlance = _time + 14 + _random.NextDouble() * 18;
+            _glanceUntil = _time + 2.2;
+            _nextGlance = _time + 16 + _random.NextDouble() * 20;
         }
-        var glancing = _time < _glanceUntil || _threats > 0;
+        var glancing = _time >= _glanceUntil || _threats > 0;
         _headShift.X += ((glancing ? -5 : 0) - _headShift.X) * Math.Min(1, dt * 6);
         SetEyes(glancing);
         // Quick blinks, and when calm a slow blink (a cat's sign of trust).

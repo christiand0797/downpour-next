@@ -161,7 +161,20 @@ public sealed partial class HomePage : Page
     /// <summary>Threat Pulse bars: created once, then only resized and recoloured, so the 1 s refresh costs no layout churn.</summary>
     private void RenderPulse()
     {
-        if (_pulse is not { } pulse || PulseChart.ActualWidth < 40) return;
+        if (_pulse is not { } pulse) return;
+        // Words first: they must update even before the chart has been laid out.
+        var tone = pulse.State switch
+        {
+            ThreatPulseStates.Spike => "HudMagentaBrush",
+            ThreatPulseStates.Elevated => "HudAmberBrush",
+            ThreatPulseStates.Learning => "HudTextDimBrush",
+            _ => "HudGreenBrush",
+        };
+        var current = (Brush)Microsoft.UI.Xaml.Application.Current.Resources[tone];
+        PulseHeadline.Text = pulse.Headline;
+        PulseDetail.Text = pulse.Detail;
+        PulseDot.Fill = current;
+        if (PulseChart.ActualWidth < 40) return;
         if (_pulseBars.Count == 0)
         {
             for (var i = 0; i < 24; i++)
@@ -187,14 +200,6 @@ public sealed partial class HomePage : Page
         var scale = Math.Max(1, Math.Max(pulse.Last24Hours.Max(h => h.Count), pulse.Threshold));
         var slot = width / 24;
         var barWidth = Math.Max(2, slot - 3);
-        var tone = pulse.State switch
-        {
-            ThreatPulseStates.Spike => "HudMagentaBrush",
-            ThreatPulseStates.Elevated => "HudAmberBrush",
-            ThreatPulseStates.Learning => "HudTextDimBrush",
-            _ => "HudGreenBrush",
-        };
-        var current = (Brush)Microsoft.UI.Xaml.Application.Current.Resources[tone];
         var normal = (Brush)Microsoft.UI.Xaml.Application.Current.Resources["HudCyanBrush"];
         for (var i = 0; i < 24; i++)
         {
@@ -221,9 +226,6 @@ public sealed partial class HomePage : Page
             _pulseThreshold.Y1 = _pulseThreshold.Y2 = y;
             _pulseThreshold.Visibility = pulse.State == ThreatPulseStates.Learning ? Microsoft.UI.Xaml.Visibility.Collapsed : Microsoft.UI.Xaml.Visibility.Visible;
         }
-        PulseHeadline.Text = pulse.Headline;
-        PulseDetail.Text = pulse.Detail;
-        PulseDot.Fill = current;
     }
 
     private async Task RefreshSecurityAsync()
