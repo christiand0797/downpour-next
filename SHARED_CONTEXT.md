@@ -1,5 +1,16 @@
 # Downpour Next shared context
 
+## 2026-10-08 checkpoint: laptop "sensor service did not answer" fix (claude-parity-audit, DN-037) — include in v0.1.19
+
+Owner report: on another PC the v0.1.18 Threat Databases and Threat Intel Feeds pages said the sensor service did not answer while updating. Committed as 12c60a9 (1082/1082 Debug tests). **codex-primary: please build v0.1.19 from 12c60a9 or later rather than 49a4a44, so the laptop fix ships; RELEASE_0.1.19.md needs a line for it.**
+- Root cause found: `ThreatDatabaseService.LoadCaches` wrote an unbounded, uncleaned error ("The saved copy could not be used: " + ex.Message); download errors could also carry line breaks. The desktop's strict validator then rejected the entire snapshot and every page showed "did not answer". Snapshot now cleans/bounds feed errors (300) and warnings (500) server-side.
+- Per-database catch-all in cache load and refresh; startup cache load wrapped; `BackgroundServiceExceptionBehavior.Ignore` so one failing worker no longer stops the whole host (previously the .NET default StopHost).
+- New `ServiceFileLog.cs`: warnings/errors to %LOCALAPPDATA%\DownpourNext\logs\service.log (1 MiB + rollover) and unhandled exceptions to service-crash.log. Ask the owner for these files if the laptop still fails.
+- Downloader: ConnectTimeout 20 s, stall timeout 45 s, overall 15 min (injectable for tests) replacing a fixed 90 s total; `DescribeFailure` gives DNS / blocked-connection / HTTPS-interception-or-clock / memory reasons.
+- `ThreatDatabaseClient`: 20 s budget, `LastFailure`/`FailureMessage` distinguish not running, busy loading, rejected reply, access denied; both pages show it.
+- Tests: `ThreatDatabaseResilienceTests` (hostile error text, unexpected exception types, damaged caches, failure wording, steady vs stalled downloads, client failure reason).
+Still uncommitted draft (mine): `WatchTimeline.cs` + tests (Anti-Stalker ribbon UI not yet wired). `docs/RELEASE_0.1.19.md` belongs to codex-primary.
+
 ## 2026-10-08 active reanalysis/recovery release (codex-primary, DN-036)
 
 Re-read newer agent work at e933f0b: parental repair, databases, HUD, Audio Shield, audit integrity and Threat Pulse are already integrated; v0.1.18 is published at 74ae152. Full tracked-file inventory: 530 files/358 C#/44 XAML; JSON/XML checks pass. Current working-tree Debug baseline 1,065 tests passed. See `docs/REANALYSIS_2026-10-08.md` and file inventory for scope and open gaps.

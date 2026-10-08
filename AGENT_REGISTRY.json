@@ -56,7 +56,7 @@
       "taskId": "DN-010",
       "status": "idle",
       "heartbeatUtc": "2026-10-05T23:30:00Z",
-      "notes": "DN-010 progress: verified update flow code and tests (ReleaseUpdateClientTests 10/10, UpdatePathPolicyTests 2/2). Update button click-through path: HomePage.xaml.cs UpdateButton_Click \u2192 PortableUpdateInstaller.CheckAndStageAsync \u2192 ReleaseUpdateClient.CheckAsync/DownloadVerifiedPackageAsync \u2192 UpdateArchive.ExtractToStage \u2192 helper copied to %LOCALAPPDATA%\\DownpourNext\\update-helper \u2192 launch UpdateHelper with installRoot/parentPID/version \u2192 helper waits for parent & bundled service, validates manifest/hashes, backs up files, applies atomically, restarts app. Build clean (0 warnings/errors, 144 tests). Self-contained publish requires Windows App Runtime framework. MSIX packaging enabled (EnableMsixTooling=true). Next: code signing research (Authenticode cert for EXE, MSIX package signing), test on clean Windows install, locked-file failure injection."
+      "notes": "DN-010 progress: verified update flow code and tests (ReleaseUpdateClientTests 10/10, UpdatePathPolicyTests 2/2). Update button click-through path: HomePage.xaml.cs UpdateButton_Click → PortableUpdateInstaller.CheckAndStageAsync → ReleaseUpdateClient.CheckAsync/DownloadVerifiedPackageAsync → UpdateArchive.ExtractToStage → helper copied to %LOCALAPPDATA%\\DownpourNext\\update-helper → launch UpdateHelper with installRoot/parentPID/version → helper waits for parent & bundled service, validates manifest/hashes, backs up files, applies atomically, restarts app. Build clean (0 warnings/errors, 144 tests). Self-contained publish requires Windows App Runtime framework. MSIX packaging enabled (EnableMsixTooling=true). Next: code signing research (Authenticode cert for EXE, MSIX package signing), test on clean Windows install, locked-file failure injection."
     },
     {
       "id": "opencode-scanner-agent",
@@ -101,10 +101,10 @@
     {
       "id": "claude-parity-audit",
       "role": "agent",
-      "taskId": "DN-031/DN-032/DN-033",
+      "taskId": "DN-037/DN-035",
       "status": "active",
-      "heartbeatUtc": "2026-10-08T00:20:00Z",
-      "notes": "Threat databases + HUD theme + Drivers/KEV/feeds fixes committed; next DN-033 live refresh and v0.1.18 release."
+      "heartbeatUtc": "2026-10-08T06:30:00Z",
+      "notes": "Committed laptop threat-DB/intel fix 12c60a9 (ship in v0.1.19). Active drafts: WatchTimeline.cs + tests and the Anti-Stalker ribbon UI. Not touching host isolation, RELEASE_0.1.19.md or codex-primary release files."
     }
   ]
 }
