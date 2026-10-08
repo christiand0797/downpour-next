@@ -35,6 +35,9 @@ public sealed partial class WifiPage : Page
     public WifiPage()
     {
         InitializeComponent();
+        EntityDetails.Attach(FindingList, item => item is WirelessFindingRow f ? DetailDescriptions.Finding("Wireless", f.Severity, f.Technique, f.Summary, f.Indicator) : null);
+        EntityDetails.Attach(NetworkList, item => item is WifiNetworkRow n ? DetailDescriptions.WifiNetwork(n.Network) : null);
+        EntityDetails.Attach(BluetoothList, item => item is BluetoothDeviceRow b ? DetailDescriptions.Bluetooth(b.Device) : null);
         Charts.Row(ChartRow, _signalChart, _securityChart, _channelChart);
         LiveRefresh.Attach(this, () => RefreshAsync(quiet: true));
     }
@@ -153,6 +156,7 @@ public sealed class WirelessFindingRow(WirelessFinding finding)
 
 public sealed class WifiNetworkRow(WifiNetworkEntry net)
 {
+    public WifiNetworkEntry Network => net;
     public string SsidDisplay => string.IsNullOrWhiteSpace(net.Ssid) ? "(Hidden Network)" : net.Ssid;
     public string Details => $"BSSID: {net.Bssid} · Ch {net.Channel} · {net.Cipher} · {net.NetworkType}";
     public string Authentication => net.Authentication;
@@ -190,6 +194,7 @@ public sealed class WifiNetworkRow(WifiNetworkEntry net)
 
 public sealed class BluetoothDeviceRow(BluetoothDeviceEntry dev)
 {
+    public BluetoothDeviceEntry Device => dev;
     public string Name => dev.Name;
     public string Address => dev.Address;
     public Visibility SuspiciousVisibility => dev.IsSuspicious ? Visibility.Visible : Visibility.Collapsed;

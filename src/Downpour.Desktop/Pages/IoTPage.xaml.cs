@@ -19,6 +19,7 @@ public sealed partial class IoTPage : Page
     public IoTPage()
     {
         InitializeComponent();
+        EntityDetails.Attach(DevicesList, item => item is DeviceRow d ? DetailDescriptions.IoT(d.Device) : null, clickOpensDetails: false);
         DevicesList.ItemsSource = _deviceRows;
         DevicesList.SelectionChanged += DevicesList_SelectionChanged;
     }

@@ -25,6 +25,11 @@ public sealed partial class MemoryPage : Page
     public MemoryPage()
     {
         InitializeComponent();
+        EntityDetails.Attach(ProcessesList, item => item is ProcessMemoryRow p ? new DetailEntity(p.ProcessName, $"Process {p.ProcessId} · {p.Severity} · score {p.ScoreDisplay}",
+        [
+            new("Process ID", p.ProcessId.ToString()), new("Program", p.ExecutablePath), new("Severity", p.Severity), new("Score", p.ScoreDisplay),
+            new("Memory", p.MemoryDisplay), new("MITRE techniques", p.TechniqueDisplay), new("Findings", string.Join("; ", p.Findings)),
+        ], FilePath: p.ExecutablePath, ProcessId: p.ProcessId, Kind: "process") : null, clickOpensDetails: false);
         ProcessesList.SelectionChanged += ProcessesList_SelectionChanged;
     }
 

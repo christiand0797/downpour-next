@@ -19,6 +19,7 @@ public sealed class ThreatMatchRow
     public required string When { get; init; }
     public required Brush SeverityBrush { get; init; }
     public required Brush SeverityTint { get; init; }
+    public ThreatMatch? Match { get; init; }
 }
 
 public sealed class ConnectionRow
@@ -29,6 +30,7 @@ public sealed class ConnectionRow
     public required string Country { get; init; }
     public required string Network { get; init; }
     public required Brush MarkerBrush { get; init; }
+    public RemoteConnectionOrigin? Origin { get; init; }
 }
 
 public sealed class FeedRow
@@ -55,6 +57,8 @@ public sealed partial class ThreatDatabasesPage : Page
     public ThreatDatabasesPage()
     {
         InitializeComponent();
+        EntityDetails.Attach(MatchList, item => item is ThreatMatchRow { Match: { } m } ? DetailDescriptions.ThreatMatch(m) : null);
+        EntityDetails.Attach(ConnectionList, item => item is ConnectionRow { Origin: { } c } ? DetailDescriptions.Connection(c) : null);
         CoverageGaugeHost.Content = _coverage;
         Loaded += OnLoaded;
         Unloaded += OnUnloaded;
@@ -129,6 +133,7 @@ public sealed partial class ThreatDatabasesPage : Page
             When = m.SeenAtUtc.ToLocalTime().ToString("MMM d HH:mm"),
             SeverityBrush = SeverityBrush(m.Severity),
             SeverityTint = SeverityTint(m.Severity),
+            Match = m,
         }).ToArray());
 
         ConnectionsEmpty.Visibility = s.Connections.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
@@ -140,6 +145,7 @@ public sealed partial class ThreatDatabasesPage : Page
             Country = c.CountryCode is { } code ? $"{IpOriginDatabase.CountryName(code)} ({code})" : "Origin unknown",
             Network = c.Asn is { } asn ? $"AS{asn} · {c.Network}" : c.Network ?? "",
             MarkerBrush = c.Listed ? Brush("HudRedBrush") : Brush("HudCyanBrush"),
+            Origin = c,
         }).ToArray());
 
         LiveList.Set(FeedRepeater, s.Feeds.Select(f => new FeedRow

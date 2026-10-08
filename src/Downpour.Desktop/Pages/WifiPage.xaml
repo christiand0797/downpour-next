@@ -32,7 +32,7 @@
 
             <!-- Findings section -->
             <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" FontSize="16" Text="Security Findings" Margin="0,8,0,0" />
-            <ListView ItemsSource="{x:Bind Findings}" SelectionMode="None" IsItemClickEnabled="False" Background="{StaticResource DownpourSurfaceBrush}">
+            <ListView x:Name="FindingList" ItemsSource="{x:Bind Findings}" SelectionMode="None" IsItemClickEnabled="False" Background="{StaticResource DownpourSurfaceBrush}">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <Grid Padding="12,10" ColumnSpacing="14">
@@ -55,7 +55,7 @@
 
             <!-- Visible Networks section -->
             <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" FontSize="16" Text="Visible Wi-Fi Networks" Margin="0,8,0,0" />
-            <ListView ItemsSource="{x:Bind Networks}" SelectionMode="None" IsItemClickEnabled="False" Background="{StaticResource DownpourSurfaceBrush}">
+            <ListView x:Name="NetworkList" ItemsSource="{x:Bind Networks}" SelectionMode="None" IsItemClickEnabled="False" Background="{StaticResource DownpourSurfaceBrush}">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <Grid Padding="12,10" ColumnSpacing="14">
@@ -85,7 +85,7 @@
 
             <!-- Paired Bluetooth Devices section -->
             <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" FontSize="16" Text="Paired Bluetooth Devices" Margin="0,8,0,0" />
-            <ListView ItemsSource="{x:Bind BluetoothDevices}" SelectionMode="None" IsItemClickEnabled="False" Background="{StaticResource DownpourSurfaceBrush}">
+            <ListView x:Name="BluetoothList" ItemsSource="{x:Bind BluetoothDevices}" SelectionMode="None" IsItemClickEnabled="False" Background="{StaticResource DownpourSurfaceBrush}">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <Grid Padding="12,8" ColumnSpacing="12">

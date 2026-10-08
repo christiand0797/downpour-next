@@ -33,6 +33,7 @@ public sealed partial class TriagePage : Page
     public TriagePage()
     {
         InitializeComponent();
+        EntityDetails.Attach(TriageList, item => item is TriageRow t ? DetailDescriptions.Alert(t.Alert) : null);
         LiveRefresh.Attach(this, () => RefreshAsync(quiet: true));
     }
 
@@ -221,6 +222,7 @@ public sealed partial class TriagePage
 
 public sealed class TriageRow(SecurityAlert alert)
 {
+    public SecurityAlert Alert => alert;
     public string AlertId => alert.AlertId;
     public string Severity => alert.Severity;
     public string Title => alert.Title;

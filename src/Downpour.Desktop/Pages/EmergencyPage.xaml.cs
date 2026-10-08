@@ -21,6 +21,7 @@ public sealed partial class EmergencyPage : Page
     public EmergencyPage()
     {
         InitializeComponent();
+        EntityDetails.Attach(SuspiciousProcessList, item => item is EmergencyProcessRow p ? DetailDescriptions.EmergencyProcess(p.Process) : null, clickOpensDetails: false);
         SuspiciousProcessList.ItemsSource = _processRows;
     }
 

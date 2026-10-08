@@ -26,6 +26,7 @@ public sealed partial class ThreatIntelligencePage : Page
     public ThreatIntelligencePage()
     {
         InitializeComponent();
+        EntityDetails.Attach(EntryList, item => item is FeedEntryRow r ? DetailDescriptions.FeedEntry(r.Value, r.Type, r.Label) : null);
         _debounce.Tick += async (_, _) => { _debounce.Stop(); await BrowseAsync(); };
         _statusTimer.Tick += async (_, _) => await LoadFeedsAsync();
         Loaded += async (_, _) =>

@@ -38,7 +38,7 @@
             <CheckBox Grid.Column="2" x:Name="ShowDismissed" Content="Show dismissed" Checked="Filter_Changed" Unchecked="Filter_Changed" />
         </Grid>
 
-        <ListView Grid.Row="3" ItemsSource="{x:Bind Items}" SelectionMode="None" Background="{StaticResource DownpourSurfaceBrush}">
+        <ListView x:Name="TriageList" Grid.Row="3" ItemsSource="{x:Bind Items}" SelectionMode="None" Background="{StaticResource DownpourSurfaceBrush}">
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <Grid Padding="12,9" ColumnSpacing="12">

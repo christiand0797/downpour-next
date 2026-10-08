@@ -27,6 +27,9 @@ public sealed partial class UsbPage : Page
     public UsbPage()
     {
         InitializeComponent();
+        EntityDetails.Attach(FindingList, item => item is UsbFindingRow f ? DetailDescriptions.Finding("USB", f.Severity, f.Technique, f.Summary, f.Indicator) : null);
+        EntityDetails.Attach(DriveList, item => item is UsbDeviceRow d ? DetailDescriptions.UsbDrive(d.Device) : null);
+        EntityDetails.Attach(HistoryList, item => item is UsbHistoryRow h ? DetailDescriptions.UsbHistory(h.Entry) : null);
         Charts.Row(ChartRow, _spaceChart, _findingChart, _vendorChart);
         LiveRefresh.Attach(this, () => RefreshAsync(quiet: true));
     }
@@ -278,6 +281,7 @@ public sealed partial class UsbPage : Page
 
 public sealed class UsbFindingRow(UsbFinding finding)
 {
+    public UsbFinding Finding => finding;
     public string Severity => finding.Severity;
     public string Technique => finding.Technique;
     public string Summary => finding.Summary;
@@ -302,6 +306,7 @@ public sealed class UsbFindingRow(UsbFinding finding)
 
 public sealed class UsbDeviceRow(UsbConnectedDevice dev)
 {
+    public UsbConnectedDevice Device => dev;
     public string DriveLetter => dev.DriveLetter;
     public string? PnpDeviceId => dev.PnpDeviceId;
     public Microsoft.UI.Xaml.Visibility BlockVisibility => dev.PnpDeviceId is null ? Microsoft.UI.Xaml.Visibility.Collapsed : Microsoft.UI.Xaml.Visibility.Visible;
@@ -329,6 +334,7 @@ public sealed class UsbDeviceRow(UsbConnectedDevice dev)
 
 public sealed class UsbHistoryRow(UsbDeviceHistoryEntry entry)
 {
+    public UsbDeviceHistoryEntry Entry => entry;
     public string DeviceId => entry.DeviceId;
     public string FriendlyName => DisplayName(entry.FriendlyName, entry.DeviceId);
 

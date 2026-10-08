@@ -37,13 +37,17 @@ public sealed record DetailEntity(
 public static class EntityDetails
 {
     /// <summary>Wires a list: item click opens details, right-click opens the action menu.</summary>
-    public static void Attach(ListViewBase list, Func<object, DetailEntity?> describe)
+    /// <param name="clickOpensDetails">False for lists whose selection already fills a details pane; they get the menu only.</param>
+    public static void Attach(ListViewBase list, Func<object, DetailEntity?> describe, bool clickOpensDetails = true)
     {
-        list.IsItemClickEnabled = true;
-        list.ItemClick += async (_, e) =>
+        if (clickOpensDetails)
         {
-            if (e.ClickedItem is { } item && describe(item) is { } entity && list.XamlRoot is { } root) await ShowAsync(root, entity);
-        };
+            list.IsItemClickEnabled = true;
+            list.ItemClick += async (_, e) =>
+            {
+                if (e.ClickedItem is { } item && describe(item) is { } entity && list.XamlRoot is { } root) await ShowAsync(root, entity);
+            };
+        }
         list.RightTapped += (_, e) =>
         {
             if ((e.OriginalSource as FrameworkElement)?.DataContext is not { } item || describe(item) is not { } entity) return;

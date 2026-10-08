@@ -35,7 +35,7 @@
 
             <!-- Findings section -->
             <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" FontSize="16" Text="Security Findings" Margin="0,8,0,0" />
-            <ListView ItemsSource="{x:Bind Findings}" SelectionMode="None" IsItemClickEnabled="False" Background="{StaticResource DownpourSurfaceBrush}">
+            <ListView x:Name="FindingList" ItemsSource="{x:Bind Findings}" SelectionMode="None" IsItemClickEnabled="False" Background="{StaticResource DownpourSurfaceBrush}">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <Grid Padding="12,10" ColumnSpacing="14">
@@ -58,7 +58,7 @@
 
             <!-- Connected devices section -->
             <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" FontSize="16" Text="Connected Removable Drives" Margin="0,8,0,0" />
-            <ListView ItemsSource="{x:Bind ConnectedDevices}" SelectionMode="None" IsItemClickEnabled="False" Background="{StaticResource DownpourSurfaceBrush}">
+            <ListView x:Name="DriveList" ItemsSource="{x:Bind ConnectedDevices}" SelectionMode="None" IsItemClickEnabled="False" Background="{StaticResource DownpourSurfaceBrush}">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <Grid Padding="12,10" ColumnSpacing="14">
@@ -90,7 +90,7 @@
 
             <!-- Device history section -->
             <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" FontSize="16" Text="USB Device History (Registry)" Margin="0,8,0,0" />
-            <ListView ItemsSource="{x:Bind History}" SelectionMode="None" IsItemClickEnabled="False" MaxHeight="320" Background="{StaticResource DownpourSurfaceBrush}">
+            <ListView x:Name="HistoryList" ItemsSource="{x:Bind History}" SelectionMode="None" IsItemClickEnabled="False" MaxHeight="320" Background="{StaticResource DownpourSurfaceBrush}">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <Grid Padding="12,8" ColumnSpacing="12">

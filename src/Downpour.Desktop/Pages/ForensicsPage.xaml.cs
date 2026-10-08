@@ -20,6 +20,7 @@ public sealed partial class ForensicsPage : Page
     public ForensicsPage()
     {
         InitializeComponent();
+        EntityDetails.Attach(EvidenceList, item => item is ForensicArtifactRow r ? Forensic(r) : null);
     }
 
     protected override async void OnNavigatedTo(NavigationEventArgs e)
@@ -197,6 +198,19 @@ public sealed partial class ForensicsPage : Page
 
             row.Visibility = (matchQuery && matchCat && matchSev) ? Visibility.Visible : Visibility.Collapsed;
         }
+    }
+}
+
+public sealed partial class ForensicsPage
+{
+    private static DetailEntity Forensic(ForensicArtifactRow r)
+    {
+        var (file, address, domain) = DetailDescriptions.Guess(r.Artifact.RawEvidenceReference);
+        return new DetailEntity(r.Title, $"{r.Category} · {r.Severity}",
+        [
+            new("Severity", r.Severity), new("Category", r.Category), new("Detail", r.Detail), new("MITRE technique", r.Artifact.Technique),
+            new("Evidence reference", r.Artifact.RawEvidenceReference ?? ""), new("Time", r.TimestampDisplay),
+        ], FilePath: file, Address: address, Domain: domain, Kind: "evidence");
     }
 }
 

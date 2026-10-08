@@ -28,6 +28,9 @@ public sealed partial class AlertsPage : Page
     public AlertsPage()
     {
         InitializeComponent();
+        EntityDetails.Attach(AlertList, item => item is SecurityAlertRow { Source: { } a } ? DetailDescriptions.Alert(a) : null);
+        EntityDetails.Attach(CorrelationList, item => item is CorrelationFindingRow c ? new DetailEntity(c.Title, $"Correlated incident · {c.Severity}",
+            [new("Severity", c.Severity), new("Summary", c.Summary), new("Correlation ID", c.CorrelationId)], Kind: "incident") : null);
         _refreshTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
         _refreshTimer.Interval = TimeSpan.FromSeconds(1);
         _refreshTimer.IsRepeating = true;
@@ -230,7 +233,7 @@ public sealed partial class AlertsPage : Page
                 : $"{alert.LogName} · {alert.Provider} · event {alert.EventId} / record {alert.RecordId?.ToString() ?? "unavailable"} · {alert.Technique}",
             alert.Severity, new SolidColorBrush(severityColor), alert.State, new SolidColorBrush(stateColor),
             alert.Occurrences == 1 ? "1 occurrence" : $"{alert.Occurrences:N0} occurrences",
-            alert.State == "Open", alert.State == "Open", alert.State != "Open");
+            alert.State == "Open", alert.State == "Open", alert.State != "Open") { Source = alert };
     }
 
     private void CorrelationList_ViewTimeline_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -285,4 +288,5 @@ public sealed class SecurityAlertRow(
     public bool CanAcknowledge { get; } = canAcknowledge;
     public bool CanSuppress { get; } = canSuppress;
     public bool CanReopen { get; } = canReopen;
+    public SecurityAlert? Source { get; set; }
 }

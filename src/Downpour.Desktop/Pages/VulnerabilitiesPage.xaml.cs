@@ -26,7 +26,12 @@ public sealed partial class VulnerabilitiesPage : Page
     public ObservableCollection<InstalledSoftwareRow> VisibleSoftware { get; } = [];
     public ObservableCollection<KevCandidateRow> VisibleCandidates { get; } = [];
 
-    public VulnerabilitiesPage() => InitializeComponent();
+    public VulnerabilitiesPage()
+    {
+        InitializeComponent();
+        EntityDetails.Attach(SoftwareList, item => item is InstalledSoftwareRow s ? DetailDescriptions.Software(s.Name, s.Version, s.Publisher, s.Scope) : null);
+        EntityDetails.Attach(CandidateList, item => item is KevCandidateRow k ? DetailDescriptions.Kev(k.Candidate) : null);
+    }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {

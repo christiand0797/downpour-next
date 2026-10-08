@@ -39,7 +39,8 @@
 - [x] Devices & Drivers tab with missing-driver detection and Windows Update driver search.
 - [x] Drivers tab verifies each loaded driver's signature and gives a verdict (malicious, vulnerable, user-writable, unsigned, OK).
 - [x] Clickable details and right-click actions on the first nine list tabs.
-- [ ] Clickable details on the remaining tabs (Alerts, Triage, Threat Databases, Threat Intel, Memory, Vulnerabilities, USB, Wi-Fi, IoT, Emergency, Forensics, Timeline, Audio, Anti-Stalker).
+- [x] Clickable details on Alerts, Triage, Threat Databases, Threat Intel, Memory, Vulnerabilities, USB, Wi-Fi, IoT, Emergency, Forensics, Timeline.
+- [ ] Clickable cards on Audio Shield and Anti-Stalker (code-built cards).
 - [ ] Elevated driver broker (DN-012): one-click update/roll back/uninstall/reinstall with automatic driver backup, signature check, audit and rollback tests.
 - [x] Hash-chained, DPAPI-keyed action audit log with anchor, integrity monitor and CRITICAL finding on tampering.
 - [x] Parser fuzzing for feeds, KEV, IP origin, pipe replies and helpers (found and fixed a KEV exception leak).

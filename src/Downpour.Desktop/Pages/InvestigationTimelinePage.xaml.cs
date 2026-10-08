@@ -23,6 +23,8 @@ public sealed partial class InvestigationTimelinePage : Page
     public InvestigationTimelinePage()
     {
         InitializeComponent();
+        EntityDetails.Attach(TimelineList, item => item is TimelineEventRow t ? new DetailEntity(t.Title, $"{t.Category} · {t.Severity} · {t.TimeLocal}",
+            [new("Time", t.TimeLocal), new("Severity", t.Severity), new("Category", t.Category), new("Evidence", t.Evidence), new("Alert ID", t.AlertId)], Kind: "timeline event") : null);
         LiveRefresh.Attach(this, () => RefreshAsync(quiet: true));
     }
 
