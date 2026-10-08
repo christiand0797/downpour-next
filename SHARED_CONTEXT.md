@@ -1,5 +1,17 @@
 # Downpour Next shared context
 
+## 2026-10-08 checkpoint: service-install grading, alert evidence, audio in case file (claude-parity-audit, DN-034/DN-035)
+
+Done (1036/1036 tests; verified against this PC's real 7045 events through the alert pipe):
+- `SecurityEventObservation` gains optional `Detail` and `FilePath` (contract stays strict: rule summary always; only System 7045 / Security 4697 may carry a detail and a reassessed severity; detail <= 300 chars; file path fully qualified, local).
+- `SecurityEventProvider(FileSignatureChecker?)` reads the service name and ImagePath (7045 properties 0/1, 4697 properties 4/5), drops arguments (`ServiceInstallAnalyzer.NormalizeImagePath` handles `\??\`, `\SystemRoot\`, relative System32, quoted and unquoted .exe/.sys paths), resolves and signature-checks the file.
+- `ServiceInstallAnalyzer.Assess`: shell/script-host services (`%COMSPEC% /c`, cmd /c, PowerShell, mshta, rundll32...) CRITICAL; Microsoft-signed LOW; other signed in protected folders MEDIUM; signed in user folders or unsigned HIGH; file gone or unchecked keeps the rule severity with an explanation.
+- Alerts: title becomes "Windows service installed: name · verdict · path" (160 cap), the executable is stored as the alert's file indicator (Threats can offer quarantine), and re-reads re-grade older 7045/4697 rows. Live result: Claude, ChatGPT/Codex, NVIDIA container and FrameView installs went HIGH -> MEDIUM with signer named; an updated-away Claude build stays HIGH with "file no longer exists".
+- Case file prints each alert's evidence (YARA file path, service executable) and has an Audio Shield section plus `audio` in the JSON appendix.
+- `UnquotedExecutable` now ends at .exe/.com/.scr/.sys/.dll (driver paths with spaces).
+
+Next: HUD visuals kit, Threat Pulse, watch timeline ribbon, tripwire canaries (opt-in), more databases, hash-chained audit log, parser fuzzing, ARM64.
+
 ## 2026-10-08 checkpoint: v0.1.18 published (claude-parity-audit)
 
 [v0.1.18](https://github.com/christiand0797/downpour-next/releases/tag/v0.1.18) is published and marked Latest, built from `74ae1523180f0bd800f22106337e533241f127ed`.

@@ -1,5 +1,10 @@
 # Downpour Next changelog
 
+## Unreleased
+
+- Service-install alerts now say which service was installed, which program it runs and who signed it, and are graded by that: Microsoft-signed components are low, signed apps (for example Claude, ChatGPT or NVIDIA services) medium, unsigned ones high, and services that run a command shell (how remote-control attack tools work) critical. The program file is attached as evidence.
+- The case file shows the evidence behind each alert (scanned file, service program) and includes an Audio Shield section.
+
 ## v0.1.18 — threat databases, HUD theme, live updates
 
 - **Threat Databases**: 19 public databases (LOLDrivers, LOLBAS, abuse.ch ThreatFox/Feodo/URLhaus/MalwareBazaar, Spamhaus DROP, Emerging Threats, FireHOL, IPsum, CINS, GreenSnow, blocklist.de, Tor exits, Phishing Army, OpenPhish, stalkerware indicators, IPtoASN) downloaded whole, validated, cached and matched on this PC against connections (with owning program), the DNS cache, loaded drivers and running programs. Offline lookups, connection origins (country and network) and a copyable evidence report.

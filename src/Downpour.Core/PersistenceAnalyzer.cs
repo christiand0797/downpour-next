@@ -227,7 +227,7 @@ public static partial class PersistenceAnalyzer
         _ => null,
     };
 
-    /// <summary>The executable at the start of a command line: a quoted path, an unquoted path ending in .exe, or the first token.</summary>
+    /// <summary>The executable at the start of a command line: a quoted path, an unquoted path ending in an image extension, or the first token.</summary>
     public static string? CommandTarget(string command)
     {
         var text = command.Trim();
@@ -275,6 +275,9 @@ public static partial class PersistenceAnalyzer
         return new(severity, "T1053.005", entry.Category, $"Scheduled task {verb}: {entry.Name}{reasons}", entry.Value);
     }
 
+    /// <summary>True when a command starts or uses a script host, shell or LOLBin (cmd /c, PowerShell, mshta, rundll32...).</summary>
+    public static bool IsScriptHostCommand(string command) => SuspiciousTaskAction().IsMatch(command);
+
     private static string LeafName(string taskPath)
     {
         var slash = taskPath.LastIndexOf('\\');
@@ -290,7 +293,7 @@ public static partial class PersistenceAnalyzer
     [GeneratedRegex(@"\\Users\\.*\\AppData|\\Temp\\|\\ProgramData\\|\\Public\\|\\Downloads\\|\\Desktop\\|%APPDATA%|%TEMP%|%USERPROFILE%", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex SuspiciousTaskPath();
 
-    [GeneratedRegex(@"^.+?\.exe(?=$|[\s,])", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    [GeneratedRegex(@"^.+?\.(exe|com|scr|sys|dll)(?=$|[\s,])", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex UnquotedExecutable();
 
     [GeneratedRegex(@"^WindowsUpdate\d{3,}$|^SystemCheck\d+$|^MicrosoftUpdate|^Updater[A-Z]|^GoogleUpdate[A-Z]{4,}|^[a-f0-9]{32}$|^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]

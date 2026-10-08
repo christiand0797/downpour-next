@@ -16,7 +16,8 @@ public sealed record CaseFileInputs(
     FirewallSnapshot? Firewall,
     SensorSettingsSnapshot? Settings,
     IReadOnlyList<string> RecentActions,
-    IReadOnlyList<string> Unavailable);
+    IReadOnlyList<string> Unavailable,
+    AudioSnapshot? Audio = null);
 
 /// <summary>
 /// Builds a self-contained review file (Markdown with a full JSON appendix) so a second opinion — a person, another
@@ -57,7 +58,8 @@ public static class CaseFileBuilder
         md.AppendLine();
         if (alerts.Length == 0) md.AppendLine("None.");
         foreach (var a in alerts)
-            md.AppendLine($"- **{a.Severity}** · {a.State}{(a.IsVerified ? " · user-verified" : "")} · {Clean(a.Title)} · source {Clean(a.LogName)} · MITRE {a.Technique} · seen {a.Occurrences}× between {a.FirstSeenUtc:u} and {a.LastSeenUtc:u}");
+            md.AppendLine($"- **{a.Severity}** · {a.State}{(a.IsVerified ? " · user-verified" : "")} · {Clean(a.Title)} · source {Clean(a.LogName)} · MITRE {a.Technique} · seen {a.Occurrences}× between {a.FirstSeenUtc:u} and {a.LastSeenUtc:u}"
+                + (a.Indicator is { Length: > 0 } evidence ? $" · {a.IndicatorKind ?? "evidence"}: `{Clean(evidence)}`" : ""));
         md.AppendLine();
 
         if (input.ThreatDatabases is { } db)
@@ -88,6 +90,23 @@ public static class CaseFileBuilder
             foreach (var t in watch.RemoteControl) md.AppendLine($"- Remote-control program running: {Clean(t.Product)} ({Clean(t.ProcessName)}, {t.Category})");
             foreach (var s in watch.Monitoring) md.AppendLine($"- Monitoring software: {Clean(s.Product)} ({s.Category}, {s.Severity}, found in {s.Source})");
             foreach (var e in watch.Log.Take(40)) md.AppendLine($"- {e.TimeUtc:u} {e.Kind}: {Clean(e.Subject)} — {Clean(e.Detail)}");
+            md.AppendLine();
+        }
+
+        if (input.Audio is { } audio)
+        {
+            md.AppendLine("## Audio Shield");
+            var listeners = audio.Sessions.Where(x => x.Flow == AudioFlows.Recording).ToArray();
+            if (listeners.Length == 0) md.AppendLine("- Nothing had a recording stream open.");
+            foreach (var x in listeners)
+                md.AppendLine($"- Recording ({x.State}): {Clean(x.ProcessName)} (PID {x.ProcessId}) on {Clean(x.Device)} [{x.DeviceKind}] · {Clean(x.Path ?? "path unavailable")} · {Signed(x.Signed, x.Signer)}{(x.HasWindow ? "" : " · no window")}");
+            foreach (var d in audio.Devices.Where(d => d.State == "active" && (d.IsNew || d.Kind is AudioDeviceKinds.Loopback or AudioDeviceKinds.Virtual or AudioDeviceKinds.Network)))
+                md.AppendLine($"- Device: {Clean(d.Name)} ({d.Flow}, {d.Kind}){(d.IsNew ? $", first seen {d.FirstSeenUtc:u}" : "")}");
+            foreach (var e in audio.Effects.Where(e => !e.Microsoft || e.Signed != true))
+                md.AppendLine($"- Audio effect DLL: {Clean(e.Name)} · {Clean(e.DllPath ?? "DLL missing")} · {Signed(e.Signed, e.Signer)}");
+            var p = audio.Posture;
+            md.AppendLine($"- Engine: audiodg.exe {Clean(p.AudioEnginePath ?? "not running")} (signature {(p.AudioEngineSigned switch { true => "Microsoft", false => "FAILED", _ => "not checked" })}, {p.AudioEngineCpuPercent:0.0}% CPU) · Windows Audio {p.AudioService} · Endpoint Builder {p.EndpointBuilder} · microphone access for apps {(p.MicrophoneAccessAllowed switch { true => "on", false => "off", _ => "not set" })}");
+            foreach (var i in audio.Issues) md.AppendLine($"- {i.Severity} · {i.Category} · {Clean(i.Title)}: {Clean(i.Detail)}");
             md.AppendLine();
         }
 
@@ -127,6 +146,7 @@ public static class CaseFileBuilder
             threatDatabaseMatches = input.ThreatDatabases?.Matches,
             connections = input.ThreatDatabases?.Connections,
             antiStalker = input.AntiStalker,
+            audio = input.Audio,
             hardeningFindings = input.Hardening?.Checks.Where(c => c.State == PostureStates.Finding),
             firewallFindings = input.Firewall?.Findings,
             settings = input.Settings,
@@ -136,6 +156,13 @@ public static class CaseFileBuilder
         md.AppendLine("```");
         return md.ToString();
     }
+
+    private static string Signed(bool? signed, string? signer) => signed switch
+    {
+        true => $"signed by {Clean(PersistenceAnalyzer.SignerDisplay(signer))}",
+        false => "NOT validly signed",
+        _ => "signature not checked",
+    };
 
     private static string On(bool value) => value ? "on" : "off";
     private static int Rank(string severity) => severity switch { "CRITICAL" => 4, "HIGH" => 3, "MEDIUM" => 2, _ => 1 };

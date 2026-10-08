@@ -261,7 +261,7 @@ public sealed class SecurityAlertRepositoryTests
         Assert.Null(SecurityAlertControlPipeWorker.ParseStrictRequest(new byte[1025]));
     }
 
-    private sealed class TemporaryAlertDatabase : IDisposable
+    internal sealed class TemporaryAlertDatabase : IDisposable
     {
         private readonly string _root = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"DownpourAlerts-{Guid.NewGuid():N}");
         public string Path => System.IO.Path.Combine(_root, "alerts.db");

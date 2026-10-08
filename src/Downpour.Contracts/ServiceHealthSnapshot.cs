@@ -105,7 +105,9 @@ public sealed record SecurityEventObservation(
     string Severity,
     string Technique,
     string Summary,
-    int Occurrences = 1);
+    int Occurrences = 1,
+    string? Detail = null,
+    string? FilePath = null);
 
 public sealed record SecurityEventSnapshot(
     int SchemaVersion,

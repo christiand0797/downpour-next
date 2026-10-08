@@ -109,10 +109,13 @@ public sealed class SecurityAlertRepository(string databasePath)
                     "THEN MIN(alerts.occurrences+1,1000000000) ELSE MAX(alerts.occurrences,excluded.occurrences) END, " +
                     "record_id=CASE WHEN substr(alerts.dedup_key,1,6)='rollup' THEN MAX(COALESCE(alerts.record_id,-1),COALESCE(excluded.record_id,-1)) " +
                     "ELSE COALESCE(excluded.record_id,alerts.record_id) END, " +
+                    // Service installs are re-graded when their executable and signature are known (older rows lacked it).
+                    "title=CASE WHEN alerts.event_id IN (7045,4697) AND excluded.title<>alerts.title THEN excluded.title ELSE alerts.title END, " +
+                    "severity=CASE WHEN alerts.event_id IN (7045,4697) AND excluded.title<>alerts.title THEN excluded.severity ELSE alerts.severity END, " +
                     "last_seen_utc=excluded.last_seen_utc;";
                 command.Parameters.AddWithValue("$id", id);
                 command.Parameters.AddWithValue("$key", dedupKey);
-                command.Parameters.AddWithValue("$title", observation.Summary);
+                command.Parameters.AddWithValue("$title", Title(observation));
                 command.Parameters.AddWithValue("$severity", observation.Severity);
                 command.Parameters.AddWithValue("$technique", observation.Technique);
                 command.Parameters.AddWithValue("$log", observation.LogName);
@@ -124,6 +127,18 @@ public sealed class SecurityAlertRepository(string databasePath)
                 command.Parameters.AddWithValue("$lastSeen", source.CapturedAtUtc.ToUniversalTime().ToString("O"));
                 command.Parameters.AddWithValue("$occurrences", observation.Occurrences);
                 await command.ExecuteNonQueryAsync(cancellationToken);
+                // A service install's executable becomes the alert's file indicator, so Threats can offer quarantine.
+                if (observation.FilePath is { Length: > 0 and <= 512 } file && Path.IsPathFullyQualified(file))
+                {
+                    await using var indicator = connection.CreateCommand();
+                    indicator.Transaction = transaction;
+                    indicator.CommandText = "INSERT INTO alert_indicators(alert_id,kind,value) VALUES($id,$kind,$value) " +
+                        "ON CONFLICT(alert_id) DO UPDATE SET kind=excluded.kind, value=excluded.value;";
+                    indicator.Parameters.AddWithValue("$id", id);
+                    indicator.Parameters.AddWithValue("$kind", AlertIndicatorKinds.File);
+                    indicator.Parameters.AddWithValue("$value", file);
+                    await indicator.ExecuteNonQueryAsync(cancellationToken);
+                }
                 if (suppressionActive)
                     await ApplyFingerprintSuppressionAsync(connection, transaction, id, fingerprint, cancellationToken);
             }
@@ -135,6 +150,14 @@ public sealed class SecurityAlertRepository(string databasePath)
     }
 
     public const int MaximumFindingsPerIngest = 512;
+
+    /// <summary>The rule summary, plus the recorded detail for service installs ("Windows service installed: name · path · verdict").</summary>
+    internal static string Title(SecurityEventObservation observation)
+    {
+        if (observation.Detail is not { Length: > 0 } detail) return observation.Summary;
+        var title = $"{observation.Summary}: {detail}";
+        return title.Length <= 160 ? title : title[..159] + "…";
+    }
 
     /// <summary>
     /// Upserts posture/persistence findings as alerts. Identity lives in the provider column (see

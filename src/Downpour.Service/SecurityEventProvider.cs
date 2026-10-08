@@ -1,10 +1,15 @@
 using System.Diagnostics.Eventing.Reader;
 using Downpour.Contracts;
+using Downpour.Core;
 
 namespace Downpour.Service;
 
-/// <summary>Reads a fixed set of recent security-relevant Windows events without collecting event message bodies.</summary>
-public sealed class SecurityEventProvider
+/// <summary>
+/// Reads a fixed set of recent security-relevant Windows events without collecting event message bodies. Service
+/// installs (7045/4697) additionally record the service name and executable path (arguments dropped) so they can be
+/// graded by signature instead of all being HIGH.
+/// </summary>
+public sealed class SecurityEventProvider(FileSignatureChecker? signatures = null)
 {
     public const int MaximumEvents = 256;
     private const int MaximumEventsPerSource = 96;
@@ -104,7 +109,7 @@ public sealed class SecurityEventProvider
                         var created = ToUtc(record.TimeCreated);
                         if (created is null || created > DateTimeOffset.UtcNow.AddMinutes(1)) return;
                         var observation = CreateObservation(capturedSource.LogName, record.ProviderName, record.Id, record.RecordId, created);
-                        if (observation is not null) onObservation(observation);
+                        if (observation is not null) onObservation(Enrich(observation, record));
                     }
                     catch (Exception exception) when (exception is EventLogException or InvalidOperationException or ArgumentException or System.Security.SecurityException)
                     {
@@ -146,7 +151,7 @@ public sealed class SecurityEventProvider
             eventId == 4625 ? BruteForceThreshold : 1);
     }
 
-    private static IReadOnlyList<SecurityEventObservation> ReadSource(EventSource source, DateTimeOffset capturedAt)
+    private IReadOnlyList<SecurityEventObservation> ReadSource(EventSource source, DateTimeOffset capturedAt)
     {
         var ids = string.Join(" or ", source.EventIds.Select(id => $"EventID={id}"));
         var ageMilliseconds = (long)Lookback.TotalMilliseconds;
@@ -168,11 +173,37 @@ public sealed class SecurityEventProvider
                 var created = ToUtc(record.TimeCreated);
                 if (created is { } timestamp && timestamp > capturedAt + TimeSpan.FromMinutes(1)) continue;
                 var observation = CreateObservation(source.LogName, record.ProviderName, record.Id, record.RecordId, created);
-                if (observation is not null) results.Add(observation);
+                if (observation is not null) results.Add(Enrich(observation, record));
             }
         }
 
         return results;
+    }
+
+    /// <summary>Adds the service name, executable and signature verdict to a service-install event; other events pass through.</summary>
+    private SecurityEventObservation Enrich(SecurityEventObservation observation, EventRecord record)
+    {
+        if (!ServiceInstallAnalyzer.Applies(observation.LogName, observation.EventId)) return observation;
+        try
+        {
+            // 7045: ServiceName, ImagePath, ...; 4697: Subject (4 fields), ServiceName, ServiceFileName, ...
+            var (nameIndex, pathIndex) = observation.EventId == 7045 ? (0, 1) : (4, 5);
+            var properties = record.Properties;
+            if (properties is null || properties.Count <= pathIndex) return observation;
+            return Describe(observation, properties[nameIndex].Value as string, properties[pathIndex].Value as string);
+        }
+        catch (Exception ex) when (ex is EventLogException or InvalidOperationException or ArgumentException or System.Security.SecurityException)
+        {
+            return observation;
+        }
+    }
+
+    internal SecurityEventObservation Describe(SecurityEventObservation observation, string? serviceName, string? imagePath)
+    {
+        var resolved = PersistenceInventoryProvider.ResolveTarget(ServiceInstallAnalyzer.NormalizeImagePath(imagePath));
+        var signature = resolved is null ? null : signatures?.Check(resolved);
+        var (severity, detail) = ServiceInstallAnalyzer.Assess(observation.Severity, serviceName, imagePath, resolved, signature);
+        return observation with { Severity = severity, Detail = detail, FilePath = resolved };
     }
 
     public static SecurityEventObservation? CreateFailedLogonBurst(int count, long? latestRecordId, DateTimeOffset capturedAt)

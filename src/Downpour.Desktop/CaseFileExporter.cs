@@ -34,13 +34,15 @@ internal static class CaseFileExporter
         var hardening = new HardeningPostureClient().TryGetSnapshotAsync();
         var firewall = new FirewallInventoryClient().TryGetSnapshotAsync();
         var settings = new SensorSettingsClient().GetAsync();
-        await Task.WhenAll(alerts, databases, watch, hardening, firewall, settings);
+        var audio = new AudioClient().TryGetSnapshotAsync();
+        await Task.WhenAll(alerts, databases, watch, hardening, firewall, settings, audio);
         if (alerts.Result is null) unavailable.Add("Alert store");
         if (databases.Result?.Snapshot is null) unavailable.Add("Threat databases");
         if (watch.Result is null) unavailable.Add("Anti-stalker monitor");
         if (hardening.Result is null) unavailable.Add("Hardening checks");
         if (firewall.Result is null) unavailable.Add("Firewall inventory");
         if (settings.Result?.Settings is null) unavailable.Add("Sensor settings");
+        if (audio.Result is null) unavailable.Add("Audio Shield");
 
         var content = CaseFileBuilder.Build(new CaseFileInputs(
             DateTimeOffset.Now,
@@ -53,7 +55,8 @@ internal static class CaseFileExporter
             firewall.Result,
             settings.Result?.Settings,
             await Task.Run(ReadRecentActions),
-            unavailable));
+            unavailable,
+            audio.Result));
         await FileIO.WriteTextAsync(file, content);
         return $"Saved {file.Name}. It lists program names, addresses and domains from this PC; share it only with a reviewer you trust.";
     }

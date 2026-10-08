@@ -712,7 +712,7 @@
     {
       "id": "DN-034",
       "title": "Verification engine: corroborate findings, cut false positives, export case file for second opinion",
-      "status": "in_progress",
+      "status": "completed",
       "priority": "high",
       "acceptance": [
         "Every match carries verdict, confidence and reasons",
@@ -720,7 +720,7 @@
         "Cleared items retired with audit",
         "Case file export with reviewer instructions"
       ],
-      "notes": "claude-parity-audit 2026-10-08: ThreatVerdictEngine, DnsCacheResolver, sinkhole/shared-host retirement, firewall/hardening downgrades, CaseFileBuilder/Exporter. Remaining: persistence signer checks, alert path capture. 2026-10-08: persistence signer checks done (f22aed4). Remaining: 7045/YARA alert detail capture."
+      "notes": "claude-parity-audit 2026-10-08: ThreatVerdictEngine, DnsCacheResolver, sinkhole/shared-host retirement, firewall/hardening downgrades, CaseFileBuilder/Exporter. Remaining: persistence signer checks, alert path capture. 2026-10-08: persistence signer checks done (f22aed4). Remaining: 7045/YARA alert detail capture. 2026-10-08: service-install grading by signer with name/executable/evidence; case file evidence lines. Complete."
     },
     {
       "id": "DN-035",
@@ -745,7 +745,7 @@
         "Glitch causes explained with a fix",
         "Remediation only through the audited broker or fixed settings pages"
       ],
-      "notes": "claude-parity-audit 2026-10-08: shipped and verified live; 49 new tests. Remaining: case-file audio section; brokered audio-service restart needs its own policy/audit/rollback tests."
+      "notes": "claude-parity-audit 2026-10-08: shipped and verified live; 49 new tests. Remaining: case-file audio section; brokered audio-service restart needs its own policy/audit/rollback tests. Case-file audio section done."
     }
   ]
 }

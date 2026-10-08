@@ -48,7 +48,7 @@ public sealed class SecurityEventClient(string pipeName = SecurityEventClient.Pi
                 item.CreatedAtUtc is not { } eventTime || eventTime.Offset != TimeSpan.Zero ||
                 eventTime > snapshot.CapturedAtUtc + TimeSpan.FromMinutes(1) || eventTime < snapshot.CapturedAtUtc.Subtract(TimeSpan.FromDays(1)).Subtract(TimeSpan.FromMinutes(10)) ||
                 !SecurityEventCatalog.TryGetRule(item.LogName, item.EventId, out var rule) ||
-                !item.Severity.Equals(rule.Severity, StringComparison.Ordinal) ||
+                !SeverityAllowed(item, rule.Severity) || !DetailAllowed(item) ||
                 !item.Technique.Equals(rule.Technique, StringComparison.Ordinal) ||
                 !item.Summary.Equals(rule.Summary, StringComparison.Ordinal))
             {
@@ -62,4 +62,21 @@ public sealed class SecurityEventClient(string pipeName = SecurityEventClient.Pi
     }
 
     private static bool ContainsControl(string value) => value.Any(char.IsControl);
+
+    private static readonly HashSet<string> Severities = new(StringComparer.Ordinal) { "CRITICAL", "HIGH", "MEDIUM", "LOW" };
+
+    /// <summary>The rule's severity, or, for a service install with a recorded detail, the reassessed one.</summary>
+    private static bool SeverityAllowed(SecurityEventObservation item, string ruleSeverity) =>
+        item.Severity.Equals(ruleSeverity, StringComparison.Ordinal)
+        || (item.Detail is not null && ServiceInstallAnalyzer.Applies(item.LogName, item.EventId) && Severities.Contains(item.Severity));
+
+    /// <summary>Only service installs carry a detail (name, executable path, signer) and a file path; both are bounded.</summary>
+    private static bool DetailAllowed(SecurityEventObservation item)
+    {
+        if (item.Detail is null && item.FilePath is null) return true;
+        if (!ServiceInstallAnalyzer.Applies(item.LogName, item.EventId)) return false;
+        if (item.Detail is not null && (item.Detail.Length is 0 or > ServiceInstallAnalyzer.MaximumDetail || ContainsControl(item.Detail))) return false;
+        return item.FilePath is null || (item.FilePath.Length <= 1024 && !ContainsControl(item.FilePath)
+            && Path.IsPathFullyQualified(item.FilePath) && !item.FilePath.StartsWith(@"\", StringComparison.Ordinal));
+    }
 }
