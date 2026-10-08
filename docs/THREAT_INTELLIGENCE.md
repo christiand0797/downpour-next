@@ -18,6 +18,18 @@ Every 5 minutes the service matches established TCP connections with owning proc
 | Phishing Army, OpenPhish | respective projects | non-commercial | phishing domains |
 | Stalkerware indicators | Echap | CC BY 4.0 | stalkerware servers |
 | IPtoASN | iptoasn.com | PDDL | offline country/network origin |
+| C2IntelFeeds IPs and domains | drb-ra | free use | Cobalt Strike / attack-framework C2 (30 days) |
+| Threatview Cobalt Strike C2 | threatview.io | free use | high-confidence Cobalt Strike team servers |
+| Signature-Base C2 and hashes | Neo23x0 / Nextron | DRL 1.1 | APT/malware C2 and file hashes from published reports |
+| Mandiant red-team tools | mandiant | BSD-2 | SHA-256 of the FireEye tools stolen in 2020 |
+| Pegasus, Predator | Amnesty Security Lab | CC BY 4.0 | mercenary spyware servers (weighted like stalkerware) |
+| HaGeZi TIF mini, CERT Polska, ShadowWhisperer, Block List Project (ransomware, scam, crypto), Scam Blocklist, Spam404, NoCoin | respective projects | GPL-3.0 / MIT / Unlicense / CC | malware, ransomware, scam, phishing and cryptojacking domains |
+| ET block, FireHOL level 2/3/webclient/abusers, DShield, BruteForceBlocker, IPsum 5+ | respective projects | per source | attacker and abuse reputation |
+| LOLRMM | lolrmm.io | Apache-2.0 | 358 remote-access tools: program names as context (T1219), service domains as low indicators |
+
+Separated-value feeds use the `Delimited` format (separator, value column, optional label column). LOLRMM program names that are
+Windows components or too generic (dwm.exe, setup.exe, agent.exe, client.exe and similar) are excluded, and LOLBAS keeps priority
+when both name a program. `DOWNPOUR_LIVE_FEEDS=1 dotnet test --filter ThreatFeedExpansionTests` downloads and parses every feed.
 
 abuse.ch's query APIs (`mb-api`, `urlhaus-api`) now require a registered Auth-Key; the public bulk exports above do not. The SSL Blacklist IP/JA3 lists were deprecated by abuse.ch on 2025-01-03 and are not used. CISA switched the KEV `dateReleased` field to an ISO 8601 timestamp in 2026; both forms are accepted.
 

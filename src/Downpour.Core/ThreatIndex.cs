@@ -59,7 +59,8 @@ public sealed class ThreatIndex
                 entries.Add(new Entry(feedIndex, indicator.Label, head));
                 first[indicator.Value] = entries.Count - 1;
             }
-            foreach (var lolbin in parsed.Lolbins) lolbins[lolbin.Name] = lolbin;
+            // The first list to name a program wins, so LOLBAS keeps its built-in tool description over LOLRMM.
+            foreach (var lolbin in parsed.Lolbins) lolbins.TryAdd(lolbin.Name, lolbin);
         }
         return new ThreatIndex(first, entries, networks, lolbins);
     }

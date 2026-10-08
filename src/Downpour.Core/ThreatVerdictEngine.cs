@@ -51,10 +51,20 @@ public static class ThreatVerdicts
 /// </summary>
 public static class ThreatVerdictEngine
 {
-    private static readonly HashSet<string> MalwareFeeds = new(StringComparer.Ordinal) { "threatfox", "feodo", "malwarebazaar", "urlhaus" };
+    private static readonly HashSet<string> MalwareFeeds = new(StringComparer.Ordinal)
+    {
+        "threatfox", "feodo", "malwarebazaar", "urlhaus", "c2intel-ips", "c2intel-domains", "threatview-cobaltstrike", "sigbase-c2",
+        "sigbase-hashes", "mandiant-redteam", "blp-ransomware", "shadowwhisperer-malware", "firehol-webclient",
+    };
     private static readonly HashSet<string> ReputationFeeds = new(StringComparer.Ordinal)
-        { "spamhaus-drop", "spamhaus-drop-v6", "et-compromised", "firehol-level1", "ipsum", "cins", "greensnow", "blocklist-de" };
-    private static readonly HashSet<string> PhishingFeeds = new(StringComparer.Ordinal) { "phishing-army", "openphish" };
+    {
+        "spamhaus-drop", "spamhaus-drop-v6", "et-compromised", "firehol-level1", "ipsum", "cins", "greensnow", "blocklist-de",
+        "et-block", "firehol-level2", "firehol-level3", "firehol-abusers", "dshield", "bruteforceblocker", "ipsum-5",
+    };
+    private static readonly HashSet<string> PhishingFeeds = new(StringComparer.Ordinal)
+        { "phishing-army", "openphish", "hagezi-tif", "cert-pl", "blp-scam", "scamblocklist", "spam404", "nocoin", "blp-crypto" };
+    /// <summary>Mercenary-spyware and stalkerware infrastructure: specific to spying, so weighted like stalkerware.</summary>
+    private static readonly HashSet<string> SpywareFeeds = new(StringComparer.Ordinal) { "stalkerware", "amnesty-pegasus", "amnesty-predator" };
     private static readonly HashSet<string> Browsers = new(StringComparer.OrdinalIgnoreCase)
         { "msedge.exe", "chrome.exe", "firefox.exe", "brave.exe", "opera.exe", "vivaldi.exe", "iexplore.exe", "msedgewebview2.exe", "arc.exe" };
     private static readonly HashSet<int> WebPorts = [80, 443, 8080, 8443];
@@ -75,7 +85,7 @@ public static class ThreatVerdictEngine
         if (e.Place is ThreatMatchPlaces.Program) return Program(e, feeds, reasons);
 
         int score;
-        if (feeds.Any(f => f.Id == "stalkerware")) { score = 60; reasons.Add("Stalkerware server lists are specific to spy apps."); }
+        if (feeds.Any(f => SpywareFeeds.Contains(f.Id))) { score = 60; reasons.Add("Stalkerware and mercenary-spyware server lists are specific to spying tools."); }
         else if (feeds.Any(f => MalwareFeeds.Contains(f.Id))) { score = feeds.Any(f => f.Id == "feodo") ? 70 : 55; reasons.Add("A malware-specific database lists it (stronger than a general reputation list)."); }
         else if (feeds.Any(f => PhishingFeeds.Contains(f.Id))) { score = 35; reasons.Add("Phishing lists are broad and also catch ad and gambling domains."); }
         else if (feeds.Any(f => ReputationFeeds.Contains(f.Id))) { score = 30; reasons.Add("Reputation lists record attacking or scanning addresses, which are often shared or recycled."); }

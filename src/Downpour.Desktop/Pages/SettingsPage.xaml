@@ -125,7 +125,7 @@
                     </Grid>
                     <Grid ColumnSpacing="16">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                        <StackPanel Spacing="2"><TextBlock Text="Threat database updates" FontWeight="SemiBold" /><TextBlock Text="Downloads 19 public threat databases (LOLDrivers, abuse.ch, Spamhaus, phishing and stalkerware lists, IP origin data and more) in full over HTTPS and checks this PC against them locally. No API keys, and nothing about this PC is sent. When off, saved copies are still used until they expire." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" /></StackPanel>
+                        <StackPanel Spacing="2"><TextBlock Text="Threat database updates" FontWeight="SemiBold" /><TextBlock Text="Downloads 45 public threat databases (LOLDrivers, abuse.ch, Spamhaus, attack-framework command servers, APT and red-team tool hashes, Pegasus and Predator spyware, ransomware, scam, phishing, cryptominer and stalkerware lists, remote-access tools, IP origin data and more) in full over HTTPS and checks this PC against them locally. No API keys, and nothing about this PC is sent. When off, saved copies are still used until they expire." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" /></StackPanel>
                         <ToggleSwitch x:Name="ThreatDatabasesToggle" Grid.Column="1" IsOn="True" IsEnabled="False" OnContent="On" OffContent="Off" />
                     </Grid>
                     <Grid ColumnSpacing="10">

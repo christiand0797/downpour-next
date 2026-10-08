@@ -45,6 +45,8 @@ public static partial class ThreatFeedParser
             ThreatFeedFormat.ThreatFoxJson => ParseThreatFox(feed, payload),
             ThreatFeedFormat.LolDriversJson => ParseLolDrivers(feed, payload),
             ThreatFeedFormat.LolbasJson => ParseLolbas(payload),
+            ThreatFeedFormat.Delimited => ParseDelimited(feed, Text(payload)),
+            ThreatFeedFormat.LolRmmJson => ParseLolRmm(feed, payload),
             _ => throw new InvalidDataException("Unsupported feed format."),
         };
         var total = result.Indicators.Count + result.Lolbins.Count + result.RejectedLines;
@@ -90,6 +92,93 @@ public static partial class ThreatFeedParser
         }
         return new(indicators, rejected, []);
     }
+
+    private static ParsedThreatFeed ParseDelimited(ThreatFeedDefinition feed, string text)
+    {
+        var indicators = new List<ThreatIndicator>();
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        var rejected = 0;
+        foreach (var line in DataLines(text))
+        {
+            var fields = line.Split(feed.Separator).Select(f => f.Trim().Trim('"').Trim()).ToArray();
+            var value = feed.Column < fields.Length ? fields[feed.Column] : "";
+            var label = feed.LabelColumn >= 0 && feed.LabelColumn < fields.Length && fields[feed.LabelColumn].Length > 0
+                ? Label(Clean(fields[feed.LabelColumn])) : feed.DefaultLabel;
+            if (!TryClassify(value, out var indicator, label)) { rejected++; continue; }
+            if (indicator.Type == IndicatorType.Domain && SharedPlatforms.IsSharedPlatform(indicator.Value)) continue;
+            if (indicator.Type == IndicatorType.Network && IsReservedNetwork(indicator.Value)) continue;
+            if (seen.Add(indicator.Value)) Add(indicators, indicator);
+        }
+        return new(indicators, rejected, []);
+    }
+
+    /// <summary>
+    /// LOLRMM lists remote-access and remote-management tools. Their program names become context entries (like LOLBAS:
+    /// legitimate tools attackers also install to control a PC) and their service domains become low-severity indicators,
+    /// so a lookup of a remote-control service is visible. Wildcard domains index their fixed suffix.
+    /// </summary>
+    private static ParsedThreatFeed ParseLolRmm(ThreatFeedDefinition feed, ReadOnlySpan<byte> payload)
+    {
+        using var document = ParseJson(payload);
+        if (document.RootElement.ValueKind != JsonValueKind.Array) throw new InvalidDataException("LOLRMM data is not an array.");
+        var indicators = new List<ThreatIndicator>();
+        var lolbins = new Dictionary<string, ThreatLolbin>(StringComparer.OrdinalIgnoreCase);
+        var seenDomains = new HashSet<string>(StringComparer.Ordinal);
+        var rejected = 0;
+        foreach (var tool in document.RootElement.EnumerateArray())
+        {
+            var name = String(tool, "Name");
+            if (name is not { Length: > 0 and <= 64 }) { rejected++; continue; }
+            var category = String(tool, "Category") == "RAT" ? "Remote access trojan or tool" : "Remote management tool";
+            var display = Label(Clean($"{category}: {name}"));
+            var programs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            if (tool.TryGetProperty("Details", out var details) && details.ValueKind == JsonValueKind.Object)
+            {
+                if (details.TryGetProperty("PEMetadata", out var pe))
+                {
+                    foreach (var meta in pe.ValueKind == JsonValueKind.Array ? pe.EnumerateArray().ToArray() : [pe])
+                    {
+                        if (String(meta, "Filename") is { } file) programs.Add(file);
+                        if (String(meta, "OriginalFileName") is { } original) programs.Add(original);
+                    }
+                }
+                if (details.TryGetProperty("InstallationPaths", out var paths) && paths.ValueKind == JsonValueKind.Array)
+                    foreach (var path in paths.EnumerateArray())
+                        if (path.ValueKind == JsonValueKind.String && path.GetString() is { } p && !p.Contains('*')) programs.Add(Path.GetFileName(p.Replace('/', '\\')));
+            }
+            foreach (var program in programs.Where(p => LolbinName().IsMatch(p) && p.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) &&
+                         p.Length > 6 && !GenericProgramNames.Contains(p)))
+                lolbins.TryAdd(program.ToLowerInvariant(), new ThreatLolbin(program.ToLowerInvariant(), display, "T1219"));
+            if (tool.TryGetProperty("Artifacts", out var artifacts) && artifacts.ValueKind == JsonValueKind.Object &&
+                artifacts.TryGetProperty("Network", out var network) && network.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var entry in network.EnumerateArray())
+                {
+                    if (!entry.TryGetProperty("Domains", out var domains) || domains.ValueKind != JsonValueKind.Array) continue;
+                    foreach (var domain in domains.EnumerateArray())
+                    {
+                        if (domain.ValueKind != JsonValueKind.String || domain.GetString() is not { } raw) continue;
+                        var host = raw.Trim().TrimStart('*', '.').ToLowerInvariant();
+                        if (host.Contains('*') || host.Contains('/')) continue;
+                        if (!TryClassify(host, out var indicator, display) || indicator.Type != IndicatorType.Domain) continue;
+                        if (SharedPlatforms.IsSharedPlatform(indicator.Value)) continue;
+                        if (seenDomains.Add(indicator.Value)) Add(indicators, indicator);
+                    }
+                }
+            }
+        }
+        return new(indicators, rejected, lolbins.Values.ToArray());
+    }
+
+    /// <summary>Windows components and names too generic to identify one remote-access tool; they would mislabel other programs.</summary>
+    private static readonly HashSet<string> GenericProgramNames = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "agent.exe", "client.exe", "server.exe", "service.exe", "connect.exe", "setup.exe", "install.exe", "installer.exe", "update.exe",
+        "updater.exe", "upload.exe", "launcher.exe", "helper.exe", "host.exe", "main.exe", "app.exe", "run.exe", "start.exe",
+        "dwm.exe", "svchost.exe", "explorer.exe", "conhost.exe", "rundll32.exe", "mstsc.exe", "qq.exe", "nvda.exe", "ninite.exe",
+        "insync.exe", "era.exe", "clm.exe", "iit.exe", "bbl.exe", "bma.exe", "cbb.exe", "wmc.exe", "rdp.exe", "rmm.exe", "amon.exe",
+        "vhost.exe", "rhost.exe", "avcore.exe", "cpuchk.exe",
+    };
 
     private static ParsedThreatFeed ParseUrls(ThreatFeedDefinition feed, string text)
     {
