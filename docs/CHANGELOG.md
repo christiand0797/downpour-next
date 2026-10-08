@@ -1,6 +1,6 @@
 # Downpour Next changelog
 
-## Unreleased (v0.1.18)
+## v0.1.18 — threat databases, HUD theme, live updates
 
 - **Threat Databases**: 19 public databases (LOLDrivers, LOLBAS, abuse.ch ThreatFox/Feodo/URLhaus/MalwareBazaar, Spamhaus DROP, Emerging Threats, FireHOL, IPsum, CINS, GreenSnow, blocklist.de, Tor exits, Phishing Army, OpenPhish, stalkerware indicators, IPtoASN) downloaded whole, validated, cached and matched on this PC against connections (with owning program), the DNS cache, loaded drivers and running programs. Offline lookups, connection origins (country and network) and a copyable evidence report.
 - **Threat Intel Feeds** browses the local databases; the old abuse.ch API calls needed a registered key and failed.
