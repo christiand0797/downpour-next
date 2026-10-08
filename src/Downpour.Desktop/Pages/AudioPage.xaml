@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page x:Class="Downpour_Desktop.Pages.AudioPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      mc:Ignorable="d">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Padding="28,24,28,36" Spacing="18" MaxWidth="1180" HorizontalAlignment="Left">
+            <Grid ColumnSpacing="16">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                <StackPanel Spacing="5">
+                    <TextBlock Text="PROTECTION  /  AUDIO SHIELD" Style="{StaticResource HudEyebrowStyle}" />
+                    <TextBlock Text="Who can hear you?" Style="{StaticResource HudPageTitleStyle}" />
+                    <TextBlock Text="Every second: which programs are receiving your microphone or everything you hear, every audio device and its live level, the effect DLLs loaded into the Windows audio engine, and what is making sound crackle, drop out, or go silent. Only levels and settings are read, never audio." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Top">
+                    <Button x:Name="ExportButton" Content="Export case file" Click="Export_Click" ToolTipService.ToolTip="Save every finding and the evidence behind it so another reviewer can double-check before you act." />
+                    <Button Content="Open triage" Click="OpenTriage_Click" />
+                    <Button Content="Refresh" Click="Refresh_Click" Style="{StaticResource AccentButtonStyle}" />
+                </StackPanel>
+            </Grid>
+
+            <Border x:Name="SummaryCard" Style="{StaticResource HudCardStyle}">
+                <Grid ColumnSpacing="18">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                    <FontIcon x:Name="SummaryIcon" Glyph="&#xE720;" FontSize="34" Foreground="{StaticResource HudCyanBrush}" VerticalAlignment="Center" />
+                    <StackPanel Grid.Column="1" Spacing="4">
+                        <TextBlock x:Name="SummaryHeadline" Text="Listening for audio activity…" FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap" />
+                        <TextBlock x:Name="SummaryDetail" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <Grid x:Name="TileGrid" ColumnSpacing="10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Border Style="{StaticResource HudCardStyle}">
+                    <StackPanel Spacing="2">
+                        <TextBlock Text="LISTENING NOW" Style="{StaticResource HudCaptionStyle}" />
+                        <TextBlock x:Name="ListeningValue" Text="–" Style="{StaticResource HudMetricStyle}" />
+                        <TextBlock x:Name="ListeningCaption" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+                <Border Grid.Column="1" Style="{StaticResource HudCardStyle}">
+                    <StackPanel Spacing="2">
+                        <TextBlock Text="MICROPHONES" Style="{StaticResource HudCaptionStyle}" />
+                        <TextBlock x:Name="MicValue" Text="–" Style="{StaticResource HudMetricStyle}" />
+                        <TextBlock x:Name="MicCaption" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+                <Border Grid.Column="2" Style="{StaticResource HudCardStyle}">
+                    <StackPanel Spacing="2">
+                        <TextBlock Text="AUDIO EFFECTS" Style="{StaticResource HudCaptionStyle}" />
+                        <TextBlock x:Name="EffectsValue" Text="–" Style="{StaticResource HudMetricStyle}" />
+                        <TextBlock x:Name="EffectsCaption" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+                <Border Grid.Column="3" Style="{StaticResource HudCardStyle}">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="AUDIO ENGINE" Style="{StaticResource HudCaptionStyle}" />
+                        <TextBlock x:Name="EngineValue" Text="–" Style="{StaticResource HudMetricStyle}" />
+                        <ProgressBar x:Name="EngineMeter" Maximum="100" Style="{StaticResource HudMeterStyle}" />
+                        <TextBlock x:Name="EngineCaption" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+                <Border Grid.Column="4" Style="{StaticResource HudCardStyle}">
+                    <StackPanel Spacing="2">
+                        <TextBlock Text="THREATS / ISSUES" Style="{StaticResource HudCaptionStyle}" />
+                        <TextBlock x:Name="IssuesValue" Text="–" Style="{StaticResource HudMetricStyle}" />
+                        <TextBlock x:Name="IssuesCaption" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <TextBlock Text="Threats and issues" Style="{StaticResource HudSectionTitleStyle}" />
+            <TextBlock FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"
+                       Text="Each item says what was found and offers the fix. Ending a program or quarantining a file goes through Downpour's action broker: you see a preview, confirm it, and it is written to the audit log (quarantine can be restored from Remediation). Settings fixes open the exact Windows page." />
+            <ComboBox x:Name="IssueFilter" SelectedIndex="0" SelectionChanged="IssueFilter_SelectionChanged" MinWidth="220">
+                <ComboBoxItem Content="Everything" Tag="" />
+                <ComboBoxItem Content="Listening threats" Tag="Listening" />
+                <ComboBoxItem Content="Audio device threats" Tag="Device" />
+                <ComboBoxItem Content="Driver and effect threats" Tag="Driver" />
+                <ComboBoxItem Content="Glitches and sound problems" Tag="Glitch" />
+                <ComboBoxItem Content="Privacy" Tag="Privacy" />
+            </ComboBox>
+            <TextBlock x:Name="IssuesEmpty" Text="No audio threats or problems right now." Foreground="{StaticResource HudGreenBrush}" Visibility="Collapsed" />
+            <StackPanel x:Name="IssuesPanel" Spacing="8" />
+
+            <TextBlock Text="Listening now" Style="{StaticResource HudSectionTitleStyle}" />
+            <TextBlock FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"
+                       Text="Programs with a recording stream open on a microphone or loopback device. Active means audio is flowing to the program now; idle means it holds the device open. The bar is the live input level." />
+            <TextBlock x:Name="ListeningEmpty" Text="Nothing is recording." Foreground="{StaticResource HudGreenBrush}" Visibility="Collapsed" />
+            <StackPanel x:Name="ListeningPanel" Spacing="6" />
+
+            <TextBlock Text="Playing now" Style="{StaticResource HudSectionTitleStyle}" />
+            <TextBlock x:Name="PlayingEmpty" Text="Nothing is playing sound." Foreground="{ThemeResource TextFillColorTertiaryBrush}" Visibility="Collapsed" />
+            <StackPanel x:Name="PlayingPanel" Spacing="6" />
+
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                <TextBlock Text="Audio devices" Style="{StaticResource HudSectionTitleStyle}" VerticalAlignment="Center" />
+                <ToggleSwitch x:Name="ShowAllDevices" Grid.Column="1" OnContent="Showing disabled and unplugged" OffContent="Active devices only" Toggled="ShowAllDevices_Toggled" />
+            </Grid>
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Content="Sound devices" Click="OpenSoundDevices_Click" />
+                <Button Content="Bluetooth devices" Click="OpenBluetooth_Click" />
+                <Button Content="Microphone privacy" Click="OpenMicPrivacy_Click" />
+                <Button Content="Audio troubleshooter" Click="OpenTroubleshoot_Click" />
+            </StackPanel>
+            <StackPanel x:Name="DevicesPanel" Spacing="6" />
+
+            <TextBlock Text="Audio effects loaded into the audio engine" Style="{StaticResource HudSectionTitleStyle}" />
+            <TextBlock FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"
+                       Text="Audio Processing Objects are DLLs that audiodg.exe loads to add effects such as equalizers, noise suppression, or spatial sound. Because they hear every sound, an unsigned or misplaced one is a way to eavesdrop or hide code. Vendor effects (Realtek, Dolby, Waves, Nahimic…) are normal." />
+            <TextBlock x:Name="EffectsEmpty" Text="No audio effects are registered." Foreground="{ThemeResource TextFillColorTertiaryBrush}" Visibility="Collapsed" />
+            <StackPanel x:Name="EffectsPanel" Spacing="6" />
+
+            <TextBlock Text="Engine and privacy posture" Style="{StaticResource HudSectionTitleStyle}" />
+            <Border Style="{StaticResource HudCardStyle}">
+                <StackPanel x:Name="PosturePanel" Spacing="6" />
+            </Border>
+
+            <TextBlock x:Name="WarningsText" FontSize="12" Foreground="{StaticResource HudAmberBrush}" TextWrapping="Wrap" Visibility="Collapsed" />
+
+            <Border Padding="14" CornerRadius="10" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
+                <StackPanel Spacing="6">
+                    <TextBlock Text="What this can and cannot hear" FontWeight="SemiBold" Foreground="{StaticResource HudAmberBrush}" />
+                    <TextBlock FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"
+                               Text="Downpour never opens a microphone or records sound. It reads the same session and level information the Windows volume mixer shows, the audio settings in the registry, and signatures of the files involved. A kernel-level implant that reads the microphone below Windows' audio stack, or a device you cannot see (a phone, a smart speaker, a hidden recorder in the room), cannot be detected from software on this PC." />
+                    <TextBlock Text="Fixing things safely" FontWeight="SemiBold" Margin="0,6,0,0" Foreground="{StaticResource HudAmberBrush}" />
+                    <TextBlock FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"
+                               Text="End program and Quarantine follow the “Allow process termination” and “Allow quarantine actions” switches in Settings and are confirmed before they run. Quarantined files are encrypted and can be restored from Remediation. If you suspect stalkerware, read the advice on the Anti-Stalker page before removing anything." />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

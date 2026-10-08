@@ -135,7 +135,15 @@ public sealed class BlossomScene : UserControl
         AutomationProperties.SetName(this, "Sakura Sentinel: cherry petals fall onto the page faster as system load rises; Kuro the cat sits on a card");
         UpdateStatus();
 
-        _timer.Tick += (_, _) => Tick();
+        _timer.Tick += (_, _) =>
+        {
+            // Decoration must never take the app down: a failed frame is skipped and the scene keeps going.
+            try { Tick(); }
+            catch (Exception ex) when (ex is System.Runtime.InteropServices.COMException or InvalidOperationException or ArgumentException)
+            {
+                _lastTick = DateTime.UtcNow;
+            }
+        };
         _layoutTimer.Tick += (_, _) => Relayout();
         SizeChanged += (_, _) => Relayout();
         Loaded += (_, _) =>
@@ -741,6 +749,8 @@ public sealed class BlossomScene : UserControl
     private Petal Spawn()
     {
         var shape = _pool.Count > 0 ? _pool.Dequeue() : new Ellipse { IsHitTestVisible = false };
+        // A pooled shape may still belong to a layer from an earlier attach; never re-parent it.
+        if (shape.Parent is { } parent && !ReferenceEquals(parent, _petalLayer)) shape = new Ellipse { IsHitTestVisible = false };
         var size = 4 + _random.NextDouble() * 4;
         shape.Width = size;
         shape.Height = size * 0.62;
@@ -748,7 +758,15 @@ public sealed class BlossomScene : UserControl
         shape.Opacity = 1;
         var transform = new CompositeTransform { CenterX = size / 2, CenterY = size * 0.31, Rotation = _random.NextDouble() * 360 };
         shape.RenderTransform = transform;
-        if (shape.Parent is null) _petalLayer.Children.Add(shape);
+        if (shape.Parent is null && !_petalLayer.Children.Contains(shape))
+        {
+            try { _petalLayer.Children.Add(shape); }
+            catch (System.Runtime.InteropServices.COMException)
+            {
+                shape = new Ellipse { IsHitTestVisible = false, Width = shape.Width, Height = shape.Height, Fill = shape.Fill, RenderTransform = transform };
+                _petalLayer.Children.Add(shape);
+            }
+        }
         shape.Visibility = Visibility.Visible;
         return new Petal
         {

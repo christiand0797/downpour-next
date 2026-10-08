@@ -499,6 +499,8 @@ public sealed partial class MainWindow : Window
             NavFrame.Navigate(typeof(VpnPage));
         else if (capability.RouteId.Equals("anti-stalker", StringComparison.OrdinalIgnoreCase))
             NavFrame.Navigate(typeof(AntiStalkerPage));
+        else if (capability.RouteId.Equals("audio", StringComparison.OrdinalIgnoreCase))
+            NavFrame.Navigate(typeof(AudioPage));
         else if (capability.RouteId.Equals("threat-databases", StringComparison.OrdinalIgnoreCase))
             NavFrame.Navigate(typeof(ThreatDatabasesPage));
         else if (capability.RouteId.Equals("remediation", StringComparison.OrdinalIgnoreCase))
@@ -585,6 +587,7 @@ public sealed partial class MainWindow : Window
         if (routeId is null && args.Content is VpnPage) routeId = "vpn";
         if (routeId is null && args.Content is RemediationPage) routeId = "remediation";
         if (routeId is null && args.Content is AntiStalkerPage) routeId = "anti-stalker";
+        if (routeId is null && args.Content is AudioPage) routeId = "audio";
         if (routeId is null && args.Content is ThreatDatabasesPage) routeId = "threat-databases";
         if (routeId is null && args.Content is IoTPage) routeId = "iot";
         if (routeId is null && args.Content is EmergencyPage) routeId = "emergency";

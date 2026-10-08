@@ -46,8 +46,8 @@ public partial class App : Application
 
     /// <summary>False while the window is hidden in the tray or minimized, so live refresh can pause.</summary>
     internal static bool IsMainWindowVisible =>
-        Current is App { _window: { } window } && window.AppWindow.IsVisible &&
-        window.AppWindow.Presenter is not Microsoft.UI.Windowing.OverlappedPresenter { State: Microsoft.UI.Windowing.OverlappedPresenterState.Minimized };
+        Current is App { _window.AppWindow: { IsVisible: true } appWindow } &&
+        appWindow.Presenter is not Microsoft.UI.Windowing.OverlappedPresenter { State: Microsoft.UI.Windowing.OverlappedPresenterState.Minimized };
 
     internal static IntPtr MainWindowHandle =>
         Current is App app && app._window is not null

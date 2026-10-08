@@ -14,7 +14,9 @@
 - [x] DN-034 verification engine with verdicts/confidence/reasons; sinkhole and shared-host false-positive clearing; firewall built-in rule and Credential Guard downgrades.
 - [x] Export case file for a third-party reviewer (Triage, Threat Databases).
 - [x] Per-disk I/O enumeration fix; maximized window content above the taskbar.
-- [ ] Persistence: signer checks for RunOnce targets (Microsoft Edge cleanup FP) and vendor-signed BYOVD severity alignment.
+- [x] Persistence: signer checks for RunOnce targets (Microsoft Edge cleanup FP) and vendor-signed BYOVD severity alignment.
+- [x] Audio Shield tab: listeners, devices with live levels, audio effect DLLs, engine/glitch checks, brokered end-program/quarantine and settings fixes.
+- [ ] Audio Shield: audio section in the case file; brokered "restart Windows Audio" action (policy, audit, timeout, rollback tests first).
 - [ ] Alerts: capture file path / service name for YARA and 7045 findings so reviewers can tell test fixtures from real events.
 - [ ] More databases (owner request): evaluate additional live, licensed feeds; keep update-at-launch and cache across restarts.
 - [x] Sakura Sentinel scene on Dashboard and Performance (load-driven petals, Kuro the cat with mood and threat awareness).

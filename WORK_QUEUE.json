@@ -720,7 +720,32 @@
         "Cleared items retired with audit",
         "Case file export with reviewer instructions"
       ],
-      "notes": "claude-parity-audit 2026-10-08: ThreatVerdictEngine, DnsCacheResolver, sinkhole/shared-host retirement, firewall/hardening downgrades, CaseFileBuilder/Exporter. Remaining: persistence signer checks, alert path capture."
+      "notes": "claude-parity-audit 2026-10-08: ThreatVerdictEngine, DnsCacheResolver, sinkhole/shared-host retirement, firewall/hardening downgrades, CaseFileBuilder/Exporter. Remaining: persistence signer checks, alert path capture. 2026-10-08: persistence signer checks done (f22aed4). Remaining: 7045/YARA alert detail capture."
+    },
+    {
+      "id": "DN-035",
+      "title": "Audio Shield: listening, audio device, audio driver and glitch threats with remediation",
+      "status": "in_progress",
+      "priority": "high",
+      "files": [
+        "src/Downpour.Contracts/AudioShield.cs",
+        "src/Downpour.Core/AudioThreatAnalyzer.cs",
+        "src/Downpour.Core/AudioClient.cs",
+        "src/Downpour.Service/CoreAudioInterop.cs",
+        "src/Downpour.Service/AudioShieldMonitor.cs",
+        "src/Downpour.Service/FileSignatureChecker.cs",
+        "src/Downpour.Desktop/Pages/AudioPage.xaml",
+        "src/Downpour.Desktop/Pages/AudioPage.xaml.cs",
+        "tests/Downpour.Tests/AudioShieldTests.cs"
+      ],
+      "acceptance": [
+        "Live recording sessions with owner, path, signature and level; no capture stream opened",
+        "Devices with kind, state, format, volume, mute, live level and new-device baseline",
+        "APO DLLs and audiodg.exe signature/location checks",
+        "Glitch causes explained with a fix",
+        "Remediation only through the audited broker or fixed settings pages"
+      ],
+      "notes": "claude-parity-audit 2026-10-08: shipped and verified live; 49 new tests. Remaining: case-file audio section; brokered audio-service restart needs its own policy/audit/rollback tests."
     }
   ]
 }

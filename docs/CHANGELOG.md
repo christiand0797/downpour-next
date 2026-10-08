@@ -5,6 +5,9 @@
 - **Threat Databases**: 19 public databases (LOLDrivers, LOLBAS, abuse.ch ThreatFox/Feodo/URLhaus/MalwareBazaar, Spamhaus DROP, Emerging Threats, FireHOL, IPsum, CINS, GreenSnow, blocklist.de, Tor exits, Phishing Army, OpenPhish, stalkerware indicators, IPtoASN) downloaded whole, validated, cached and matched on this PC against connections (with owning program), the DNS cache, loaded drivers and running programs. Offline lookups, connection origins (country and network) and a copyable evidence report.
 - **Threat Intel Feeds** browses the local databases; the old abuse.ch API calls needed a registered key and failed.
 - **CISA KEV** loads again (CISA switched dateReleased to a timestamp).
+- **Audio Shield** tab: shows which programs are listening to your microphone (or recording everything you hear) with live levels, every audio device including new, Bluetooth, virtual and Stereo Mix inputs, the effect DLLs loaded into the Windows audio engine with signature checks, and what is causing crackles, dropouts or silence. Each problem has its fix: end the program or quarantine the file (previewed, confirmed, audited, restorable) or open the exact Windows setting.
+- Fewer false alarms from startup items and drivers: signed vendor autostarts such as Microsoft Edge's cleanup task are now low priority, and signed vendor drivers with known flaws are reported as "legitimate but vulnerable" instead of critical.
+- Fixed rare crashes in the cherry-blossom scene and when closing the app.
 - **Anti-Stalker** tab; **host isolation** completed with an OS-scheduled release; **Parental Controls** crash fixed.
 - **Drivers** list works on Windows 11 24H2+ (kernel addresses are hidden from standard accounts).
 - **HUD theme** across the app: neon controls, Bahnschrift type, HUD ring gauges and glowing charts over the rain.

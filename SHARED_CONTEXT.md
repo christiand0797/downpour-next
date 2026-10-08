@@ -1,5 +1,21 @@
 # Downpour Next shared context
 
+## 2026-10-08 checkpoint: Audio Shield tab, signer-aware persistence, scene crash fixes (claude-parity-audit, DN-035/DN-034)
+
+Done (1018/1018 tests; Audio Shield checked live on this PC through the pipe and on screen in a self-contained build):
+- **Audio Shield** (route `audio`, Protection group; owner request "audio threats, listening threats, audio device threats, audio glitch threats"). Contracts `AudioShield.cs`; Core `AudioThreatAnalyzer` (classification, trust-on-first-use device baseline of endpoint-ID hashes, rules, findings) and `AudioClient` (strict validation); Service `CoreAudioInterop` (mmdeviceapi/audiopolicy/endpointvolume, read methods only), `AudioShieldProvider` + `AudioShieldMonitor` (1 s sample, pipe `Downpour.Audio.v1`, current-user ACL, findings source `Downpour/Audio`, baseline `state\audio-devices.v1.json`).
+  - Listening: recording sessions per endpoint with process, path, signature, window presence and live level. HIGH for monitoring/remote-control tools or unsigned listeners; MEDIUM for unknown programs in user folders, windowless listeners, or loopback (Stereo Mix) capture; INFO for known call/browser/recording apps.
+  - Devices: kind (built-in/USB/Bluetooth/HDMI/virtual/loopback/remote), format, volume, mute, live level; new microphones (MEDIUM), enabled loopback (LOW), virtual mics and remote audio (INFO).
+  - Driver threats: audio effect DLLs (APOs from AudioEngine\AudioProcessingObjects and endpoint FxProperties, COM servers only) with embedded-or-catalog signature checks; unsigned or user-folder APOs HIGH (T1546.015); audiodg.exe outside System32 or not Microsoft-signed CRITICAL (T1036.005).
+  - Glitches: Windows Audio / Endpoint Builder stopped (HIGH, T1489), audio engine CPU >= 15% (MEDIUM), no playback device, muted output, Bluetooth hands-free mode, Microsoft-Windows-Audio/Operational error counts.
+  - Remediation: End program and Quarantine reuse the audited action broker (preview, one-use consent token, audit; quarantine restorable from Remediation); settings fixes open fixed allow-listed ms-settings pages (sound, sound devices, Bluetooth, microphone privacy, troubleshoot, apps). No new system-changing path was added.
+- **Persistence false positives**: `PersistenceAnalyzer.Findings` takes an optional signer. Signed autostart targets in protected folders are LOW (Edge `msedge_cleanup` RunOnce), signed targets in user folders MEDIUM, unsigned/unverifiable/LOLBin targets stay HIGH; signed BYOVD-list drivers are MEDIUM "legitimate but vulnerable", unsigned CRITICAL. New shared `FileSignatureChecker` (embedded then catalog, cached by path/size/write time).
+- **Crash fixes**: `BlossomScene` frame errors are contained (0x800F1000 when re-adding a pooled petal) and `App.IsMainWindowVisible` no longer throws during shutdown.
+
+Commits: f22aed4 (persistence signer), this checkpoint's commit (Audio Shield + fixes). Commands: `dotnet build Downpour.slnx -c Debug` (0 errors), `dotnet test Downpour.slnx -c Debug` (1018 passed). Live check: pipe snapshot listed 33 endpoints, 26 effects (2 Nahimic vendor-signed, 24 Microsoft), audiodg.exe verified.
+
+Next: 7045/YARA alert detail capture (service name + image path), Audio section in the case file, optional audio-service restart through a new brokered action (needs policy, audit, timeout and rollback tests first), release v0.1.18 once `gh auth login` is done.
+
 ## 2026-10-08 checkpoint: Sakura Sentinel as a page overlay; realistic Kuro (claude-parity-audit, DN-032)
 
 Owner feedback: no second background, petals should land on GUI elements, the cat should sit on a GUI element, more realism, use available skills. Done (969/969 tests; checked on screen):

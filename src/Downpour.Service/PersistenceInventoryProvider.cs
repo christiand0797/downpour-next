@@ -12,7 +12,7 @@ namespace Downpour.Service;
 /// Read-only autostart and persistence inventory (v29 persistence_watchers, scheduled_task_monitor and
 /// wmi_persistence_detector). Live values are displayed but only their SHA-256 is persisted in the baseline.
 /// </summary>
-public sealed class PersistenceInventoryProvider(string baselinePath, IAuthenticodeVerifier? signatures = null)
+public sealed class PersistenceInventoryProvider(string baselinePath, FileSignatureChecker? signatures = null)
 {
     internal const int MaximumEntries = 4096;
     private const int MaximumText = 512;
@@ -21,7 +21,7 @@ public sealed class PersistenceInventoryProvider(string baselinePath, IAuthentic
     private static readonly JsonSerializerOptions BaselineJson = new(JsonSerializerDefaults.Web);
     private readonly object _gate = new();
 
-    public static PersistenceInventoryProvider CreateForCurrentUser(IAuthenticodeVerifier? signatures = null)
+    public static PersistenceInventoryProvider CreateForCurrentUser(FileSignatureChecker? signatures = null)
     {
         var root = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DownpourNext", "state");
         SecureJournalDirectory.Ensure(root);
@@ -90,18 +90,8 @@ public sealed class PersistenceInventoryProvider(string baselinePath, IAuthentic
     /// </summary>
     private PersistenceSignature? Signature(PersistenceEntry entry)
     {
-        if (ResolveTarget(PersistenceAnalyzer.LaunchTarget(entry)) is not { } path) return null;
-        try
-        {
-            if (AuthenticodeVerifier.VerifyEmbeddedSignature(path, out var signer))
-                return new(true, signer, AuthenticodeVerifier.IsMicrosoftSignerName(signer));
-            if (signatures?.IsMicrosoftSigned(path) == true) return new(true, "Microsoft (catalog)", true);
-            return new(false, null, false);
-        }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.ComponentModel.Win32Exception)
-        {
-            return null;
-        }
+        if (signatures is null || ResolveTarget(PersistenceAnalyzer.LaunchTarget(entry)) is not { } path) return null;
+        return signatures.Check(path);
     }
 
     internal static string? ResolveTarget(string? target)
