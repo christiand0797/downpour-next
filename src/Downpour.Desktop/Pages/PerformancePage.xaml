@@ -7,8 +7,9 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       mc:Ignorable="d">
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-        <StackPanel Padding="24,20,24,36" Spacing="16">
-            <ContentControl x:Name="BlossomHost" HorizontalContentAlignment="Stretch" HorizontalAlignment="Stretch" />
+      <Grid>
+        <StackPanel x:Name="PerformanceContent" Padding="24,20,24,36" Spacing="16">
+            <Border x:Name="BlossomBand" Height="200" IsHitTestVisible="False" />
             <Grid ColumnSpacing="20">
                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                 <StackPanel Spacing="4">
@@ -35,7 +36,7 @@
                 </StackPanel>
             </Grid>
 
-            <Border Padding="14,11" CornerRadius="10" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource DownpourStrokeBrush}" BorderThickness="1">
+            <Border x:Name="CatPerch" Padding="14,11" CornerRadius="10" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource DownpourStrokeBrush}" BorderThickness="1">
                 <Grid ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                     <FontIcon Glyph="&#xE9D9;" FontSize="20" Foreground="{StaticResource HudCyanBrush}" VerticalAlignment="Center" />
                     <StackPanel Grid.Column="1" Spacing="2"><TextBlock x:Name="StatusHeadline" FontWeight="SemiBold" Text="Connecting to local performance counters" /><TextBlock x:Name="StatusDescription" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Values remain unknown until current telemetry arrives." TextWrapping="Wrap" /></StackPanel>
@@ -153,5 +154,8 @@
                 </Grid>
             </Border>
         </StackPanel>
+        <!-- Sakura Sentinel overlay: petals land on the cards above; click-through. -->
+        <ContentControl x:Name="SakuraLayer" IsHitTestVisible="False" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
+      </Grid>
     </ScrollViewer>
 </Page>

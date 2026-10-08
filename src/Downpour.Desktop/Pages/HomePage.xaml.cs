@@ -38,7 +38,8 @@ public sealed partial class HomePage : Page
     public HomePage()
     {
         InitializeComponent();
-        BlossomHost.Content = _blossom;
+        SakuraLayer.Content = _blossom;
+        _blossom.Attach(HomeContent, BlossomBand, CatPerch);
         _cpuGauge = new CircularGauge("CPU", Color.FromArgb(255, 74, 220, 243));
         _memoryGauge = new CircularGauge("MEMORY", Color.FromArgb(255, 178, 121, 248));
         GaugeHost.Children.Add(_cpuGauge);

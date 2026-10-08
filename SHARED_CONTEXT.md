@@ -1,5 +1,12 @@
 # Downpour Next shared context
 
+## 2026-10-08 checkpoint: Sakura Sentinel as a page overlay; realistic Kuro (claude-parity-audit, DN-032)
+
+Owner feedback: no second background, petals should land on GUI elements, the cat should sit on a GUI element, more realism, use available skills. Done (969/969 tests; checked on screen):
+- `BlossomScene` is now a transparent, click-through overlay inside each page's ScrollViewer (scrolls with content) over the app's storm backdrop. The tree stands in a 200 px band (`BlossomBand`); petals land on the top edges of real cards found in the visual tree (framed Borders, re-scanned every 1.5 s and on resize; resting petals are released when cards move); Kuro sits on `CatPerch` (the status card) with his tail draped over its edge.
+- Motion-performance skill applied: petals move via CompositeTransform translate only (no Canvas.Left/Top layout per frame) and the timer pauses when the overlay is scrolled out of view (EffectiveViewportChanged), hidden, or with Reduce motion.
+- Kuro realism: shouldered/haunched sitting silhouette with spine and haunch sheen, fur tufts, cheek ruff, rounded ears with pink inner ears and tufts, curved whiskers, gradient eyes, contact shadow, tapered two-segment tail with independent tip curl and flicks, independent ear swivels, head tilts, quick blinks and the slow trust blink; pink neon rim light so he reads on the dark backdrop.
+
 ## 2026-10-08 checkpoint: Sakura Sentinel scene, HUD meters, Performance layout, pipe warm-up (claude-parity-audit, DN-032)
 
 Done and verified (969/969 tests twice; portable build checked on screen):

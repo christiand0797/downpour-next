@@ -8,8 +8,9 @@
       mc:Ignorable="d">
     <ScrollViewer x:Name="PageScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
                   HorizontalScrollMode="Disabled" ZoomMode="Disabled">
+      <Grid>
         <StackPanel x:Name="HomeContent" Padding="24,20,24,36" Spacing="16" HorizontalAlignment="Stretch">
-            <ContentControl x:Name="BlossomHost" HorizontalContentAlignment="Stretch" HorizontalAlignment="Stretch" />
+            <Border x:Name="BlossomBand" Height="200" IsHitTestVisible="False" />
             <Grid ColumnSpacing="20">
                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                 <StackPanel Spacing="4">
@@ -36,7 +37,7 @@
                 </StackPanel>
             </Grid>
 
-            <Border Padding="14,11" CornerRadius="10" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
+            <Border x:Name="CatPerch" Padding="14,11" CornerRadius="10" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
                 <Grid ColumnSpacing="12">
                     <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                     <FontIcon Glyph="&#xE7BA;" FontSize="20" Foreground="{StaticResource HudCyanBrush}" VerticalAlignment="Center" />
@@ -146,5 +147,8 @@
                 </Grid>
             </Border>
         </StackPanel>
+        <!-- Sakura Sentinel overlay: petals land on the cards above; click-through. -->
+        <ContentControl x:Name="SakuraLayer" IsHitTestVisible="False" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
+      </Grid>
     </ScrollViewer>
 </Page>

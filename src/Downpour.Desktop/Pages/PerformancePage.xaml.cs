@@ -71,7 +71,8 @@ public sealed partial class PerformancePage : Page
     public PerformancePage()
     {
         InitializeComponent();
-        BlossomHost.Content = _blossom;
+        SakuraLayer.Content = _blossom;
+        _blossom.Attach(PerformanceContent, BlossomBand, CatPerch);
         _cpuGauge = new CircularGauge("CPU", Color.FromArgb(255, 74, 220, 243));
         _memoryGauge = new CircularGauge("MEMORY", Color.FromArgb(255, 178, 121, 248));
         _commitGauge = new CircularGauge("COMMIT", Color.FromArgb(255, 255, 174, 92));
