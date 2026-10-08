@@ -10,17 +10,17 @@
             <Grid ColumnSpacing="16">
                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                 <StackPanel Spacing="4">
-                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Foreground="#FF76DDF5" Text="DOWNPOUR  /  MONITORING  /  WIRELESS" />
+                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Foreground="{StaticResource HudCyanBrush}" Text="DOWNPOUR  /  MONITORING  /  WIRELESS" />
                     <TextBlock Style="{StaticResource TitleTextBlockStyle}" FontSize="30" Text="Wi-Fi &amp; Wireless Posture" />
                     <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Wireless network posture, access points, Evil Twin detection, and paired Bluetooth device inventory. Read-only." TextWrapping="Wrap" />
                 </StackPanel>
                 <Button Grid.Column="1" x:Name="RefreshButton" Content="Re-check" Click="Refresh_Click" VerticalAlignment="Center" />
             </Grid>
 
-            <Border Padding="14,11" CornerRadius="10" Background="#B9081220" BorderBrush="#423EC5D8" BorderThickness="1">
+            <Border Padding="14,11" CornerRadius="10" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
                 <Grid ColumnSpacing="12">
                     <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                    <FontIcon Glyph="&#xE701;" FontSize="20" Foreground="#FF60DBEE" VerticalAlignment="Center" />
+                    <FontIcon Glyph="&#xE701;" FontSize="20" Foreground="{StaticResource HudCyanBrush}" VerticalAlignment="Center" />
                     <StackPanel Grid.Column="1" Spacing="3">
                         <TextBlock x:Name="StatusHeadline" FontWeight="SemiBold" Text="Checking wireless posture" />
                         <TextBlock x:Name="StatusDetail" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Readings come from WLAN queries and the Bluetooth device registry. Strictly read-only." TextWrapping="Wrap" />
@@ -65,7 +65,7 @@
                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                     <TextBlock Text="{Binding SsidDisplay}" FontWeight="SemiBold" />
                                     <Border CornerRadius="4" Padding="6,1" Background="#423EC5D8" Visibility="{Binding ConnectedVisibility}">
-                                        <TextBlock Text="CONNECTED" FontSize="10" FontWeight="Bold" Foreground="#FF60DBEE" />
+                                        <TextBlock Text="CONNECTED" FontSize="10" FontWeight="Bold" Foreground="{StaticResource HudCyanBrush}" />
                                     </Border>
                                 </StackPanel>
                                 <TextBlock Text="{Binding Details}" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />

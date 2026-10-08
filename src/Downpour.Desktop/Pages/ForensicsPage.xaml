@@ -14,7 +14,7 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <StackPanel Spacing="4">
-                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Foreground="#FF76DDF5" Text="DOWNPOUR  /  FORENSICS  /  EVIDENCE COLLECTOR &amp; LEGAL REPORT GENERATOR" />
+                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Foreground="{StaticResource HudCyanBrush}" Text="DOWNPOUR  /  FORENSICS  /  EVIDENCE COLLECTOR &amp; LEGAL REPORT GENERATOR" />
                     <TextBlock Style="{StaticResource TitleTextBlockStyle}" FontSize="30" Text="Forensic Evidence Collector &amp; Legal Reports" />
                     <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Collect, cryptographically sign, and package host security compromise evidence for law enforcement (Police Report, FBI IC3, CERT). Strictly read-only." TextWrapping="Wrap" />
                 </StackPanel>
@@ -27,34 +27,34 @@
             </Grid>
 
             <!-- Overview Banner -->
-            <Border Padding="16,14" CornerRadius="10" Background="#B9081220" BorderBrush="#423EC5D8" BorderThickness="1">
+            <Border Padding="16,14" CornerRadius="10" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
                 <Grid ColumnSpacing="16">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <FontIcon Glyph="&#xE8A5;" FontSize="28" Foreground="#FF60DBEE" VerticalAlignment="Center" Margin="0,0,6,0" />
+                    <FontIcon Glyph="&#xE8A5;" FontSize="28" Foreground="{StaticResource HudCyanBrush}" VerticalAlignment="Center" Margin="0,0,6,0" />
                     <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
                         <TextBlock x:Name="StatusHeadline" FontWeight="SemiBold" FontSize="14" Text="Forensic Evidence Collection Ready" />
                         <TextBlock x:Name="StatusDetail" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Collects live chain of custody, security alerts, event logs, persistence entries, blocked firewall connections, and network endpoints with SHA-256 seal." TextWrapping="Wrap" />
                     </StackPanel>
                     <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="14" VerticalAlignment="Center">
-                        <Border CornerRadius="8" Padding="12,8" Background="#163EC5D8">
+                        <Border CornerRadius="8" Padding="12,8" Background="{StaticResource HudCyanTintBrush}">
                             <StackPanel HorizontalAlignment="Center">
-                                <TextBlock x:Name="TotalEvidenceText" Text="—" FontSize="20" FontWeight="Bold" Foreground="#FF60DBEE" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="TotalEvidenceText" Text="—" FontSize="20" FontWeight="Bold" Foreground="{StaticResource HudCyanBrush}" HorizontalAlignment="Center" />
                                 <TextBlock Text="Total Evidence" FontSize="10" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" />
                             </StackPanel>
                         </Border>
-                        <Border CornerRadius="8" Padding="12,8" Background="#163EC5D8">
+                        <Border CornerRadius="8" Padding="12,8" Background="{StaticResource HudCyanTintBrush}">
                             <StackPanel HorizontalAlignment="Center">
-                                <TextBlock x:Name="CriticalHighText" Text="—" FontSize="20" FontWeight="Bold" Foreground="#FFFF7B72" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="CriticalHighText" Text="—" FontSize="20" FontWeight="Bold" Foreground="{StaticResource HudRedBrush}" HorizontalAlignment="Center" />
                                 <TextBlock Text="Critical / High" FontSize="10" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" />
                             </StackPanel>
                         </Border>
-                        <Border CornerRadius="8" Padding="12,8" Background="#163EC5D8">
+                        <Border CornerRadius="8" Padding="12,8" Background="{StaticResource HudCyanTintBrush}">
                             <StackPanel HorizontalAlignment="Center">
-                                <TextBlock x:Name="AttackerIpsText" Text="—" FontSize="20" FontWeight="Bold" Foreground="#FF76DDF5" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="AttackerIpsText" Text="—" FontSize="20" FontWeight="Bold" Foreground="{StaticResource HudCyanBrush}" HorizontalAlignment="Center" />
                                 <TextBlock Text="Attacker IPs" FontSize="10" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" />
                             </StackPanel>
                         </Border>
@@ -63,21 +63,21 @@
             </Border>
 
             <!-- Policy & Read-Only Notice -->
-            <Border Padding="12,9" CornerRadius="8" Background="#263EC5D8" BorderBrush="#333EC5D8" BorderThickness="1">
+            <Border Padding="12,9" CornerRadius="8" Background="{StaticResource HudCyanTintBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
                 <Grid ColumnSpacing="10">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
-                    <FontIcon Glyph="&#xE72E;" FontSize="16" Foreground="#FF60DBEE" VerticalAlignment="Center" />
+                    <FontIcon Glyph="&#xE72E;" FontSize="16" Foreground="{StaticResource HudCyanBrush}" VerticalAlignment="Center" />
                     <TextBlock Grid.Column="1" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Read-Only Evidence Preservation: Operations are purely observational. No processes killed, no files altered, no network probe packets transmitted. Digital chain-of-custody sealed with SHA-256." VerticalAlignment="Center" />
                 </Grid>
             </Border>
 
             <!-- Chain of Custody & Hash Card -->
-            <Border x:Name="ChainOfCustodyCard" Visibility="Collapsed" Padding="14,12" CornerRadius="8" Background="#121622" BorderBrush="#333EC5D8" BorderThickness="1">
+            <Border x:Name="ChainOfCustodyCard" Visibility="Collapsed" Padding="14,12" CornerRadius="8" Background="#121622" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
                 <StackPanel Spacing="6">
-                    <TextBlock Text="Digital Chain of Custody &amp; Integrity Seal" FontWeight="SemiBold" FontSize="13" Foreground="#FF76DDF5" />
+                    <TextBlock Text="Digital Chain of Custody &amp; Integrity Seal" FontWeight="SemiBold" FontSize="13" Foreground="{StaticResource HudCyanBrush}" />
                     <Grid ColumnSpacing="12" RowSpacing="4">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="130" />
@@ -103,8 +103,8 @@
                         <TextBlock Grid.Row="1" Grid.Column="2" Text="MAC Address(es):" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         <TextBlock Grid.Row="1" Grid.Column="3" x:Name="CocMacText" FontSize="11" TextWrapping="Wrap" />
 
-                        <TextBlock Grid.Row="2" Grid.Column="0" Text="SHA-256 Seal:" FontSize="11" Foreground="#FF58A6FF" FontWeight="SemiBold" />
-                        <TextBlock Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" x:Name="CocSha256Text" FontFamily="Consolas" FontSize="11" Foreground="#FF58A6FF" IsTextSelectionEnabled="True" TextWrapping="Wrap" />
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="SHA-256 Seal:" FontSize="11" Foreground="{StaticResource HudBlueBrush}" FontWeight="SemiBold" />
+                        <TextBlock Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" x:Name="CocSha256Text" FontFamily="Consolas" FontSize="11" Foreground="{StaticResource HudBlueBrush}" IsTextSelectionEnabled="True" TextWrapping="Wrap" />
                     </Grid>
                 </StackPanel>
             </Border>
@@ -158,7 +158,7 @@
                             <!-- Category & MITRE Technique -->
                             <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
                                 <TextBlock Text="{Binding Category}" FontSize="12" FontWeight="SemiBold" />
-                                <TextBlock Text="{Binding TechniqueDisplay}" FontSize="10" Foreground="#FF58A6FF" FontFamily="Consolas" />
+                                <TextBlock Text="{Binding TechniqueDisplay}" FontSize="10" Foreground="{StaticResource HudBlueBrush}" FontFamily="Consolas" />
                             </StackPanel>
 
                             <!-- Title & Detail -->
@@ -179,9 +179,9 @@
             </ListView>
 
             <!-- Law Enforcement Filing Guidance Card -->
-            <Border Padding="14,12" CornerRadius="8" Background="#161b22" BorderBrush="#30363d" BorderThickness="1">
+            <Border Padding="14,12" CornerRadius="8" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudStrokeMutedBrush}" BorderThickness="1">
                 <StackPanel Spacing="6">
-                    <TextBlock Text="Law Enforcement &amp; Incident Submission Guidance" FontWeight="SemiBold" FontSize="13" Foreground="#FF58A6FF" />
+                    <TextBlock Text="Law Enforcement &amp; Incident Submission Guidance" FontWeight="SemiBold" FontSize="13" Foreground="{StaticResource HudBlueBrush}" />
                     <TextBlock FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="• FBI Internet Crime Complaint Center (IC3): File online at https://www.ic3.gov with the exported HTML report and raw JSON bundle attached." TextWrapping="Wrap" />
                     <TextBlock FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="• Local Police Department / Detective Bureau: Provide a printed copy of the HTML report accompanied by a write-protected USB drive containing the raw JSON evidence package." TextWrapping="Wrap" />
                     <TextBlock FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="• Chain of Custody: The evidence package is sealed with a cryptographic SHA-256 digest ensuring digital authenticity and non-repudiation." TextWrapping="Wrap" />

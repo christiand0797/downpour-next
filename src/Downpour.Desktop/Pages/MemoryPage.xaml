@@ -14,7 +14,7 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <StackPanel Spacing="4">
-                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Foreground="#FFD2A8FF" Text="DOWNPOUR  /  FORENSICS  /  PROCESS MEMORY &amp; INJECTION MONITOR" />
+                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Foreground="{StaticResource HudVioletBrush}" Text="DOWNPOUR  /  FORENSICS  /  PROCESS MEMORY &amp; INJECTION MONITOR" />
                     <TextBlock Style="{StaticResource TitleTextBlockStyle}" FontSize="30" Text="Memory Forensics &amp; Process Injection Watch" />
                     <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Live volatile memory review, process hollowing detection (T1055.012), path masquerading analysis, thread execution hijacking, and injection pattern scoring." TextWrapping="Wrap" />
                 </StackPanel>
@@ -27,40 +27,40 @@
             </Grid>
 
             <!-- Overview Banner -->
-            <Border Padding="16,14" CornerRadius="10" Background="#B9081220" BorderBrush="#423EC5D8" BorderThickness="1">
+            <Border Padding="16,14" CornerRadius="10" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
                 <Grid ColumnSpacing="16">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <FontIcon Glyph="&#xE8A5;" FontSize="28" Foreground="#FFD2A8FF" VerticalAlignment="Center" Margin="0,0,6,0" />
+                    <FontIcon Glyph="&#xE8A5;" FontSize="28" Foreground="{StaticResource HudVioletBrush}" VerticalAlignment="Center" Margin="0,0,6,0" />
                     <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
                         <TextBlock x:Name="StatusHeadline" FontWeight="SemiBold" FontSize="14" Text="Memory Forensics Ready" />
                         <TextBlock x:Name="StatusDetail" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Click 'Scan All Processes' to evaluate running processes for code injection, path masquerading, and unbacked memory regions." TextWrapping="Wrap" />
                     </StackPanel>
                     <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="14" VerticalAlignment="Center">
-                        <Border CornerRadius="8" Padding="12,8" Background="#163EC5D8">
+                        <Border CornerRadius="8" Padding="12,8" Background="{StaticResource HudCyanTintBrush}">
                             <StackPanel HorizontalAlignment="Center">
-                                <TextBlock x:Name="TotalScannedText" Text="0" FontSize="18" FontWeight="Bold" Foreground="#FF60DBEE" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="TotalScannedText" Text="0" FontSize="18" FontWeight="Bold" Foreground="{StaticResource HudCyanBrush}" HorizontalAlignment="Center" />
                                 <TextBlock Text="Scanned" FontSize="10" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" />
                             </StackPanel>
                         </Border>
-                        <Border CornerRadius="8" Padding="12,8" Background="#163EC5D8">
+                        <Border CornerRadius="8" Padding="12,8" Background="{StaticResource HudCyanTintBrush}">
                             <StackPanel HorizontalAlignment="Center">
-                                <TextBlock x:Name="InjectedCountText" Text="0" FontSize="18" FontWeight="Bold" Foreground="#FFFF7B72" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="InjectedCountText" Text="0" FontSize="18" FontWeight="Bold" Foreground="{StaticResource HudRedBrush}" HorizontalAlignment="Center" />
                                 <TextBlock Text="Injected" FontSize="10" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" />
                             </StackPanel>
                         </Border>
-                        <Border CornerRadius="8" Padding="12,8" Background="#163EC5D8">
+                        <Border CornerRadius="8" Padding="12,8" Background="{StaticResource HudCyanTintBrush}">
                             <StackPanel HorizontalAlignment="Center">
                                 <TextBlock x:Name="SuspiciousCountText" Text="0" FontSize="18" FontWeight="Bold" Foreground="#FFFA CA5E" HorizontalAlignment="Center" />
                                 <TextBlock Text="Suspicious" FontSize="10" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" />
                             </StackPanel>
                         </Border>
-                        <Border CornerRadius="8" Padding="12,8" Background="#163EC5D8">
+                        <Border CornerRadius="8" Padding="12,8" Background="{StaticResource HudCyanTintBrush}">
                             <StackPanel HorizontalAlignment="Center">
-                                <TextBlock x:Name="CleanCountText" Text="0" FontSize="18" FontWeight="Bold" Foreground="#FF56D364" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="CleanCountText" Text="0" FontSize="18" FontWeight="Bold" Foreground="{StaticResource HudGreenBrush}" HorizontalAlignment="Center" />
                                 <TextBlock Text="Clean" FontSize="10" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" />
                             </StackPanel>
                         </Border>
@@ -69,13 +69,13 @@
             </Border>
 
             <!-- Policy & Read-Only Notice -->
-            <Border Padding="12,9" CornerRadius="8" Background="#263EC5D8" BorderBrush="#333EC5D8" BorderThickness="1">
+            <Border Padding="12,9" CornerRadius="8" Background="{StaticResource HudCyanTintBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
                 <Grid ColumnSpacing="10">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
-                    <FontIcon Glyph="&#xE72E;" FontSize="16" Foreground="#FF60DBEE" VerticalAlignment="Center" />
+                    <FontIcon Glyph="&#xE72E;" FontSize="16" Foreground="{StaticResource HudCyanBrush}" VerticalAlignment="Center" />
                     <TextBlock Grid.Column="1" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Execution Policy Notice: Process termination, thread suspension, and memory modification are guarded under least-privilege security policy. Terminating processes requires an audited action broker (DN-008). Passive memory inspection is active." VerticalAlignment="Center" />
                 </Grid>
             </Border>
@@ -119,7 +119,7 @@
                                             <TextBlock Text="{Binding PidDisplay}" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
                                         </StackPanel>
                                         <TextBlock Text="{Binding ExecutablePath}" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
-                                        <TextBlock Text="{Binding TechniqueDisplay}" FontSize="10" Foreground="#FF58A6FF" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
+                                        <TextBlock Text="{Binding TechniqueDisplay}" FontSize="10" Foreground="{StaticResource HudBlueBrush}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
                                     </StackPanel>
                                     <StackPanel Grid.Column="2" Spacing="1" HorizontalAlignment="Right" VerticalAlignment="Center">
                                         <TextBlock Text="{Binding ScoreDisplay}" FontSize="12" FontWeight="Bold" Foreground="{Binding SeverityForeground}" HorizontalAlignment="Right" />
@@ -137,9 +137,9 @@
                 <!-- Right Column: Process Deep Details & Activity Log -->
                 <StackPanel Grid.Column="1" Spacing="14">
                     <!-- Selected Process Details Card -->
-                    <Border Padding="14,12" CornerRadius="8" Background="#161b22" BorderBrush="#30363d" BorderThickness="1">
+                    <Border Padding="14,12" CornerRadius="8" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudStrokeMutedBrush}" BorderThickness="1">
                         <StackPanel Spacing="6">
-                            <TextBlock Text="Selected Process Memory Analysis" FontWeight="SemiBold" FontSize="13" Foreground="#FF58A6FF" />
+                            <TextBlock Text="Selected Process Memory Analysis" FontWeight="SemiBold" FontSize="13" Foreground="{StaticResource HudBlueBrush}" />
                             <TextBlock x:Name="SelectedProcessTitle" Text="Select a process from the list for detailed memory review." FontWeight="SemiBold" FontSize="12" />
                             <TextBlock x:Name="SelectedProcessPath" Text="—" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                             <TextBlock x:Name="SelectedProcessFindings" Text="—" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
@@ -149,7 +149,7 @@
                     <!-- Activity Log & Report Preview -->
                     <StackPanel Spacing="6">
                         <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" FontSize="15" Text="Memory Forensics Activity Log &amp; Report" />
-                        <TextBox x:Name="MemoryReportBox" FontFamily="Consolas" FontSize="11" MinHeight="300" MaxHeight="380" TextWrapping="Wrap" AcceptsReturn="True" IsReadOnly="True" Background="#0b1016" Foreground="#FFD2A8FF" />
+                        <TextBox x:Name="MemoryReportBox" FontFamily="Consolas" FontSize="11" MinHeight="300" MaxHeight="380" TextWrapping="Wrap" AcceptsReturn="True" IsReadOnly="True" Background="{StaticResource HudPanelBrush}" Foreground="{StaticResource HudVioletBrush}" />
                     </StackPanel>
                 </StackPanel>
             </Grid>

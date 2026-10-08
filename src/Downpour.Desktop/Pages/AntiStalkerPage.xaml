@@ -17,7 +17,7 @@
                 <Button Grid.Column="1" x:Name="RefreshButton" Content="Refresh" Click="Refresh_Click" VerticalAlignment="Top" />
             </Grid>
 
-            <Border x:Name="SummaryCard" Padding="16" CornerRadius="10" BorderThickness="1" Background="#A80B1524" BorderBrush="#3D46C5D8">
+            <Border x:Name="SummaryCard" Padding="16" CornerRadius="10" BorderThickness="1" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}">
                 <StackPanel Spacing="4">
                     <TextBlock x:Name="SummaryHeadline" Text="Checking…" FontSize="16" FontWeight="SemiBold" TextWrapping="Wrap" />
                     <TextBlock x:Name="SummaryDetail" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
@@ -43,12 +43,12 @@
             <TextBlock Text="Windows keeps the last time each app used the camera, microphone, screen capture, or location, even from before Downpour was installed. Unfamiliar apps here deserve a closer look." FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
             <StackPanel x:Name="UsagePanel" Spacing="6" />
 
-            <Border Padding="14" CornerRadius="10" Background="#A80B1524" BorderBrush="#3D46C5D8" BorderThickness="1">
+            <Border Padding="14" CornerRadius="10" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
                 <StackPanel Spacing="6">
-                    <TextBlock Text="What this can and cannot see" FontWeight="SemiBold" Foreground="#FFFFC76A" />
+                    <TextBlock Text="What this can and cannot see" FontWeight="SemiBold" Foreground="{StaticResource HudAmberBrush}" />
                     <TextBlock FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"
                                Text="Camera, microphone, and location use are recorded by Windows for every app. Screen capture is recorded only for apps that use Windows' official capture feature; programs that copy the screen another way (many remote-control tools and spyware) are found by name instead, as are Remote Desktop sessions. Hidden or renamed spyware can evade name checks, and phones are not covered." />
-                    <TextBlock Text="If you think someone is stalking you" FontWeight="SemiBold" Margin="0,6,0,0" Foreground="#FFFFC76A" />
+                    <TextBlock Text="If you think someone is stalking you" FontWeight="SemiBold" Margin="0,6,0,0" Foreground="{StaticResource HudAmberBrush}" />
                     <TextBlock FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"
                                Text="Removing monitoring software can alert the person who installed it. If you may be in danger, consider talking to a domestic-violence or victim-support service first and using a different, trusted device to plan. Change important passwords from that device, turn on two-step sign-in, and check Settings &gt; Privacy &amp; security for app permissions. The Coalition Against Stalkerware (stopstalkerware.org) has guidance." />
                 </StackPanel>

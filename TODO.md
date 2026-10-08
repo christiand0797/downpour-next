@@ -1,12 +1,19 @@
 # Downpour Next TODO
 
-## Active owner continuation (2026-10-07, codex-primary)
+## Active owner continuation (2026-10-07, claude-parity-audit)
 
-- [ ] Reproduce and fix Parental Controls initialization crash; remove simulated usage; expose persistence errors; verify real page launch.
-- [ ] Validate additional legitimate driver/threat catalogs with provenance, licensing, bounded parsing, persistent cache and real findings.
-- [ ] Compare v29 source behavior and update source inventory/acceptance gaps.
-- [ ] Improve shared controls/theme from owner references while preserving rain, focus and contrast.
-- [ ] Build/test, publish verified next release, and record exact evidence; preserve unrelated drafts.
+- [x] Fix Parental Controls initialization crash; remove simulated usage; expose persistence errors; verified real page launch (dd1ecc1).
+- [x] Legitimate driver/threat databases with provenance, licensing, bounded parsing, persistent cache and real findings (DN-031: 19 feeds, LOLDrivers driver hashing, offline IP origin).
+- [x] Futuristic HUD theme from owner references, rain preserved, focus/contrast kept (DN-032).
+- [x] Drivers page empty on Windows 11 24H2+ (WMI fallback).
+- [x] Threat Intel Feeds broken by abuse.ch key requirement (rebuilt on local databases).
+- [x] CISA KEV failed on timestamp dateReleased.
+- [ ] DN-033: refresh every page every second smoothly (in-place updates, cached heavy collectors).
+- [ ] Fold repeated "PowerShell script block recorded" LOW alerts into counted rows.
+- [ ] Publish v0.1.18 (x64 + arm64) with release manifest and record evidence.
+- [ ] Anti-Stalker: origin for remote sessions/remote-control connections and an evidence export.
+- [ ] List rows announce type names to screen readers; Parental header crowding at narrow widths.
+- [ ] Compare v29 source behavior and update source inventory/acceptance gaps; web research for further features.
 
 ## 2026-10-07 checkpoint: DN-008 Phase 4 Reversible USB Device Instance Block & USBSTOR Toggle (antigravity-worker)
 

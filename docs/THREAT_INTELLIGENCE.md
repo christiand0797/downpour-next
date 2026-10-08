@@ -1,5 +1,26 @@
 # Threat intelligence ingestion
 
+## Threat databases (local matching, DN-031)
+
+`ThreatFeedCatalog` lists every allowed source with its fixed HTTPS URL, size limit, refresh interval, severity, MITRE technique, purpose and license. `ThreatDatabaseService` downloads due feeds whole (no redirects, 90 s deadline, streaming size limit), parses them with a format-specific strict parser (a feed whose entries mostly fail validation is rejected as a whole), and stores only validated payloads in `%LOCALAPPDATA%\DownpourNext\threat-db\{id}.v1.cache` with a SHA-256 corruption check. Private, loopback, link-local, CGNAT, documentation and multicast ranges are never indexed or matched. Shared platforms (Google, GitHub, Microsoft, Dropbox, Discord, URL shorteners, mobile SDK hosts such as Umeng) are never indexed because a malicious path on them cannot be told apart from normal use in a DNS cache; per-customer subdomains of user-hosting platforms (`*.vercel.app`, S3 buckets, CloudFront distributions) are kept.
+
+Every 5 minutes the service matches established TCP connections with owning process (IPv4/IPv6), DNS cache names (with parent-domain matching), loaded kernel drivers by SHA-256/SHA-1/MD5 (LOLDrivers plus hash feeds), and running programs outside `%WINDIR%` (MalwareBazaar, ThreatFox). Running LOLBAS tools are context only. Matches become `Downpour/ThreatDatabase` triage findings. The IPtoASN dataset gives each public address its registered country and announcing network offline.
+
+| Feed | Source | License | Use |
+|---|---|---|---|
+| LOLDrivers | loldrivers.io | Apache-2.0 | vulnerable/malicious driver hashes |
+| LOLBAS | lolbas-project.github.io | GPL-3.0 | built-in tools attackers misuse (context) |
+| ThreatFox, Feodo, URLhaus, MalwareBazaar | abuse.ch public exports | CC0 | C2 IPs/domains, malware hosts and hashes |
+| Spamhaus DROP v4/v6 | spamhaus.org | DROP terms | hijacked/criminal networks |
+| ET compromised | Proofpoint ET Open | BSD | compromised hosts |
+| FireHOL level 1, IPsum 3+, CINS, GreenSnow, blocklist.de | respective projects | per source | attacker/scanner reputation |
+| Tor exits | torproject.org | public | Tor exit relays (low) |
+| Phishing Army, OpenPhish | respective projects | non-commercial | phishing domains |
+| Stalkerware indicators | Echap | CC BY 4.0 | stalkerware servers |
+| IPtoASN | iptoasn.com | PDDL | offline country/network origin |
+
+abuse.ch's query APIs (`mb-api`, `urlhaus-api`) now require a registered Auth-Key; the public bulk exports above do not. The SSL Blacklist IP/JA3 lists were deprecated by abuse.ch on 2025-01-03 and are not used. CISA switched the KEV `dateReleased` field to an ISO 8601 timestamp in 2026; both forms are accepted.
+
 ## Current source
 
 The Threat Intelligence route currently downloads the CISA Known Exploited Vulnerabilities (KEV) catalog from the fixed endpoint `https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json`. CISA describes KEV as a source for vulnerability-management prioritization: [CISA KEV catalog](https://www.cisa.gov/known-exploited-vulnerabilities-catalog).

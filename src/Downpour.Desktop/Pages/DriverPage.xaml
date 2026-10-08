@@ -10,7 +10,7 @@
         <Grid ColumnSpacing="16">
             <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
             <StackPanel Spacing="4">
-                <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Foreground="#FF76DDF5" Text="DEVICE MONITORING  /  READ ONLY" />
+                <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Foreground="{StaticResource HudCyanBrush}" Text="DEVICE MONITORING  /  READ ONLY" />
                 <TextBlock Style="{StaticResource TitleTextBlockStyle}" FontSize="30" Text="Drivers" />
                 <TextBlock x:Name="InventoryStatus" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Connecting to the local sensor service…" TextWrapping="Wrap" />
             </StackPanel>

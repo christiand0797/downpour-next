@@ -16,9 +16,9 @@
                 <TextBlock Text="Vulnerabilities" Style="{StaticResource TitleTextBlockStyle}" />
                 <TextBlock Text="Review installed application names against the CISA Known Exploited Vulnerabilities catalog. Enrich candidates with NVD CVE data for affected version analysis." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
             </StackPanel>
-            <Border Padding="14" CornerRadius="10" Background="#A80B1524" BorderBrush="#3D46C5D8" BorderThickness="1">
+            <Border Padding="14" CornerRadius="10" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
                 <StackPanel Spacing="8">
-                    <TextBlock Text="Candidate matches need manual verification" FontWeight="SemiBold" Foreground="#FFFFC76A" />
+                    <TextBlock Text="Candidate matches need manual verification" FontWeight="SemiBold" Foreground="{StaticResource HudAmberBrush}" />
                     <TextBlock Text="Downpour reads application name, version, and publisher from Windows uninstall registry entries. A product-name match does not prove an affected version, installation location, exploitability, or patch status. No uninstall commands or install paths are collected, and no changes are made." FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                 </StackPanel>
             </Border>
@@ -41,9 +41,9 @@
             <TextBox x:Name="SearchBox" PlaceholderText="Filter software or candidate CVE/vendor/product" TextChanged="SearchBox_TextChanged" />
             <Grid ColumnSpacing="14">
                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                <Border Padding="12" CornerRadius="10" Background="#C808111E" BorderBrush="#5738B9D1" BorderThickness="1">
+                <Border Padding="12" CornerRadius="10" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
                     <StackPanel Spacing="9">
-                        <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><TextBlock Text="INSTALLED SOFTWARE" FontSize="11" FontWeight="SemiBold" CharacterSpacing="85" Foreground="#FF91AFC2" /><TextBlock x:Name="SoftwareCount" Grid.Column="1" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" /></Grid>
+                        <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><TextBlock Text="INSTALLED SOFTWARE" FontSize="11" FontWeight="SemiBold" CharacterSpacing="85" Foreground="{StaticResource HudTextDimBrush}" /><TextBlock x:Name="SoftwareCount" Grid.Column="1" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" /></Grid>
                         <ListView x:Name="SoftwareList" ItemsSource="{x:Bind VisibleSoftware}" SelectionMode="None" IsItemClickEnabled="False" MaxHeight="470" Background="Transparent">
                             <ListView.ItemTemplate>
                                 <DataTemplate>
@@ -57,25 +57,25 @@
                         <TextBlock x:Name="SoftwareEmpty" Text="Refresh software inventory to load entries." Foreground="{ThemeResource TextFillColorTertiaryBrush}" TextWrapping="Wrap" />
                     </StackPanel>
                 </Border>
-                <Border Grid.Column="1" Padding="12" CornerRadius="10" Background="#C808111E" BorderBrush="#5738B9D1" BorderThickness="1">
+                <Border Grid.Column="1" Padding="12" CornerRadius="10" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
                     <StackPanel Spacing="9">
-                        <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><TextBlock Text="CISA KEV PRODUCT-NAME CANDIDATES" FontSize="11" FontWeight="SemiBold" CharacterSpacing="55" Foreground="#FF91AFC2" TextWrapping="Wrap" /><TextBlock x:Name="CandidateCount" Grid.Column="1" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" /></Grid>
+                        <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><TextBlock Text="CISA KEV PRODUCT-NAME CANDIDATES" FontSize="11" FontWeight="SemiBold" CharacterSpacing="55" Foreground="{StaticResource HudTextDimBrush}" TextWrapping="Wrap" /><TextBlock x:Name="CandidateCount" Grid.Column="1" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" /></Grid>
                         <ListView x:Name="CandidateList" ItemsSource="{x:Bind VisibleCandidates}" SelectionMode="None" IsItemClickEnabled="False" MaxHeight="470" Background="Transparent">
                             <ListView.ItemTemplate>
                                 <DataTemplate>
                                     <StackPanel Padding="8,7" Spacing="3">
-                                        <TextBlock Text="{Binding Headline}" FontWeight="SemiBold" Foreground="#FFFFC76A" TextWrapping="Wrap" />
+                                        <TextBlock Text="{Binding Headline}" FontWeight="SemiBold" Foreground="{StaticResource HudAmberBrush}" TextWrapping="Wrap" />
                                         <TextBlock Text="{Binding ProductLine}" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                                         <TextBlock Text="{Binding InstalledLine}" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" TextWrapping="Wrap" />
-                                        <TextBlock Text="{Binding NvdLine}" FontSize="11" Foreground="#FF50DBF1" TextWrapping="Wrap" Visibility="{Binding HasNvdData, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                        <TextBlock Text="{Binding NvdLine}" FontSize="11" Foreground="{StaticResource HudCyanBrush}" TextWrapping="Wrap" Visibility="{Binding HasNvdData, Converter={StaticResource BooleanToVisibilityConverter}}" />
                                         <StackPanel x:Name="NvdDetailsPanel" Orientation="Horizontal" Spacing="10" Visibility="{Binding HasNvdData, Converter={StaticResource BooleanToVisibilityConverter}}">
                                             <StackPanel Spacing="2">
-                                                <TextBlock Text="CVSS:" FontWeight="SemiBold" Foreground="#FF91AFC2" FontSize="10" />
-                                                <TextBlock Text="{Binding CvssScore}" Foreground="#FF50DBF1" FontSize="10" FontFamily="Consolas" />
+                                                <TextBlock Text="CVSS:" FontWeight="SemiBold" Foreground="{StaticResource HudTextDimBrush}" FontSize="10" />
+                                                <TextBlock Text="{Binding CvssScore}" Foreground="{StaticResource HudCyanBrush}" FontSize="10" FontFamily="Consolas" />
                                             </StackPanel>
                                             <StackPanel Spacing="2">
-                                                <TextBlock Text="Affected:" FontWeight="SemiBold" Foreground="#FF91AFC2" FontSize="10" />
-                                                <TextBlock Text="{Binding VersionAnalysis}" Foreground="#FFB47AF8" FontSize="10" TextWrapping="Wrap" />
+                                                <TextBlock Text="Affected:" FontWeight="SemiBold" Foreground="{StaticResource HudTextDimBrush}" FontSize="10" />
+                                                <TextBlock Text="{Binding VersionAnalysis}" Foreground="{StaticResource HudVioletBrush}" FontSize="10" TextWrapping="Wrap" />
                                             </StackPanel>
                                             <Button Content="Check NVD" Click="CheckNvdForCandidate_Click" FontSize="10" Padding="6,2" Visibility="{Binding HasNvdData, Converter={StaticResource BooleanToVisibilityConverter}}" ToolTipService.ToolTip="Fetch NVD data for this specific CVE" />
                                         </StackPanel>

@@ -10,17 +10,17 @@
         <Grid ColumnSpacing="16">
             <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
             <StackPanel Spacing="4">
-                <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Foreground="#FF76DDF5" Text="DOWNPOUR  /  DETECTION  /  WINDOWS EVENTS" />
+                <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Foreground="{StaticResource HudCyanBrush}" Text="DOWNPOUR  /  DETECTION  /  WINDOWS EVENTS" />
                 <TextBlock Style="{StaticResource TitleTextBlockStyle}" FontSize="30" Text="Event monitor" />
                 <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Recent service, account, task, audit, logon, process, and PowerShell event metadata." TextWrapping="Wrap" />
             </StackPanel>
             <Button Grid.Column="1" Content="Refresh now" Click="Refresh_Click" VerticalAlignment="Center" />
         </Grid>
 
-        <Border Grid.Row="1" Padding="14,11" CornerRadius="10" Background="#B9081220" BorderBrush="#423EC5D8" BorderThickness="1">
+        <Border Grid.Row="1" Padding="14,11" CornerRadius="10" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
             <Grid ColumnSpacing="12">
                 <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                <FontIcon Glyph="&#xE9D9;" FontSize="20" Foreground="#FF60DBEE" VerticalAlignment="Center" />
+                <FontIcon Glyph="&#xE9D9;" FontSize="20" Foreground="{StaticResource HudCyanBrush}" VerticalAlignment="Center" />
                 <StackPanel Grid.Column="1" Spacing="3">
                     <TextBlock x:Name="StatusHeadline" FontWeight="SemiBold" Text="Connecting to Windows Event Log" />
                     <TextBlock x:Name="StatusDetail" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Only fixed allow-listed channels and event IDs are queried. Event message bodies are not collected." TextWrapping="Wrap" />

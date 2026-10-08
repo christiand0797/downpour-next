@@ -10,16 +10,34 @@ namespace Downpour_Desktop;
 /// <summary>Updates fixed chart shapes while keeping the visual tree stable between samples.</summary>
 internal sealed class ChartLineRenderer
 {
+    private readonly Canvas _canvas;
+    private readonly PathShape _area;
     private readonly PathShape _glow;
     private readonly PathShape _line;
     private readonly Ellipse _markerGlow;
     private readonly Ellipse _marker;
     public ChartLineRenderer(Canvas canvas, Color color)
     {
+        _canvas = canvas;
+        // Neon area under the line that fades to nothing at the baseline.
+        _area = new PathShape
+        {
+            Fill = new LinearGradientBrush
+            {
+                StartPoint = new Point(0, 0),
+                EndPoint = new Point(0, 1),
+                GradientStops =
+                {
+                    new GradientStop { Color = Color.FromArgb(70, color.R, color.G, color.B), Offset = 0 },
+                    new GradientStop { Color = Color.FromArgb(0, color.R, color.G, color.B), Offset = 1 },
+                },
+            },
+            IsHitTestVisible = false
+        };
         _glow = new PathShape
         {
-            Stroke = new SolidColorBrush(Color.FromArgb(28, color.R, color.G, color.B)),
-            StrokeThickness = 8,
+            Stroke = new SolidColorBrush(Color.FromArgb(48, color.R, color.G, color.B)),
+            StrokeThickness = 7,
             StrokeLineJoin = PenLineJoin.Round,
             IsHitTestVisible = false
         };
@@ -48,6 +66,7 @@ internal sealed class ChartLineRenderer
         };
 
         // Add once. Refreshes replace only each path's independently-owned geometry.
+        canvas.Children.Add(_area);
         canvas.Children.Add(_glow);
         canvas.Children.Add(_line);
         canvas.Children.Add(_markerGlow);
@@ -57,6 +76,7 @@ internal sealed class ChartLineRenderer
     public void Update(IReadOnlyList<Point?> points, double newestSampleRightEdge)
     {
         var figures = BuildFigures(points);
+        _area.Data = new PathGeometry { Figures = AreaFigures(figures, _canvas.ActualHeight) };
         _glow.Data = new PathGeometry { Figures = CloneFigures(figures) };
         _line.Data = new PathGeometry { Figures = figures };
 
@@ -105,6 +125,27 @@ internal sealed class ChartLineRenderer
             }
             current.Clear();
         }
+    }
+
+    private static PathFigureCollection AreaFigures(PathFigureCollection source, double baseline)
+    {
+        var areas = new PathFigureCollection();
+        if (!double.IsFinite(baseline) || baseline <= 0) return areas;
+        foreach (var figure in source)
+        {
+            var segments = new PathSegmentCollection();
+            var last = figure.StartPoint;
+            foreach (var segment in figure.Segments)
+            {
+                if (segment is not LineSegment line) continue;
+                segments.Add(new LineSegment { Point = line.Point });
+                last = line.Point;
+            }
+            segments.Add(new LineSegment { Point = new Point(last.X, baseline) });
+            segments.Add(new LineSegment { Point = new Point(figure.StartPoint.X, baseline) });
+            areas.Add(new PathFigure { StartPoint = figure.StartPoint, Segments = segments, IsClosed = true, IsFilled = true });
+        }
+        return areas;
     }
 
     private static PathFigureCollection CloneFigures(PathFigureCollection source)

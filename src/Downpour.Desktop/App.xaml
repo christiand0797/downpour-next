@@ -9,14 +9,8 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
-                <!-- Other merged dictionaries here -->
+                <ResourceDictionary Source="ms-appx:///Themes/HudTheme.xaml" />
             </ResourceDictionary.MergedDictionaries>
-            <Color x:Key="DownpourAccentColor">#FF53DDF2</Color>
-            <SolidColorBrush x:Key="DownpourAccentBrush" Color="{StaticResource DownpourAccentColor}" />
-            <SolidColorBrush x:Key="DownpourSurfaceBrush" Color="#F00A1422" />
-            <SolidColorBrush x:Key="DownpourSurfaceElevatedBrush" Color="#F5131E30" />
-            <SolidColorBrush x:Key="DownpourStrokeBrush" Color="#6848B9D1" />
-            <SolidColorBrush x:Key="DownpourMutedStrokeBrush" Color="#3C8BB6C7" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

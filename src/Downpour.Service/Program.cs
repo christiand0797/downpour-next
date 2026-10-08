@@ -90,6 +90,8 @@ builder.Services.AddHostedService<FirewallActionPipeWorker>();
 builder.Services.AddHostedService<UsbActionPipeWorker>();
 builder.Services.AddHostedService<HostIsolationPipeWorker>();
 builder.Services.AddHostedService<AntiStalkerMonitor>();
+builder.Services.AddSingleton<ThreatDatabaseService>();
+builder.Services.AddHostedService(provider => provider.GetRequiredService<ThreatDatabaseService>());
 builder.Services.AddHostedService<YaraScanPipeWorker>();
 
 var host = builder.Build();

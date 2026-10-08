@@ -10,7 +10,7 @@
         <Grid ColumnSpacing="16">
             <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
             <StackPanel Spacing="4">
-                <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Foreground="#FF76DDF5" Text="DOWNPOUR  /  TRIAGE  /  INVESTIGATION TIMELINE" />
+                <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Foreground="{StaticResource HudCyanBrush}" Text="DOWNPOUR  /  TRIAGE  /  INVESTIGATION TIMELINE" />
                 <TextBlock Style="{StaticResource TitleTextBlockStyle}" FontSize="30" Text="Investigation timeline" />
                 <TextBlock x:Name="FindingTitle" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Select a correlation finding from the Alerts page" TextWrapping="Wrap" />
             </StackPanel>
@@ -21,10 +21,10 @@
             </StackPanel>
         </Grid>
 
-        <Border Grid.Row="1" Padding="14,11" CornerRadius="10" Background="#B9081220" BorderBrush="#423EC5D8" BorderThickness="1">
+        <Border Grid.Row="1" Padding="14,11" CornerRadius="10" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
             <Grid ColumnSpacing="12">
                 <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                <FontIcon Glyph="&#xE7BA;" FontSize="20" Foreground="#FF60DBEE" VerticalAlignment="Center" />
+                <FontIcon Glyph="&#xE7BA;" FontSize="20" Foreground="{StaticResource HudCyanBrush}" VerticalAlignment="Center" />
                 <StackPanel Grid.Column="1" Spacing="3">
                     <TextBlock x:Name="StatusHeadline" FontWeight="SemiBold" Text="Loading investigation details" />
                     <TextBlock x:Name="StatusDetail" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Showing all alerts related to this correlation finding within the retention window." TextWrapping="Wrap" />
@@ -34,9 +34,9 @@
 
         <Grid Grid.Row="2" RowSpacing="10">
             <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
-            <Border Padding="12,9" CornerRadius="8" Background="#9B111A2A" BorderBrush="#333EC5D8" BorderThickness="1">
+            <Border Padding="12,9" CornerRadius="8" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
                 <StackPanel Spacing="3">
-                    <TextBlock FontSize="10" FontWeight="SemiBold" CharacterSpacing="65" Foreground="#FF76DDF5" Text="FINDING &amp; DETECTION SUMMARY" />
+                    <TextBlock FontSize="10" FontWeight="SemiBold" CharacterSpacing="65" Foreground="{StaticResource HudCyanBrush}" Text="FINDING &amp; DETECTION SUMMARY" />
                     <TextBlock x:Name="FindingDetail" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Waiting for finding data." TextWrapping="Wrap" />
                 </StackPanel>
             </Border>

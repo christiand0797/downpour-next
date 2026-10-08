@@ -10,14 +10,14 @@
             <Grid ColumnSpacing="16">
                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                 <StackPanel Spacing="4">
-                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Foreground="#FF76DDF5" Text="DOWNPOUR  /  ANALYSIS  /  THREAT HUNT" />
+                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Foreground="{StaticResource HudCyanBrush}" Text="DOWNPOUR  /  ANALYSIS  /  THREAT HUNT" />
                     <TextBlock Style="{StaticResource TitleTextBlockStyle}" FontSize="30" Text="Persistence review" />
                     <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Autostart registry values, Winlogon, startup folders, scheduled tasks (including hidden), WMI event subscriptions, DLL shadows in writable PATH folders, and kernel driver files. Read-only." TextWrapping="Wrap" />
                 </StackPanel>
                 <Button Grid.Column="1" x:Name="RefreshButton" Content="Re-scan" Click="Refresh_Click" VerticalAlignment="Center" />
             </Grid>
 
-            <Border Padding="14,11" CornerRadius="10" Background="#B9081220" BorderBrush="#423EC5D8" BorderThickness="1">
+            <Border Padding="14,11" CornerRadius="10" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
                 <StackPanel Spacing="3">
                     <TextBlock x:Name="StatusHeadline" FontWeight="SemiBold" Text="Scanning autostart locations" />
                     <TextBlock x:Name="StatusDetail" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
@@ -25,7 +25,7 @@
             </Border>
 
             <StackPanel Spacing="6">
-                <TextBlock Text="FINDINGS" FontSize="11" FontWeight="SemiBold" CharacterSpacing="85" Foreground="#FF91AFC2" />
+                <TextBlock Text="FINDINGS" FontSize="11" FontWeight="SemiBold" CharacterSpacing="85" Foreground="{StaticResource HudTextDimBrush}" />
                 <ItemsControl ItemsSource="{x:Bind Findings}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>

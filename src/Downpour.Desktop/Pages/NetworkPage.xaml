@@ -10,17 +10,17 @@
             <Grid ColumnSpacing="20">
                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                 <StackPanel Spacing="4">
-                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Foreground="#FF76DDF5" Text="DOWNPOUR  /  MONITORING  /  NETWORK" />
+                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Foreground="{StaticResource HudCyanBrush}" Text="DOWNPOUR  /  MONITORING  /  NETWORK" />
                     <TextBlock Style="{StaticResource TitleTextBlockStyle}" FontSize="30" Text="Network activity" />
                     <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Inspect adapter throughput and current TCP connections. Collection is local and read-only." TextWrapping="Wrap" />
                 </StackPanel>
                 <Button Grid.Column="1" Content="Refresh" Click="Refresh_Click" VerticalAlignment="Top" />
             </Grid>
 
-            <Border Padding="14,11" CornerRadius="10" Background="#B9081220" BorderBrush="#423EC5D8" BorderThickness="1">
+            <Border Padding="14,11" CornerRadius="10" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
                 <Grid ColumnSpacing="12">
                     <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                    <FontIcon Glyph="&#xE774;" FontSize="20" Foreground="#FF60DBEE" VerticalAlignment="Center" />
+                    <FontIcon Glyph="&#xE774;" FontSize="20" Foreground="{StaticResource HudCyanBrush}" VerticalAlignment="Center" />
                     <StackPanel Grid.Column="1" Spacing="2">
                         <TextBlock x:Name="NetworkHeadline" FontWeight="SemiBold" Text="Connecting to the local sensor service" />
                         <TextBlock x:Name="NetworkDescription" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Adapter throughput becomes available after two samples." TextWrapping="Wrap" />
@@ -30,18 +30,18 @@
 
             <Grid ColumnSpacing="14">
                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                <Border Padding="16" CornerRadius="10" Background="#C808111E" BorderBrush="#5738B9D1" BorderThickness="1">
-                    <StackPanel Spacing="5"><TextBlock FontSize="11" CharacterSpacing="100" Foreground="#FF91AFC2" Text="RECEIVING" /><TextBlock x:Name="ReceiveRate" FontSize="24" FontWeight="SemiBold" Text="—" /><TextBlock FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Combined adapter throughput" /></StackPanel>
+                <Border Padding="16" CornerRadius="10" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
+                    <StackPanel Spacing="5"><TextBlock FontSize="11" CharacterSpacing="100" Foreground="{StaticResource HudTextDimBrush}" Text="RECEIVING" /><TextBlock x:Name="ReceiveRate" FontSize="24" FontWeight="SemiBold" Text="—" /><TextBlock FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Combined adapter throughput" /></StackPanel>
                 </Border>
-                <Border Grid.Column="1" Padding="16" CornerRadius="10" Background="#C808111E" BorderBrush="#5738B9D1" BorderThickness="1">
-                    <StackPanel Spacing="5"><TextBlock FontSize="11" CharacterSpacing="100" Foreground="#FF91AFC2" Text="SENDING" /><TextBlock x:Name="SendRate" FontSize="24" FontWeight="SemiBold" Text="—" /><TextBlock FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Combined adapter throughput" /></StackPanel>
+                <Border Grid.Column="1" Padding="16" CornerRadius="10" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
+                    <StackPanel Spacing="5"><TextBlock FontSize="11" CharacterSpacing="100" Foreground="{StaticResource HudTextDimBrush}" Text="SENDING" /><TextBlock x:Name="SendRate" FontSize="24" FontWeight="SemiBold" Text="—" /><TextBlock FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Combined adapter throughput" /></StackPanel>
                 </Border>
-                <Border Grid.Column="2" Padding="16" CornerRadius="10" Background="#C808111E" BorderBrush="#5738B9D1" BorderThickness="1">
-                    <StackPanel Spacing="5"><TextBlock FontSize="11" CharacterSpacing="100" Foreground="#FF91AFC2" Text="TCP CONNECTIONS" /><TextBlock x:Name="ConnectionCount" FontSize="24" FontWeight="SemiBold" Text="—" /><TextBlock FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Active connections · first 256 shown" /></StackPanel>
+                <Border Grid.Column="2" Padding="16" CornerRadius="10" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
+                    <StackPanel Spacing="5"><TextBlock FontSize="11" CharacterSpacing="100" Foreground="{StaticResource HudTextDimBrush}" Text="TCP CONNECTIONS" /><TextBlock x:Name="ConnectionCount" FontSize="24" FontWeight="SemiBold" Text="—" /><TextBlock FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Active connections · first 256 shown" /></StackPanel>
                 </Border>
             </Grid>
 
-            <Border Padding="16,13" CornerRadius="12" Background="#C808111E" BorderBrush="#5738B9D1" BorderThickness="1" SizeChanged="HistoryHost_SizeChanged">
+            <Border Padding="16,13" CornerRadius="12" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1" SizeChanged="HistoryHost_SizeChanged">
                 <Grid RowSpacing="8">
                     <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="150" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
                     <Grid ColumnSpacing="16">
@@ -58,14 +58,14 @@
             </Border>
 
             <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Text="NETWORK ADAPTERS" />
-            <ListView ItemsSource="{x:Bind Interfaces}" SelectionMode="None" IsItemClickEnabled="False" Background="#B807101D" MaxHeight="320">
+            <ListView ItemsSource="{x:Bind Interfaces}" SelectionMode="None" IsItemClickEnabled="False" Background="{StaticResource HudPanelBrush}" MaxHeight="320">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <Grid Padding="12,10" ColumnSpacing="12">
                             <Grid.ColumnDefinitions><ColumnDefinition Width="2*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                             <StackPanel Spacing="3"><TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" /><TextBlock Text="{Binding Detail}" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" TextTrimming="CharacterEllipsis" /></StackPanel>
-                            <StackPanel Grid.Column="1" Spacing="2" MinWidth="100"><TextBlock Text="{Binding ReceiveRate}" Foreground="#FF50DBF1" FontSize="12" /><TextBlock Text="{Binding ReceivedTotal}" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" /></StackPanel>
-                            <StackPanel Grid.Column="2" Spacing="2" MinWidth="100"><TextBlock Text="{Binding SendRate}" Foreground="#FFB47AF8" FontSize="12" /><TextBlock Text="{Binding SentTotal}" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" /></StackPanel>
+                            <StackPanel Grid.Column="1" Spacing="2" MinWidth="100"><TextBlock Text="{Binding ReceiveRate}" Foreground="{StaticResource HudCyanBrush}" FontSize="12" /><TextBlock Text="{Binding ReceivedTotal}" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" /></StackPanel>
+                            <StackPanel Grid.Column="2" Spacing="2" MinWidth="100"><TextBlock Text="{Binding SendRate}" Foreground="{StaticResource HudVioletBrush}" FontSize="12" /><TextBlock Text="{Binding SentTotal}" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" /></StackPanel>
                             <TextBlock Grid.Column="3" Text="{Binding Status}" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
                         </Grid>
                     </DataTemplate>
@@ -77,7 +77,7 @@
                 <StackPanel Spacing="3"><TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Text="CURRENT CONNECTIONS" /><TextBlock FontSize="19" FontWeight="SemiBold" Text="Active TCP endpoints" /></StackPanel>
                 <TextBlock Grid.Column="1" x:Name="ConnectionFootnote" VerticalAlignment="Bottom" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="READ ONLY" />
             </Grid>
-            <ListView ItemsSource="{x:Bind Connections}" SelectionMode="None" IsItemClickEnabled="False" Background="#B807101D" MaxHeight="420">
+            <ListView ItemsSource="{x:Bind Connections}" SelectionMode="None" IsItemClickEnabled="False" Background="{StaticResource HudPanelBrush}" MaxHeight="420">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <Grid Padding="10,8" ColumnSpacing="12">

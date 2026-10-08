@@ -12,7 +12,7 @@
             <Grid ColumnSpacing="20">
                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                 <StackPanel Spacing="4">
-                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Foreground="#FF76DDF5" Text="DOWNPOUR  /  SYSTEM SUMMARY  /  LIVE" />
+                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Foreground="{StaticResource HudCyanBrush}" Text="DOWNPOUR  /  SYSTEM SUMMARY  /  LIVE" />
                     <TextBlock Style="{StaticResource TitleTextBlockStyle}" FontSize="30" Text="System overview" />
                     <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="See the pressure, follow the trend, and identify what is using your system." TextWrapping="Wrap" />
                     <Button x:Name="StormModeButton" Content="⛈  RAIN MODE · STORM" Click="StormModeButton_Click"
@@ -35,10 +35,10 @@
                 </StackPanel>
             </Grid>
 
-            <Border Padding="14,11" CornerRadius="10" Background="#B9081220" BorderBrush="#423EC5D8" BorderThickness="1">
+            <Border Padding="14,11" CornerRadius="10" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
                 <Grid ColumnSpacing="12">
                     <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                    <FontIcon Glyph="&#xE7BA;" FontSize="20" Foreground="#FF60DBEE" VerticalAlignment="Center" />
+                    <FontIcon Glyph="&#xE7BA;" FontSize="20" Foreground="{StaticResource HudCyanBrush}" VerticalAlignment="Center" />
                     <StackPanel Grid.Column="1" Spacing="2">
                         <TextBlock x:Name="SensorHeadline" FontWeight="SemiBold" Text="Connecting to the local sensor service" />
                         <TextBlock x:Name="SensorDescription" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Measurements appear when the read-only service is available." TextWrapping="Wrap" />
@@ -50,7 +50,7 @@
                 <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                 <Border Padding="14,14,14,10" CornerRadius="12" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource DownpourStrokeBrush}" BorderThickness="1" VerticalAlignment="Stretch">
                     <StackPanel Spacing="8">
-                        <TextBlock FontSize="11" FontWeight="SemiBold" CharacterSpacing="120" Foreground="#FF91AFC2" Text="LIVE LOAD" HorizontalAlignment="Center" />
+                        <TextBlock FontSize="11" FontWeight="SemiBold" CharacterSpacing="120" Foreground="{StaticResource HudTextDimBrush}" Text="LIVE LOAD" HorizontalAlignment="Center" />
                         <StackPanel x:Name="GaugeHost" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center" />
                         <TextBlock FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="CPU and physical memory" HorizontalAlignment="Center" />
                     </StackPanel>
@@ -120,7 +120,7 @@
                 </StackPanel>
                 <TextBlock x:Name="ProcessWindowLabel" Grid.Column="1" VerticalAlignment="Bottom" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="TOP 8 · READ ONLY" />
             </Grid>
-            <ListView ItemsSource="{x:Bind Processes}" SelectionMode="None" IsItemClickEnabled="False" Background="#B807101D">
+            <ListView ItemsSource="{x:Bind Processes}" SelectionMode="None" IsItemClickEnabled="False" Background="{StaticResource HudPanelBrush}">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <Grid Padding="12,9" ColumnSpacing="14">
@@ -139,9 +139,9 @@
             <Border Padding="14,11" CornerRadius="9" Background="#9B08111C" BorderBrush="#3B39AFC5" BorderThickness="1">
                 <Grid ColumnSpacing="14">
                     <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                    <StackPanel Spacing="3"><TextBlock FontSize="10" CharacterSpacing="90" Foreground="#FF78A7B8" Text="DETECTION ENGINE" /><TextBlock FontSize="12" Text="Not connected · no alert counts fabricated" TextWrapping="Wrap" /></StackPanel>
-                    <StackPanel Grid.Column="1" Spacing="3"><TextBlock FontSize="10" CharacterSpacing="90" Foreground="#FF78A7B8" Text="RESPONSE ACTIONS" /><TextBlock FontSize="12" Text="Disabled · observe-only service" TextWrapping="Wrap" /></StackPanel>
-                    <StackPanel Grid.Column="2" Spacing="3"><TextBlock FontSize="10" CharacterSpacing="90" Foreground="#FF78A7B8" Text="FEATURE MIGRATION" /><TextBlock FontSize="12" Text="33 routes tracked · parity in progress" TextWrapping="Wrap" /></StackPanel>
+                    <StackPanel Spacing="3"><TextBlock FontSize="10" CharacterSpacing="90" Foreground="{StaticResource HudTextDimBrush}" Text="DETECTION ENGINE" /><TextBlock FontSize="12" Text="Not connected · no alert counts fabricated" TextWrapping="Wrap" /></StackPanel>
+                    <StackPanel Grid.Column="1" Spacing="3"><TextBlock FontSize="10" CharacterSpacing="90" Foreground="{StaticResource HudTextDimBrush}" Text="RESPONSE ACTIONS" /><TextBlock FontSize="12" Text="Disabled · observe-only service" TextWrapping="Wrap" /></StackPanel>
+                    <StackPanel Grid.Column="2" Spacing="3"><TextBlock FontSize="10" CharacterSpacing="90" Foreground="{StaticResource HudTextDimBrush}" Text="FEATURE MIGRATION" /><TextBlock FontSize="12" Text="33 routes tracked · parity in progress" TextWrapping="Wrap" /></StackPanel>
                 </Grid>
             </Border>
         </StackPanel>

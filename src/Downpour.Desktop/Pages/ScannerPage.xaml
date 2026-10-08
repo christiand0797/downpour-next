@@ -12,9 +12,9 @@
                 <TextBlock Text="File Inspector" Style="{StaticResource TitleTextBlockStyle}" />
                 <TextBlock Text="Choose one local EXE, DLL, or SYS file to calculate its SHA-256 and inspect bounded PE header metadata. The file is read as data and never executed or uploaded." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
             </StackPanel>
-            <Border Padding="14" CornerRadius="10" Background="#A80B1524" BorderBrush="#3D46C5D8" BorderThickness="1">
+            <Border Padding="14" CornerRadius="10" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
                 <StackPanel Spacing="6">
-                    <TextBlock Text="Metadata triage · no malware verdict" FontWeight="SemiBold" Foreground="#FFFFC76A" />
+                    <TextBlock Text="Metadata triage · no malware verdict" FontWeight="SemiBold" Foreground="{StaticResource HudAmberBrush}" />
                     <TextBlock Text="A SHA-256 hash, PE structure, or embedded certificate table does not establish that a file is safe or malicious. Certificate trust and reputation lookups are not performed. Maximum file size: 256 MiB." FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                 </StackPanel>
             </Border>
@@ -23,36 +23,36 @@
                 <ProgressRing x:Name="InspectionProgress" Width="22" Height="22" IsActive="False" VerticalAlignment="Center" />
                 <TextBlock x:Name="InspectionStatus" Text="No file selected." VerticalAlignment="Center" TextWrapping="Wrap" />
             </StackPanel>
-            <Border x:Name="ResultCard" Visibility="Collapsed" Padding="18" CornerRadius="12" Background="#C808111E" BorderBrush="#5738B9D1" BorderThickness="1">
+            <Border x:Name="ResultCard" Visibility="Collapsed" Padding="18" CornerRadius="12" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
                 <StackPanel Spacing="13">
                     <Grid ColumnSpacing="12">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                        <TextBlock Text="FILE" FontSize="11" FontWeight="SemiBold" CharacterSpacing="100" Foreground="#FF91AFC2" />
+                        <TextBlock Text="FILE" FontSize="11" FontWeight="SemiBold" CharacterSpacing="100" Foreground="{StaticResource HudTextDimBrush}" />
                         <TextBlock x:Name="FileNameText" Grid.Column="1" TextWrapping="Wrap" FontWeight="SemiBold" />
                     </Grid>
                     <Grid ColumnSpacing="12">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                        <TextBlock Text="SIZE" FontSize="11" FontWeight="SemiBold" CharacterSpacing="100" Foreground="#FF91AFC2" />
+                        <TextBlock Text="SIZE" FontSize="11" FontWeight="SemiBold" CharacterSpacing="100" Foreground="{StaticResource HudTextDimBrush}" />
                         <TextBlock x:Name="FileSizeText" Grid.Column="1" />
                     </Grid>
                     <Grid ColumnSpacing="12">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                        <TextBlock Text="SHA-256" FontSize="11" FontWeight="SemiBold" CharacterSpacing="60" Foreground="#FF91AFC2" />
+                        <TextBlock Text="SHA-256" FontSize="11" FontWeight="SemiBold" CharacterSpacing="60" Foreground="{StaticResource HudTextDimBrush}" />
                         <TextBlock x:Name="HashText" Grid.Column="1" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap" IsTextSelectionEnabled="True" />
                     </Grid>
                     <Grid ColumnSpacing="12">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                        <TextBlock Text="FORMAT" FontSize="11" FontWeight="SemiBold" CharacterSpacing="100" Foreground="#FF91AFC2" />
+                        <TextBlock Text="FORMAT" FontSize="11" FontWeight="SemiBold" CharacterSpacing="100" Foreground="{StaticResource HudTextDimBrush}" />
                         <TextBlock x:Name="FormatText" Grid.Column="1" TextWrapping="Wrap" />
                     </Grid>
                     <Grid ColumnSpacing="12">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                        <TextBlock Text="PE DETAILS" FontSize="11" FontWeight="SemiBold" CharacterSpacing="55" Foreground="#FF91AFC2" />
+                        <TextBlock Text="PE DETAILS" FontSize="11" FontWeight="SemiBold" CharacterSpacing="55" Foreground="{StaticResource HudTextDimBrush}" />
                         <TextBlock x:Name="PeDetailsText" Grid.Column="1" TextWrapping="Wrap" />
                     </Grid>
                     <Grid ColumnSpacing="12">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                        <TextBlock Text="CERTIFICATE TABLE" FontSize="11" FontWeight="SemiBold" CharacterSpacing="45" Foreground="#FF91AFC2" />
+                        <TextBlock Text="CERTIFICATE TABLE" FontSize="11" FontWeight="SemiBold" CharacterSpacing="45" Foreground="{StaticResource HudTextDimBrush}" />
                         <TextBlock x:Name="CertificateText" Grid.Column="1" TextWrapping="Wrap" />
                     </Grid>
                     <TextBlock Text="Certificate-table presence only; signature validity, trust chain, signer identity, and online revocation status are not checked." FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" TextWrapping="Wrap" />
@@ -63,9 +63,9 @@
                 <TextBlock Text="YARA scan" Style="{StaticResource TitleTextBlockStyle}" />
                 <TextBlock Text="Scan a file or folder with the bundled Downpour v29 YARA rules using YARA-X in an isolated, memory-limited helper. Files are only read; nothing is modified, moved, or quarantined." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
             </StackPanel>
-            <Border Padding="14" CornerRadius="10" Background="#A80B1524" BorderBrush="#3D46C5D8" BorderThickness="1">
+            <Border Padding="14" CornerRadius="10" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
                 <StackPanel Spacing="6">
-                    <TextBlock x:Name="YaraEngineText" Text="Checking the scanner…" FontWeight="SemiBold" Foreground="#FFFFC76A" TextWrapping="Wrap" />
+                    <TextBlock x:Name="YaraEngineText" Text="Checking the scanner…" FontWeight="SemiBold" Foreground="{StaticResource HudAmberBrush}" TextWrapping="Wrap" />
                     <TextBlock Text="Many v29 rules also match clean Windows files. Rules measured that way are marked low confidence: their matches are listed here but never sent to Threats or Possible Threats. Matches from the other rules appear in triage. Links and junctions are not followed; up to 100,000 files and 256 MiB per file." FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                     <Expander x:Name="RuleFilesExpander" Header="Rule files" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
                         <TextBlock x:Name="RuleFilesText" FontSize="12" FontFamily="Consolas" TextWrapping="Wrap" IsTextSelectionEnabled="True" />

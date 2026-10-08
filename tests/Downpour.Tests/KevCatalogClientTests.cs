@@ -13,6 +13,15 @@ public sealed class KevCatalogClientTests
         """;
 
     [Fact]
+    public void ParseAcceptsCisaTimestampReleaseDate()
+    {
+        var catalog = ValidCatalog.Replace("\"dateReleased\":\"2026-10-03\"", "\"dateReleased\":\"2026-10-04T18:52:56.0635Z\"");
+        Assert.Equal(new DateOnly(2026, 10, 4), KevCatalogClient.Parse(Encoding.UTF8.GetBytes(catalog)).ReleasedOn);
+        var bad = ValidCatalog.Replace("\"dateReleased\":\"2026-10-03\"", "\"dateReleased\":\"2026-10-04 garbage\"");
+        Assert.Throws<InvalidDataException>(() => KevCatalogClient.Parse(Encoding.UTF8.GetBytes(bad)));
+    }
+
+    [Fact]
     public void ParseAcceptsValidatedCisaKevRecord()
     {
         var snapshot = KevCatalogClient.Parse(Encoding.UTF8.GetBytes(ValidCatalog));

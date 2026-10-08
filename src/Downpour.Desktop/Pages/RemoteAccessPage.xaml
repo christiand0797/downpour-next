@@ -10,14 +10,14 @@
             <Grid ColumnSpacing="16">
                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                 <StackPanel Spacing="4">
-                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Foreground="#FF76DDF5" Text="DOWNPOUR  /  PROTECTION  /  REMOTE ACCESS" />
+                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Foreground="{StaticResource HudCyanBrush}" Text="DOWNPOUR  /  PROTECTION  /  REMOTE ACCESS" />
                     <TextBlock Style="{StaticResource TitleTextBlockStyle}" FontSize="30" Text="Remote access" />
                     <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Remote Desktop configuration, listening and connected remote-access ports with their owning processes, and running remote-access tools. Read-only." TextWrapping="Wrap" />
                 </StackPanel>
                 <Button Grid.Column="1" x:Name="RefreshButton" Content="Scan" Click="Refresh_Click" VerticalAlignment="Center" />
             </Grid>
 
-            <Border Padding="14,11" CornerRadius="10" Background="#B9081220" BorderBrush="#423EC5D8" BorderThickness="1">
+            <Border Padding="14,11" CornerRadius="10" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
                 <StackPanel Spacing="3">
                     <TextBlock x:Name="StatusHeadline" FontWeight="SemiBold" Text="Scanning" />
                     <TextBlock x:Name="StatusDetail" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
@@ -25,7 +25,7 @@
             </Border>
 
             <StackPanel Spacing="6">
-                <TextBlock Text="FINDINGS" FontSize="11" FontWeight="SemiBold" CharacterSpacing="85" Foreground="#FF91AFC2" />
+                <TextBlock Text="FINDINGS" FontSize="11" FontWeight="SemiBold" CharacterSpacing="85" Foreground="{StaticResource HudTextDimBrush}" />
                 <ItemsControl ItemsSource="{x:Bind Findings}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
@@ -41,7 +41,7 @@
             </StackPanel>
 
             <StackPanel Spacing="6">
-                <TextBlock Text="REMOTE-ACCESS PORTS (V29 VECTORS)" FontSize="11" FontWeight="SemiBold" CharacterSpacing="85" Foreground="#FF91AFC2" />
+                <TextBlock Text="REMOTE-ACCESS PORTS (V29 VECTORS)" FontSize="11" FontWeight="SemiBold" CharacterSpacing="85" Foreground="{StaticResource HudTextDimBrush}" />
                 <ItemsControl ItemsSource="{x:Bind Exposures}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
@@ -58,7 +58,7 @@
             </StackPanel>
 
             <StackPanel Spacing="6">
-                <TextBlock Text="REMOTE-ACCESS TOOLS RUNNING" FontSize="11" FontWeight="SemiBold" CharacterSpacing="85" Foreground="#FF91AFC2" />
+                <TextBlock Text="REMOTE-ACCESS TOOLS RUNNING" FontSize="11" FontWeight="SemiBold" CharacterSpacing="85" Foreground="{StaticResource HudTextDimBrush}" />
                 <ItemsControl ItemsSource="{x:Bind Tools}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>

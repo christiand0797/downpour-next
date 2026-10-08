@@ -104,6 +104,11 @@
                         <StackPanel Spacing="2"><TextBlock Text="Allow USB actions" FontWeight="SemiBold" /><TextBlock Text="Permits confirmed blocks or restores of approved USB storage and mass-storage policy changes when Windows grants access. Input devices and hubs remain protected." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" /></StackPanel>
                         <ToggleSwitch x:Name="UsbActionsToggle" Grid.Column="1" IsOn="True" IsEnabled="False" OnContent="On" OffContent="Off" />
                     </Grid>
+                    <Grid ColumnSpacing="16">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                        <StackPanel Spacing="2"><TextBlock Text="Allow host isolation" FontWeight="SemiBold" /><TextBlock Text="Permits a confirmed, time-limited network cut-off (5 minutes to 24 hours). A Windows scheduled task always ends it on time, even if Downpour is closed; isolation is refused if that cannot be scheduled." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" /></StackPanel>
+                        <ToggleSwitch x:Name="HostIsolationToggle" Grid.Column="1" IsOn="True" IsEnabled="False" OnContent="On" OffContent="Off" />
+                    </Grid>
                     <TextBlock x:Name="SensorSettingsState" FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" TextWrapping="Wrap" />
                 </StackPanel>
             </Border>
@@ -117,6 +122,11 @@
                         <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                         <StackPanel Spacing="2"><TextBlock Text="Automatic lookups" FontWeight="SemiBold" /><TextBlock Text="Every 5 minutes, at most 25 lookups per run, cached for 24 hours and within each service's free-tier limits. Malicious or suspicious results appear in Threats." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" /></StackPanel>
                         <ToggleSwitch x:Name="IntelLookupsToggle" Grid.Column="1" IsOn="True" IsEnabled="False" OnContent="On" OffContent="Off" />
+                    </Grid>
+                    <Grid ColumnSpacing="16">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                        <StackPanel Spacing="2"><TextBlock Text="Threat database updates" FontWeight="SemiBold" /><TextBlock Text="Downloads 19 public threat databases (LOLDrivers, abuse.ch, Spamhaus, phishing and stalkerware lists, IP origin data and more) in full over HTTPS and checks this PC against them locally. No API keys, and nothing about this PC is sent. When off, saved copies are still used until they expire." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" /></StackPanel>
+                        <ToggleSwitch x:Name="ThreatDatabasesToggle" Grid.Column="1" IsOn="True" IsEnabled="False" OnContent="On" OffContent="Off" />
                     </Grid>
                     <Grid ColumnSpacing="10">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="110" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="140" /></Grid.ColumnDefinitions>
@@ -144,11 +154,11 @@
                     </Grid>
                     <StackPanel Spacing="4">
                         <TextBlock x:Name="IntelRunState" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
-                        <TextBlock Text="RECENT RESULTS" FontSize="11" FontWeight="SemiBold" CharacterSpacing="85" Foreground="#FF91AFC2" />
+                        <TextBlock Text="RECENT RESULTS" FontSize="11" FontWeight="SemiBold" CharacterSpacing="85" Foreground="{StaticResource HudTextDimBrush}" />
                         <ItemsControl ItemsSource="{x:Bind IntelResults}">
                             <ItemsControl.ItemTemplate><DataTemplate><TextBlock Text="{Binding}" FontSize="12" TextWrapping="Wrap" /></DataTemplate></ItemsControl.ItemTemplate>
                         </ItemsControl>
-                        <TextBlock Text="OUTBOUND LOOKUPS (WHAT WAS SENT)" FontSize="11" FontWeight="SemiBold" CharacterSpacing="85" Foreground="#FF91AFC2" />
+                        <TextBlock Text="OUTBOUND LOOKUPS (WHAT WAS SENT)" FontSize="11" FontWeight="SemiBold" CharacterSpacing="85" Foreground="{StaticResource HudTextDimBrush}" />
                         <ItemsControl ItemsSource="{x:Bind IntelLog}">
                             <ItemsControl.ItemTemplate><DataTemplate><TextBlock Text="{Binding}" FontSize="11" FontFamily="Consolas" Foreground="{ThemeResource TextFillColorSecondaryBrush}" /></DataTemplate></ItemsControl.ItemTemplate>
                         </ItemsControl>

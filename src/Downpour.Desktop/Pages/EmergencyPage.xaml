@@ -19,13 +19,13 @@
 
                 <StackPanel Grid.Column="0" Spacing="4">
                     <StackPanel Orientation="Horizontal" Spacing="10">
-                        <TextBlock Text="Emergency Response Center" FontSize="24" FontWeight="SemiBold" Foreground="#F3F4F6" />
-                        <Border x:Name="StatusBadge" CornerRadius="4" Padding="8,2" VerticalAlignment="Center" Background="#450A0A" BorderBrush="#DC2626" BorderThickness="1">
-                            <TextBlock x:Name="StatusBadgeText" Text="ARMED" FontSize="11" FontWeight="Bold" Foreground="#F87171" />
+                        <TextBlock Text="Emergency Response Center" FontSize="24" FontWeight="SemiBold" Foreground="{StaticResource HudTextBrush}" />
+                        <Border x:Name="StatusBadge" CornerRadius="4" Padding="8,2" VerticalAlignment="Center" Background="{StaticResource HudRedTintBrush}" BorderBrush="{StaticResource HudRedBrush}" BorderThickness="1">
+                            <TextBlock x:Name="StatusBadgeText" Text="ARMED" FontSize="11" FontWeight="Bold" Foreground="{StaticResource HudRedBrush}" />
                         </Border>
                     </StackPanel>
                     <TextBlock Text="Rapid incident containment, volatile forensic snapshots, and guarded emergency lockdown."
-                               FontSize="13" Foreground="#9CA3AF" />
+                               FontSize="13" Foreground="{StaticResource HudTextDimBrush}" />
                 </StackPanel>
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
@@ -51,7 +51,7 @@
             </Grid>
 
             <!-- Panic Hero Card -->
-            <Border Background="#1C0606" BorderBrush="#DC2626" BorderThickness="1.5" CornerRadius="10" Padding="18">
+            <Border Background="#1C0606" BorderBrush="{StaticResource HudRedBrush}" BorderThickness="1.5" CornerRadius="10" Padding="18">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -85,10 +85,10 @@
 
                     <!-- Lockdown Options Checklist -->
                     <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="24" Margin="0,14,0,0">
-                        <CheckBox x:Name="OptSnapshot" Content="Take system snapshot first" IsChecked="True" Foreground="#E5E7EB" />
-                        <CheckBox x:Name="OptScreenProcesses" Content="Screen suspicious processes" IsChecked="True" Foreground="#E5E7EB" />
-                        <CheckBox x:Name="OptIsolateNetwork" Content="Isolate network traffic (Guarded)" IsChecked="True" Foreground="#E5E7EB" />
-                        <CheckBox x:Name="OptKillProcesses" Content="Kill suspicious processes (Guarded)" IsChecked="True" Foreground="#E5E7EB" />
+                        <CheckBox x:Name="OptSnapshot" Content="Take system snapshot first" IsChecked="True" Foreground="{StaticResource HudTextBrush}" />
+                        <CheckBox x:Name="OptScreenProcesses" Content="Screen suspicious processes" IsChecked="True" Foreground="{StaticResource HudTextBrush}" />
+                        <CheckBox x:Name="OptIsolateNetwork" Content="Isolate network traffic (Guarded)" IsChecked="True" Foreground="{StaticResource HudTextBrush}" />
+                        <CheckBox x:Name="OptKillProcesses" Content="Kill suspicious processes (Guarded)" IsChecked="True" Foreground="{StaticResource HudTextBrush}" />
                     </StackPanel>
                 </Grid>
             </Border>
@@ -102,47 +102,47 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
-                <Border Grid.Column="0" Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="8" Padding="14">
+                <Border Grid.Column="0" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudStrokeMutedBrush}" BorderThickness="1" CornerRadius="8" Padding="14">
                     <StackPanel Spacing="4">
-                        <TextBlock Text="SUSPICIOUS PROCESSES" FontSize="11" FontWeight="Bold" Foreground="#9CA3AF" />
-                        <TextBlock x:Name="MetricSuspiciousProcs" Text="0" FontSize="22" FontWeight="SemiBold" Foreground="#34D399" />
-                        <TextBlock Text="Malicious tools &amp; temp paths" FontSize="12" Foreground="#6B7280" />
+                        <TextBlock Text="SUSPICIOUS PROCESSES" FontSize="11" FontWeight="Bold" Foreground="{StaticResource HudTextDimBrush}" />
+                        <TextBlock x:Name="MetricSuspiciousProcs" Text="0" FontSize="22" FontWeight="SemiBold" Foreground="{StaticResource HudGreenBrush}" />
+                        <TextBlock Text="Malicious tools &amp; temp paths" FontSize="12" Foreground="{StaticResource HudTextFaintBrush}" />
                     </StackPanel>
                 </Border>
 
-                <Border Grid.Column="1" Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="8" Padding="14">
+                <Border Grid.Column="1" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudStrokeMutedBrush}" BorderThickness="1" CornerRadius="8" Padding="14">
                     <StackPanel Spacing="4">
-                        <TextBlock Text="ACTIVE TCP SESSIONS" FontSize="11" FontWeight="Bold" Foreground="#9CA3AF" />
-                        <TextBlock x:Name="MetricActiveConnections" Text="0" FontSize="22" FontWeight="SemiBold" Foreground="#38BDF8" />
-                        <TextBlock Text="Network endpoints captured" FontSize="12" Foreground="#6B7280" />
+                        <TextBlock Text="ACTIVE TCP SESSIONS" FontSize="11" FontWeight="Bold" Foreground="{StaticResource HudTextDimBrush}" />
+                        <TextBlock x:Name="MetricActiveConnections" Text="0" FontSize="22" FontWeight="SemiBold" Foreground="{StaticResource HudCyanBrush}" />
+                        <TextBlock Text="Network endpoints captured" FontSize="12" Foreground="{StaticResource HudTextFaintBrush}" />
                     </StackPanel>
                 </Border>
 
-                <Border Grid.Column="2" Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="8" Padding="14">
+                <Border Grid.Column="2" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudStrokeMutedBrush}" BorderThickness="1" CornerRadius="8" Padding="14">
                     <StackPanel Spacing="4">
-                        <TextBlock Text="RUNNING PROCESSES" FontSize="11" FontWeight="Bold" Foreground="#9CA3AF" />
-                        <TextBlock x:Name="MetricTotalProcesses" Text="0" FontSize="22" FontWeight="SemiBold" Foreground="#A78BFA" />
-                        <TextBlock Text="Volatile system memory" FontSize="12" Foreground="#6B7280" />
+                        <TextBlock Text="RUNNING PROCESSES" FontSize="11" FontWeight="Bold" Foreground="{StaticResource HudTextDimBrush}" />
+                        <TextBlock x:Name="MetricTotalProcesses" Text="0" FontSize="22" FontWeight="SemiBold" Foreground="{StaticResource HudVioletBrush}" />
+                        <TextBlock Text="Volatile system memory" FontSize="12" Foreground="{StaticResource HudTextFaintBrush}" />
                     </StackPanel>
                 </Border>
 
-                <Border Grid.Column="3" Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="8" Padding="14">
+                <Border Grid.Column="3" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudStrokeMutedBrush}" BorderThickness="1" CornerRadius="8" Padding="14">
                     <StackPanel Spacing="4">
-                        <TextBlock Text="SAVED SNAPSHOTS" FontSize="11" FontWeight="Bold" Foreground="#9CA3AF" />
-                        <TextBlock x:Name="MetricSavedSnapshots" Text="0" FontSize="22" FontWeight="SemiBold" Foreground="#FBBF24" />
-                        <TextBlock Text="Forensic evidence bundles" FontSize="12" Foreground="#6B7280" />
+                        <TextBlock Text="SAVED SNAPSHOTS" FontSize="11" FontWeight="Bold" Foreground="{StaticResource HudTextDimBrush}" />
+                        <TextBlock x:Name="MetricSavedSnapshots" Text="0" FontSize="22" FontWeight="SemiBold" Foreground="{StaticResource HudAmberBrush}" />
+                        <TextBlock Text="Forensic evidence bundles" FontSize="12" Foreground="{StaticResource HudTextFaintBrush}" />
                     </StackPanel>
                 </Border>
             </Grid>
 
             <!-- Individual Actions Bar -->
-            <Border Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="8" Padding="14">
+            <Border Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudStrokeMutedBrush}" BorderThickness="1" CornerRadius="8" Padding="14">
                 <StackPanel Spacing="10">
-                    <TextBlock Text="Individual Containment Actions" FontSize="13" FontWeight="SemiBold" Foreground="#F3F4F6" />
+                    <TextBlock Text="Individual Containment Actions" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource HudTextBrush}" />
                     <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,2,0,0">
                         <Button x:Name="ActionSnapshotBtn" Click="ActionSnapshotBtn_Click">
                             <StackPanel Orientation="Horizontal" Spacing="6">
-                                <FontIcon Glyph="&#xE722;" FontSize="12" Foreground="#38BDF8" />
+                                <FontIcon Glyph="&#xE722;" FontSize="12" Foreground="{StaticResource HudCyanBrush}" />
                                 <TextBlock Text="📸 Take Snapshot" />
                             </StackPanel>
                         </Button>
@@ -154,13 +154,13 @@
                         </Button>
                         <Button x:Name="ActionRestoreBtn" Click="ActionRestoreBtn_Click">
                             <StackPanel Orientation="Horizontal" Spacing="6">
-                                <FontIcon Glyph="&#xE701;" FontSize="12" Foreground="#34D399" />
+                                <FontIcon Glyph="&#xE701;" FontSize="12" Foreground="{StaticResource HudGreenBrush}" />
                                 <TextBlock Text="🔓 Restore Network" />
                             </StackPanel>
                         </Button>
                         <Button x:Name="ActionKillBtn" Click="ActionKillBtn_Click">
                             <StackPanel Orientation="Horizontal" Spacing="6">
-                                <FontIcon Glyph="&#xE7BA;" FontSize="12" Foreground="#F87171" />
+                                <FontIcon Glyph="&#xE7BA;" FontSize="12" Foreground="{StaticResource HudRedBrush}" />
                                 <TextBlock Text="☠️ Kill Suspicious" />
                             </StackPanel>
                         </Button>
@@ -172,7 +172,7 @@
                         </Button>
                         <Button x:Name="ActionLockBtn" Click="ActionLockBtn_Click">
                             <StackPanel Orientation="Horizontal" Spacing="6">
-                                <FontIcon Glyph="&#xE72E;" FontSize="12" Foreground="#FBBF24" />
+                                <FontIcon Glyph="&#xE72E;" FontSize="12" Foreground="{StaticResource HudAmberBrush}" />
                                 <TextBlock Text="🔒 Lock Workstation" />
                             </StackPanel>
                         </Button>
@@ -188,19 +188,19 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Suspicious Processes View -->
-                <Border Grid.Column="0" Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="8" Padding="14">
+                <Border Grid.Column="0" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudStrokeMutedBrush}" BorderThickness="1" CornerRadius="8" Padding="14">
                     <StackPanel Spacing="10">
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <TextBlock Text="Suspicious Process Screening" FontSize="14" FontWeight="SemiBold" Foreground="#F3F4F6" />
-                            <Border x:Name="ProcCountBadge" Background="#065F46" CornerRadius="4" Padding="6,1" VerticalAlignment="Center">
-                                <TextBlock x:Name="ProcCountBadgeText" Text="0 DETECTED" FontSize="10" FontWeight="Bold" Foreground="#6EE7B7" />
+                            <TextBlock Text="Suspicious Process Screening" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource HudTextBrush}" />
+                            <Border x:Name="ProcCountBadge" Background="{StaticResource HudGreenTintBrush}" CornerRadius="4" Padding="6,1" VerticalAlignment="Center">
+                                <TextBlock x:Name="ProcCountBadgeText" Text="0 DETECTED" FontSize="10" FontWeight="Bold" Foreground="{StaticResource HudGreenBrush}" />
                             </Border>
                         </StackPanel>
 
                         <ListView x:Name="SuspiciousProcessList" SelectionMode="Single" Height="260">
                             <ListView.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Background="#1F2937" BorderBrush="#374151" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0,2,0,2">
+                                    <Border Background="{StaticResource HudPanelElevatedBrush}" BorderBrush="{StaticResource HudStrokeMutedBrush}" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0,2,0,2">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*" />
@@ -208,15 +208,15 @@
                                             </Grid.ColumnDefinitions>
                                             <StackPanel Grid.Column="0" Spacing="2">
                                                 <StackPanel Orientation="Horizontal" Spacing="8">
-                                                    <TextBlock Text="{Binding ProcessName}" FontWeight="SemiBold" Foreground="#F87171" FontSize="13" />
-                                                    <TextBlock Text="{Binding PidSummary}" FontSize="11" Foreground="#9CA3AF" VerticalAlignment="Center" />
+                                                    <TextBlock Text="{Binding ProcessName}" FontWeight="SemiBold" Foreground="{StaticResource HudRedBrush}" FontSize="13" />
+                                                    <TextBlock Text="{Binding PidSummary}" FontSize="11" Foreground="{StaticResource HudTextDimBrush}" VerticalAlignment="Center" />
                                                 </StackPanel>
-                                                <TextBlock Text="{Binding SuspicionReason}" FontSize="11" Foreground="#FBBF24" />
-                                                <TextBlock Text="{Binding ExecutablePath}" FontSize="10" Foreground="#6B7280" TextTrimming="CharacterEllipsis" />
+                                                <TextBlock Text="{Binding SuspicionReason}" FontSize="11" Foreground="{StaticResource HudAmberBrush}" />
+                                                <TextBlock Text="{Binding ExecutablePath}" FontSize="10" Foreground="{StaticResource HudTextFaintBrush}" TextTrimming="CharacterEllipsis" />
                                             </StackPanel>
                                             <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right" Spacing="2">
                                                 <TextBlock Text="{Binding MitreTechnique}" FontSize="11" FontWeight="Bold" Foreground="#C084FC" HorizontalAlignment="Right" />
-                                                <TextBlock Text="{Binding MemorySummary}" FontSize="10" Foreground="#9CA3AF" HorizontalAlignment="Right" />
+                                                <TextBlock Text="{Binding MemorySummary}" FontSize="10" Foreground="{StaticResource HudTextDimBrush}" HorizontalAlignment="Right" />
                                             </StackPanel>
                                         </Grid>
                                     </Border>
@@ -225,23 +225,23 @@
                         </ListView>
 
                         <TextBlock x:Name="EmptyProcsNotice" Text="No suspicious processes currently flagged in active snapshot."
-                                   FontSize="12" Foreground="#6B7280" FontStyle="Italic" Visibility="Collapsed" />
+                                   FontSize="12" Foreground="{StaticResource HudTextFaintBrush}" FontStyle="Italic" Visibility="Collapsed" />
                     </StackPanel>
                 </Border>
 
                 <!-- Forensic Snapshot Details Card -->
-                <Border Grid.Column="1" Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="8" Padding="14">
+                <Border Grid.Column="1" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudStrokeMutedBrush}" BorderThickness="1" CornerRadius="8" Padding="14">
                     <StackPanel Spacing="10">
-                        <TextBlock Text="Forensic Evidence Seal" FontSize="14" FontWeight="SemiBold" Foreground="#F3F4F6" />
-                        <Border Background="#1F2937" BorderBrush="#374151" BorderThickness="1" CornerRadius="6" Padding="12">
+                        <TextBlock Text="Forensic Evidence Seal" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource HudTextBrush}" />
+                        <Border Background="{StaticResource HudPanelElevatedBrush}" BorderBrush="{StaticResource HudStrokeMutedBrush}" BorderThickness="1" CornerRadius="6" Padding="12">
                             <StackPanel Spacing="6">
-                                <TextBlock x:Name="SnapshotIdText" Text="Response ID: --" FontSize="12" FontWeight="SemiBold" Foreground="#38BDF8" />
-                                <TextBlock x:Name="SnapshotTimestampText" Text="Captured: --" FontSize="11" Foreground="#9CA3AF" />
-                                <TextBlock x:Name="SnapshotHostText" Text="Host: --" FontSize="11" Foreground="#9CA3AF" />
-                                <TextBlock Text="SHA-256 Forensic Seal:" FontSize="11" FontWeight="SemiBold" Foreground="#F3F4F6" Margin="0,4,0,0" />
-                                <TextBlock x:Name="SnapshotSealText" Text="--" FontSize="10" FontFamily="Consolas" Foreground="#34D399" TextWrapping="Wrap" />
-                                <TextBlock Text="File Location:" FontSize="11" FontWeight="SemiBold" Foreground="#F3F4F6" Margin="0,4,0,0" />
-                                <TextBlock x:Name="SnapshotPathText" Text="No snapshot captured yet." FontSize="10" Foreground="#60A5FA" TextWrapping="Wrap" />
+                                <TextBlock x:Name="SnapshotIdText" Text="Response ID: --" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource HudCyanBrush}" />
+                                <TextBlock x:Name="SnapshotTimestampText" Text="Captured: --" FontSize="11" Foreground="{StaticResource HudTextDimBrush}" />
+                                <TextBlock x:Name="SnapshotHostText" Text="Host: --" FontSize="11" Foreground="{StaticResource HudTextDimBrush}" />
+                                <TextBlock Text="SHA-256 Forensic Seal:" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource HudTextBrush}" Margin="0,4,0,0" />
+                                <TextBlock x:Name="SnapshotSealText" Text="--" FontSize="10" FontFamily="Consolas" Foreground="{StaticResource HudGreenBrush}" TextWrapping="Wrap" />
+                                <TextBlock Text="File Location:" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource HudTextBrush}" Margin="0,4,0,0" />
+                                <TextBlock x:Name="SnapshotPathText" Text="No snapshot captured yet." FontSize="10" Foreground="{StaticResource HudBlueBrush}" TextWrapping="Wrap" />
                             </StackPanel>
                         </Border>
                     </StackPanel>
@@ -249,20 +249,20 @@
             </Grid>
 
             <!-- Live Emergency Event Log -->
-            <Border Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="8" Padding="14">
+            <Border Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudStrokeMutedBrush}" BorderThickness="1" CornerRadius="8" Padding="14">
                 <StackPanel Spacing="8">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="Emergency Response Log" FontSize="14" FontWeight="SemiBold" Foreground="#F3F4F6" />
+                        <TextBlock Grid.Column="0" Text="Emergency Response Log" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource HudTextBrush}" />
                         <Button Grid.Column="1" Content="Clear Log" Click="ClearLogButton_Click" FontSize="11" Padding="8,3" />
                     </Grid>
                     <TextBox x:Name="LogTextBox" FontFamily="Consolas" FontSize="11" Height="140"
                              IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap"
                              ScrollViewer.VerticalScrollBarVisibility="Auto" Background="#0A0F1D"
-                             Foreground="#38BDF8" BorderBrush="#1E293B" />
+                             Foreground="{StaticResource HudCyanBrush}" BorderBrush="#1E293B" />
                 </StackPanel>
             </Border>
 

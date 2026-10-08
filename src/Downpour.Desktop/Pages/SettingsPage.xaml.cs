@@ -33,6 +33,8 @@ public sealed partial class SettingsPage : Page
         ProcessActionsToggle.Toggled += async (_, _) => await SetSensorSettingAsync(Downpour.Contracts.SensorSettingKeys.ProcessTerminationActions, ProcessActionsToggle.IsOn);
         FirewallActionsToggle.Toggled += async (_, _) => await SetSensorSettingAsync(Downpour.Contracts.SensorSettingKeys.FirewallActions, FirewallActionsToggle.IsOn);
         UsbActionsToggle.Toggled += async (_, _) => await SetSensorSettingAsync(Downpour.Contracts.SensorSettingKeys.UsbActions, UsbActionsToggle.IsOn);
+        HostIsolationToggle.Toggled += async (_, _) => await SetSensorSettingAsync(Downpour.Contracts.SensorSettingKeys.HostIsolationActions, HostIsolationToggle.IsOn);
+        ThreatDatabasesToggle.Toggled += async (_, _) => await SetSensorSettingAsync(Downpour.Contracts.SensorSettingKeys.ThreatDatabases, ThreatDatabasesToggle.IsOn);
     }
 
     private async Task LoadSensorSettingsAsync()
@@ -60,6 +62,10 @@ public sealed partial class SettingsPage : Page
                 FirewallActionsToggle.IsEnabled = true;
                 UsbActionsToggle.IsOn = settings.UsbActions;
                 UsbActionsToggle.IsEnabled = true;
+                HostIsolationToggle.IsOn = settings.HostIsolationActions;
+                HostIsolationToggle.IsEnabled = true;
+                ThreatDatabasesToggle.IsOn = settings.ThreatDatabases;
+                ThreatDatabasesToggle.IsEnabled = true;
                 ShowConfiguredKeys(settings.IntelServicesConfigured ?? []);
                 SensorSettingsState.Text = "";
             }
@@ -71,6 +77,8 @@ public sealed partial class SettingsPage : Page
                 ProcessActionsToggle.IsEnabled = false;
                 FirewallActionsToggle.IsEnabled = false;
                 UsbActionsToggle.IsEnabled = false;
+                HostIsolationToggle.IsEnabled = false;
+                ThreatDatabasesToggle.IsEnabled = false;
                 SensorSettingsState.Text = "The sensor service is not reachable, so its settings cannot be shown or changed.";
             }
         }

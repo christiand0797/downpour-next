@@ -19,13 +19,13 @@
 
                 <StackPanel Grid.Column="0" Spacing="4">
                     <StackPanel Orientation="Horizontal" Spacing="10">
-                        <TextBlock Text="Executive Defense Suite" FontSize="24" FontWeight="SemiBold" Foreground="#F3F4F6" />
-                        <Border x:Name="StatusBadge" CornerRadius="4" Padding="8,2" VerticalAlignment="Center" Background="#064E3B" BorderBrush="#059669" BorderThickness="1">
-                            <TextBlock x:Name="StatusBadgeText" Text="OPTIMAL POSTURE" FontSize="11" FontWeight="Bold" Foreground="#34D399" />
+                        <TextBlock Text="Executive Defense Suite" FontSize="24" FontWeight="SemiBold" Foreground="{StaticResource HudTextBrush}" />
+                        <Border x:Name="StatusBadge" CornerRadius="4" Padding="8,2" VerticalAlignment="Center" Background="{StaticResource HudGreenTintBrush}" BorderBrush="{StaticResource HudGreenBrush}" BorderThickness="1">
+                            <TextBlock x:Name="StatusBadgeText" Text="OPTIMAL POSTURE" FontSize="11" FontWeight="Bold" Foreground="{StaticResource HudGreenBrush}" />
                         </Border>
                     </StackPanel>
                     <TextBlock Text="Unified defense posture aggregation, MITRE ATT&amp;CK watcher diagnostics, and attack surface exposure assessment."
-                               FontSize="13" Foreground="#9CA3AF" />
+                               FontSize="13" Foreground="{StaticResource HudTextDimBrush}" />
                 </StackPanel>
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
@@ -56,46 +56,46 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
-                <Border Grid.Column="0" Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="8" Padding="14">
+                <Border Grid.Column="0" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudStrokeMutedBrush}" BorderThickness="1" CornerRadius="8" Padding="14">
                     <StackPanel Spacing="4">
-                        <TextBlock Text="DEFENSE POSTURE SCORE" FontSize="11" FontWeight="Bold" Foreground="#9CA3AF" />
-                        <TextBlock x:Name="MetricDefenseScore" Text="100/100" FontSize="22" FontWeight="SemiBold" Foreground="#34D399" />
-                        <TextBlock Text="Aggregated system resilience" FontSize="12" Foreground="#6B7280" />
+                        <TextBlock Text="DEFENSE POSTURE SCORE" FontSize="11" FontWeight="Bold" Foreground="{StaticResource HudTextDimBrush}" />
+                        <TextBlock x:Name="MetricDefenseScore" Text="100/100" FontSize="22" FontWeight="SemiBold" Foreground="{StaticResource HudGreenBrush}" />
+                        <TextBlock Text="Aggregated system resilience" FontSize="12" Foreground="{StaticResource HudTextFaintBrush}" />
                     </StackPanel>
                 </Border>
 
-                <Border Grid.Column="1" Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="8" Padding="14">
+                <Border Grid.Column="1" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudStrokeMutedBrush}" BorderThickness="1" CornerRadius="8" Padding="14">
                     <StackPanel Spacing="4">
-                        <TextBlock Text="ATTACK SURFACE EXPOSURE" FontSize="11" FontWeight="Bold" Foreground="#9CA3AF" />
-                        <TextBlock x:Name="MetricAttackSurface" Text="0%" FontSize="22" FontWeight="SemiBold" Foreground="#38BDF8" />
-                        <TextBlock Text="Calculated exposure penalty" FontSize="12" Foreground="#6B7280" />
+                        <TextBlock Text="ATTACK SURFACE EXPOSURE" FontSize="11" FontWeight="Bold" Foreground="{StaticResource HudTextDimBrush}" />
+                        <TextBlock x:Name="MetricAttackSurface" Text="0%" FontSize="22" FontWeight="SemiBold" Foreground="{StaticResource HudCyanBrush}" />
+                        <TextBlock Text="Calculated exposure penalty" FontSize="12" Foreground="{StaticResource HudTextFaintBrush}" />
                     </StackPanel>
                 </Border>
 
-                <Border Grid.Column="2" Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="8" Padding="14">
+                <Border Grid.Column="2" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudStrokeMutedBrush}" BorderThickness="1" CornerRadius="8" Padding="14">
                     <StackPanel Spacing="4">
-                        <TextBlock Text="ACTIVE DEFENSE WATCHERS" FontSize="11" FontWeight="Bold" Foreground="#9CA3AF" />
-                        <TextBlock x:Name="MetricActiveWatchers" Text="8" FontSize="22" FontWeight="SemiBold" Foreground="#A78BFA" />
-                        <TextBlock Text="Continuous posture verifiers" FontSize="12" Foreground="#6B7280" />
+                        <TextBlock Text="ACTIVE DEFENSE WATCHERS" FontSize="11" FontWeight="Bold" Foreground="{StaticResource HudTextDimBrush}" />
+                        <TextBlock x:Name="MetricActiveWatchers" Text="8" FontSize="22" FontWeight="SemiBold" Foreground="{StaticResource HudVioletBrush}" />
+                        <TextBlock Text="Continuous posture verifiers" FontSize="12" Foreground="{StaticResource HudTextFaintBrush}" />
                     </StackPanel>
                 </Border>
 
-                <Border Grid.Column="3" Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="8" Padding="14">
+                <Border Grid.Column="3" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudStrokeMutedBrush}" BorderThickness="1" CornerRadius="8" Padding="14">
                     <StackPanel Spacing="4">
-                        <TextBlock Text="FLAGGED EXPOSURES" FontSize="11" FontWeight="Bold" Foreground="#9CA3AF" />
-                        <TextBlock x:Name="MetricFlaggedExposures" Text="0" FontSize="22" FontWeight="SemiBold" Foreground="#34D399" />
-                        <TextBlock Text="Watchers requiring attention" FontSize="12" Foreground="#6B7280" />
+                        <TextBlock Text="FLAGGED EXPOSURES" FontSize="11" FontWeight="Bold" Foreground="{StaticResource HudTextDimBrush}" />
+                        <TextBlock x:Name="MetricFlaggedExposures" Text="0" FontSize="22" FontWeight="SemiBold" Foreground="{StaticResource HudGreenBrush}" />
+                        <TextBlock Text="Watchers requiring attention" FontSize="12" Foreground="{StaticResource HudTextFaintBrush}" />
                     </StackPanel>
                 </Border>
             </Grid>
 
             <!-- Core Defense Pillars Section -->
-            <Border Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="8" Padding="16">
+            <Border Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudStrokeMutedBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
                 <StackPanel Spacing="12">
                     <StackPanel Orientation="Horizontal" Spacing="8">
-                        <FontIcon Glyph="&#xE72E;" FontSize="16" Foreground="#38BDF8" VerticalAlignment="Center" />
-                        <TextBlock Text="Core Defense Pillars" FontSize="15" FontWeight="SemiBold" Foreground="#F3F4F6" />
-                        <TextBlock Text="— Integrated security subsystems" FontSize="12" Foreground="#6B7280" VerticalAlignment="Center" />
+                        <FontIcon Glyph="&#xE72E;" FontSize="16" Foreground="{StaticResource HudCyanBrush}" VerticalAlignment="Center" />
+                        <TextBlock Text="Core Defense Pillars" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource HudTextBrush}" />
+                        <TextBlock Text="— Integrated security subsystems" FontSize="12" Foreground="{StaticResource HudTextFaintBrush}" VerticalAlignment="Center" />
                     </StackPanel>
 
                     <Grid ColumnSpacing="12" RowSpacing="12">
@@ -109,7 +109,7 @@
                         </Grid.ColumnDefinitions>
 
                         <!-- Pillar 1: Project AEGIS -->
-                        <Border Grid.Row="0" Grid.Column="0" Background="#1F2937" BorderBrush="#374151" BorderThickness="1" CornerRadius="6" Padding="12">
+                        <Border Grid.Row="0" Grid.Column="0" Background="{StaticResource HudPanelElevatedBrush}" BorderBrush="{StaticResource HudStrokeMutedBrush}" BorderThickness="1" CornerRadius="6" Padding="12">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
@@ -117,13 +117,13 @@
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0" Spacing="4">
                                     <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <TextBlock Text="Project AEGIS" FontWeight="SemiBold" Foreground="#F3F4F6" FontSize="13" />
-                                        <Border Background="#064E3B" CornerRadius="3" Padding="6,1" VerticalAlignment="Center">
-                                            <TextBlock Text="ACTIVE 95%" FontSize="10" FontWeight="Bold" Foreground="#34D399" />
+                                        <TextBlock Text="Project AEGIS" FontWeight="SemiBold" Foreground="{StaticResource HudTextBrush}" FontSize="13" />
+                                        <Border Background="{StaticResource HudGreenTintBrush}" CornerRadius="3" Padding="6,1" VerticalAlignment="Center">
+                                            <TextBlock Text="ACTIVE 95%" FontSize="10" FontWeight="Bold" Foreground="{StaticResource HudGreenBrush}" />
                                         </Border>
                                     </StackPanel>
                                     <TextBlock Text="Context-aware NLP phishing, social engineering, and QR credential lure analysis."
-                                               FontSize="11" Foreground="#9CA3AF" TextWrapping="Wrap" />
+                                               FontSize="11" Foreground="{StaticResource HudTextDimBrush}" TextWrapping="Wrap" />
                                 </StackPanel>
                                 <Button Grid.Column="1" VerticalAlignment="Center" Margin="8,0,0,0" Click="OpenAegis_Click">
                                     <StackPanel Orientation="Horizontal" Spacing="4">
@@ -135,7 +135,7 @@
                         </Border>
 
                         <!-- Pillar 2: Ransomware Defense -->
-                        <Border Grid.Row="0" Grid.Column="1" Background="#1F2937" BorderBrush="#374151" BorderThickness="1" CornerRadius="6" Padding="12">
+                        <Border Grid.Row="0" Grid.Column="1" Background="{StaticResource HudPanelElevatedBrush}" BorderBrush="{StaticResource HudStrokeMutedBrush}" BorderThickness="1" CornerRadius="6" Padding="12">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
@@ -143,13 +143,13 @@
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0" Spacing="4">
                                     <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <TextBlock Text="Ransomware Defense" FontWeight="SemiBold" Foreground="#F3F4F6" FontSize="13" />
-                                        <Border Background="#064E3B" CornerRadius="3" Padding="6,1" VerticalAlignment="Center">
-                                            <TextBlock Text="PROTECTED 92%" FontSize="10" FontWeight="Bold" Foreground="#34D399" />
+                                        <TextBlock Text="Ransomware Defense" FontWeight="SemiBold" Foreground="{StaticResource HudTextBrush}" FontSize="13" />
+                                        <Border Background="{StaticResource HudGreenTintBrush}" CornerRadius="3" Padding="6,1" VerticalAlignment="Center">
+                                            <TextBlock Text="PROTECTED 92%" FontSize="10" FontWeight="Bold" Foreground="{StaticResource HudGreenBrush}" />
                                         </Border>
                                     </StackPanel>
                                     <TextBlock Text="Canary honeypot tripwires, VSS shadow-copy resiliency, and Shannon entropy monitoring."
-                                               FontSize="11" Foreground="#9CA3AF" TextWrapping="Wrap" />
+                                               FontSize="11" Foreground="{StaticResource HudTextDimBrush}" TextWrapping="Wrap" />
                                 </StackPanel>
                                 <Button Grid.Column="1" VerticalAlignment="Center" Margin="8,0,0,0" Click="OpenRansomware_Click">
                                     <StackPanel Orientation="Horizontal" Spacing="4">
@@ -161,7 +161,7 @@
                         </Border>
 
                         <!-- Pillar 3: Hardening & Firmware -->
-                        <Border Grid.Row="1" Grid.Column="0" Background="#1F2937" BorderBrush="#374151" BorderThickness="1" CornerRadius="6" Padding="12">
+                        <Border Grid.Row="1" Grid.Column="0" Background="{StaticResource HudPanelElevatedBrush}" BorderBrush="{StaticResource HudStrokeMutedBrush}" BorderThickness="1" CornerRadius="6" Padding="12">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
@@ -169,13 +169,13 @@
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0" Spacing="4">
                                     <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <TextBlock Text="Hardening &amp; Firmware" FontWeight="SemiBold" Foreground="#F3F4F6" FontSize="13" />
-                                        <Border Background="#064E3B" CornerRadius="3" Padding="6,1" VerticalAlignment="Center">
-                                            <TextBlock Text="HARDENED 90%" FontSize="10" FontWeight="Bold" Foreground="#34D399" />
+                                        <TextBlock Text="Hardening &amp; Firmware" FontWeight="SemiBold" Foreground="{StaticResource HudTextBrush}" FontSize="13" />
+                                        <Border Background="{StaticResource HudGreenTintBrush}" CornerRadius="3" Padding="6,1" VerticalAlignment="Center">
+                                            <TextBlock Text="HARDENED 90%" FontSize="10" FontWeight="Bold" Foreground="{StaticResource HudGreenBrush}" />
                                         </Border>
                                     </StackPanel>
                                     <TextBlock Text="BitLocker encryption, Secure Boot state, TPM cryptographic validation, and LSA-PPL."
-                                               FontSize="11" Foreground="#9CA3AF" TextWrapping="Wrap" />
+                                               FontSize="11" Foreground="{StaticResource HudTextDimBrush}" TextWrapping="Wrap" />
                                 </StackPanel>
                                 <Button Grid.Column="1" VerticalAlignment="Center" Margin="8,0,0,0" Click="OpenHardening_Click">
                                     <StackPanel Orientation="Horizontal" Spacing="4">
@@ -187,7 +187,7 @@
                         </Border>
 
                         <!-- Pillar 4: Emergency Response -->
-                        <Border Grid.Row="1" Grid.Column="1" Background="#1F2937" BorderBrush="#374151" BorderThickness="1" CornerRadius="6" Padding="12">
+                        <Border Grid.Row="1" Grid.Column="1" Background="{StaticResource HudPanelElevatedBrush}" BorderBrush="{StaticResource HudStrokeMutedBrush}" BorderThickness="1" CornerRadius="6" Padding="12">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
@@ -195,13 +195,13 @@
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0" Spacing="4">
                                     <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <TextBlock Text="Emergency Response" FontWeight="SemiBold" Foreground="#F3F4F6" FontSize="13" />
-                                        <Border Background="#064E3B" CornerRadius="3" Padding="6,1" VerticalAlignment="Center">
-                                            <TextBlock Text="ARMED 100%" FontSize="10" FontWeight="Bold" Foreground="#34D399" />
+                                        <TextBlock Text="Emergency Response" FontWeight="SemiBold" Foreground="{StaticResource HudTextBrush}" FontSize="13" />
+                                        <Border Background="{StaticResource HudGreenTintBrush}" CornerRadius="3" Padding="6,1" VerticalAlignment="Center">
+                                            <TextBlock Text="ARMED 100%" FontSize="10" FontWeight="Bold" Foreground="{StaticResource HudGreenBrush}" />
                                         </Border>
                                     </StackPanel>
                                     <TextBlock Text="One-click incident containment, volatile forensic snapshots, and guarded emergency lockdown."
-                                               FontSize="11" Foreground="#9CA3AF" TextWrapping="Wrap" />
+                                               FontSize="11" Foreground="{StaticResource HudTextDimBrush}" TextWrapping="Wrap" />
                                 </StackPanel>
                                 <Button Grid.Column="1" VerticalAlignment="Center" Margin="8,0,0,0" Click="OpenEmergency_Click">
                                     <StackPanel Orientation="Horizontal" Spacing="4">
@@ -216,7 +216,7 @@
             </Border>
 
             <!-- Advanced Attack Surface Watchers Section -->
-            <Border Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="8" Padding="16">
+            <Border Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudStrokeMutedBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
                 <StackPanel Spacing="10">
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -224,18 +224,18 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
-                            <TextBlock Text="Advanced Attack Surface Watchers" FontSize="14" FontWeight="SemiBold" Foreground="#F3F4F6" />
-                            <Border x:Name="WatchersCountBadge" Background="#064E3B" CornerRadius="4" Padding="6,1" VerticalAlignment="Center">
-                                <TextBlock x:Name="WatchersCountBadgeText" Text="8 VERIFIED" FontSize="10" FontWeight="Bold" Foreground="#34D399" />
+                            <TextBlock Text="Advanced Attack Surface Watchers" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource HudTextBrush}" />
+                            <Border x:Name="WatchersCountBadge" Background="{StaticResource HudGreenTintBrush}" CornerRadius="4" Padding="6,1" VerticalAlignment="Center">
+                                <TextBlock x:Name="WatchersCountBadgeText" Text="8 VERIFIED" FontSize="10" FontWeight="Bold" Foreground="{StaticResource HudGreenBrush}" />
                             </Border>
                         </StackPanel>
-                        <TextBlock Grid.Column="1" Text="Live MITRE ATT&amp;CK Host Posture" FontSize="11" Foreground="#6B7280" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="1" Text="Live MITRE ATT&amp;CK Host Posture" FontSize="11" Foreground="{StaticResource HudTextFaintBrush}" VerticalAlignment="Center" />
                     </Grid>
 
                     <ListView x:Name="WatcherListView" SelectionMode="None">
                         <ListView.ItemTemplate>
                             <DataTemplate>
-                                <Border Background="#1F2937" BorderBrush="#374151" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,2,0,2">
+                                <Border Background="{StaticResource HudPanelElevatedBrush}" BorderBrush="{StaticResource HudStrokeMutedBrush}" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,2,0,2">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*" />
@@ -243,16 +243,16 @@
                                         </Grid.ColumnDefinitions>
                                         <StackPanel Grid.Column="0" Spacing="3">
                                             <StackPanel Orientation="Horizontal" Spacing="8">
-                                                <TextBlock Text="{Binding Title}" FontWeight="SemiBold" Foreground="#F3F4F6" FontSize="13" />
-                                                <Border Background="#111827" BorderBrush="#374151" BorderThickness="1" CornerRadius="3" Padding="6,1" VerticalAlignment="Center">
-                                                    <TextBlock Text="{Binding Category}" FontSize="10" Foreground="#9CA3AF" />
+                                                <TextBlock Text="{Binding Title}" FontWeight="SemiBold" Foreground="{StaticResource HudTextBrush}" FontSize="13" />
+                                                <Border Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudStrokeMutedBrush}" BorderThickness="1" CornerRadius="3" Padding="6,1" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Category}" FontSize="10" Foreground="{StaticResource HudTextDimBrush}" />
                                                 </Border>
                                                 <Border Background="#1E1B4B" BorderBrush="#4338CA" BorderThickness="1" CornerRadius="3" Padding="6,1" VerticalAlignment="Center">
-                                                    <TextBlock Text="{Binding MitreTechnique}" FontSize="10" FontWeight="Bold" Foreground="#A78BFA" />
+                                                    <TextBlock Text="{Binding MitreTechnique}" FontSize="10" FontWeight="Bold" Foreground="{StaticResource HudVioletBrush}" />
                                                 </Border>
                                             </StackPanel>
-                                            <TextBlock Text="{Binding Description}" FontSize="11" Foreground="#9CA3AF" TextWrapping="Wrap" />
-                                            <TextBlock Text="{Binding ObservedDetail}" FontSize="10" FontFamily="Consolas" Foreground="#38BDF8" TextWrapping="Wrap" />
+                                            <TextBlock Text="{Binding Description}" FontSize="11" Foreground="{StaticResource HudTextDimBrush}" TextWrapping="Wrap" />
+                                            <TextBlock Text="{Binding ObservedDetail}" FontSize="10" FontFamily="Consolas" Foreground="{StaticResource HudCyanBrush}" TextWrapping="Wrap" />
                                         </StackPanel>
 
                                         <Border Grid.Column="1" VerticalAlignment="Center" Margin="12,0,0,0"

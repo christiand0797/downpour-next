@@ -14,20 +14,20 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <StackPanel Spacing="4">
-                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Foreground="#FF76DDF5" Text="DOWNPOUR  /  PROTECTION  /  PROJECT AEGIS" />
+                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Foreground="{StaticResource HudCyanBrush}" Text="DOWNPOUR  /  PROTECTION  /  PROJECT AEGIS" />
                     <TextBlock Style="{StaticResource TitleTextBlockStyle}" FontSize="30" Text="Project AEGIS Defense Architecture" />
                     <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Zero-Trust multi-layered security engine with local NLP phishing analysis and behavioral defenses." TextWrapping="Wrap" />
                 </StackPanel>
             </Grid>
 
             <!-- Status Banner -->
-            <Border Padding="14,11" CornerRadius="10" Background="#B9081220" BorderBrush="#423EC5D8" BorderThickness="1">
+            <Border Padding="14,11" CornerRadius="10" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
                 <Grid ColumnSpacing="12">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
-                    <FontIcon Glyph="&#xE72E;" FontSize="20" Foreground="#FF60DBEE" VerticalAlignment="Center" />
+                    <FontIcon Glyph="&#xE72E;" FontSize="20" Foreground="{StaticResource HudCyanBrush}" VerticalAlignment="Center" />
                     <StackPanel Grid.Column="1" Spacing="3">
                         <TextBlock FontWeight="SemiBold" Text="Project AEGIS: 5 Active Defense Layers (Local Mode)" />
                         <TextBlock FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="All telemetry and evaluations run strictly on-device in-memory without remote data transmission or privileged hooks." TextWrapping="Wrap" />
@@ -46,12 +46,12 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <!-- Layer 1 -->
-                <Border Grid.Column="0" Padding="12" CornerRadius="8" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="#303EC5D8" BorderThickness="1">
+                <Border Grid.Column="0" Padding="12" CornerRadius="8" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
                     <StackPanel Spacing="6">
                         <Grid>
-                            <TextBlock Text="L1" FontWeight="Bold" FontSize="18" Foreground="#FF60DBEE" />
-                            <Border HorizontalAlignment="Right" Background="#263EC5D8" CornerRadius="4" Padding="6,2">
-                                <TextBlock Text="ACTIVE" FontSize="10" FontWeight="SemiBold" Foreground="#FF60DBEE" />
+                            <TextBlock Text="L1" FontWeight="Bold" FontSize="18" Foreground="{StaticResource HudCyanBrush}" />
+                            <Border HorizontalAlignment="Right" Background="{StaticResource HudCyanTintBrush}" CornerRadius="4" Padding="6,2">
+                                <TextBlock Text="ACTIVE" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource HudCyanBrush}" />
                             </Border>
                         </Grid>
                         <TextBlock Text="Physical Shield" FontWeight="SemiBold" FontSize="13" />
@@ -60,12 +60,12 @@
                 </Border>
 
                 <!-- Layer 2 -->
-                <Border Grid.Column="1" Padding="12" CornerRadius="8" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="#303EC5D8" BorderThickness="1">
+                <Border Grid.Column="1" Padding="12" CornerRadius="8" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
                     <StackPanel Spacing="6">
                         <Grid>
-                            <TextBlock Text="L2" FontWeight="Bold" FontSize="18" Foreground="#FF58A6FF" />
+                            <TextBlock Text="L2" FontWeight="Bold" FontSize="18" Foreground="{StaticResource HudBlueBrush}" />
                             <Border HorizontalAlignment="Right" Background="#2658A6FF" CornerRadius="4" Padding="6,2">
-                                <TextBlock Text="ACTIVE" FontSize="10" FontWeight="SemiBold" Foreground="#FF58A6FF" />
+                                <TextBlock Text="ACTIVE" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource HudBlueBrush}" />
                             </Border>
                         </Grid>
                         <TextBlock Text="TCP Stack Guard" FontWeight="SemiBold" FontSize="13" />
@@ -74,12 +74,12 @@
                 </Border>
 
                 <!-- Layer 3 -->
-                <Border Grid.Column="2" Padding="12" CornerRadius="8" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="#303EC5D8" BorderThickness="1">
+                <Border Grid.Column="2" Padding="12" CornerRadius="8" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
                     <StackPanel Spacing="6">
                         <Grid>
-                            <TextBlock Text="L3" FontWeight="Bold" FontSize="18" Foreground="#FFBC8CFF" />
+                            <TextBlock Text="L3" FontWeight="Bold" FontSize="18" Foreground="{StaticResource HudVioletBrush}" />
                             <Border HorizontalAlignment="Right" Background="#26BC8CFF" CornerRadius="4" Padding="6,2">
-                                <TextBlock Text="ACTIVE" FontSize="10" FontWeight="SemiBold" Foreground="#FFBC8CFF" />
+                                <TextBlock Text="ACTIVE" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource HudVioletBrush}" />
                             </Border>
                         </Grid>
                         <TextBlock Text="Ingestion Engine" FontWeight="SemiBold" FontSize="13" />
@@ -91,9 +91,9 @@
                 <Border Grid.Column="3" Padding="12" CornerRadius="8" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="#40F0883E" BorderThickness="1">
                     <StackPanel Spacing="6">
                         <Grid>
-                            <TextBlock Text="L4" FontWeight="Bold" FontSize="18" Foreground="#FFF0883E" />
+                            <TextBlock Text="L4" FontWeight="Bold" FontSize="18" Foreground="{StaticResource HudOrangeBrush}" />
                             <Border HorizontalAlignment="Right" Background="#26F0883E" CornerRadius="4" Padding="6,2">
-                                <TextBlock Text="READY" FontSize="10" FontWeight="SemiBold" Foreground="#FFF0883E" />
+                                <TextBlock Text="READY" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource HudOrangeBrush}" />
                             </Border>
                         </Grid>
                         <TextBlock Text="NLP Phishing AI" FontWeight="SemiBold" FontSize="13" />
@@ -102,12 +102,12 @@
                 </Border>
 
                 <!-- Layer 5 -->
-                <Border Grid.Column="4" Padding="12" CornerRadius="8" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="#303EC5D8" BorderThickness="1">
+                <Border Grid.Column="4" Padding="12" CornerRadius="8" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
                     <StackPanel Spacing="6">
                         <Grid>
-                            <TextBlock Text="L5" FontWeight="Bold" FontSize="18" Foreground="#FFD29922" />
+                            <TextBlock Text="L5" FontWeight="Bold" FontSize="18" Foreground="{StaticResource HudAmberBrush}" />
                             <Border HorizontalAlignment="Right" Background="#26D29922" CornerRadius="4" Padding="6,2">
-                                <TextBlock Text="PROTECTED" FontSize="10" FontWeight="SemiBold" Foreground="#FFD29922" />
+                                <TextBlock Text="PROTECTED" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource HudAmberBrush}" />
                             </Border>
                         </Grid>
                         <TextBlock Text="Memory Shield" FontWeight="SemiBold" FontSize="13" />
@@ -118,7 +118,7 @@
 
             <!-- Layer 4: Interactive NLP Phishing Text Analyzer -->
             <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" FontSize="16" Text="Layer 4: Context-Aware NLP Phishing Analyzer" Margin="0,8,0,0" />
-            <Border Padding="16,16" CornerRadius="10" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="#353EC5D8" BorderThickness="1">
+            <Border Padding="16,16" CornerRadius="10" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
                 <StackPanel Spacing="14">
                     <TextBlock FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Paste suspicious email text, SMS message, or login prompt below. The analyzer uses deterministic lexical heuristics to detect urgency triggers, authority impersonation, fear hooks, grammar anomalies, blob URIs, and multi-stage QR instructions. Analysis is executed 100% locally." TextWrapping="Wrap" />
 
@@ -143,7 +143,7 @@
                     </Grid>
 
                     <!-- Results Panel -->
-                    <Border x:Name="ResultCard" Visibility="Collapsed" Padding="14,14" CornerRadius="8" Background="#900d1117" BorderBrush="#353EC5D8" BorderThickness="1">
+                    <Border x:Name="ResultCard" Visibility="Collapsed" Padding="14,14" CornerRadius="8" Background="#900d1117" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
                         <StackPanel Spacing="12">
                             <Grid ColumnSpacing="16">
                                 <Grid.ColumnDefinitions>
@@ -154,14 +154,14 @@
                                 <!-- Score Gauge -->
                                 <Border CornerRadius="8" Padding="14,10" Background="#203EC5D8" VerticalAlignment="Center">
                                     <StackPanel HorizontalAlignment="Center">
-                                        <TextBlock x:Name="ResultScoreText" Text="85" FontSize="28" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#FFF85149" />
+                                        <TextBlock x:Name="ResultScoreText" Text="85" FontSize="28" FontWeight="Bold" HorizontalAlignment="Center" Foreground="{StaticResource HudRedBrush}" />
                                         <TextBlock Text="/ 100" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" />
                                     </StackPanel>
                                 </Border>
                                 <!-- Verdict Badge -->
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
                                     <Border x:Name="VerdictBadge" CornerRadius="6" Padding="10,4" Background="#33F85149" HorizontalAlignment="Left">
-                                        <TextBlock x:Name="VerdictText" Text="PHISHING" FontWeight="Bold" FontSize="14" Foreground="#FFF85149" />
+                                        <TextBlock x:Name="VerdictText" Text="PHISHING" FontWeight="Bold" FontSize="14" Foreground="{StaticResource HudRedBrush}" />
                                     </Border>
                                     <TextBlock x:Name="VerdictSummary" Text="High probability of phishing or credential harvesting attack." FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                 </StackPanel>
@@ -169,7 +169,7 @@
 
                             <!-- Breakdown Categories -->
                             <StackPanel Spacing="6">
-                                <TextBlock Text="TRIGGERED PATTERNS &amp; REASONS" FontSize="10" FontWeight="SemiBold" CharacterSpacing="60" Foreground="#FF76DDF5" />
+                                <TextBlock Text="TRIGGERED PATTERNS &amp; REASONS" FontSize="10" FontWeight="SemiBold" CharacterSpacing="60" Foreground="{StaticResource HudCyanBrush}" />
                                 <ListView x:Name="ReasonsList" SelectionMode="None" IsItemClickEnabled="False" MaxHeight="160">
                                     <ListView.ItemTemplate>
                                         <DataTemplate>
@@ -178,7 +178,7 @@
                                                     <ColumnDefinition Width="Auto" />
                                                     <ColumnDefinition Width="*" />
                                                 </Grid.ColumnDefinitions>
-                                                <FontIcon Glyph="&#xE7BA;" FontSize="12" Foreground="#FFF0883E" VerticalAlignment="Center" />
+                                                <FontIcon Glyph="&#xE7BA;" FontSize="12" Foreground="{StaticResource HudOrangeBrush}" VerticalAlignment="Center" />
                                                 <TextBlock Grid.Column="1" Text="{Binding}" FontSize="12" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" />
                                             </Grid>
                                         </DataTemplate>

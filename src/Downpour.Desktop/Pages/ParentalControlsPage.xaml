@@ -19,13 +19,13 @@
 
                 <StackPanel Grid.Column="0" Spacing="4">
                     <StackPanel Orientation="Horizontal" Spacing="10">
-                        <TextBlock Text="Parental Controls &amp; Family Safety" FontSize="24" FontWeight="SemiBold" Foreground="#F3F4F6" />
-                        <Border x:Name="MasterBadge" CornerRadius="4" Padding="8,2" VerticalAlignment="Center" Background="#065F46" BorderBrush="#059669" BorderThickness="1">
-                            <TextBlock x:Name="MasterBadgeText" Text="REVIEW ONLY" FontSize="11" FontWeight="Bold" Foreground="#6EE7B7" />
+                        <TextBlock Text="Parental Controls &amp; Family Safety" FontSize="24" FontWeight="SemiBold" Foreground="{StaticResource HudTextBrush}" />
+                        <Border x:Name="MasterBadge" CornerRadius="4" Padding="8,2" VerticalAlignment="Center" Background="{StaticResource HudGreenTintBrush}" BorderBrush="{StaticResource HudGreenBrush}" BorderThickness="1">
+                            <TextBlock x:Name="MasterBadgeText" Text="REVIEW ONLY" FontSize="11" FontWeight="Bold" Foreground="{StaticResource HudGreenBrush}" />
                         </Border>
                     </StackPanel>
                     <TextBlock Text="Local policy configuration and read-only observations. No access enforcement."
-                               FontSize="13" Foreground="#9CA3AF" />
+                               FontSize="13" Foreground="{StaticResource HudTextDimBrush}" />
                 </StackPanel>
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
@@ -35,10 +35,10 @@
                             <TextBlock Text="Check Posture" />
                         </StackPanel>
                     </Button>
-                    <Button x:Name="SaveSettingsButton" Click="SaveSettingsButton_Click" Background="#065F46">
+                    <Button x:Name="SaveSettingsButton" Click="SaveSettingsButton_Click" Background="{StaticResource HudGreenTintBrush}">
                         <StackPanel Orientation="Horizontal" Spacing="6">
-                            <FontIcon Glyph="&#xE74E;" FontSize="13" Foreground="#6EE7B7" />
-                            <TextBlock Text="Save Settings" Foreground="#6EE7B7" />
+                            <FontIcon Glyph="&#xE74E;" FontSize="13" Foreground="{StaticResource HudGreenBrush}" />
+                            <TextBlock Text="Save Settings" Foreground="{StaticResource HudGreenBrush}" />
                         </StackPanel>
                     </Button>
                     <Button x:Name="ExportReportButton" Click="ExportReportButton_Click">
@@ -60,17 +60,17 @@
 
                     <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
                         <CheckBox x:Name="MasterEnableCheckBox" Content="Enable Policy Review" FontWeight="SemiBold"
-                                  IsChecked="True" Foreground="#F3F4F6" />
+                                  IsChecked="True" Foreground="{StaticResource HudTextBrush}" />
                         <TextBlock Text="|" Foreground="#374151" VerticalAlignment="Center" />
                         <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                            <TextBlock Text="Policy name:" FontSize="13" Foreground="#9CA3AF" VerticalAlignment="Center" />
+                            <TextBlock Text="Policy name:" FontSize="13" Foreground="{StaticResource HudTextDimBrush}" VerticalAlignment="Center" />
                             <TextBox x:Name="ProfileNameBox" Width="180" Text="Child Profile" FontSize="12" />
                         </StackPanel>
                     </StackPanel>
 
                     <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                         <TextBlock x:Name="CurfewBanner" Text="Bedtime: Open Access" FontSize="12" FontWeight="SemiBold"
-                                   Foreground="#34D399" VerticalAlignment="Center" />
+                                   Foreground="{StaticResource HudGreenBrush}" VerticalAlignment="Center" />
                     </StackPanel>
                 </Grid>
             </Border>
@@ -86,33 +86,33 @@
 
                 <Border Grid.Column="0" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource DownpourStrokeBrush}" BorderThickness="1" CornerRadius="8" Padding="14">
                     <StackPanel Spacing="4">
-                        <TextBlock Text="SCREEN TIME TODAY" FontSize="11" FontWeight="Bold" Foreground="#9CA3AF" />
-                        <TextBlock x:Name="MetricScreenTimeUsage" Text="Not measured" FontSize="20" FontWeight="SemiBold" Foreground="#38BDF8" />
-                        <TextBlock x:Name="MetricScreenTimeRemaining" Text="Usage source unavailable" FontSize="12" Foreground="#AFC0D7" />
+                        <TextBlock Text="SCREEN TIME TODAY" FontSize="11" FontWeight="Bold" Foreground="{StaticResource HudTextDimBrush}" />
+                        <TextBlock x:Name="MetricScreenTimeUsage" Text="Not measured" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource HudCyanBrush}" />
+                        <TextBlock x:Name="MetricScreenTimeRemaining" Text="Usage source unavailable" FontSize="12" Foreground="{StaticResource HudTextDimBrush}" />
                     </StackPanel>
                 </Border>
 
                 <Border Grid.Column="1" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource DownpourStrokeBrush}" BorderThickness="1" CornerRadius="8" Padding="14">
                     <StackPanel Spacing="4">
-                        <TextBlock Text="BEDTIME CURFEW" FontSize="11" FontWeight="Bold" Foreground="#9CA3AF" />
-                        <TextBlock x:Name="MetricBedtimeWindow" Text="21:00 - 07:00" FontSize="20" FontWeight="SemiBold" Foreground="#FBBF24" />
-                        <TextBlock x:Name="MetricCurfewStatus" Text="Access Active" FontSize="12" Foreground="#34D399" />
+                        <TextBlock Text="BEDTIME CURFEW" FontSize="11" FontWeight="Bold" Foreground="{StaticResource HudTextDimBrush}" />
+                        <TextBlock x:Name="MetricBedtimeWindow" Text="21:00 - 07:00" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource HudAmberBrush}" />
+                        <TextBlock x:Name="MetricCurfewStatus" Text="Access Active" FontSize="12" Foreground="{StaticResource HudGreenBrush}" />
                     </StackPanel>
                 </Border>
 
                 <Border Grid.Column="2" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource DownpourStrokeBrush}" BorderThickness="1" CornerRadius="8" Padding="14">
                     <StackPanel Spacing="4">
-                        <TextBlock Text="WEB CATEGORIES" FontSize="11" FontWeight="Bold" Foreground="#9CA3AF" />
-                        <TextBlock x:Name="MetricBlockedCategories" Text="5 Categories" FontSize="20" FontWeight="SemiBold" Foreground="#F87171" />
-                        <TextBlock x:Name="MetricBlockedDomainsCount" Text="Not yet evaluated" FontSize="12" Foreground="#AFC0D7" />
+                        <TextBlock Text="WEB CATEGORIES" FontSize="11" FontWeight="Bold" Foreground="{StaticResource HudTextDimBrush}" />
+                        <TextBlock x:Name="MetricBlockedCategories" Text="5 Categories" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource HudRedBrush}" />
+                        <TextBlock x:Name="MetricBlockedDomainsCount" Text="Not yet evaluated" FontSize="12" Foreground="{StaticResource HudTextDimBrush}" />
                     </StackPanel>
                 </Border>
 
                 <Border Grid.Column="3" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource DownpourStrokeBrush}" BorderThickness="1" CornerRadius="8" Padding="14">
                     <StackPanel Spacing="4">
-                        <TextBlock Text="HOSTS DNS FILTER" FontSize="11" FontWeight="Bold" Foreground="#9CA3AF" />
-                        <TextBlock x:Name="MetricHostsStatus" Text="NOT APPLIED" FontSize="20" FontWeight="SemiBold" Foreground="#9CA3AF" />
-                        <TextBlock Text="Read-only hosts inspection" FontSize="12" Foreground="#AFC0D7" />
+                        <TextBlock Text="HOSTS DNS FILTER" FontSize="11" FontWeight="Bold" Foreground="{StaticResource HudTextDimBrush}" />
+                        <TextBlock x:Name="MetricHostsStatus" Text="NOT APPLIED" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource HudTextDimBrush}" />
+                        <TextBlock Text="Read-only hosts inspection" FontSize="12" Foreground="{StaticResource HudTextDimBrush}" />
                     </StackPanel>
                 </Border>
             </Grid>
@@ -128,11 +128,11 @@
                 <Border Grid.Column="0" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource DownpourStrokeBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
                     <StackPanel Spacing="12">
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <FontIcon Glyph="&#xE787;" FontSize="14" Foreground="#38BDF8" VerticalAlignment="Center" />
-                            <TextBlock Text="Screen Time &amp; Bedtime Scheduling" FontSize="14" FontWeight="SemiBold" Foreground="#F3F4F6" />
+                            <FontIcon Glyph="&#xE787;" FontSize="14" Foreground="{StaticResource HudCyanBrush}" VerticalAlignment="Center" />
+                            <TextBlock Text="Screen Time &amp; Bedtime Scheduling" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource HudTextBrush}" />
                         </StackPanel>
 
-                        <CheckBox x:Name="ScreenTimeEnableCheckBox" Content="Configure Daily Limits" IsChecked="True" Foreground="#E5E7EB" />
+                        <CheckBox x:Name="ScreenTimeEnableCheckBox" Content="Configure Daily Limits" IsChecked="True" Foreground="{StaticResource HudTextBrush}" />
 
                         <Grid ColumnSpacing="12" RowSpacing="10" Margin="0,4,0,0">
                             <Grid.ColumnDefinitions>
@@ -145,27 +145,27 @@
                             </Grid.RowDefinitions>
 
                             <StackPanel Grid.Row="0" Grid.Column="0" Spacing="4">
-                                <TextBlock Text="Weekday Limit (Minutes):" FontSize="12" Foreground="#9CA3AF" />
+                                <TextBlock Text="Weekday Limit (Minutes):" FontSize="12" Foreground="{StaticResource HudTextDimBrush}" />
                                 <TextBox x:Name="WeekdayLimitBox" Text="120" FontSize="12" />
                             </StackPanel>
 
                             <StackPanel Grid.Row="0" Grid.Column="1" Spacing="4">
-                                <TextBlock Text="Weekend Limit (Minutes):" FontSize="12" Foreground="#9CA3AF" />
+                                <TextBlock Text="Weekend Limit (Minutes):" FontSize="12" Foreground="{StaticResource HudTextDimBrush}" />
                                 <TextBox x:Name="WeekendLimitBox" Text="240" FontSize="12" />
                             </StackPanel>
 
                             <StackPanel Grid.Row="1" Grid.Column="0" Spacing="4">
-                                <TextBlock Text="Bedtime Curfew Start (HH:MM):" FontSize="12" Foreground="#9CA3AF" />
+                                <TextBlock Text="Bedtime Curfew Start (HH:MM):" FontSize="12" Foreground="{StaticResource HudTextDimBrush}" />
                                 <TextBox x:Name="BedtimeStartBox" Text="21:00" FontSize="12" />
                             </StackPanel>
 
                             <StackPanel Grid.Row="1" Grid.Column="1" Spacing="4">
-                                <TextBlock Text="Bedtime Curfew End (HH:MM):" FontSize="12" Foreground="#9CA3AF" />
+                                <TextBlock Text="Bedtime Curfew End (HH:MM):" FontSize="12" Foreground="{StaticResource HudTextDimBrush}" />
                                 <TextBox x:Name="BedtimeEndBox" Text="07:00" FontSize="12" />
                             </StackPanel>
                         </Grid>
 
-                        <TextBlock Text="Usage is not measured. A consented usage source and enforcement broker are not connected. Bedtime is evaluated in local time." TextWrapping="Wrap" Foreground="#AFC0D7" />
+                        <TextBlock Text="Usage is not measured. A consented usage source and enforcement broker are not connected. Bedtime is evaluated in local time." TextWrapping="Wrap" Foreground="{StaticResource HudTextDimBrush}" />
                     </StackPanel>
                 </Border>
 
@@ -173,22 +173,22 @@
                 <Border Grid.Column="1" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource DownpourStrokeBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
                     <StackPanel Spacing="12">
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <FontIcon Glyph="&#xE774;" FontSize="14" Foreground="#F87171" VerticalAlignment="Center" />
-                            <TextBlock Text="Web Content Filtering" FontSize="14" FontWeight="SemiBold" Foreground="#F3F4F6" />
+                            <FontIcon Glyph="&#xE774;" FontSize="14" Foreground="{StaticResource HudRedBrush}" VerticalAlignment="Center" />
+                            <TextBlock Text="Web Content Filtering" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource HudTextBrush}" />
                         </StackPanel>
 
-                        <CheckBox x:Name="WebFilterEnableCheckBox" Content="Configure Web Categories" IsChecked="True" Foreground="#E5E7EB" />
+                        <CheckBox x:Name="WebFilterEnableCheckBox" Content="Configure Web Categories" IsChecked="True" Foreground="{StaticResource HudTextBrush}" />
 
                         <StackPanel Spacing="6" Margin="0,2,0,0">
-                            <CheckBox x:Name="BlockAdultCheckBox" Content="Block Adult &amp; Explicit Content" IsChecked="True" Foreground="#E5E7EB" />
-                            <CheckBox x:Name="BlockGamblingCheckBox" Content="Block Gambling &amp; Betting Sites" IsChecked="True" Foreground="#E5E7EB" />
-                            <CheckBox x:Name="BlockViolenceCheckBox" Content="Block Violent &amp; Graphic Material" IsChecked="True" Foreground="#E5E7EB" />
-                            <CheckBox x:Name="BlockWeaponsCheckBox" Content="Block Weapons &amp; Firearms Trading" IsChecked="True" Foreground="#E5E7EB" />
-                            <CheckBox x:Name="BlockDrugsCheckBox" Content="Include Legacy Substance Category" IsChecked="True" Foreground="#E5E7EB" />
+                            <CheckBox x:Name="BlockAdultCheckBox" Content="Block Adult &amp; Explicit Content" IsChecked="True" Foreground="{StaticResource HudTextBrush}" />
+                            <CheckBox x:Name="BlockGamblingCheckBox" Content="Block Gambling &amp; Betting Sites" IsChecked="True" Foreground="{StaticResource HudTextBrush}" />
+                            <CheckBox x:Name="BlockViolenceCheckBox" Content="Block Violent &amp; Graphic Material" IsChecked="True" Foreground="{StaticResource HudTextBrush}" />
+                            <CheckBox x:Name="BlockWeaponsCheckBox" Content="Block Weapons &amp; Firearms Trading" IsChecked="True" Foreground="{StaticResource HudTextBrush}" />
+                            <CheckBox x:Name="BlockDrugsCheckBox" Content="Include Legacy Substance Category" IsChecked="True" Foreground="{StaticResource HudTextBrush}" />
                         </StackPanel>
 
                         <TextBox x:Name="CustomDomainsBox" Header="Custom domains (one per line)" AcceptsReturn="True" MaxHeight="120" MaxLength="64000" TextWrapping="Wrap" />
-                        <TextBlock Text="Configuration preview only. DNS filtering, SafeSearch and app enforcement are unavailable until their administrator action workflow is implemented." TextWrapping="Wrap" Foreground="#AFC0D7" />
+                        <TextBlock Text="Configuration preview only. DNS filtering, SafeSearch and app enforcement are unavailable until their administrator action workflow is implemented." TextWrapping="Wrap" Foreground="{StaticResource HudTextDimBrush}" />
 
                     </StackPanel>
                 </Border>
@@ -203,19 +203,19 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
-                            <FontIcon Glyph="&#xE71D;" FontSize="14" Foreground="#A78BFA" VerticalAlignment="Center" />
-                            <TextBlock Text="Application Restrictions &amp; Process Monitoring" FontSize="14" FontWeight="SemiBold" Foreground="#F3F4F6" />
+                            <FontIcon Glyph="&#xE71D;" FontSize="14" Foreground="{StaticResource HudVioletBrush}" VerticalAlignment="Center" />
+                            <TextBlock Text="Application Restrictions &amp; Process Monitoring" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource HudTextBrush}" />
                         </StackPanel>
-                        <CheckBox Grid.Column="1" x:Name="AppRestrictionEnableCheckBox" Content="Review Configured Applications" IsChecked="True" Foreground="#E5E7EB" />
+                        <CheckBox Grid.Column="1" x:Name="AppRestrictionEnableCheckBox" Content="Review Configured Applications" IsChecked="True" Foreground="{StaticResource HudTextBrush}" />
                     </Grid>
 
-                    <TextBlock Text="Monitored Restricted Executables:" FontSize="12" Foreground="#9CA3AF" />
+                    <TextBlock Text="Monitored Restricted Executables:" FontSize="12" Foreground="{StaticResource HudTextDimBrush}" />
                     <TextBox x:Name="ConfiguredAppsBox" Header="Executable names (one per line)" AcceptsReturn="True" MaxLength="26000" MaxHeight="140" TextWrapping="Wrap" />
 
-                    <Border Background="#1F2937" CornerRadius="6" Padding="10" Margin="0,4,0,0">
+                    <Border Background="{StaticResource HudPanelElevatedBrush}" CornerRadius="6" Padding="10" Margin="0,4,0,0">
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <FontIcon Glyph="&#xE783;" FontSize="14" Foreground="#34D399" VerticalAlignment="Center" />
-                            <TextBlock x:Name="RestrictedAppsStatusText" Text="Running restricted applications check: None detected." FontSize="12" Foreground="#F3F4F6" />
+                            <FontIcon Glyph="&#xE783;" FontSize="14" Foreground="{StaticResource HudGreenBrush}" VerticalAlignment="Center" />
+                            <TextBlock x:Name="RestrictedAppsStatusText" Text="Running restricted applications check: None detected." FontSize="12" Foreground="{StaticResource HudTextBrush}" />
                         </StackPanel>
                     </Border>
                 </StackPanel>
@@ -229,13 +229,13 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="Session Review Log (latest 100 events)" FontSize="14" FontWeight="SemiBold" Foreground="#F3F4F6" />
+                        <TextBlock Grid.Column="0" Text="Session Review Log (latest 100 events)" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource HudTextBrush}" />
                         <Button Grid.Column="1" Content="Clear Log" Click="ClearLogButton_Click" FontSize="11" Padding="8,3" />
                     </Grid>
                     <TextBox x:Name="LogTextBox" FontFamily="Consolas" FontSize="11" Height="130"
                              IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap"
                              ScrollViewer.VerticalScrollBarVisibility="Auto" Background="#0A0F1D"
-                             Foreground="#38BDF8" BorderBrush="#1E293B" />
+                             Foreground="{StaticResource HudCyanBrush}" BorderBrush="#1E293B" />
                 </StackPanel>
             </Border>
 

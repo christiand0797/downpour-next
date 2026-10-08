@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="Downpour_Desktop.Pages.ThreatDatabasesPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:pages="using:Downpour_Desktop.Pages"
+    Background="Transparent">
+    <Page.Resources>
+        <DataTemplate x:Key="MatchTemplate" x:DataType="pages:ThreatMatchRow">
+            <Grid Padding="0,8" ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Border Background="{x:Bind SeverityTint}" BorderBrush="{x:Bind SeverityBrush}" BorderThickness="1" CornerRadius="2" Padding="8,2" VerticalAlignment="Top">
+                    <TextBlock Text="{x:Bind Severity}" FontSize="11" FontWeight="SemiBold" CharacterSpacing="120" Foreground="{x:Bind SeverityBrush}" />
+                </Border>
+                <StackPanel Grid.Column="1" Spacing="2">
+                    <TextBlock Text="{x:Bind Title}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                    <TextBlock Text="{x:Bind Subject}" Foreground="{StaticResource HudTextDimBrush}" TextWrapping="Wrap" IsTextSelectionEnabled="True" />
+                    <TextBlock Text="{x:Bind Detail}" Foreground="{StaticResource HudTextFaintBrush}" FontSize="12" TextWrapping="Wrap" />
+                </StackPanel>
+                <TextBlock Grid.Column="2" Text="{x:Bind When}" Foreground="{StaticResource HudTextFaintBrush}" FontSize="12" />
+            </Grid>
+        </DataTemplate>
+        <DataTemplate x:Key="ConnectionTemplate" x:DataType="pages:ConnectionRow">
+            <Grid Padding="0,6" ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="4" />
+                    <ColumnDefinition Width="2*" MinWidth="140" />
+                    <ColumnDefinition Width="2*" MinWidth="150" />
+                    <ColumnDefinition Width="3*" MinWidth="160" />
+                </Grid.ColumnDefinitions>
+                <Border Background="{x:Bind MarkerBrush}" CornerRadius="1" />
+                <StackPanel Grid.Column="1">
+                    <TextBlock Text="{x:Bind Program}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Text="{x:Bind Pid}" Foreground="{StaticResource HudTextFaintBrush}" FontSize="12" />
+                </StackPanel>
+                <TextBlock Grid.Column="2" Text="{x:Bind Endpoint}" Foreground="{StaticResource HudCyanBrush}" IsTextSelectionEnabled="True" VerticalAlignment="Center" />
+                <StackPanel Grid.Column="3" VerticalAlignment="Center">
+                    <TextBlock Text="{x:Bind Country}" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Text="{x:Bind Network}" Foreground="{StaticResource HudTextDimBrush}" FontSize="12" TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+            </Grid>
+        </DataTemplate>
+        <DataTemplate x:Key="FeedTemplate" x:DataType="pages:FeedRow">
+            <Border Style="{StaticResource HudCardStyle}" Padding="14,12" MinHeight="150">
+                <StackPanel Spacing="6">
+                    <Grid ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="{x:Bind Name}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                        <Border Grid.Column="1" Background="{x:Bind StateTint}" BorderBrush="{x:Bind StateBrush}" BorderThickness="1" CornerRadius="2" Padding="6,1" VerticalAlignment="Top">
+                            <TextBlock Text="{x:Bind State}" FontSize="10" FontWeight="SemiBold" CharacterSpacing="140" Foreground="{x:Bind StateBrush}" />
+                        </Border>
+                    </Grid>
+                    <TextBlock Text="{x:Bind Provider}" Foreground="{StaticResource HudMagentaBrush}" FontSize="11" CharacterSpacing="100" />
+                    <TextBlock Text="{x:Bind Entries}" Style="{StaticResource HudMetricStyle}" FontSize="22" />
+                    <TextBlock Text="{x:Bind Purpose}" Foreground="{StaticResource HudTextDimBrush}" FontSize="12" TextWrapping="Wrap" MaxLines="3" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Text="{x:Bind Updated}" Foreground="{StaticResource HudTextFaintBrush}" FontSize="11" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+    </Page.Resources>
+
+    <ScrollViewer>
+        <StackPanel Padding="28,22,28,40" Spacing="18" MaxWidth="1500">
+            <!-- Header -->
+            <Grid ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Spacing="4">
+                    <TextBlock Text="THREAT INTELLIGENCE GRID" Style="{StaticResource HudEyebrowStyle}" />
+                    <TextBlock Text="Threat Databases" Style="{StaticResource HudPageTitleStyle}" />
+                    <Rectangle Height="2" Fill="{StaticResource HudHeaderRuleBrush}" HorizontalAlignment="Stretch" Margin="0,4,0,2" />
+                    <TextBlock Foreground="{StaticResource HudTextDimBrush}" TextWrapping="Wrap" MaxWidth="900" HorizontalAlignment="Left"
+                               Text="Public threat databases are downloaded whole and checked here on this PC against your connections, DNS lookups, loaded drivers and running programs. Nothing about this PC is sent to any of them." />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Top">
+                    <Button x:Name="RefreshButton" Click="Refresh_Click" Style="{StaticResource AccentButtonStyle}" ToolTipService.ToolTip="Download any database that is out of date or failed">
+                        <StackPanel Orientation="Horizontal" Spacing="8"><FontIcon Glyph="&#xE895;" FontSize="14" /><TextBlock Text="Update now" /></StackPanel>
+                    </Button>
+                    <Button x:Name="ReportButton" Click="Report_Click" IsEnabled="False" ToolTipService.ToolTip="Copy matches and connection origins as a dated text report">
+                        <StackPanel Orientation="Horizontal" Spacing="8"><FontIcon Glyph="&#xE8C8;" FontSize="14" /><TextBlock Text="Copy evidence report" /></StackPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
+
+            <InfoBar x:Name="StatusBar" IsOpen="False" IsClosable="True" />
+
+            <!-- HUD summary -->
+            <Border Style="{StaticResource HudCardStyle}" Padding="20">
+                <Grid ColumnSpacing="28" RowSpacing="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Spacing="6" HorizontalAlignment="Center">
+                        <ContentControl x:Name="CoverageGaugeHost" />
+                        <TextBlock Text="DATABASES ONLINE" Style="{StaticResource HudCaptionStyle}" HorizontalAlignment="Center" />
+                    </StackPanel>
+                    <VariableSizedWrapGrid Grid.Column="1" Orientation="Horizontal" ItemWidth="200" ItemHeight="96" VerticalAlignment="Center">
+                        <StackPanel Margin="0,0,12,12" Spacing="2">
+                            <TextBlock Text="INDICATORS LOADED" Style="{StaticResource HudCaptionStyle}" />
+                            <TextBlock x:Name="IndicatorsText" Text="—" Style="{StaticResource HudMetricStyle}" />
+                            <TextBlock x:Name="OriginsText" Text="" Foreground="{StaticResource HudTextFaintBrush}" FontSize="12" />
+                        </StackPanel>
+                        <StackPanel Margin="0,0,12,12" Spacing="2">
+                            <TextBlock Text="MATCHES ON THIS PC" Style="{StaticResource HudCaptionStyle}" />
+                            <TextBlock x:Name="MatchesText" Text="—" Style="{StaticResource HudMetricStyle}" />
+                            <TextBlock x:Name="MatchesDetail" Text="" Foreground="{StaticResource HudTextFaintBrush}" FontSize="12" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <StackPanel Margin="0,0,12,12" Spacing="2">
+                            <TextBlock Text="CONNECTIONS CHECKED" Style="{StaticResource HudCaptionStyle}" />
+                            <TextBlock x:Name="ConnectionsText" Text="—" Style="{StaticResource HudMetricStyle}" Foreground="{StaticResource HudBlueBrush}" />
+                            <TextBlock x:Name="DomainsText" Text="" Foreground="{StaticResource HudTextFaintBrush}" FontSize="12" />
+                        </StackPanel>
+                        <StackPanel Margin="0,0,12,12" Spacing="2">
+                            <TextBlock Text="FILES FINGERPRINTED" Style="{StaticResource HudCaptionStyle}" />
+                            <TextBlock x:Name="FilesText" Text="—" Style="{StaticResource HudMetricStyle}" Foreground="{StaticResource HudVioletBrush}" />
+                            <TextBlock x:Name="FilesDetail" Text="" Foreground="{StaticResource HudTextFaintBrush}" FontSize="12" />
+                        </StackPanel>
+                        <StackPanel Margin="0,0,12,12" Spacing="2">
+                            <TextBlock Text="LAST SWEEP" Style="{StaticResource HudCaptionStyle}" />
+                            <TextBlock x:Name="SweepText" Text="—" Style="{StaticResource HudMetricStyle}" Foreground="{StaticResource HudMagentaBrush}" />
+                            <TextBlock x:Name="SweepDetail" Text="" Foreground="{StaticResource HudTextFaintBrush}" FontSize="12" />
+                        </StackPanel>
+                    </VariableSizedWrapGrid>
+                </Grid>
+            </Border>
+
+            <!-- Matches -->
+            <Border x:Name="MatchesCard" Style="{StaticResource HudCardStyle}">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="MATCHES ON THIS PC" Style="{StaticResource HudSectionTitleStyle}" />
+                    <TextBlock x:Name="MatchesEmpty" Foreground="{StaticResource HudGreenBrush}" TextWrapping="Wrap"
+                               Text="Nothing on this PC matches any loaded database." />
+                    <ListView x:Name="MatchList" ItemTemplate="{StaticResource MatchTemplate}" SelectionMode="None" MaxHeight="520" />
+                </StackPanel>
+            </Border>
+
+            <!-- Lookup -->
+            <Border Style="{StaticResource HudCardStyle}">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="CHECK ANYTHING OFFLINE" Style="{StaticResource HudSectionTitleStyle}" />
+                    <TextBlock Foreground="{StaticResource HudTextDimBrush}" TextWrapping="Wrap"
+                               Text="Paste an IP address, website, link or file hash (SHA-256, SHA-1 or MD5). It is checked against the saved databases on this PC only, so the other side is never alerted." />
+                    <Grid ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="LookupBox" PlaceholderText="e.g. 185.220.101.4, suspicious-site.example, or a SHA-256" MaxLength="2048" KeyDown="LookupBox_KeyDown" />
+                        <Button Grid.Column="1" Content="Check" Click="Lookup_Click" Style="{StaticResource AccentButtonStyle}" />
+                    </Grid>
+                    <TextBlock x:Name="LookupResult" TextWrapping="Wrap" IsTextSelectionEnabled="True" />
+                </StackPanel>
+            </Border>
+
+            <!-- Connections and origin -->
+            <Border Style="{StaticResource HudCardStyle}">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="WHO THIS PC IS TALKING TO" Style="{StaticResource HudSectionTitleStyle}" />
+                    <TextBlock Foreground="{StaticResource HudTextDimBrush}" TextWrapping="Wrap"
+                               Text="Every open connection to the internet, the program that owns it, and roughly where the other end is: the country the address is registered in and the network that runs it (an ISP, hosting company or VPN). This locates a network, not a person, and VPNs or mobile carriers can show a different place." />
+                    <ListView x:Name="ConnectionList" ItemTemplate="{StaticResource ConnectionTemplate}" SelectionMode="None" MaxHeight="460" />
+                    <TextBlock x:Name="ConnectionsEmpty" Foreground="{StaticResource HudTextFaintBrush}" Text="No internet connections were open during the last sweep." Visibility="Collapsed" />
+                </StackPanel>
+            </Border>
+
+            <!-- Feeds -->
+            <StackPanel Spacing="10">
+                <TextBlock Text="DATABASES" Style="{StaticResource HudSectionTitleStyle}" />
+                <ItemsRepeater x:Name="FeedRepeater" ItemTemplate="{StaticResource FeedTemplate}">
+                    <ItemsRepeater.Layout>
+                        <UniformGridLayout MinItemWidth="270" MinItemHeight="160" MinColumnSpacing="12" MinRowSpacing="12" ItemsStretch="Fill" />
+                    </ItemsRepeater.Layout>
+                </ItemsRepeater>
+            </StackPanel>
+
+            <!-- LOLBins -->
+            <Border Style="{StaticResource HudCardStyle}">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="BUILT-IN TOOLS ATTACKERS ALSO USE (RUNNING NOW)" Style="{StaticResource HudSectionTitleStyle}" />
+                    <TextBlock Foreground="{StaticResource HudTextDimBrush}" TextWrapping="Wrap"
+                               Text="These are normal Windows programs listed by the LOLBAS project because attackers can misuse them. Seeing one running is usually fine; it is context for investigating something else." />
+                    <ListView x:Name="LolbinList" SelectionMode="None" MaxHeight="280" />
+                </StackPanel>
+            </Border>
+
+            <TextBlock x:Name="WarningsText" Foreground="{StaticResource HudAmberBrush}" TextWrapping="Wrap" />
+            <TextBlock Foreground="{StaticResource HudTextFaintBrush}" FontSize="12" TextWrapping="Wrap"
+                       Text="Limits: databases list known threats, so a clean result is not proof that nothing is wrong. Lists of attacking addresses can include shared or recycled addresses. Programs inside the Windows folder are not fingerprinted. Matches are recorded in Triage; nothing is blocked or removed automatically." />
+        </StackPanel>
+    </ScrollViewer>
+</Page>

@@ -10,7 +10,7 @@
             <Grid ColumnSpacing="16">
                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                 <StackPanel Spacing="4">
-                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Foreground="#FF76DDF5" Text="DOWNPOUR  /  PROTECTION  /  FIREWALL" />
+                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Foreground="{StaticResource HudCyanBrush}" Text="DOWNPOUR  /  PROTECTION  /  FIREWALL" />
                     <TextBlock Style="{StaticResource TitleTextBlockStyle}" FontSize="30" Text="Firewall" />
                     <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Windows Firewall profiles, rules, tamper indicators, recently blocked connections, and audited remote IP blocking/rule cleanup (DN-008 Phase 3)." TextWrapping="Wrap" />
                 </StackPanel>
@@ -21,7 +21,7 @@
                 </StackPanel>
             </Grid>
 
-            <Border Padding="14,11" CornerRadius="10" Background="#B9081220" BorderBrush="#423EC5D8" BorderThickness="1">
+            <Border Padding="14,11" CornerRadius="10" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
                 <StackPanel Spacing="3">
                     <TextBlock x:Name="StatusHeadline" FontWeight="SemiBold" Text="Reading firewall policy" />
                     <TextBlock x:Name="StatusDetail" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
@@ -46,7 +46,7 @@
             </ItemsControl>
 
             <StackPanel Spacing="6">
-                <TextBlock Text="FINDINGS" FontSize="11" FontWeight="SemiBold" CharacterSpacing="85" Foreground="#FF91AFC2" />
+                <TextBlock Text="FINDINGS" FontSize="11" FontWeight="SemiBold" CharacterSpacing="85" Foreground="{StaticResource HudTextDimBrush}" />
                 <ItemsControl ItemsSource="{x:Bind Findings}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
@@ -97,7 +97,7 @@
             </StackPanel>
 
             <StackPanel Spacing="6">
-                <TextBlock Text="RECENTLY BLOCKED CONNECTIONS (EVENT 5157)" FontSize="11" FontWeight="SemiBold" CharacterSpacing="85" Foreground="#FF91AFC2" />
+                <TextBlock Text="RECENTLY BLOCKED CONNECTIONS (EVENT 5157)" FontSize="11" FontWeight="SemiBold" CharacterSpacing="85" Foreground="{StaticResource HudTextDimBrush}" />
                 <TextBlock x:Name="BlockedStatus" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                 <ListView ItemsSource="{x:Bind Blocked}" SelectionMode="None" MaxHeight="300" Background="{StaticResource DownpourSurfaceBrush}">
                     <ListView.ItemTemplate>

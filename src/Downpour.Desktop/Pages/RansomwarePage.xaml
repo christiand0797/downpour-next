@@ -14,7 +14,7 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <StackPanel Spacing="4">
-                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Foreground="#FFFF7B72" Text="DOWNPOUR  /  PROTECTION  /  RANSOMWARE RESILIENCE &amp; CANARY WATCH" />
+                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Foreground="{StaticResource HudRedBrush}" Text="DOWNPOUR  /  PROTECTION  /  RANSOMWARE RESILIENCE &amp; CANARY WATCH" />
                     <TextBlock Style="{StaticResource TitleTextBlockStyle}" FontSize="30" Text="Ransomware Early Warning &amp; File Resilience" />
                     <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Real-time decoy canary file monitoring, protected directory posture, Volume Shadow Copy (VSS) anti-recovery detection, and passive entropy disruption analysis." TextWrapping="Wrap" />
                 </StackPanel>
@@ -27,40 +27,40 @@
             </Grid>
 
             <!-- Overview Banner -->
-            <Border Padding="16,14" CornerRadius="10" Background="#B9081220" BorderBrush="#423EC5D8" BorderThickness="1">
+            <Border Padding="16,14" CornerRadius="10" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
                 <Grid ColumnSpacing="16">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <FontIcon Glyph="&#xE8D7;" FontSize="28" Foreground="#FFFF7B72" VerticalAlignment="Center" Margin="0,0,6,0" />
+                    <FontIcon Glyph="&#xE8D7;" FontSize="28" Foreground="{StaticResource HudRedBrush}" VerticalAlignment="Center" Margin="0,0,6,0" />
                     <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
                         <TextBlock x:Name="StatusHeadline" FontWeight="SemiBold" FontSize="14" Text="Ransomware Defense Active" />
                         <TextBlock x:Name="StatusDetail" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Protected directory baseline established. No canary disruption or rapid encryption activity observed." TextWrapping="Wrap" />
                     </StackPanel>
                     <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="14" VerticalAlignment="Center">
-                        <Border CornerRadius="8" Padding="12,8" Background="#163EC5D8">
+                        <Border CornerRadius="8" Padding="12,8" Background="{StaticResource HudCyanTintBrush}">
                             <StackPanel HorizontalAlignment="Center">
-                                <TextBlock x:Name="OverallStatusText" Text="PROTECTED" FontSize="16" FontWeight="Bold" Foreground="#FF56D364" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="OverallStatusText" Text="PROTECTED" FontSize="16" FontWeight="Bold" Foreground="{StaticResource HudGreenBrush}" HorizontalAlignment="Center" />
                                 <TextBlock Text="Defense Status" FontSize="10" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" />
                             </StackPanel>
                         </Border>
-                        <Border CornerRadius="8" Padding="12,8" Background="#163EC5D8">
+                        <Border CornerRadius="8" Padding="12,8" Background="{StaticResource HudCyanTintBrush}">
                             <StackPanel HorizontalAlignment="Center">
-                                <TextBlock x:Name="ProtectedDirsCountText" Text="0" FontSize="18" FontWeight="Bold" Foreground="#FF60DBEE" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="ProtectedDirsCountText" Text="0" FontSize="18" FontWeight="Bold" Foreground="{StaticResource HudCyanBrush}" HorizontalAlignment="Center" />
                                 <TextBlock Text="Protected Dirs" FontSize="10" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" />
                             </StackPanel>
                         </Border>
-                        <Border CornerRadius="8" Padding="12,8" Background="#163EC5D8">
+                        <Border CornerRadius="8" Padding="12,8" Background="{StaticResource HudCyanTintBrush}">
                             <StackPanel HorizontalAlignment="Center">
-                                <TextBlock x:Name="FilesMonitoredCountText" Text="0" FontSize="18" FontWeight="Bold" Foreground="#FF60DBEE" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="FilesMonitoredCountText" Text="0" FontSize="18" FontWeight="Bold" Foreground="{StaticResource HudCyanBrush}" HorizontalAlignment="Center" />
                                 <TextBlock Text="Files Monitored" FontSize="10" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" />
                             </StackPanel>
                         </Border>
-                        <Border CornerRadius="8" Padding="12,8" Background="#163EC5D8">
+                        <Border CornerRadius="8" Padding="12,8" Background="{StaticResource HudCyanTintBrush}">
                             <StackPanel HorizontalAlignment="Center">
-                                <TextBlock x:Name="ThreatIndicatorsCountText" Text="0" FontSize="18" FontWeight="Bold" Foreground="#FF56D364" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="ThreatIndicatorsCountText" Text="0" FontSize="18" FontWeight="Bold" Foreground="{StaticResource HudGreenBrush}" HorizontalAlignment="Center" />
                                 <TextBlock Text="Threat Indicators" FontSize="10" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" />
                             </StackPanel>
                         </Border>
@@ -69,13 +69,13 @@
             </Border>
 
             <!-- Policy & Read-Only Notice -->
-            <Border Padding="12,9" CornerRadius="8" Background="#263EC5D8" BorderBrush="#333EC5D8" BorderThickness="1">
+            <Border Padding="12,9" CornerRadius="8" Background="{StaticResource HudCyanTintBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
                 <Grid ColumnSpacing="10">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
-                    <FontIcon Glyph="&#xE72E;" FontSize="16" Foreground="#FF60DBEE" VerticalAlignment="Center" />
+                    <FontIcon Glyph="&#xE72E;" FontSize="16" Foreground="{StaticResource HudCyanBrush}" VerticalAlignment="Center" />
                     <TextBlock Grid.Column="1" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Execution Policy Notice: Automated file rollback, volume manipulation, and system changes are guarded under least-privilege policy. Performing rollback requires an audited action broker (DN-008). Passive entropy disruption analysis and canary monitoring are active." VerticalAlignment="Center" />
                 </Grid>
             </Border>
@@ -101,7 +101,7 @@
                                             <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
-                                        <FontIcon Glyph="&#xED25;" FontSize="16" Foreground="#FF60DBEE" VerticalAlignment="Center" />
+                                        <FontIcon Glyph="&#xED25;" FontSize="16" Foreground="{StaticResource HudCyanBrush}" VerticalAlignment="Center" />
                                         <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
                                             <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" FontSize="12" />
                                             <TextBlock Text="{Binding Path}" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
@@ -179,15 +179,15 @@
                     </StackPanel>
 
                     <!-- Volume Shadow Copy Posture Card -->
-                    <Border Padding="12,10" CornerRadius="8" Background="#161b22" BorderBrush="#30363d" BorderThickness="1">
+                    <Border Padding="12,10" CornerRadius="8" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudStrokeMutedBrush}" BorderThickness="1">
                         <Grid ColumnSpacing="10">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
-                            <FontIcon Glyph="&#xE753;" FontSize="20" Foreground="#FF60DBEE" VerticalAlignment="Center" />
+                            <FontIcon Glyph="&#xE753;" FontSize="20" Foreground="{StaticResource HudCyanBrush}" VerticalAlignment="Center" />
                             <StackPanel Grid.Column="1" Spacing="3">
-                                <TextBlock Text="Volume Shadow Copy (VSS) Resiliency" FontWeight="SemiBold" FontSize="12" Foreground="#FF58A6FF" />
+                                <TextBlock Text="Volume Shadow Copy (VSS) Resiliency" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource HudBlueBrush}" />
                                 <TextBlock x:Name="VssDetailText" Text="VSS Service: Querying... Anti-recovery commands: None detected." FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                             </StackPanel>
                         </Grid>
@@ -196,7 +196,7 @@
                     <!-- Activity Log & Report Preview -->
                     <StackPanel Spacing="6">
                         <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" FontSize="15" Text="Defense Activity Log &amp; Threat Report" />
-                        <TextBox x:Name="DefenseReportBox" FontFamily="Consolas" FontSize="11" MinHeight="180" MaxHeight="260" TextWrapping="Wrap" AcceptsReturn="True" IsReadOnly="True" Background="#0b1016" Foreground="#FF60DBEE" />
+                        <TextBox x:Name="DefenseReportBox" FontFamily="Consolas" FontSize="11" MinHeight="180" MaxHeight="260" TextWrapping="Wrap" AcceptsReturn="True" IsReadOnly="True" Background="{StaticResource HudPanelBrush}" Foreground="{StaticResource HudCyanBrush}" />
                     </StackPanel>
                 </StackPanel>
             </Grid>

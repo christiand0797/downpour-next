@@ -57,7 +57,57 @@ public sealed class DriverInventoryProvider
             results.Add(new DriverInventoryEntry(name, imagePath, inSystemDrivers, userWritable));
         }
 
+        // Windows 11 24H2 and later hide kernel image bases from processes without SeDebugPrivilege, so every base comes
+        // back zero and nothing above can be named. Fall back to the running driver services, which standard users may read.
+        if (results.Count == 0 && totalCount > 0)
+        {
+            var running = RunningDriverServices(warnings);
+            if (running.Count > 0)
+            {
+                warnings.Add($"Windows hides kernel module addresses from standard accounts; showing the {running.Count:N0} running driver services instead of all {totalCount:N0} loaded modules.");
+                return new DriverInventorySnapshot(1, DateTimeOffset.UtcNow, totalCount, running.Take(MaximumDrivers).ToArray(), warnings);
+            }
+            warnings.Add("Windows hid every loaded kernel module from this account and the driver service list was unavailable.");
+        }
+
         return new DriverInventorySnapshot(1, DateTimeOffset.UtcNow, totalCount, results, warnings);
+    }
+
+    /// <summary>Running kernel and file-system driver services from WMI Win32_SystemDriver (documented, read-only).</summary>
+    private static List<DriverInventoryEntry> RunningDriverServices(List<string> warnings)
+    {
+        var entries = new List<DriverInventoryEntry>();
+        var windowsRoot = Environment.GetFolderPath(Environment.SpecialFolder.Windows).TrimEnd('\\', '/');
+        var systemDrivers = $@"{windowsRoot}\system32\drivers";
+        try
+        {
+            using var searcher = new System.Management.ManagementObjectSearcher(@"root\cimv2",
+                "SELECT Name, PathName FROM Win32_SystemDriver WHERE State = 'Running'",
+                new System.Management.EnumerationOptions { Timeout = TimeSpan.FromSeconds(15), ReturnImmediately = true, Rewindable = false });
+            foreach (var item in searcher.Get())
+            {
+                using (item)
+                {
+                    if (entries.Count >= MaximumDrivers) break;
+                    var service = item["Name"] as string ?? "";
+                    var path = Bound(item["PathName"] as string ?? "").Trim('"');
+                    if (service.Length == 0) continue;
+                    var name = Bound(path.Length > 0 ? Path.GetFileName(path) : service);
+                    var normalized = path.Replace('/', '\\');
+                    var inSystemDrivers = normalized.StartsWith(systemDrivers, StringComparison.OrdinalIgnoreCase);
+                    var userWritable = normalized.Contains(@"\temp\", StringComparison.OrdinalIgnoreCase) ||
+                                       normalized.Contains(@"\appdata\", StringComparison.OrdinalIgnoreCase) ||
+                                       normalized.Contains(@"\downloads\", StringComparison.OrdinalIgnoreCase) ||
+                                       normalized.Contains(@"\users\public\", StringComparison.OrdinalIgnoreCase);
+                    entries.Add(new DriverInventoryEntry(name, path, inSystemDrivers, userWritable));
+                }
+            }
+        }
+        catch (Exception ex) when (ex is System.Management.ManagementException or UnauthorizedAccessException or System.Runtime.InteropServices.COMException)
+        {
+            warnings.Add("Windows Management Instrumentation did not return the running driver list.");
+        }
+        return entries;
     }
 
     private static DriverInventorySnapshot Empty(IReadOnlyList<string> warnings) =>

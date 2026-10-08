@@ -1,5 +1,15 @@
 # Downpour Next changelog
 
+## Unreleased (v0.1.18)
+
+- **Threat Databases**: 19 public databases (LOLDrivers, LOLBAS, abuse.ch ThreatFox/Feodo/URLhaus/MalwareBazaar, Spamhaus DROP, Emerging Threats, FireHOL, IPsum, CINS, GreenSnow, blocklist.de, Tor exits, Phishing Army, OpenPhish, stalkerware indicators, IPtoASN) downloaded whole, validated, cached and matched on this PC against connections (with owning program), the DNS cache, loaded drivers and running programs. Offline lookups, connection origins (country and network) and a copyable evidence report.
+- **Threat Intel Feeds** browses the local databases; the old abuse.ch API calls needed a registered key and failed.
+- **CISA KEV** loads again (CISA switched dateReleased to a timestamp).
+- **Anti-Stalker** tab; **host isolation** completed with an OS-scheduled release; **Parental Controls** crash fixed.
+- **Drivers** list works on Windows 11 24H2+ (kernel addresses are hidden from standard accounts).
+- **HUD theme** across the app: neon controls, Bahnschrift type, HUD ring gauges and glowing charts over the rain.
+- Settings switches for host isolation and threat database updates.
+
 ## v0.1.17 — measured CIS review and package integrity
 
 - Replaced scripted CIS detector counts, resistance/confidence scores, forecasts, pretend honeypots and swarm protection controls with real validated alert/system/settings measurements. Removed unused simulation code/contracts and replaced their model tests with behavioral regressions.

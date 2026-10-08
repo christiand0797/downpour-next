@@ -1,7 +1,7 @@
 namespace Downpour.Contracts;
 
 /// <summary>Service-side sensor settings that affect what data the service reads. See SECURITY.md "User-approved data handling".</summary>
-public sealed record SensorSettingsSnapshot(int SchemaVersion, bool ScriptBlockAnalysis, bool IntelLookups, IReadOnlyList<string>? IntelServicesConfigured = null, bool QuarantineActions = true, bool ProcessTerminationActions = true, bool FirewallActions = true, bool UsbActions = true, bool HostIsolationActions = true);
+public sealed record SensorSettingsSnapshot(int SchemaVersion, bool ScriptBlockAnalysis, bool IntelLookups, IReadOnlyList<string>? IntelServicesConfigured = null, bool QuarantineActions = true, bool ProcessTerminationActions = true, bool FirewallActions = true, bool UsbActions = true, bool HostIsolationActions = true, bool ThreatDatabases = true);
 
 /// <summary>
 /// Reads settings (Key = "get"), sets one allow-listed boolean key, or for "apiKey.{service}" keys stores
@@ -21,8 +21,9 @@ public static class SensorSettingKeys
     public const string FirewallActions = "firewallActions";
     public const string UsbActions = "usbActions";
     public const string HostIsolationActions = "hostIsolationActions";
+    public const string ThreatDatabases = "threatDatabases";
 
-    public static readonly IReadOnlySet<string> Writable = new HashSet<string>(StringComparer.Ordinal) { ScriptBlockAnalysis, IntelLookups, QuarantineActions, ProcessTerminationActions, FirewallActions, UsbActions, HostIsolationActions };
+    public static readonly IReadOnlySet<string> Writable = new HashSet<string>(StringComparer.Ordinal) { ScriptBlockAnalysis, IntelLookups, QuarantineActions, ProcessTerminationActions, FirewallActions, UsbActions, HostIsolationActions, ThreatDatabases };
     public const string ApiKeyPrefix = "apiKey.";
 
     public static string ApiKey(string service) => ApiKeyPrefix + service;

@@ -10,17 +10,17 @@
             <Grid ColumnSpacing="16">
                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                 <StackPanel Spacing="4">
-                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Foreground="#FF76DDF5" Text="DOWNPOUR  /  MONITORING  /  DNS" />
+                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Foreground="{StaticResource HudCyanBrush}" Text="DOWNPOUR  /  MONITORING  /  DNS" />
                     <TextBlock Style="{StaticResource TitleTextBlockStyle}" FontSize="30" Text="DNS Cache &amp; Domain Security" />
                     <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Native resolver cache surveillance with DGA entropy scoring and email authentication (SPF/DMARC/DKIM) verification. Read-only." TextWrapping="Wrap" />
                 </StackPanel>
                 <Button Grid.Column="1" x:Name="RefreshButton" Content="Re-check" Click="Refresh_Click" VerticalAlignment="Center" />
             </Grid>
 
-            <Border Padding="14,11" CornerRadius="10" Background="#B9081220" BorderBrush="#423EC5D8" BorderThickness="1">
+            <Border Padding="14,11" CornerRadius="10" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
                 <Grid ColumnSpacing="12">
                     <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                    <FontIcon Glyph="&#xE774;" FontSize="20" Foreground="#FF60DBEE" VerticalAlignment="Center" />
+                    <FontIcon Glyph="&#xE774;" FontSize="20" Foreground="{StaticResource HudCyanBrush}" VerticalAlignment="Center" />
                     <StackPanel Grid.Column="1" Spacing="3">
                         <TextBlock x:Name="StatusHeadline" FontWeight="SemiBold" Text="Checking DNS resolver cache" />
                         <TextBlock x:Name="StatusDetail" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Readings come from DnsGetCacheDataTable in dnsapi.dll and local DGA scoring. Strictly read-only." TextWrapping="Wrap" />
@@ -53,7 +53,7 @@
 
             <!-- Email Authentication (SPF / DMARC / DKIM) Tool -->
             <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" FontSize="16" Text="Email Authentication Verifier (SPF / DMARC / DKIM)" Margin="0,8,0,0" />
-            <Border Padding="16,14" CornerRadius="10" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="#303EC5D8" BorderThickness="1">
+            <Border Padding="16,14" CornerRadius="10" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
                 <StackPanel Spacing="10">
                     <TextBlock FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Verify passive email authentication DNS records to check anti-spoofing strength without external API keys." />
                     <Grid ColumnSpacing="10">

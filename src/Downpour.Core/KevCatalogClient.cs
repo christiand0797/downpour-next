@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Text;
@@ -129,10 +130,15 @@ public sealed class KevCatalogClient
 
     private static DateOnly RequiredDate(JObject obj, string property)
     {
-        var value = RequiredString(obj, property, 10);
-        if (!DateOnly.TryParseExact(value, "yyyy-MM-dd", out var parsed))
-            throw new InvalidDataException($"The KEV field {property} is not a valid date.");
-        return parsed;
+        // CISA publishes plain dates ("2026-10-04") and, since late 2026, ISO 8601 UTC timestamps for dateReleased
+        // ("2026-10-04T18:52:56.0635Z"). Both are accepted; anything else is still rejected.
+        var value = RequiredString(obj, property, 40);
+        if (DateOnly.TryParseExact(value, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsed))
+            return parsed;
+        if (value.Length > 10 && value[10] == 'T' &&
+            DateTimeOffset.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var stamp))
+            return DateOnly.FromDateTime(stamp.UtcDateTime);
+        throw new InvalidDataException($"The KEV field {property} is not a valid date.");
     }
 }
 

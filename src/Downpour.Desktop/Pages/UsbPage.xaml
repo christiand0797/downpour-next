@@ -10,7 +10,7 @@
             <Grid ColumnSpacing="16">
                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                 <StackPanel Spacing="4">
-                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Foreground="#FF76DDF5" Text="DOWNPOUR  /  MONITORING  /  USB DEVICES" />
+                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Foreground="{StaticResource HudCyanBrush}" Text="DOWNPOUR  /  MONITORING  /  USB DEVICES" />
                     <TextBlock Style="{StaticResource TitleTextBlockStyle}" FontSize="30" Text="USB &amp; External Drive Posture" />
                     <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Removable drive inventory, autorun detection, device history, and attack tool hardware posture. Read-only." TextWrapping="Wrap" />
                 </StackPanel>
@@ -20,10 +20,10 @@
                 </StackPanel>
             </Grid>
 
-            <Border Padding="14,11" CornerRadius="10" Background="#B9081220" BorderBrush="#423EC5D8" BorderThickness="1">
+            <Border Padding="14,11" CornerRadius="10" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
                 <Grid ColumnSpacing="12">
                     <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                    <FontIcon Glyph="&#xE88E;" FontSize="20" Foreground="#FF60DBEE" VerticalAlignment="Center" />
+                    <FontIcon Glyph="&#xE88E;" FontSize="20" Foreground="{StaticResource HudCyanBrush}" VerticalAlignment="Center" />
                     <StackPanel Grid.Column="1" Spacing="3">
                         <TextBlock x:Name="StatusHeadline" FontWeight="SemiBold" Text="Checking USB device posture" />
                         <TextBlock x:Name="StatusDetail" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Readings come from DriveInfo and the USBSTOR registry hierarchy. Reversible device blocking active." TextWrapping="Wrap" />

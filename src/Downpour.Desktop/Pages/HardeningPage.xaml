@@ -10,17 +10,17 @@
         <Grid ColumnSpacing="16">
             <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
             <StackPanel Spacing="4">
-                <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Foreground="#FF76DDF5" Text="DOWNPOUR  /  PROTECTION  /  HARDENING" />
+                <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Foreground="{StaticResource HudCyanBrush}" Text="DOWNPOUR  /  PROTECTION  /  HARDENING" />
                 <TextBlock Style="{StaticResource TitleTextBlockStyle}" FontSize="30" Text="Hardening" />
                 <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Firmware and platform trust posture: BitLocker, Secure Boot, TPM, LSA protection, Credential Guard, memory integrity, SMBv1, and Windows Update. Read-only." TextWrapping="Wrap" />
             </StackPanel>
             <Button Grid.Column="1" x:Name="RefreshButton" Content="Re-check" Click="Refresh_Click" VerticalAlignment="Center" />
         </Grid>
 
-        <Border Grid.Row="1" Padding="14,11" CornerRadius="10" Background="#B9081220" BorderBrush="#423EC5D8" BorderThickness="1">
+        <Border Grid.Row="1" Padding="14,11" CornerRadius="10" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
             <Grid ColumnSpacing="12">
                 <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                <FontIcon Glyph="&#xE72E;" FontSize="20" Foreground="#FF60DBEE" VerticalAlignment="Center" />
+                <FontIcon Glyph="&#xE72E;" FontSize="20" Foreground="{StaticResource HudCyanBrush}" VerticalAlignment="Center" />
                 <StackPanel Grid.Column="1" Spacing="3">
                     <TextBlock x:Name="StatusHeadline" FontWeight="SemiBold" Text="Checking platform posture" />
                     <TextBlock x:Name="StatusDetail" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Readings come from the registry, TPM Base Services, and WMI. Checks that need administrator rights show Unknown rather than a guess." TextWrapping="Wrap" />

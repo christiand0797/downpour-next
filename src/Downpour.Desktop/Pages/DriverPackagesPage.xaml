@@ -13,9 +13,9 @@
                 <TextBlock Text="Installed driver packages bound to devices, plus unbound third-party (oem*.inf) packages, with catalog signature status." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
             </StackPanel>
 
-            <Border Padding="14" CornerRadius="10" Background="#A80B1524" BorderBrush="#3D46C5D8" BorderThickness="1">
+            <Border Padding="14" CornerRadius="10" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
                 <StackPanel Spacing="8">
-                    <TextBlock Text="Read-only enumeration of the Windows Driver Store" FontWeight="SemiBold" Foreground="#FFFFC76A" />
+                    <TextBlock Text="Read-only enumeration of the Windows Driver Store" FontWeight="SemiBold" Foreground="{StaticResource HudAmberBrush}" />
                     <TextBlock Text="Lists driver packages with INF file, version, class, provider, hardware IDs, and signature status. No driver installation, update, or removal is performed. Signatures are verified against the Windows catalog database with WinVerifyTrust; revocation uses only cached data, so a revoked signer the system has not yet learned about can still appear valid. Unknown means verification could not run, not that the driver is unsigned." FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                 </StackPanel>
             </Border>
@@ -30,15 +30,15 @@
 
             <TextBox x:Name="SearchBox" PlaceholderText="Filter by INF file, provider, class, hardware ID, or version..." TextChanged="SearchBox_TextChanged" />
 
-            <Border Padding="12" CornerRadius="10" Background="#C808111E" BorderBrush="#5738B9D1" BorderThickness="1">
+            <Border Padding="12" CornerRadius="10" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
                 <StackPanel Spacing="9">
-                    <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><TextBlock Text="DRIVER PACKAGES" FontSize="11" FontWeight="SemiBold" CharacterSpacing="85" Foreground="#FF91AFC2" /><TextBlock x:Name="PackageCount" Grid.Column="1" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" /></Grid>
+                    <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><TextBlock Text="DRIVER PACKAGES" FontSize="11" FontWeight="SemiBold" CharacterSpacing="85" Foreground="{StaticResource HudTextDimBrush}" /><TextBlock x:Name="PackageCount" Grid.Column="1" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" /></Grid>
                     <ListView x:Name="PackageList" ItemsSource="{x:Bind VisiblePackages}" SelectionMode="None" IsItemClickEnabled="False" MaxHeight="500" Background="Transparent">
                         <ListView.ItemTemplate>
                             <DataTemplate>
                                 <StackPanel Padding="8,7" Spacing="3">
-                                    <TextBlock Text="{Binding InfFile}" FontWeight="SemiBold" Foreground="#FF50DBF1" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" />
-                                    <TextBlock Text="{Binding DriverClass}" FontSize="11" Foreground="#FFB47AF8" TextWrapping="Wrap" />
+                                    <TextBlock Text="{Binding InfFile}" FontWeight="SemiBold" Foreground="{StaticResource HudCyanBrush}" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Text="{Binding DriverClass}" FontSize="11" Foreground="{StaticResource HudVioletBrush}" TextWrapping="Wrap" />
                                     <TextBlock Text="{Binding ProviderDisplay}" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" TextWrapping="Wrap" />
                                     <TextBlock Text="{Binding HardwareId}" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" TextTrimming="CharacterEllipsis" />
                                     <TextBlock Text="{Binding VersionDateDisplay}" FontSize="10" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />

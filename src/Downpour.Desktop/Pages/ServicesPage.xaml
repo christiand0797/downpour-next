@@ -10,17 +10,17 @@
         <Grid ColumnSpacing="16">
             <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
             <StackPanel Spacing="4">
-                <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Foreground="#FF76DDF5" Text="DOWNPOUR  /  MONITORING  /  WINDOWS SERVICES" />
+                <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Foreground="{StaticResource HudCyanBrush}" Text="DOWNPOUR  /  MONITORING  /  WINDOWS SERVICES" />
                 <TextBlock Style="{StaticResource TitleTextBlockStyle}" FontSize="30" Text="Services" />
                 <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Inspect installed Windows services, current state, and startup type. Collection is local and read-only." TextWrapping="Wrap" />
             </StackPanel>
             <Button Grid.Column="1" Content="Refresh now" Click="Refresh_Click" VerticalAlignment="Center" />
         </Grid>
 
-        <Border Grid.Row="1" Padding="14,11" CornerRadius="10" Background="#B9081220" BorderBrush="#423EC5D8" BorderThickness="1">
+        <Border Grid.Row="1" Padding="14,11" CornerRadius="10" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
             <Grid ColumnSpacing="12">
                 <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                <FontIcon Glyph="&#xE713;" FontSize="20" Foreground="#FF60DBEE" VerticalAlignment="Center" />
+                <FontIcon Glyph="&#xE713;" FontSize="20" Foreground="{StaticResource HudCyanBrush}" VerticalAlignment="Center" />
                 <StackPanel Grid.Column="1" Spacing="3">
                     <TextBlock x:Name="StatusHeadline" FontWeight="SemiBold" Text="Connecting to the Windows Service Control Manager" />
                     <TextBlock x:Name="StatusDetail" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Service state comes from the local Service Control Manager. Startup type may be unknown or access denied." TextWrapping="Wrap" />
