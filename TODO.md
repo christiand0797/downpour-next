@@ -37,6 +37,9 @@
 - [x] Per-tab charts: Processes, Drivers, Driver Packages, Network, Security Events, Services, Devices & Drivers.
 - [ ] Per-tab charts on the remaining tabs (each with its own data).
 - [x] Devices & Drivers tab with missing-driver detection and Windows Update driver search.
+- [x] Drivers tab verifies each loaded driver's signature and gives a verdict (malicious, vulnerable, user-writable, unsigned, OK).
+- [x] Clickable details and right-click actions on the first nine list tabs.
+- [ ] Clickable details on the remaining tabs (Alerts, Triage, Threat Databases, Threat Intel, Memory, Vulnerabilities, USB, Wi-Fi, IoT, Emergency, Forensics, Timeline, Audio, Anti-Stalker).
 - [ ] Elevated driver broker (DN-012): one-click update/roll back/uninstall/reinstall with automatic driver backup, signature check, audit and rollback tests.
 - [x] Hash-chained, DPAPI-keyed action audit log with anchor, integrity monitor and CRITICAL finding on tampering.
 - [x] Parser fuzzing for feeds, KEV, IP origin, pipe replies and helpers (found and fixed a KEV exception leak).

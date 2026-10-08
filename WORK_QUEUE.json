@@ -806,6 +806,25 @@
         "Every tab has its own charts"
       ],
       "notes": "claude-parity-audit 2026-10-08: devices page + charts on 7 tabs done; remaining tabs next; one-click driver changes depend on DN-012 elevated broker."
+    },
+    {
+      "id": "DN-039",
+      "title": "Clickable details everywhere; Drivers tab signature verification and malicious/vulnerable verdict",
+      "status": "in_progress",
+      "priority": "high",
+      "files": [
+        "src/Downpour.Desktop/EntityDetails.cs",
+        "src/Downpour.Desktop/ActionFlows.cs",
+        "src/Downpour.Core/DriverAssessment.cs",
+        "src/Downpour.Service/DriverInventoryProvider.cs",
+        "src/Downpour.Desktop/Pages/DriverPage.xaml"
+      ],
+      "acceptance": [
+        "Rows on every list tab open a details dialog with hash/signature/threat lookups",
+        "Right-click actions route through the existing previewed, confirmed, audited brokers",
+        "Every loaded driver shows its verified signer and a verdict (malicious, vulnerable, user-writable, unsigned, OK)"
+      ],
+      "notes": "claude-parity-audit 2026-10-08: b1d249f clickable on 9 tabs; 9603973 driver signatures + verdicts (1128 tests pass). Next: clickable batch 2 (Alerts, Triage, Threat Databases, Threat Intel, Memory, Vulnerabilities, USB, Wi-Fi, IoT, Emergency, Forensics, Timeline, Audio, Anti-Stalker)."
     }
   ]
 }
