@@ -19,9 +19,20 @@ public sealed partial class SecurityEventsPage : Page
 
     public ObservableCollection<SecurityEventRow> Events { get; } = [];
 
+    private readonly BreakdownChart _severityChart = new() { Title = "Severity", Subtitle = "Observations in the 24-hour lookback" };
+    private readonly TopBarsChart _channelChart = new() { Title = "By event channel", Subtitle = "Which Windows logs the observations came from" };
+    private readonly TopBarsChart _kindChart = new() { Title = "Most frequent", Subtitle = "Event types by number of occurrences" };
+
+    private static string ChannelLabel(string logName)
+    {
+        var name = logName.Replace("Microsoft-Windows-", "", StringComparison.OrdinalIgnoreCase);
+        return name.Length <= 34 ? name : name[..34];
+    }
+
     public SecurityEventsPage()
     {
         InitializeComponent();
+        Charts.Row(ChartRow, _severityChart, _channelChart, _kindChart);
         _refreshTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
         _refreshTimer.Interval = TimeSpan.FromSeconds(1);
         _refreshTimer.IsRepeating = true;
@@ -68,6 +79,9 @@ public sealed partial class SecurityEventsPage : Page
 
             App.MarkSensorServiceConnected();
             _observations = snapshot.Events;
+            _severityChart.SetData(snapshot.Events.GroupBy(e => e.Severity, StringComparer.OrdinalIgnoreCase).Select(g => (g.Key, (double)g.Sum(e => e.Occurrences))));
+            _channelChart.SetData(snapshot.Events.GroupBy(e => ChannelLabel(e.LogName)).Select(g => (g.Key, (double)g.Sum(e => e.Occurrences))), "", HudPalette.Categorical[1]);
+            _kindChart.SetData(snapshot.Events.GroupBy(e => $"{e.Summary} ({e.EventId})").Select(g => (g.Key, (double)g.Sum(e => e.Occurrences))), "", HudPalette.Categorical[3]);
             StatusHeadline.Text = $"Event source connected · {snapshot.Events.Count:N0} observations in the 24-hour lookback";
             StatusDetail.Text = snapshot.SourcesQueried == 7
                 ? $"Captured {snapshot.CapturedAtUtc.ToLocalTime():MMM d · HH:mm:ss}. Fixed local channels only; event message bodies are not collected."

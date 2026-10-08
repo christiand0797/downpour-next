@@ -19,9 +19,14 @@ public sealed partial class ServicesPage : Page
 
     public ObservableCollection<WindowsServiceRow> Services { get; } = [];
 
+    private readonly BreakdownChart _stateChart = new() { Title = "Service state", Subtitle = "Every installed Windows service" };
+    private readonly BreakdownChart _startupChart = new() { Title = "Startup type", Subtitle = "How each service is configured to start" };
+    private readonly BreakdownChart _riskChart = new() { Title = "Risk", Subtitle = "Remote-access rules, unquoted paths and writable folders" };
+
     public ServicesPage()
     {
         InitializeComponent();
+        Charts.Row(ChartRow, _stateChart, _startupChart, _riskChart);
         _refreshTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
         _refreshTimer.Interval = TimeSpan.FromSeconds(1);
         _refreshTimer.IsRepeating = true;
@@ -77,6 +82,11 @@ public sealed partial class ServicesPage : Page
                 "Access denied" => "Access denied to the Windows Service Control Manager",
                 _ => "Windows service inventory is unavailable"
             };
+            _stateChart.SetData(snapshot.Services.GroupBy(s => s.State).Select(g => (g.Key, (double)g.Count())),
+                new Dictionary<string, Windows.UI.Color> { ["Running"] = HudPalette.Categorical[0], ["Stopped"] = HudPalette.Other });
+            _startupChart.SetData(snapshot.Services.GroupBy(s => s.StartupType).Select(g => (g.Key, (double)g.Count())));
+            _riskChart.SetData(snapshot.Services.GroupBy(s => s.Risk).Select(g => (g.Key, (double)g.Count())),
+                new Dictionary<string, Windows.UI.Color> { ["Clean"] = HudPalette.Good });
             var captured = snapshot.CapturedAtUtc.ToLocalTime();
             StatusDetail.Text = snapshot.Warnings.Count == 0
                 ? $"Captured {captured:MMM d · HH:mm:ss}. Service state and startup type are read locally; no service changes are performed."

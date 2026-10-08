@@ -18,9 +18,35 @@ public sealed partial class DriverPage : Page
 
     public ObservableCollection<DriverRow> Drivers { get; } = [];
 
+    private readonly BreakdownChart _locationChart = new() { Title = "Where drivers load from", Subtitle = "Drivers in folders standard users can write to are a BYOVD risk" };
+    private readonly TopBarsChart _folderChart = new() { Title = "Drivers by folder", Subtitle = "Loaded kernel drivers per folder" };
+    private readonly TrendChart _countChart = new() { Title = "Loaded kernel drivers", Subtitle = "Sampled while this page is open" };
+
+    private void UpdateCharts(DriverInventorySnapshot snapshot)
+    {
+        _locationChart.SetData(
+        [
+            ("System drivers folder", snapshot.Drivers.Count(d => d.IsUnderSystemDrivers)),
+            ("Other system folders", snapshot.Drivers.Count(d => !d.IsUnderSystemDrivers && !d.IsInUserWritableLocation)),
+            ("User-writable folder", snapshot.Drivers.Count(d => d.IsInUserWritableLocation)),
+        ], new Dictionary<string, Windows.UI.Color> { ["User-writable folder"] = HudPalette.Critical });
+        _folderChart.SetData(snapshot.Drivers
+            .GroupBy(d => FolderLabel(d.ImagePath), StringComparer.OrdinalIgnoreCase)
+            .Select(g => (g.Key, (double)g.Count())));
+        _countChart.Push(snapshot.DriverCount, snapshot.CapturedAtUtc.ToLocalTime());
+    }
+
+    private static string FolderLabel(string path)
+    {
+        var folder = Path.GetDirectoryName(path.Replace(@"\??\", "").Replace(@"\SystemRoot\", @"C:\Windows\")) ?? "";
+        var parts = folder.Split('\\', StringSplitOptions.RemoveEmptyEntries);
+        return parts.Length == 0 ? "(no path)" : string.Join("\\", parts.TakeLast(2));
+    }
+
     public DriverPage()
     {
         InitializeComponent();
+        Charts.Row(ChartRow, _locationChart, _folderChart, _countChart);
         _refreshTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
         _refreshTimer.Interval = TimeSpan.FromSeconds(1);
         _refreshTimer.IsRepeating = true;
@@ -67,6 +93,7 @@ public sealed partial class DriverPage : Page
             }
 
             _allDrivers = snapshot.Drivers.Select(ToRow).OrderBy(row => row.Name, StringComparer.OrdinalIgnoreCase).ToArray();
+            UpdateCharts(snapshot);
             var captured = snapshot.CapturedAtUtc.ToLocalTime();
             InventoryStatus.Text = $"{snapshot.DriverCount:N0} loaded kernel drivers · captured {captured:HH:mm:ss}" +
                                    (snapshot.Warnings.Count > 0 ? $" · {string.Join(" ", snapshot.Warnings)}" : "");

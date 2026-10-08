@@ -13,6 +13,8 @@
                 <TextBlock Text="Installed driver packages bound to devices, plus unbound third-party (oem*.inf) packages, with catalog signature status." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
             </StackPanel>
 
+            <Grid x:Name="ChartRow" />
+
             <Border Padding="14" CornerRadius="10" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
                 <StackPanel Spacing="8">
                     <TextBlock Text="Read-only enumeration of the Windows Driver Store" FontWeight="SemiBold" Foreground="{StaticResource HudAmberBrush}" />

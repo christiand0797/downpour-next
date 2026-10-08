@@ -24,9 +24,21 @@ public sealed partial class NetworkPage : Page
     public ObservableCollection<NetworkInterfaceRow> Interfaces { get; } = [];
     public ObservableCollection<NetworkConnectionRow> Connections { get; } = [];
 
+    private readonly BreakdownChart _stateChart = new() { Title = "Connection states", Subtitle = "Active TCP endpoints right now" };
+    private readonly TopBarsChart _remoteChart = new() { Title = "Busiest remote addresses", Subtitle = "Connections per remote address" };
+    private readonly TopBarsChart _portChart = new() { Title = "Remote ports", Subtitle = "Connections per remote port (443 = HTTPS)" };
+
+    private static (string Host, string Port) SplitEndpoint(string endpoint)
+    {
+        var colon = endpoint.LastIndexOf(':');
+        if (colon <= 0) return (endpoint, "");
+        return (endpoint[..colon].Trim('[', ']'), endpoint[(colon + 1)..]);
+    }
+
     public NetworkPage()
     {
         InitializeComponent();
+        Charts.Row(ChartRow, _stateChart, _remoteChart, _portChart);
         _refreshTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
         _refreshTimer.Interval = TimeSpan.FromSeconds(1);
         _refreshTimer.IsRepeating = true;
@@ -84,6 +96,10 @@ public sealed partial class NetworkPage : Page
             ReceiveRate.Text = receive is { } received ? FormatRate(received) : "Waiting for second sample";
             SendRate.Text = send is { } sent ? FormatRate(sent) : "Waiting for second sample";
             ConnectionCount.Text = snapshot.TotalConnectionCount.ToString("N0");
+            _stateChart.SetData(snapshot.Connections.GroupBy(c => c.State).Select(g => (g.Key, (double)g.Count())));
+            var remotes = snapshot.Connections.Select(c => SplitEndpoint(c.RemoteEndpoint)).Where(r => r.Host.Length > 0 && r.Host is not "0.0.0.0" and not "::" and not "*").ToArray();
+            _remoteChart.SetData(remotes.GroupBy(r => r.Host).Select(g => (g.Key, (double)g.Count())), "", HudPalette.Categorical[1]);
+            _portChart.SetData(remotes.Where(r => r.Port.Length > 0).GroupBy(r => r.Port).Select(g => (g.Key, (double)g.Count())), "", HudPalette.Categorical[3]);
             var captured = snapshot.CapturedAtUtc.ToLocalTime();
             NetworkHeadline.Text = $"Read-only network inventory connected · captured {captured:HH:mm:ss}";
             NetworkDescription.Text = snapshot.Warnings.Count == 0

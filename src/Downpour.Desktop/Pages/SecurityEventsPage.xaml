@@ -6,7 +6,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       mc:Ignorable="d">
     <Grid Padding="24,20,24,30" RowSpacing="14">
-        <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+        <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
         <Grid ColumnSpacing="16">
             <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
             <StackPanel Spacing="4">
@@ -28,7 +28,8 @@
             </Grid>
         </Border>
 
-        <Grid Grid.Row="2" RowSpacing="10">
+        <Grid x:Name="ChartRow" Grid.Row="2" />
+        <Grid Grid.Row="3" RowSpacing="10">
             <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
             <Grid ColumnSpacing="10">
                 <Grid.ColumnDefinitions><ColumnDefinition Width="2*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
@@ -70,6 +71,6 @@
             </ListView>
         </Grid>
 
-        <TextBlock Grid.Row="3" x:Name="SourceWarnings" FontSize="11" Foreground="#FFFFC577" TextWrapping="Wrap" />
+        <TextBlock Grid.Row="4" x:Name="SourceWarnings" FontSize="11" Foreground="#FFFFC577" TextWrapping="Wrap" />
     </Grid>
 </Page>

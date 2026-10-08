@@ -6,7 +6,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       mc:Ignorable="d">
     <Grid Padding="24,20,24,30" RowSpacing="14">
-        <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+        <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
         <Grid ColumnSpacing="16">
             <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
             <StackPanel Spacing="4">
@@ -28,7 +28,8 @@
             </Grid>
         </Border>
 
-        <Grid Grid.Row="2" RowSpacing="10">
+        <Grid x:Name="ChartRow" Grid.Row="2" />
+        <Grid Grid.Row="3" RowSpacing="10">
             <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
             <Grid ColumnSpacing="12">
                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
@@ -69,6 +70,6 @@
             </ListView>
         </Grid>
 
-        <TextBlock Grid.Row="3" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Inventory only · start, stop, disable, and configuration changes are not available here. Risk ports v29's remote-access service rules (disabled services rated Low) and adds unquoted-path and writable-folder checks; binary signatures are not verified yet. Access-denied or unknown values are never inferred." TextWrapping="Wrap" />
+        <TextBlock Grid.Row="4" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Inventory only · start, stop, disable, and configuration changes are not available here. Risk ports v29's remote-access service rules (disabled services rated Low) and adds unquoted-path and writable-folder checks; binary signatures are not verified yet. Access-denied or unknown values are never inferred." TextWrapping="Wrap" />
     </Grid>
 </Page>

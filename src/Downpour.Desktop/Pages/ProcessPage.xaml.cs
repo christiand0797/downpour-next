@@ -18,9 +18,15 @@ public sealed partial class ProcessPage : Page
 
     public ObservableCollection<ProcessRow> Processes { get; } = [];
 
+    private readonly TopBarsChart _cpuChart = new() { Title = "Top CPU", Subtitle = "Share of all processors, summed per program" };
+    private readonly TopBarsChart _memoryChart = new() { Title = "Top memory", Subtitle = "Working set, summed per program" };
+    private readonly TrendChart _countChart = new() { Title = "Processes running", Subtitle = "Sampled every second while this page is open" };
+
     public ProcessPage()
     {
         InitializeComponent();
+        _memoryChart.Limit = _cpuChart.Limit = 6;
+        Charts.Row(ChartRow, _cpuChart, _memoryChart, _countChart);
         _timer = DispatcherQueue.GetForCurrentThread().CreateTimer();
         _timer.Interval = TimeSpan.FromSeconds(1);
         _timer.IsRepeating = true;
@@ -72,6 +78,11 @@ public sealed partial class ProcessPage : Page
                 process.CpuPercent)).ToArray();
             _totalProcessCount = snapshot.ProcessCount;
             _hasSnapshot = true;
+            var byProgram = snapshot.TopProcesses.GroupBy(p => p.Name, StringComparer.OrdinalIgnoreCase).ToArray();
+            _cpuChart.SetData(byProgram.Select(g => (g.Key, g.Sum(p => p.CpuPercent ?? 0))), "%",
+                colorFor: value => value >= 50 ? HudPalette.Serious : null);
+            _memoryChart.SetData(byProgram.Select(g => (g.Key, g.Sum(p => p.WorkingSetBytes) / 1048576.0)), " MB", HudPalette.Categorical[1]);
+            _countChart.Push(snapshot.ProcessCount, snapshot.CapturedAtUtc.ToLocalTime());
             SnapshotStatus.Text = $"Observe-only · {snapshot.ProcessCount:N0} processes on this device · refreshed {snapshot.CapturedAtUtc.ToLocalTime():T}";
             ApplyFilter();
         }

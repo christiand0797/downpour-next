@@ -17,9 +17,14 @@ public sealed partial class DriverPackagesPage : Page
 
     public LiveCollection<DriverPackageRow> VisiblePackages { get; } = [];
 
+    private readonly BreakdownChart _signatureChart = new() { Title = "Signatures", Subtitle = "Catalog signature status of each package" };
+    private readonly TopBarsChart _classChart = new() { Title = "By device class", Subtitle = "Driver packages per class" };
+    private readonly TopBarsChart _providerChart = new() { Title = "By provider", Subtitle = "Who supplied the packages" };
+
     public DriverPackagesPage()
     {
         InitializeComponent();
+        Charts.Row(ChartRow, _signatureChart, _classChart, _providerChart);
         LiveRefresh.Attach(this, () => RefreshAsync(quiet: true));
     }
 
@@ -48,6 +53,14 @@ public sealed partial class DriverPackagesPage : Page
                 return;
             }
             _packages = snapshot.Packages;
+            _signatureChart.SetData(
+            [
+                ("Signed", snapshot.Packages.Count(p => p.IsSigned)),
+                ("Unknown", snapshot.Packages.Count(p => !p.IsSigned && p.SignatureStatus?.StartsWith("Unknown", StringComparison.Ordinal) == true)),
+                ("Unsigned or untrusted", snapshot.Packages.Count(p => !p.IsSigned && p.SignatureStatus?.StartsWith("Unknown", StringComparison.Ordinal) != true)),
+            ], new Dictionary<string, Windows.UI.Color> { ["Signed"] = HudPalette.Good, ["Unknown"] = HudPalette.Other, ["Unsigned or untrusted"] = HudPalette.Serious });
+            _classChart.SetData(snapshot.Packages.GroupBy(p => string.IsNullOrWhiteSpace(p.DriverClass) ? "(none)" : p.DriverClass).Select(g => (g.Key, (double)g.Count())), "", HudPalette.Categorical[1]);
+            _providerChart.SetData(snapshot.Packages.GroupBy(p => string.IsNullOrWhiteSpace(p.ProviderName) ? "(unknown)" : p.ProviderName).Select(g => (g.Key, (double)g.Count())), "", HudPalette.Categorical[3]);
             var captured = snapshot.CapturedAtUtc.ToLocalTime();
             var warningText = snapshot.Warnings.Count == 0 ? "" : $" · {string.Join(" ", snapshot.Warnings)}";
             var signed = snapshot.Packages.Count(package => package.IsSigned);

@@ -17,6 +17,8 @@
                 <Button Grid.Column="1" Content="Refresh" Click="Refresh_Click" VerticalAlignment="Top" />
             </Grid>
 
+            <Grid x:Name="ChartRow" />
+
             <Border Padding="14,11" CornerRadius="10" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
                 <Grid ColumnSpacing="12">
                     <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>

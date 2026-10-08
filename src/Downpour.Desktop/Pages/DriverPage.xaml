@@ -6,7 +6,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       mc:Ignorable="d">
     <Grid Padding="24,20,24,30" RowSpacing="14">
-        <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
+        <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
         <Grid ColumnSpacing="16">
             <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
             <StackPanel Spacing="4">
@@ -16,18 +16,19 @@
             </StackPanel>
             <Button Grid.Column="1" Content="Refresh" Click="Refresh_Click" VerticalAlignment="Center" />
         </Grid>
-        <Grid Grid.Row="1" ColumnSpacing="12">
+        <Grid x:Name="ChartRow" Grid.Row="1" />
+        <Grid Grid.Row="2" ColumnSpacing="12">
             <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
             <AutoSuggestBox x:Name="DriverSearch" PlaceholderText="Filter loaded kernel drivers by name or path" TextChanged="DriverSearch_TextChanged" />
             <TextBlock x:Name="DriverCount" Grid.Column="1" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
         </Grid>
-        <Border Grid.Row="2" Padding="13,10" CornerRadius="9" Background="#B8161712" BorderBrush="#78D3A14D" BorderThickness="1">
+        <Border Grid.Row="3" Padding="13,10" CornerRadius="9" Background="#B8161712" BorderBrush="#78D3A14D" BorderThickness="1">
             <StackPanel Spacing="3">
                 <TextBlock FontWeight="SemiBold" Text="Inventory only · no driver package changes are enabled" />
                 <TextBlock FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="This view lists loaded kernel modules and highlights paths that deserve review. It does not verify digital signatures or decide that a driver is malicious. Install, update, reinstall, and removal workflows will require signed-package verification, a recovery path, elevation, and an audit trail." TextWrapping="Wrap" />
             </StackPanel>
         </Border>
-        <Grid Grid.Row="3" RowSpacing="10">
+        <Grid Grid.Row="4" RowSpacing="10">
             <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
             <Grid Padding="13,10" ColumnSpacing="12" Background="{StaticResource DownpourSurfaceElevatedBrush}">
                 <Grid.ColumnDefinitions><ColumnDefinition Width="2*" /><ColumnDefinition Width="3*" /><ColumnDefinition Width="2*" /></Grid.ColumnDefinitions>
