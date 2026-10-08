@@ -1,4 +1,5 @@
 using System.IO.Pipes;
+using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Downpour.Contracts;
@@ -6,39 +7,215 @@ using Downpour.Core;
 
 namespace Downpour.Service;
 
-/// <summary>Append-only JSON-lines audit of every quarantine request, including denials. Bounded to 1 MiB with one rollover.</summary>
+/// <summary>
+/// Append-only, tamper-evident audit of every action request (quarantine, termination, firewall, USB, host isolation),
+/// including denials. Records are chained with HMAC-SHA256 (<see cref="AuditChain"/>) under a random key protected
+/// with DPAPI for the current user, and the head is kept in a MAC'd anchor so deleted, edited, reordered or truncated
+/// records are detected. Bounded to 1 MiB with one rollover; the anchor records where the kept window starts.
+/// Limits: code running as this user can use the same DPAPI key, so this proves integrity against offline edits,
+/// copies and careless tampering, not against malware already running as the user.
+/// </summary>
 public sealed class ActionAuditLog(string path)
 {
     private const long MaximumBytes = 1024 * 1024;
+    private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
     private readonly object _gate = new();
+    private bool _loaded;
+    private byte[]? _key;
+    private string? _keyProblem;
+    private long _sequence;
+    private string _head = AuditChain.Genesis;
+    private long _oldest = 1;
 
     public static ActionAuditLog CreateForCurrentUser()
     {
         var root = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DownpourNext", "state");
         SecureJournalDirectory.Ensure(root);
         var file = Path.Combine(root, "action-audit.v1.jsonl");
-        SecureJournalDirectory.RestrictExistingFile(file);
+        foreach (var existing in new[] { file, file + ".1", file + ".key", file + ".anchor" }) SecureJournalDirectory.RestrictExistingFile(existing);
         return new ActionAuditLog(file);
     }
 
     public string FilePath => path;
+    private string KeyPath => path + ".key";
+    private string AnchorPath => path + ".anchor";
+    private string RolledPath => path + ".1";
 
     public void Record(string operation, string resultCode, string? objectId, string? fileName)
     {
-        var line = JsonSerializer.Serialize(new { at = DateTimeOffset.UtcNow, operation, resultCode, objectId, fileName }) + "\n";
+        var body = JsonSerializer.Serialize(new { at = DateTimeOffset.UtcNow, operation, resultCode, objectId, fileName });
+        lock (_gate)
+        {
+            // Several writers (the service's brokers, a scheduled host-isolation release) may share this file: each append
+            // takes a machine-wide lock and re-reads the head from disk so the chain never forks.
+            using var mutex = new Mutex(false, MutexName);
+            var owned = false;
+            try
+            {
+                try { owned = mutex.WaitOne(TimeSpan.FromSeconds(5)); }
+                catch (AbandonedMutexException) { owned = true; }
+                _loaded = false;
+                EnsureLoaded();
+                if (File.Exists(path) && new FileInfo(path).Length > MaximumBytes)
+                {
+                    File.Move(path, RolledPath, overwrite: true);
+                    _oldest = FirstSequence(RolledPath) ?? _sequence + 1;
+                }
+                if (_key is null)
+                {
+                    // Never lose an audit record: without the key it is written unchained and the next check reports it.
+                    File.AppendAllText(path, body + "\n");
+                    return;
+                }
+                var line = AuditChain.Line(_key, _sequence + 1, _head, body, out var mac);
+                File.AppendAllText(path, line + "\n");
+                _sequence++;
+                _head = mac;
+                WriteAnchor();
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or IntelKeyStore.CryptographicFailure) { }
+            finally
+            {
+                if (owned) mutex.ReleaseMutex();
+            }
+        }
+    }
+
+    private string MutexName => @"Local\DownpourNext.ActionAudit." + Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(Path.GetFullPath(path).ToUpperInvariant())))[..16];
+
+    public IReadOnlyList<string> ReadRecent(int count) =>
+        File.Exists(path) ? File.ReadLines(path).TakeLast(count).ToArray() : [];
+
+    /// <summary>Re-reads the whole retained log and checks every link, the anchor and the kept-window start.</summary>
+    public AuditVerification Verify()
+    {
         lock (_gate)
         {
             try
             {
-                if (File.Exists(path) && new FileInfo(path).Length > MaximumBytes) File.Move(path, path + ".1", overwrite: true);
-                File.AppendAllText(path, line);
+                _loaded = false;
+                EnsureLoaded();
+                var lines = (File.Exists(RolledPath) ? File.ReadLines(RolledPath) : []).Concat(File.Exists(path) ? File.ReadLines(path) : []).ToList();
+                if (_key is null)
+                {
+                    var anyChained = lines.Any(line => line.Contains("\"mac\":", StringComparison.Ordinal));
+                    return new AuditVerification(lines.Count, 0, lines.Count, !anyChained, anyChained ? 1 : null, 0, AuditChain.Genesis,
+                        anyChained ? $"Audit log cannot be verified: {_keyProblem}" : "No chained records yet.");
+                }
+                var anchor = ReadAnchor(out var anchorProblem);
+                if (anchorProblem is not null)
+                    return new AuditVerification(lines.Count, 0, 0, false, null, 0, AuditChain.Genesis, $"Audit log integrity check failed: {anchorProblem}.");
+                return AuditChain.Verify(lines, _key, anchor?.Seq, anchor?.Head, anchor?.Oldest ?? 1);
             }
-            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                return new AuditVerification(0, 0, 0, false, null, 0, AuditChain.Genesis, $"Audit log could not be read ({ex.GetType().Name}).");
+            }
         }
     }
 
-    public IReadOnlyList<string> ReadRecent(int count) =>
-        File.Exists(path) ? File.ReadLines(path).TakeLast(count).ToArray() : [];
+    private void EnsureLoaded()
+    {
+        if (_loaded) return;
+        _loaded = true;
+        var tail = LastChained(path) ?? LastChained(RolledPath);
+        if (_key is null && _keyProblem is null) LoadKey(tail is not null);
+        _sequence = tail?.Seq ?? 0;
+        _head = tail?.Mac ?? AuditChain.Genesis;
+        _oldest = 1;
+        if (_key is not null && ReadAnchor(out _) is { } anchor)
+        {
+            _oldest = anchor.Oldest;
+            // Continue from the anchor when the tail was cut off, so the gap stays visible instead of being papered over.
+            if (anchor.Seq > _sequence) { _sequence = anchor.Seq; _head = anchor.Head; }
+        }
+    }
+
+    private void LoadKey(bool chainExists)
+    {
+        try
+        {
+            if (File.Exists(KeyPath)) _key = IntelKeyStore.Unprotect(File.ReadAllBytes(KeyPath));
+            else if (!chainExists)
+            {
+                _key = RandomNumberGenerator.GetBytes(32);
+                File.WriteAllBytes(KeyPath, IntelKeyStore.Protect(_key));
+            }
+            else _keyProblem = "its key file is missing";
+        }
+        catch (IntelKeyStore.CryptographicFailure)
+        {
+            _key = null;
+            _keyProblem = "its key cannot be unlocked by this Windows account";
+        }
+        if (_key is { Length: not 32 }) { _key = null; _keyProblem = "its key file is damaged"; }
+    }
+
+    private sealed record Anchor(long Seq, string Head, long Oldest, string Mac);
+
+    private void WriteAnchor()
+    {
+        var mac = AuditChain.AnchorMac(_key!, _sequence, $"{_head}|{_oldest}");
+        var temp = AnchorPath + ".tmp";
+        File.WriteAllText(temp, JsonSerializer.Serialize(new Anchor(_sequence, _head, _oldest, mac), Json));
+        File.Move(temp, AnchorPath, overwrite: true);
+    }
+
+    private Anchor? ReadAnchor(out string? problem)
+    {
+        problem = null;
+        if (!File.Exists(AnchorPath)) return null;
+        try
+        {
+            var anchor = new FileInfo(AnchorPath).Length <= 4096 ? JsonSerializer.Deserialize<Anchor>(File.ReadAllText(AnchorPath), Json) : null;
+            if (anchor is null || anchor.Head is not { Length: 64 } || anchor.Mac is not { Length: 64 } || anchor.Oldest < 1)
+            {
+                problem = "the anchor file is damaged";
+                return null;
+            }
+            if (!AuditChain.AnchorMac(_key!, anchor.Seq, $"{anchor.Head}|{anchor.Oldest}").Equals(anchor.Mac, StringComparison.Ordinal))
+            {
+                problem = "the anchor file was altered";
+                return null;
+            }
+            return anchor;
+        }
+        catch (JsonException)
+        {
+            problem = "the anchor file is damaged";
+            return null;
+        }
+    }
+
+    private static (long Seq, string Mac)? LastChained(string file)
+    {
+        if (!File.Exists(file)) return null;
+        foreach (var line in File.ReadLines(file).Reverse())
+            if (Parse(line) is { } record) return record;
+        return null;
+    }
+
+    private static long? FirstSequence(string file)
+    {
+        foreach (var line in File.ReadLines(file))
+            if (Parse(line) is { } record) return record.Seq;
+        return null;
+    }
+
+    private static (long Seq, string Mac)? Parse(string line)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(line);
+            return document.RootElement.TryGetProperty("seq", out var seq) && seq.TryGetInt64(out var value)
+                && document.RootElement.TryGetProperty("mac", out var mac) && mac.GetString() is { Length: 64 } text
+                ? (value, text) : null;
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
 }
 
 /// <summary>

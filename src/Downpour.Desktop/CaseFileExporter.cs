@@ -56,7 +56,8 @@ internal static class CaseFileExporter
             settings.Result?.Settings,
             await Task.Run(ReadRecentActions),
             unavailable,
-            audio.Result));
+            audio.Result,
+            await Task.Run(ReadAuditIntegrity)));
         await FileIO.WriteTextAsync(file, content);
         return $"Saved {file.Name}. It lists program names, addresses and domains from this PC; share it only with a reviewer you trust.";
     }
@@ -83,6 +84,26 @@ internal static class CaseFileExporter
     }
 
     /// <summary>Last entries of the local action audit log, so a reviewer sees what was already done (and can be undone).</summary>
+    /// <summary>The service's latest audit-chain check, as a one-line summary (the service holds the key).</summary>
+    private static string? ReadAuditIntegrity()
+    {
+        try
+        {
+            var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DownpourNext", "state", "audit-verification.v1.json");
+            var info = new FileInfo(path);
+            if (!info.Exists || info.Length > 8192) return null;
+            using var document = System.Text.Json.JsonDocument.Parse(File.ReadAllText(path));
+            var root = document.RootElement;
+            var message = root.TryGetProperty("message", out var m) ? m.GetString() : null;
+            var at = root.TryGetProperty("checkedAtUtc", out var t) ? t.GetString() : null;
+            return message is null ? null : $"{(message.Length <= 300 ? message : message[..300])} (checked {at ?? "unknown"} UTC by the service)";
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.Text.Json.JsonException or InvalidOperationException)
+        {
+            return null;
+        }
+    }
+
     private static IReadOnlyList<string> ReadRecentActions()
     {
         try

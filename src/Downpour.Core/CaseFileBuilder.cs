@@ -17,7 +17,8 @@ public sealed record CaseFileInputs(
     SensorSettingsSnapshot? Settings,
     IReadOnlyList<string> RecentActions,
     IReadOnlyList<string> Unavailable,
-    AudioSnapshot? Audio = null);
+    AudioSnapshot? Audio = null,
+    string? AuditIntegrity = null);
 
 /// <summary>
 /// Builds a self-contained review file (Markdown with a full JSON appendix) so a second opinion — a person, another
@@ -129,6 +130,7 @@ public static class CaseFileBuilder
             md.AppendLine();
         }
         md.AppendLine($"## Recent actions taken in Downpour ({input.RecentActions.Count})");
+        md.AppendLine($"Audit chain: {Clean(input.AuditIntegrity ?? "not checked yet (the service verifies it at start and every ten minutes)")}");
         if (input.RecentActions.Count == 0) md.AppendLine("None recorded.");
         foreach (var line in input.RecentActions) md.AppendLine($"- `{Clean(line)}`");
         md.AppendLine();
@@ -151,6 +153,7 @@ public static class CaseFileBuilder
             firewallFindings = input.Firewall?.Findings,
             settings = input.Settings,
             input.RecentActions,
+            input.AuditIntegrity,
             input.Unavailable,
         }, Json));
         md.AppendLine("```");

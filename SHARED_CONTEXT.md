@@ -1,5 +1,13 @@
 # Downpour Next shared context
 
+## 2026-10-08 checkpoint: tamper-evident action audit log (claude-parity-audit, security roadmap)
+
+Done (1048/1048 tests; verified on this PC: 192 pre-chain records accepted as legacy, status written):
+- `AuditChain` (Core): each record `{"seq","prev","body","mac"}`, mac = HMAC-SHA256(key, seq\nprev\nbody) over the body's exact text; edits, insertions, deletions, reordering, forged records and tail truncation (via a MAC'd anchor) are detected; legacy unchained lines only before the chain; after rollover the kept window must start where the anchor says.
+- `ActionAuditLog` (Service, same public API for all five brokers): random 32-byte key protected with DPAPI (current user) in `action-audit.v1.jsonl.key`; anchor `…anchor`; each append takes a machine-wide named mutex and re-reads the head so separate writers cannot fork the chain; a missing key is reported, never silently regenerated; after truncation new records continue from the anchor so the gap stays visible.
+- `AuditIntegrityMonitor`: verifies at start and every 10 minutes, writes `state\audit-verification.v1.json`, raises a CRITICAL `Downpour/Integrity` finding (T1070) on a break. Case file shows the latest result.
+- Honest limit (also in SECURITY.md): code already running as the user can use the same DPAPI key; this proves integrity against offline edits, copies, careless tampering and truncation, not against live same-user malware. Off-box anchoring or a separate service identity is the next step.
+
 ## 2026-10-08 checkpoint: service-install grading, alert evidence, audio in case file (claude-parity-audit, DN-034/DN-035)
 
 Done (1036/1036 tests; verified against this PC's real 7045 events through the alert pipe):
