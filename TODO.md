@@ -31,7 +31,10 @@
 - [x] HUD gradient meter bars app-wide; Performance right column filled.
 - [ ] HUD visuals kit: segmented glowing meters, sparklines, radar sweep, hex status tiles on every feature page.
 - [x] Threat Pulse on the Dashboard (per-PC hourly baseline, spike/elevated/calm).
-- [ ] Invented features: watch timeline ribbon (camera/mic/screen), tripwire canary files (opt-in).
+- [x] Watch timeline ribbon on Anti-Stalker.
+- [x] Cross-view hidden-process (rootkit) check, findings Downpour/Rootkit (T1014).
+- [ ] Invented features: tripwire canary files (opt-in).
+- [ ] HUD visuals kit on every tab (owner request: graphs and visual displays everywhere).
 - [x] Hash-chained, DPAPI-keyed action audit log with anchor, integrity monitor and CRITICAL finding on tampering.
 - [x] Parser fuzzing for feeds, KEV, IP origin, pipe replies and helpers (found and fixed a KEV exception leak).
 - [ ] Security hardening roadmap: signed builds and updates, off-box audit anchoring, least-privilege review.

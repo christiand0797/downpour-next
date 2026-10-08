@@ -99,6 +99,7 @@ builder.Services.AddHostedService<AntiStalkerMonitor>();
 builder.Services.AddSingleton<AudioShieldProvider>();
 builder.Services.AddHostedService<AudioShieldMonitor>();
 builder.Services.AddHostedService<AuditIntegrityMonitor>();
+builder.Services.AddHostedService<HiddenProcessMonitor>();
 builder.Services.AddSingleton<ThreatDatabaseService>();
 builder.Services.AddHostedService(provider => provider.GetRequiredService<ThreatDatabaseService>());
 builder.Services.AddHostedService<YaraScanPipeWorker>();

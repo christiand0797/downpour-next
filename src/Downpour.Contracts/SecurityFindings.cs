@@ -25,8 +25,9 @@ public static class SecurityFindingCatalog
     public const string ThreatDatabase = "Downpour/ThreatDatabase";
     public const string Audio = "Downpour/Audio";
     public const string Integrity = "Downpour/Integrity";
+    public const string Rootkit = "Downpour/Rootkit";
 
-    public static readonly IReadOnlySet<string> Sources = new HashSet<string>(StringComparer.Ordinal) { Hardening, Firewall, Persistence, Usb, Wireless, Sigma, Amsi, RemoteAccess, Dns, Intel, Yara, AntiStalker, ThreatDatabase, Audio, Integrity };
+    public static readonly IReadOnlySet<string> Sources = new HashSet<string>(StringComparer.Ordinal) { Hardening, Firewall, Persistence, Usb, Wireless, Sigma, Amsi, RemoteAccess, Dns, Intel, Yara, AntiStalker, ThreatDatabase, Audio, Integrity, Rootkit };
     public static readonly IReadOnlySet<string> Severities = new HashSet<string>(StringComparer.Ordinal) { "CRITICAL", "HIGH", "MEDIUM", "LOW" };
 
     public static bool IsFinding(string logName) => Sources.Contains(logName);

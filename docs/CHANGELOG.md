@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- **Rootkit check**: every ten minutes Downpour probes every process ID directly and compares the answers with Windows' process list; a running program hidden from the list raises a critical alert. Exited and just-started programs are excluded so normal activity cannot trigger it.
+- **Kuro plays**: fireflies drift around him; he watches them, pounces, lies down for a while and rolls along his card, and faces you instead of turning away.
+- **Anti-Stalker 24-hour timeline**: one row per camera, microphone, screen capture, location and remote control showing exactly when each was in use.
+- Threat databases and intel feeds work on slower or filtered networks and explain why an update failed; one failing sensor no longer stops the others; the service keeps a log for troubleshooting.
 - **Threat Pulse** on the Dashboard: Downpour learns how many new findings per hour are normal for your PC and shows the last 24 hours as a pulse, flagging a spike when something unusual starts.
 - **Tamper-evident action log**: every quarantine, process end, firewall, USB and host-isolation action is now chained with a keyed hash, so editing, deleting, reordering or cutting off records is detected. Downpour checks the chain at start and every ten minutes and raises a critical alert if it was altered; the case file shows the result.
 - Service-install alerts now say which service was installed, which program it runs and who signed it, and are graded by that: Microsoft-signed components are low, signed apps (for example Claude, ChatGPT or NVIDIA services) medium, unsigned ones high, and services that run a command shell (how remote-control attack tools work) critical. The program file is attached as evidence.
