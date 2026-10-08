@@ -190,8 +190,18 @@ public sealed class ThreatFeedDownloader
 {
     private static readonly HttpClient SharedClient = CreateClient();
     private readonly HttpClient _client;
+    private readonly TimeSpan _stallTimeout;
+    private readonly TimeSpan _overallTimeout;
 
-    public ThreatFeedDownloader(HttpClient? client = null) => _client = client ?? SharedClient;
+    public static readonly TimeSpan DefaultStallTimeout = TimeSpan.FromSeconds(45);
+    public static readonly TimeSpan DefaultOverallTimeout = TimeSpan.FromMinutes(15);
+
+    public ThreatFeedDownloader(HttpClient? client = null, TimeSpan? stallTimeout = null, TimeSpan? overallTimeout = null)
+    {
+        _client = client ?? SharedClient;
+        _stallTimeout = stallTimeout ?? DefaultStallTimeout;
+        _overallTimeout = overallTimeout ?? DefaultOverallTimeout;
+    }
 
     private static HttpClient CreateClient()
     {
@@ -200,6 +210,7 @@ public sealed class ThreatFeedDownloader
             AllowAutoRedirect = false,
             AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate | DecompressionMethods.Brotli,
             PooledConnectionLifetime = TimeSpan.FromMinutes(10),
+            ConnectTimeout = TimeSpan.FromSeconds(20),
             UseCookies = false,
         };
         var client = new HttpClient(handler) { Timeout = Timeout.InfiniteTimeSpan };
@@ -211,21 +222,27 @@ public sealed class ThreatFeedDownloader
     {
         var uri = new Uri(feed.Url);
         if (uri.Scheme != Uri.UriSchemeHttps || ThreatFeedCatalog.Find(feed.Id)?.Url != feed.Url) throw new InvalidOperationException("Only catalogued HTTPS feeds may be downloaded.");
+        // Slow links must work: the download fails only when no data arrives for StallTimeout, within an overall cap.
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        timeout.CancelAfter(TimeSpan.FromSeconds(90));
+        timeout.CancelAfter(_overallTimeout);
+        using var stall = CancellationTokenSource.CreateLinkedTokenSource(timeout.Token);
+        stall.CancelAfter(_stallTimeout);
         using var request = new HttpRequestMessage(HttpMethod.Get, uri);
-        using var response = await _client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, timeout.Token).ConfigureAwait(false);
+        using var response = await _client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, stall.Token).ConfigureAwait(false);
         if ((int)response.StatusCode is >= 300 and < 400) throw new HttpRequestException($"The source redirected ({(int)response.StatusCode}); redirects are not followed.");
         if (!response.IsSuccessStatusCode) throw new HttpRequestException($"The source answered HTTP {(int)response.StatusCode}.");
         if (response.RequestMessage?.RequestUri is { } final && !string.Equals(final.Host, uri.Host, StringComparison.OrdinalIgnoreCase))
             throw new HttpRequestException("The response came from an unexpected host.");
         if (response.Content.Headers.ContentLength > feed.MaximumBytes) throw new InvalidDataException("The feed exceeds its size limit.");
-        await using var stream = await response.Content.ReadAsStreamAsync(timeout.Token).ConfigureAwait(false);
+        await using var stream = await response.Content.ReadAsStreamAsync(stall.Token).ConfigureAwait(false);
         using var buffer = new MemoryStream();
         var chunk = new byte[81920];
         int read;
-        while ((read = await stream.ReadAsync(chunk, timeout.Token).ConfigureAwait(false)) > 0)
+        while (true)
         {
+            stall.CancelAfter(_stallTimeout);
+            read = await stream.ReadAsync(chunk, stall.Token).ConfigureAwait(false);
+            if (read <= 0) break;
             if (buffer.Length + read > feed.MaximumBytes) throw new InvalidDataException("The feed exceeds its size limit.");
             buffer.Write(chunk, 0, read);
         }

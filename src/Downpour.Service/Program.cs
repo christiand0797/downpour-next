@@ -5,11 +5,16 @@ using Downpour.Service;
 if (args is [TaskSchedulerIsolationRelease.ReleaseSwitch])
     return HostIsolationExecutor.ReleaseFromScheduledTask();
 
+AppDomain.CurrentDomain.UnhandledException += (_, e) => { if (e.ExceptionObject is Exception ex) ServiceFileLoggerProvider.RecordCrash(ex); };
+
 var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddWindowsService(options =>
 {
     options.ServiceName = "Downpour Security Monitor";
 });
+// One sensor failing on an unusual PC must not take every other sensor down with it (the .NET default stops the host).
+builder.Services.Configure<HostOptions>(options => options.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore);
+builder.Logging.AddProvider(new ServiceFileLoggerProvider(ServiceFileLoggerProvider.DefaultPath()));
 builder.Services.AddSingleton<SystemSnapshotProvider>();
 builder.Services.AddSingleton<DriverInventoryProvider>();
 builder.Services.AddSingleton<DriverPackageInventoryProvider>();

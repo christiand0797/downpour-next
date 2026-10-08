@@ -86,7 +86,7 @@ public sealed partial class ThreatDatabasesPage : Page
             if (token.IsCancellationRequested) return;
             if (response?.Snapshot is not { } snapshot)
             {
-                Show(InfoBarSeverity.Warning, "Threat databases unavailable", "The local sensor service did not answer. Values below may be out of date.");
+                Show(InfoBarSeverity.Warning, "Threat databases unavailable", _client.FailureMessage + " Values below may be out of date.");
                 return;
             }
             _snapshot = snapshot;
@@ -173,7 +173,7 @@ public sealed partial class ThreatDatabasesPage : Page
                 case "refresh-started": Show(InfoBarSeverity.Informational, "Updating", "Out-of-date databases are downloading in the background. This page refreshes on its own."); break;
                 case "cooldown": Show(InfoBarSeverity.Informational, "Already updated recently", "Try again in a couple of minutes."); break;
                 case "disabled": Show(InfoBarSeverity.Warning, "Updates are switched off", "Turn on threat database updates in Settings to download new data."); break;
-                default: Show(InfoBarSeverity.Error, "Update not started", "The local sensor service did not accept the request."); break;
+                default: Show(InfoBarSeverity.Error, "Update not started", response is null ? _client.FailureMessage : "The local sensor service did not accept the request."); break;
             }
             if (response?.Snapshot is { } snapshot) { _snapshot = snapshot; Render(snapshot); }
         }
@@ -195,7 +195,7 @@ public sealed partial class ThreatDatabasesPage : Page
         try
         {
             var response = await _client.LookupAsync(value, _lifetime.Token);
-            if (response is null) { LookupResult.Text = "The local sensor service did not answer."; return; }
+            if (response is null) { LookupResult.Text = _client.FailureMessage; return; }
             if (!response.Accepted)
             {
                 LookupResult.Text = "That doesn't look like an IP address, website, link or file hash.";

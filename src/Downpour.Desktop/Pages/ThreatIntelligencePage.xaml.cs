@@ -45,7 +45,7 @@ public sealed partial class ThreatIntelligencePage : Page
             var response = await _client.GetSnapshotAsync(_lifetime.Token);
             if (response?.Snapshot is not { } snapshot)
             {
-                EmptyText.Text = "The local sensor service did not answer.";
+                EmptyText.Text = _client.FailureMessage;
                 return;
             }
             var browsable = snapshot.Feeds.Where(f => f.Kind != ThreatFeedKinds.Geo).ToArray();
@@ -91,7 +91,7 @@ public sealed partial class ThreatIntelligencePage : Page
             if (query != _query) return; // a newer search superseded this one
             if (response?.Browse is not { } rows)
             {
-                EmptyText.Text = "The local sensor service did not answer.";
+                EmptyText.Text = _client.FailureMessage;
                 EntryList.ItemsSource = null;
                 return;
             }

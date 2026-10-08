@@ -74,7 +74,12 @@ public sealed class ThreatDatabaseService(
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _ = Task.Run(() => ServePipeAsync(stoppingToken), stoppingToken);
-        await Task.Run(LoadCaches, stoppingToken);
+        // A damaged cache or an unexpected error on one PC must never stop the service (and every other sensor with it).
+        try { await Task.Run(LoadCaches, stoppingToken); }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            logger.LogError(ex, "Saved threat databases could not be loaded; they will be downloaded again.");
+        }
         while (!stoppingToken.IsCancellationRequested)
         {
             try
@@ -107,9 +112,11 @@ public sealed class ThreatDatabaseService(
                     state.Bytes = cached.Payload.Length;
                 }
             }
-            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException)
+            catch (Exception ex) when (ex is not OperationCanceledException)
             {
-                lock (_gate) state.Error = "The saved copy could not be used: " + ex.Message;
+                // Any per-database failure (damaged file, low memory, unexpected content) only affects that database.
+                lock (_gate) state.Error = Bound("The saved copy could not be used: " + ex.Message, 200);
+                logger.LogWarning(ex, "Saved copy of {Feed} could not be used.", state.Definition.Id);
             }
         }
         Rebuild();
@@ -150,9 +157,11 @@ public sealed class ThreatDatabaseService(
                     updated++;
                 }
                 catch (OperationCanceledException) when (token.IsCancellationRequested) { throw; }
-                catch (Exception ex) when (ex is HttpRequestException or InvalidDataException or IOException or OperationCanceledException or InvalidOperationException)
+                catch (Exception ex)
                 {
-                    lock (_gate) state.Error = ex is OperationCanceledException ? "The download timed out." : Bound(ex.Message, 200);
+                    // Every failure stays with its own database (network, TLS, proxy, content, memory) and is retried later.
+                    lock (_gate) state.Error = ex is OperationCanceledException ? "The download stalled or timed out; it will be retried."
+                        : Bound(DescribeFailure(ex), 200);
                     logger.LogInformation("Threat database {Feed} was not updated: {Reason}", state.Definition.Id, ex.Message);
                 }
                 finally
@@ -480,9 +489,9 @@ public sealed class ThreatDatabaseService(
                     : s.RetrievedAtUtc is { } r && now - r > d.RefreshInterval * 2 ? ThreatFeedStates.Stale
                     : s.Error is not null ? ThreatFeedStates.Stale : ThreatFeedStates.Current;
                 return new ThreatFeedStatus(d.Id, d.Name, d.Provider, d.Kind, d.Purpose, d.License, d.Homepage, state, s.Parsed?.Entries ?? 0,
-                    s.RetrievedAtUtc, s.RetrievedAtUtc + d.RefreshInterval, s.Bytes, s.Error);
+                    s.RetrievedAtUtc, s.RetrievedAtUtc + d.RefreshInterval, s.Bytes, s.Error is null ? null : Bound(s.Error, 300));
             }).ToArray();
-            var warnings = _warnings.ToList();
+            var warnings = _warnings.Select(w => Bound(w, 500)).ToList();
             if (!enabled) warnings.Insert(0, "Database updates are switched off in Settings. Saved copies are still used until they expire.");
             return new ThreatDatabaseSnapshot(1, now, enabled, index.IndicatorCount, feeds,
                 _matches.Values.OrderByDescending(m => SeverityRank(m.Severity)).ThenByDescending(m => m.SeenAtUtc).Take(200).ToArray(),
@@ -594,6 +603,21 @@ public sealed class ThreatDatabaseService(
                 logger.LogDebug(ex, "A threat database client disconnected or sent an invalid request.");
             }
         }
+    }
+
+    /// <summary>A short, actionable reason for a failed download (the innermost message is usually the useful one).</summary>
+    internal static string DescribeFailure(Exception ex)
+    {
+        var inner = ex;
+        while (inner.InnerException is { } next) inner = next;
+        return inner switch
+        {
+            System.Net.Sockets.SocketException { SocketErrorCode: System.Net.Sockets.SocketError.HostNotFound } => "The source's address could not be resolved (no internet, DNS filtering or a blocked domain).",
+            System.Net.Sockets.SocketException => $"Could not connect to the source ({inner.Message}). A firewall, VPN or proxy may be blocking it.",
+            System.Security.Authentication.AuthenticationException => "The secure connection failed (a network filter or proxy may be intercepting HTTPS, or the PC clock is wrong).",
+            OutOfMemoryException => "Not enough free memory to load this database right now.",
+            _ => ex is HttpRequestException && inner != ex ? $"{ex.Message} {inner.Message}" : ex.Message,
+        };
     }
 
     private static string Bound(string value, int max)

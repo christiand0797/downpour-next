@@ -10,6 +10,12 @@ public sealed class ThreatDatabaseClient(string pipeName = ThreatDatabaseClient.
 {
     public const string PipeName = "Downpour.ThreatDatabases.v1";
 
+    /// <summary>Why the last request returned null, in words a person can act on; null after a success.</summary>
+    public string? LastFailure { get; private set; }
+
+    /// <summary>The page message for a failed request.</summary>
+    public string FailureMessage => LastFailure ?? "The local sensor service did not answer.";
+
     public Task<ThreatDatabaseResponse?> GetSnapshotAsync(CancellationToken token = default) =>
         SendAsync(new ThreatDatabaseRequest(1, ThreatDatabaseOperations.Snapshot, null), token);
 
@@ -25,12 +31,15 @@ public sealed class ThreatDatabaseClient(string pipeName = ThreatDatabaseClient.
 
     private async Task<ThreatDatabaseResponse?> SendAsync(ThreatDatabaseRequest request, CancellationToken cancellationToken)
     {
+        var connected = false;
         try
         {
             using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            timeout.CancelAfter(TimeSpan.FromSeconds(8));
+            // Slower PCs need longer to answer while databases load; the service replies from memory once ready.
+            timeout.CancelAfter(TimeSpan.FromSeconds(20));
             await using var pipe = new NamedPipeClientStream(".", pipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
             await pipe.ConnectAsync(timeout.Token);
+            connected = true;
             var body = BoundedJson.Serialize(request);
             var length = new byte[4];
             BinaryPrimitives.WriteInt32LittleEndian(length, body.Length);
@@ -38,11 +47,26 @@ public sealed class ThreatDatabaseClient(string pipeName = ThreatDatabaseClient.
             await pipe.WriteAsync(body, timeout.Token);
             await pipe.FlushAsync(timeout.Token);
             var response = await BoundedJson.DeserializeFramedAsync<ThreatDatabaseResponse>(pipe, timeout.Token);
-            return IsValid(response) ? response : null;
+            if (!IsValid(response))
+            {
+                LastFailure = "The sensor service answered, but its reply did not pass validation and was discarded. Restart Downpour; if it continues, export a case file and report it.";
+                return null;
+            }
+            LastFailure = null;
+            return response;
         }
-        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested) { return null; }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            LastFailure = connected
+                ? "The sensor service is busy (it may still be loading the databases after starting). It will be retried automatically."
+                : "The sensor service is not running or not reachable. Downpour starts it automatically; if this stays, check the service log in %LOCALAPPDATA%\\DownpourNext\\logs.";
+            return null;
+        }
         catch (Exception ex) when (ex is IOException or InvalidDataException or UnauthorizedAccessException or JsonReaderException or JsonSerializationException or EndOfStreamException)
         {
+            LastFailure = ex is UnauthorizedAccessException
+                ? "Windows denied access to the sensor service. Run Downpour and its service as the same Windows user."
+                : $"The connection to the sensor service failed ({ex.GetType().Name}). It will be retried automatically.";
             return null;
         }
     }
