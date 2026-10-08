@@ -30,6 +30,10 @@ The repair retains the scheduled task and active state on incomplete or unverifi
 
 Regression coverage: 18 isolation tests pass, including failed removal, silent non-removal, failed verification, partial setup with successful/failed rollback, unavailable durable storage, re-isolation, startup expiry failure, audit evidence, and broker state propagation. New-isolation settings may be disabled without blocking consented release. Full current working-tree Debug checks now pass 1,076 tests. These tests use an injected firewall backend and do not isolate the development PC. Native elevated failure/reboot testing is still required. Portable scheduled recovery also depends on the executable remaining at its registered path; this is not an absolute recovery guarantee.
 
+## Portable asset packaging
+
+The v0.1.18 staging has no Assets directory. Reviewed and adopted the other agent's six-line Desktop.csproj change setting CopyToOutputDirectory/CopyToPublishDirectory=PreserveNewest on the existing Assets content items. It changes no dependencies or source assets. Final package verification must check the loose StormBackdrop.png, CrescentMoon.png and AppIcon.ico alongside the resource index. Remaining database/logging/timeline drafts stay preserved.
+
 ## Research and feature decisions
 
 - [LOLDrivers API](https://www.loldrivers.io/api/) provides sample hashes and vulnerable/malicious categories. Its [repository license](https://raw.githubusercontent.com/magicsword-io/LOLDrivers/main/LICENSE) is Apache-2.0. Missing HVCI evidence remains unknown; driver name or valid signature alone is not a safety verdict. The existing v2 hash integration is a material improvement over v29's static name list.

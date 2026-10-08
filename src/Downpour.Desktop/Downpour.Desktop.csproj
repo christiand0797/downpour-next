@@ -34,6 +34,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- The portable (unpackaged) build resolves ms-appx:///Assets/... and the tray icon from files next to the EXE,
+         so every asset must be copied on build and publish (an MSIX carried them inside the package instead). -->
+    <Content Update="Assets\**" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 
