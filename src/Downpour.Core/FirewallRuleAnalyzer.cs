@@ -50,10 +50,20 @@ public static partial class FirewallRuleAnalyzer
                 : SuspiciousPortsIn(rule.LocalPorts);
             if (ports.Count > 0)
             {
+                // Corroborate before alarming: Windows' own rules and rules that only accept the local network are
+                // expected on most PCs, so they are kept as low-priority review items instead of possible threats.
+                var builtIn = IsWindowsBuiltIn(rule);
+                var localOnly = IsLocalNetworkOnly(rule.RemoteAddresses);
+                var portText = $"port{(ports.Count == 1 ? "" : "s")} {string.Join(", ", ports)}";
                 var summary = anyPort
                     ? $"Enabled inbound allow rule opens every port to any program: {rule.Name}"
-                    : $"Enabled inbound allow rule exposes commonly attacked port{(ports.Count == 1 ? "" : "s")} {string.Join(", ", ports)}: {rule.Name}";
-                if (seen.Add(summary)) findings.Add(new(anyPort ? "HIGH" : "MEDIUM", Technique, summary, $"{rule.Name}|{rule.LocalPorts}"));
+                    : localOnly
+                        ? $"Inbound rule allows {portText} from the local network only (not reachable from the internet): {rule.Name}"
+                        : builtIn
+                            ? $"Built-in Windows rule allows {portText}; normal if you use this feature: {rule.Name}"
+                            : $"Enabled inbound allow rule exposes commonly attacked {portText}: {rule.Name}";
+                var severity = anyPort ? (builtIn || localOnly ? "MEDIUM" : "HIGH") : builtIn || localOnly ? "LOW" : "MEDIUM";
+                if (seen.Add(summary)) findings.Add(new(severity, Technique, summary, $"{rule.Name}|{rule.LocalPorts}"));
             }
             if (IsStagingPath(rule.Application))
             {
@@ -62,6 +72,41 @@ public static partial class FirewallRuleAnalyzer
             }
         }
         return findings;
+    }
+
+    /// <summary>
+    /// Windows-defined rule: a resource-string group ("@FirewallAPI.dll,-…"), a program under the Windows folder, or a
+    /// service-only rule with no third-party program. Windows Host Network Service (HNS) rules for Hyper-V/WSL containers
+    /// are created by Windows at runtime with an "HNS Container Networking" name.
+    /// </summary>
+    public static bool IsWindowsBuiltIn(FirewallRuleEntry rule)
+    {
+        if (rule.Grouping.StartsWith('@')) return true;
+        if (rule.Name.StartsWith("HNS Container Networking", StringComparison.OrdinalIgnoreCase)) return true;
+        var app = rule.Application.Trim();
+        if (app.Length == 0) return rule.Service.Length > 0 || rule.Grouping.Length > 0;
+        if (app.Equals("System", StringComparison.OrdinalIgnoreCase)) return true;
+        var windows = Environment.GetFolderPath(Environment.SpecialFolder.Windows).TrimEnd('\\');
+        return app.StartsWith("%SystemRoot%\\", StringComparison.OrdinalIgnoreCase) ||
+               app.StartsWith("%windir%\\", StringComparison.OrdinalIgnoreCase) ||
+               (windows.Length > 0 && app.StartsWith(windows + "\\", StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>True when every remote scope is the local subnet or a private/link-local address range.</summary>
+    public static bool IsLocalNetworkOnly(string remoteAddresses)
+    {
+        if (string.IsNullOrWhiteSpace(remoteAddresses)) return false;
+        var parts = remoteAddresses.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (parts.Length == 0) return false;
+        foreach (var part in parts)
+        {
+            if (part is "*" || part.Equals("Any", StringComparison.OrdinalIgnoreCase)) return false;
+            if (part.Equals("LocalSubnet", StringComparison.OrdinalIgnoreCase) || part.Equals("LocalSubnet4", StringComparison.OrdinalIgnoreCase) ||
+                part.Equals("LocalSubnet6", StringComparison.OrdinalIgnoreCase)) continue;
+            var address = part.Split('/', '-')[0].Trim();
+            if (!System.Net.IPAddress.TryParse(address, out var ip) || !ThreatFeedParser.IsReserved(ip)) return false;
+        }
+        return true;
     }
 
     /// <summary>

@@ -53,6 +53,8 @@ public sealed partial class TriagePage : Page
     }
 
     private async void Refresh_Click(object sender, RoutedEventArgs e) => await RefreshAsync();
+
+    private async void ExportCase_Click(object sender, RoutedEventArgs e) => await CaseFileExporter.ExportFromAsync(ExportCaseButton);
     private void Filter_Changed(object sender, object e) => ApplyFilter();
     private async void Verify_Click(object sender, RoutedEventArgs e) => await ChangeAsync(sender, "Verify");
     private async void Unverify_Click(object sender, RoutedEventArgs e) => await ChangeAsync(sender, "Unverify");

@@ -48,7 +48,10 @@ public sealed record ThreatMatch(
     string FeedName,
     string Label,
     string Severity,
-    string Technique);
+    string Technique,
+    string Verdict = "needs-review",
+    int Confidence = 0,
+    IReadOnlyList<string>? Reasons = null);
 
 public static class ThreatMatchPlaces
 {

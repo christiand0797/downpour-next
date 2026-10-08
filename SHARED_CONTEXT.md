@@ -1,5 +1,18 @@
 # Downpour Next shared context
 
+## 2026-10-08 checkpoint: verification engine, case-file export, false-positive reduction (claude-parity-audit, DN-034)
+
+Owner requests: "triple check everything", "not create false flags", "export file for a third-party agent to double check". Done and verified (969/969 tests; live run on this PC):
+- `ThreatVerdictEngine` (Core) scores every threat-database observation 1-99 from independent evidence (feed class: malware-specific vs phishing vs reputation vs informational; number of agreeing databases; exact vs parent-domain match; DNS attribution to a connected program through the offline DNS cache resolver `DnsCacheResolver` (DNS_QUERY_NO_WIRE_QUERY, never sends a query); browser vs other program; non-web port; user-writable path; Authenticode signer for drivers/programs) and returns a verdict (confirmed / likely / needs review / likely benign / legitimate-but-vulnerable / already blocked) with plain-language reasons. Severity follows the verdict. One observation = one match combining all feeds.
+- Names resolving only to 0.0.0.0/loopback are recognised as blocked by the PC's hosts file/DNS filter (all DNS hits on this PC were sinkholed, i.e. protection working) and their alerts are suppressed automatically; shared-SDK hosts (e.g. alog.umeng.com) are excluded and stale alerts suppressed. Real DNS hits are never retired just because the cache expired.
+- Firewall: Windows built-in rules (resource-string groups, %WINDIR% programs, HNS container rules) and local-network-only rules are LOW review items; third-party internet-open rules keep MEDIUM/HIGH. Credential Guard off is a LOW optional recommendation.
+- `CaseFileBuilder` + "Export case file" (Triage pages and Threat Databases): Markdown with reviewer instructions (classify TP/FP, explain what/who/legit, prefer reversible steps, never act), open alerts, matches with verdict reasons, connections with origin, anti-stalker state, hardening/firewall findings, action switches, last 100 audit-log actions and a JSON appendix. Saved via a file picker; metadata only.
+- Fixes: per-disk I/O (PDH sizes are characters and detail level must be 400 — before only _Total, now all 6 disks; regression test); window content no longer drawn under the taskbar when maximized (bottom inset = resize border) and first window fitted to the work area.
+
+Second-opinion review of this PC's case file (owner asked Claude to double-check): all phishing/URLhaus DNS hits were sinkholed (false positives); AmdTools64.sys and MsIo64.sys are signed vendor drivers with known vulnerabilities (real risk, not malware: update/remove AMD/MSI utilities); "No antivirus real-time protection" (Malwarebytes RT off, Defender RT off) is a genuine HIGH; msedge_cleanup RunOnce entries are Microsoft Edge's own updater (FP to downgrade next); vcruntime140*.dll in a user-writable PATH folder is posture; adb.exe inbound rule in Downloads is the owner's Android tools (review). YARA ransom-note match on note.txt and two 7045 service installs need their paths captured in alerts (next).
+
+Next: persistence signer checks (Edge RunOnce, vendor BYOVD severity alignment), alert detail with file path for YARA/7045, more databases, HUD visuals kit, release v0.1.18 once gh is authenticated.
+
 ## 2026-10-08 checkpoint: live one-second updates (claude-parity-audit, DN-033)
 
 Done and verified (Debug 0 errors; 952/952 tests; portable build checked):

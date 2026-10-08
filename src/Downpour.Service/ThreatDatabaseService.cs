@@ -25,7 +25,8 @@ public sealed class ThreatDatabaseService(
     ILogger<ThreatDatabaseService> logger,
     ThreatFeedCache? cache = null,
     ThreatFeedDownloader? downloader = null,
-    string pipeName = ThreatDatabaseClient.PipeName) : BackgroundService
+    string pipeName = ThreatDatabaseClient.PipeName,
+    IAuthenticodeVerifier? signatures = null) : BackgroundService
 {
     public static readonly TimeSpan SweepInterval = TimeSpan.FromMinutes(5);
     private static readonly TimeSpan RetryAfterFailure = TimeSpan.FromMinutes(30);
@@ -188,25 +189,35 @@ public sealed class ThreatDatabaseService(
         var origins = Volatile.Read(ref _origins);
         var now = DateTimeOffset.UtcNow;
         var found = new List<ThreatMatch>();
+        var cleared = new List<SecurityFindingObservation>();
         var warnings = new List<string>();
 
         // Connections, with the program that owns each one.
         var connections = await Task.Run(() => TcpTable.Capture(warnings), token);
         var processNames = ProcessNames();
+        var processPaths = ProcessImages().GroupBy(p => p.Pid).ToDictionary(g => g.Key, g => g.First().Path);
         var origin = new List<RemoteConnectionOrigin>();
+        var connectedBy = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (var connection in connections.Where(c => c.State == TcpTable.Established).Take(MaximumConnections))
         {
             if (ThreatFeedParser.IsReserved(connection.Remote)) continue;
             var program = processNames.GetValueOrDefault(connection.ProcessId, connection.ProcessId == 4 ? "System" : $"PID {connection.ProcessId}");
-            var hits = index.Lookup(new ThreatIndicator(IndicatorType.Ip, connection.Remote.ToString(), ""));
-            foreach (var (feed, label) in hits)
-                found.Add(Match(now, ThreatMatchPlaces.Connection, connection.Remote.ToString(), $"{program} → {connection.Remote}:{connection.RemotePort}", feed, label));
+            var remote = connection.Remote.IsIPv4MappedToIPv6 ? connection.Remote.MapToIPv4().ToString() : connection.Remote.ToString();
+            connectedBy.TryAdd(remote, program);
+            var hits = index.Lookup(new ThreatIndicator(IndicatorType.Ip, remote, ""));
             var where = origins?.Lookup(connection.Remote);
-            origin.Add(new RemoteConnectionOrigin(Bound(program, 128), connection.ProcessId, connection.Remote.ToString(), connection.RemotePort,
+            if (hits.Count > 0)
+            {
+                var path = processPaths.GetValueOrDefault(connection.ProcessId);
+                var evidence = new ThreatEvidence(ThreatMatchPlaces.Connection, remote, hits, program, path, RemotePort: connection.RemotePort,
+                    Network: where?.Asn is { } asn ? $"AS{asn} {where.Network} ({where.CountryCode ?? "??"})" : null);
+                found.Add(Assess(now, evidence, $"{program} → {remote}:{connection.RemotePort}"));
+            }
+            origin.Add(new RemoteConnectionOrigin(Bound(program, 128), connection.ProcessId, remote, connection.RemotePort,
                 where?.CountryCode, where?.Asn, where?.Network, hits.Count > 0));
         }
 
-        // DNS cache names.
+        // DNS cache names, attributed to a program when one is connected to an address the name resolved to.
         var domains = 0;
         try
         {
@@ -215,8 +226,25 @@ public sealed class ThreatDatabaseService(
             {
                 if (!ThreatFeedParser.TryClassify(entry.Domain, out var indicator) || indicator.Type != IndicatorType.Domain) continue;
                 domains++;
-                foreach (var (feed, label) in index.Lookup(indicator))
-                    found.Add(Match(now, ThreatMatchPlaces.Dns, indicator.Value, $"This PC looked up {indicator.Value}", feed, label));
+                // Shared platforms and SDK hosts are no longer indexed; retire any alert raised before that rule existed.
+                if (SharedPlatforms.IsSharedPlatform(indicator.Value))
+                    foreach (var feed in ThreatFeedCatalog.All.Where(f => f.Kind is ThreatFeedKinds.Domain or ThreatFeedKinds.Mixed))
+                        cleared.Add(SecurityFindingMapper.Create(SecurityFindingCatalog.ThreatDatabase, ThreatMatchPlaces.Dns, "LOW", feed.Technique,
+                            "Not a threat: shared service also used by ordinary apps", $"{feed.Id}:{indicator.Value}"));
+                var hits = index.Lookup(indicator);
+                if (hits.Count == 0) continue;
+                var addresses = DnsCacheResolver.CachedAddresses(indicator.Value);
+                var connected = addresses.Select(a => connectedBy.GetValueOrDefault(a)).FirstOrDefault(p => p is not null);
+                var network = addresses.Select(a => System.Net.IPAddress.TryParse(a, out var ip) ? origins?.Lookup(ip) : null)
+                    .FirstOrDefault(o => o?.Asn is not null);
+                var sinkholed = addresses.Count > 0 && addresses.All(IsSinkhole);
+                var evidence = new ThreatEvidence(ThreatMatchPlaces.Dns, indicator.Value, hits, ConnectionObserved: connected is not null,
+                    ConnectedProgram: connected, ParentDomainOnly: !ListsExactName(index, indicator.Value),
+                    Network: network is { } n ? $"AS{n.Asn} {n.Network} ({n.CountryCode ?? "??"})" : null, Sinkholed: sinkholed);
+                var resolved = addresses.Count > 0 ? $" ({string.Join(", ", addresses.Take(3))})" : "";
+                found.Add(Assess(now, evidence, connected is not null
+                    ? $"{connected} connected to {indicator.Value}{resolved}"
+                    : $"This PC looked up {indicator.Value}{resolved}"));
             }
         }
         catch (Exception ex) when (ex is IOException or InvalidOperationException or Win32Exception or UnauthorizedAccessException)
@@ -224,7 +252,7 @@ public sealed class ThreatDatabaseService(
             warnings.Add("The DNS cache could not be read.");
         }
 
-        // Loaded kernel drivers against LOLDrivers (and every hash feed).
+        // Loaded kernel drivers against LOLDrivers (and every hash feed); hits are signature-checked.
         var driverCount = 0;
         var driverSnapshot = await Task.Run(drivers.Capture, token);
         foreach (var driver in driverSnapshot.Drivers)
@@ -232,25 +260,27 @@ public sealed class ThreatDatabaseService(
             token.ThrowIfCancellationRequested();
             if (DriverPath(driver.ImagePath) is not { } path || Hash(path) is not { } hashes) continue;
             driverCount++;
-            foreach (var (feed, label) in HashHits(index, hashes))
-                found.Add(Match(now, ThreatMatchPlaces.Driver, hashes.Sha256, label.StartsWith("Vulnerable", StringComparison.Ordinal)
-                    ? $"{driver.Name} ({path}) — a genuine vendor driver with a known flaw that attackers load to disable security software. Update or uninstall the program that installed it."
-                    : $"{driver.Name} ({path})", feed, label));
+            var hits = HashHits(index, hashes).ToArray();
+            if (hits.Length == 0) continue;
+            var (signed, signer) = Signature(path);
+            found.Add(Assess(now, new ThreatEvidence(ThreatMatchPlaces.Driver, hashes.Sha256, hits, driver.Name, path, signed, signer), $"{driver.Name} ({path})"));
         }
 
         // Running programs outside the Windows folder against malware hash feeds; LOLBins as context.
         var programs = 0;
         var lolbins = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         var windows = Environment.GetFolderPath(Environment.SpecialFolder.Windows).TrimEnd('\\') + "\\";
-        foreach (var (pid, path) in ProcessImages().DistinctBy(p => p.Path, StringComparer.OrdinalIgnoreCase).Take(MaximumProgramsPerSweep))
+        foreach (var (pid, path) in processPaths.Select(p => (p.Key, p.Value)).DistinctBy(p => p.Value, StringComparer.OrdinalIgnoreCase).Take(MaximumProgramsPerSweep))
         {
             token.ThrowIfCancellationRequested();
             var name = Path.GetFileName(path);
             if (index.Lolbin(name) is not null) lolbins[name] = lolbins.GetValueOrDefault(name) + 1;
             if (path.StartsWith(windows, StringComparison.OrdinalIgnoreCase) || Hash(path) is not { } hashes) continue;
             programs++;
-            foreach (var (feed, label) in HashHits(index, hashes))
-                found.Add(Match(now, ThreatMatchPlaces.Program, hashes.Sha256, $"{name} (PID {pid}, {path})", feed, label));
+            var hits = HashHits(index, hashes).ToArray();
+            if (hits.Length == 0) continue;
+            var (signed, signer) = Signature(path);
+            found.Add(Assess(now, new ThreatEvidence(ThreatMatchPlaces.Program, hashes.Sha256, hits, name, path, signed, signer), $"{name} (PID {pid}, {path})"));
         }
 
         var newFindings = new List<SecurityFindingObservation>();
@@ -258,10 +288,12 @@ public sealed class ThreatDatabaseService(
         {
             foreach (var match in found)
             {
-                var key = $"{match.Where}\0{match.Indicator}\0{match.FeedId}";
-                if (!_matches.ContainsKey(key))
+                var key = $"{match.Where}\0{match.Indicator}";
+                // A finding is (re)reported when first seen or when its assessment changes, so severities stay current.
+                if (!_matches.TryGetValue(key, out var previous) || previous.Verdict != match.Verdict || previous.Severity != match.Severity)
                     newFindings.Add(SecurityFindingMapper.Create(SecurityFindingCatalog.ThreatDatabase, match.Where, match.Severity, match.Technique,
-                        $"{match.FeedName}: {match.Label} — {match.Subject}", $"{match.FeedId}:{match.Indicator}"));
+                        $"{ThreatVerdicts.Label(match.Verdict)} ({match.Confidence}%): {match.Label} — {match.Subject}",
+                        $"{match.FeedId.Split(',')[0]}:{match.Indicator}"));
                 _matches[key] = match;
             }
             foreach (var stale in _matches.Where(m => now - m.Value.SeenAtUtc > TimeSpan.FromDays(7)).Select(m => m.Key).ToList()) _matches.Remove(stale);
@@ -279,16 +311,59 @@ public sealed class ThreatDatabaseService(
             foreach (var finding in newFindings.Where(f => f.Severity is "HIGH" or "CRITICAL")) logger.LogWarning("Threat database match: {Summary}", finding.Summary);
             await alerts.IngestFindingsAsync(newFindings.Take(SecurityAlertRepository.MaximumFindingsPerIngest).ToArray(), now, token);
         }
+        // Matches the verification engine cleared (already blocked by this PC) and shared-service hosts are retired.
+        cleared.AddRange(found.Where(m => ThreatVerdicts.IsCleared(m.Verdict)).Select(m => SecurityFindingMapper.Create(SecurityFindingCatalog.ThreatDatabase,
+            m.Where, m.Severity, m.Technique, $"{ThreatVerdicts.Label(m.Verdict)}: {m.Label} — {m.Subject}", $"{m.FeedId.Split(',')[0]}:{m.Indicator}")));
+        await RetireAsync(cleared, token);
     }
 
-    private static ThreatMatch Match(DateTimeOffset now, string where, string indicator, string subject, ThreatFeedDefinition feed, string label)
+    /// <summary>Suppresses open threat-database alerts that verification has shown are not threats (state changes are audited).</summary>
+    private async Task RetireAsync(IReadOnlyList<SecurityFindingObservation> cleared, CancellationToken token)
     {
-        var severity = feed.Severity;
-        // A malicious (not merely vulnerable) driver loaded in the kernel is the most serious driver outcome.
-        if (feed.Id == "loldrivers" && label.StartsWith("Malicious", StringComparison.Ordinal)) severity = "CRITICAL";
-        if (feed.Id == "threatfox" && where == ThreatMatchPlaces.Program) severity = "CRITICAL";
-        if (feed.Id == "threatfox" && label.StartsWith("Malware delivery", StringComparison.Ordinal)) severity = "MEDIUM";
-        return new ThreatMatch(now, where, Bound(indicator, 128), Bound(subject, 300), feed.Id, feed.Name, Bound(label, 96), severity, feed.Technique);
+        if (cleared.Count == 0) return;
+        var identities = cleared.Select(SecurityFindingMapper.Identity).ToHashSet(StringComparer.Ordinal);
+        SecurityAlertSnapshot snapshot;
+        try { snapshot = await alerts.ReadSnapshotAsync(token); }
+        catch (Exception ex) when (ex is IOException or InvalidOperationException or Microsoft.Data.Sqlite.SqliteException) { return; }
+        foreach (var alert in snapshot.Alerts.Where(a => a.LogName == SecurityFindingCatalog.ThreatDatabase && a.State is "Open" or "Acknowledged" && identities.Contains(a.Provider)))
+        {
+            var response = await alerts.ChangeStateAsync(new AlertStateChangeRequest(1, Guid.NewGuid(), alert.AlertId, alert.State, "Suppressed"), token);
+            if (response.Accepted) logger.LogInformation("Retired cleared threat-database alert {Title}", alert.Title);
+        }
+    }
+
+    private static bool IsSinkhole(string address) =>
+        System.Net.IPAddress.TryParse(address, out var ip) && (ip.Equals(System.Net.IPAddress.Any) || ip.Equals(System.Net.IPAddress.IPv6Any) ||
+                                                              System.Net.IPAddress.IsLoopback(ip));
+
+    private static bool ListsExactName(ThreatIndex index, string domain) =>
+        index.LookupExact(domain).Count > 0;
+
+    private static ThreatMatch Assess(DateTimeOffset now, ThreatEvidence evidence, string subject)
+    {
+        var assessment = ThreatVerdictEngine.Assess(evidence);
+        var feeds = evidence.Hits.Select(h => h.Feed).DistinctBy(f => f.Id)
+            .OrderBy(f => ThreatFeedCatalog.All.ToList().IndexOf(f)).ToArray();
+        var label = evidence.Hits.Select(h => h.Label).OrderByDescending(l => l.Length).First();
+        return new ThreatMatch(now, evidence.Place, Bound(evidence.Indicator, 128), Bound(subject, 300),
+            Bound(string.Join(",", feeds.Select(f => f.Id)), 128), Bound(string.Join(", ", feeds.Select(f => f.Name)), 200),
+            Bound(label, 96), assessment.Severity, feeds[0].Technique is { Length: > 0 } technique ? technique : "T1071",
+            assessment.Verdict, assessment.Confidence, assessment.Reasons.Select(r => Bound(r, 300)).Take(12).ToArray());
+    }
+
+    /// <summary>Authenticode check for a matched file: embedded signature (with signer) or a Windows catalog signature.</summary>
+    private (bool? Signed, string? Signer) Signature(string path)
+    {
+        try
+        {
+            if (AuthenticodeVerifier.VerifyEmbeddedSignature(path, out var signer)) return (true, signer);
+            if (signatures?.IsMicrosoftSigned(path) == true) return (true, "Microsoft (catalog)");
+            return (false, null);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.ComponentModel.Win32Exception)
+        {
+            return (null, null);
+        }
     }
 
     private static IEnumerable<(ThreatFeedDefinition, string)> HashHits(ThreatIndex index, FileHashes hashes) =>

@@ -10,6 +10,9 @@
 - **HUD theme** across the app: neon controls, Bahnschrift type, HUD ring gauges and glowing charts over the rain.
 - Settings switches for host isolation and threat database updates.
 - **Live every second**: every monitoring page updates each second without flicker; slow scans run in the background and never block the view.
+- **Verification engine**: every database match is double-checked against independent evidence (how many databases agree, whether a program actually connected, digital signatures, browser vs unknown program) and shows a verdict, confidence and reasons. Names already blocked by your hosts file or DNS filter are recognised and cleared; built-in Windows firewall rules and optional hardening tips no longer appear as threats.
+- **Export case file**: one click saves every finding with its evidence and instructions so a reviewer or AI agent of your choice can double-check before you act.
+- Per-disk I/O now shows every physical disk; maximized window content stays above the taskbar.
 - Repeated low-severity PowerShell/process/privilege events roll up into one alert per hour with an accurate count; the dashboard status strip reflects the real engine and action state.
 
 ## v0.1.17 — measured CIS review and package integrity

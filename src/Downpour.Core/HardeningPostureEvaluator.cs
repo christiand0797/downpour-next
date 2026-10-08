@@ -110,12 +110,12 @@ public static class HardeningPostureEvaluator
         if (r.DeviceGuardServicesRunning is { } running)
             return running.Contains(1)
                 ? Pass("credential-guard", title, "T1003", "Credential Guard is running.")
-                : Finding("credential-guard", title, "MEDIUM", "T1003", $"Credential Guard is not running (LsaCfgFlags={Format(r.LsaCfgFlags)}).");
+                : Finding("credential-guard", title, "LOW", "T1003", $"Credential Guard is not running (LsaCfgFlags={Format(r.LsaCfgFlags)}). Optional hardening recommendation, not a sign of attack.");
         // v29 registry fallback when Device Guard state is unavailable.
         return r.LsaCfgFlags switch
         {
-            null => Finding("credential-guard", title, "MEDIUM", "T1003", "LsaCfgFlags is not configured and running state is unavailable; LSASS secrets may not be virtualization-isolated."),
-            0 => Finding("credential-guard", title, "MEDIUM", "T1003", "LsaCfgFlags=0; Credential Guard is disabled."),
+            null => Finding("credential-guard", title, "LOW", "T1003", "LsaCfgFlags is not configured and running state is unavailable; LSASS secrets may not be virtualization-isolated. Optional hardening recommendation."),
+            0 => Finding("credential-guard", title, "LOW", "T1003", "LsaCfgFlags=0; Credential Guard is disabled. Optional hardening recommendation, not a sign of attack."),
             _ => Pass("credential-guard", title, "T1003", $"Configured (LsaCfgFlags={r.LsaCfgFlags}); running state unavailable.")
         };
     }

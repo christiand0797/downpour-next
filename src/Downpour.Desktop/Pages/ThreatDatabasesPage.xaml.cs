@@ -122,9 +122,10 @@ public sealed partial class ThreatDatabasesPage : Page
         LiveList.Set(MatchList, s.Matches.Select(m => new ThreatMatchRow
         {
             Severity = m.Severity,
-            Title = $"{m.Label} · {m.Where}",
+            Title = $"{ThreatVerdicts.Label(m.Verdict)} · {m.Confidence}% confidence · {m.Label} · {m.Where}",
             Subject = m.Subject,
-            Detail = $"Listed by {m.FeedName} · {m.Indicator} · MITRE {m.Technique}",
+            Detail = string.Join(Environment.NewLine, (m.Reasons ?? []).Select(r => "• " + r)
+                .Append($"Indicator {m.Indicator} · MITRE {m.Technique}")),
             When = m.SeenAtUtc.ToLocalTime().ToString("MMM d HH:mm"),
             SeverityBrush = SeverityBrush(m.Severity),
             SeverityTint = SeverityTint(m.Severity),
@@ -213,6 +214,8 @@ public sealed partial class ThreatDatabasesPage : Page
         catch (OperationCanceledException) { }
     }
 
+    private async void ExportCase_Click(object sender, RoutedEventArgs e) => await CaseFileExporter.ExportFromAsync(ExportCaseButton);
+
     private void Report_Click(object sender, RoutedEventArgs e)
     {
         if (_snapshot is not { } s) return;
@@ -224,7 +227,10 @@ public sealed partial class ThreatDatabasesPage : Page
         report.AppendLine();
         report.AppendLine($"MATCHES ({s.Matches.Count})");
         foreach (var m in s.Matches)
-            report.AppendLine($"{m.SeenAtUtc:u}  {m.Severity,-8} {m.Where}: {m.Subject} | {m.FeedName}: {m.Label} | indicator {m.Indicator} | {m.Technique}");
+        {
+            report.AppendLine($"{m.SeenAtUtc:u}  {m.Severity,-8} {ThreatVerdicts.Label(m.Verdict)} ({m.Confidence}%) {m.Where}: {m.Subject} | {m.FeedName}: {m.Label} | indicator {m.Indicator} | {m.Technique}");
+            foreach (var reason in m.Reasons ?? []) report.AppendLine($"    - {reason}");
+        }
         report.AppendLine();
         report.AppendLine($"CONNECTIONS AT LAST SWEEP ({s.Connections.Count})");
         foreach (var c in s.Connections)

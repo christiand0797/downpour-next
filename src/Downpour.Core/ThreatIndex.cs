@@ -102,6 +102,14 @@ public sealed class ThreatIndex
         return hits;
     }
 
+    /// <summary>Feeds listing exactly this value (no parent-domain or network expansion).</summary>
+    public IReadOnlyList<(ThreatFeedDefinition Feed, string Label)> LookupExact(string value)
+    {
+        var hits = new List<(ThreatFeedDefinition, string)>();
+        Collect(value, hits);
+        return hits;
+    }
+
     public ThreatLolbin? Lolbin(string fileName) => _lolbins.GetValueOrDefault(fileName);
 
     private void Collect(string key, List<(ThreatFeedDefinition, string)> hits)

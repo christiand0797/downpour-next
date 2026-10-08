@@ -85,6 +85,9 @@
                     <Button x:Name="RefreshButton" Click="Refresh_Click" Style="{StaticResource AccentButtonStyle}" ToolTipService.ToolTip="Download any database that is out of date or failed">
                         <StackPanel Orientation="Horizontal" Spacing="8"><FontIcon Glyph="&#xE895;" FontSize="14" /><TextBlock Text="Update now" /></StackPanel>
                     </Button>
+                    <Button x:Name="ExportCaseButton" Click="ExportCase_Click" ToolTipService.ToolTip="Save all findings, verdicts and evidence for a second opinion">
+                        <StackPanel Orientation="Horizontal" Spacing="8"><FontIcon Glyph="&#xEDE1;" FontSize="14" /><TextBlock Text="Export case file" /></StackPanel>
+                    </Button>
                     <Button x:Name="ReportButton" Click="Report_Click" IsEnabled="False" ToolTipService.ToolTip="Copy matches and connection origins as a dated text report">
                         <StackPanel Orientation="Horizontal" Spacing="8"><FontIcon Glyph="&#xE8C8;" FontSize="14" /><TextBlock Text="Copy evidence report" /></StackPanel>
                     </Button>

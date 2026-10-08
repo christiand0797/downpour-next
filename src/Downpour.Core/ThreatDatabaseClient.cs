@@ -60,8 +60,9 @@ public sealed class ThreatDatabaseClient(string pipeName = ThreatDatabaseClient.
         && s.Connections is { Count: <= 400 } && s.Warnings is { Count: <= 32 } && s.Coverage is not null && s.TotalIndicators >= 0
         && s.Feeds.All(f => f is not null && Text(f.Id, 32) && Text(f.Name, 64) && Text(f.Provider, 64) && Text(f.Kind, 16) && Text(f.Purpose, 300)
             && Text(f.License, 64) && Text(f.Homepage, 128) && Text(f.State, 16) && f.Entries >= 0 && f.Bytes >= 0 && (f.Error is null || Text(f.Error, 300)))
-        && s.Matches.All(m => m is not null && Text(m.Where, 32) && Text(m.Indicator, 128) && Text(m.Subject, 300) && Text(m.FeedId, 32)
-            && Text(m.FeedName, 64) && Text(m.Label, 96) && Text(m.Severity, 16) && Text(m.Technique, 16))
+        && s.Matches.All(m => m is not null && Text(m.Where, 32) && Text(m.Indicator, 128) && Text(m.Subject, 300) && Text(m.FeedId, 128)
+            && Text(m.FeedName, 200) && Text(m.Label, 96) && Text(m.Severity, 16) && Text(m.Technique, 16) && Text(m.Verdict, 32)
+            && m.Confidence is >= 0 and <= 100 && (m.Reasons is null || m.Reasons.Count <= 12 && m.Reasons.All(r => Text(r, 300))))
         && s.Lolbins.All(l => l is not null && Text(l.Name, 64) && Text(l.Categories, 96) && Text(l.Techniques, 96) && l.Instances > 0)
         && s.Connections.All(c => c is not null && Text(c.Program, 128) && Text(c.RemoteAddress, 64) && c.RemotePort is >= 0 and <= 65535
             && Origin(c.RemoteAddress, c.CountryCode, c.Network))

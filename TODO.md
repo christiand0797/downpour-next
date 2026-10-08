@@ -11,6 +11,12 @@
 - [x] DN-033: refresh every page every second smoothly (in-place updates, cached heavy collectors).
 - [x] Fold repeated "PowerShell script block recorded" LOW alerts into counted rows (hourly roll-up).
 - [x] Dashboard strip data-driven; duplicate Sysmon warning removed.
+- [x] DN-034 verification engine with verdicts/confidence/reasons; sinkhole and shared-host false-positive clearing; firewall built-in rule and Credential Guard downgrades.
+- [x] Export case file for a third-party reviewer (Triage, Threat Databases).
+- [x] Per-disk I/O enumeration fix; maximized window content above the taskbar.
+- [ ] Persistence: signer checks for RunOnce targets (Microsoft Edge cleanup FP) and vendor-signed BYOVD severity alignment.
+- [ ] Alerts: capture file path / service name for YARA and 7045 findings so reviewers can tell test fixtures from real events.
+- [ ] More databases (owner request): evaluate additional live, licensed feeds; keep update-at-launch and cache across restarts.
 - [ ] HUD visuals kit: segmented glowing meters, sparklines, radar sweep, hex status tiles on every feature page.
 - [ ] Invented features: Threat Pulse (per-PC baseline spikes), watch timeline ribbon (camera/mic/screen), tripwire canary files.
 - [ ] Security hardening roadmap: signed builds and updates, hash-chained audit log, parser fuzzing, least-privilege review.

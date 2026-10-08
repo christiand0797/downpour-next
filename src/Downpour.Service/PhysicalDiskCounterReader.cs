@@ -15,6 +15,8 @@ internal sealed class PhysicalDiskCounterReader : IDisposable
     private bool _initialized;
     private bool _disposed;
 
+    private const uint PerfDetailWizard = 400;
+
     public PhysicalDiskCounterReader()
     {
         if (!OperatingSystem.IsWindows()) return;
@@ -25,21 +27,22 @@ internal sealed class PhysicalDiskCounterReader : IDisposable
             // Enumerate physical disk instances - first call to get buffer sizes
             uint counterBufferSize = 0;
             uint instanceBufferSize = 0;
-            if (PdhEnumObjectItemsW(IntPtr.Zero, IntPtr.Zero, "PhysicalDisk", IntPtr.Zero, ref counterBufferSize, IntPtr.Zero, ref instanceBufferSize, 0, 0) != 0)
+            if (PdhEnumObjectItemsW(IntPtr.Zero, IntPtr.Zero, "PhysicalDisk", IntPtr.Zero, ref counterBufferSize, IntPtr.Zero, ref instanceBufferSize, PerfDetailWizard, 0) != 0)
             {
                 // Allocate buffers
-                var counterBuffer = Marshal.AllocHGlobal((int)counterBufferSize);
-                var instanceBuffer = Marshal.AllocHGlobal((int)instanceBufferSize);
+                // PDH reports both sizes in characters, not bytes.
+                var counterBuffer = Marshal.AllocHGlobal((int)Math.Max(2, counterBufferSize) * sizeof(char));
+                var instanceBuffer = Marshal.AllocHGlobal((int)Math.Max(2, instanceBufferSize) * sizeof(char));
                 try
                 {
-                    if (PdhEnumObjectItemsW(IntPtr.Zero, IntPtr.Zero, "PhysicalDisk", counterBuffer, ref counterBufferSize, instanceBuffer, ref instanceBufferSize, 0, 0) != 0)
+                    if (PdhEnumObjectItemsW(IntPtr.Zero, IntPtr.Zero, "PhysicalDisk", counterBuffer, ref counterBufferSize, instanceBuffer, ref instanceBufferSize, PerfDetailWizard, 0) != 0)
                     {
                         Dispose();
                         return;
                     }
 
                     // Parse the multi-sz string to get instances
-                    var instances = ParseMultiSz(instanceBuffer, instanceBufferSize);
+                    var instances = ParseMultiSz(instanceBuffer, instanceBufferSize * sizeof(char));
                     foreach (var instance in instances)
                     {
                         if (string.Equals(instance, "_Total", StringComparison.OrdinalIgnoreCase)) continue;

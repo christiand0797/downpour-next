@@ -708,6 +708,19 @@
         "No UI-thread blocking"
       ],
       "notes": "claude-parity-audit 2026-10-08: SnapshotCache in all inventory pipe workers, LiveCollection/LiveList/LiveRefresh on desktop, 1 s ticks on 22 pages. Remaining: per-page polish if any flicker is reported; release in v0.1.18."
+    },
+    {
+      "id": "DN-034",
+      "title": "Verification engine: corroborate findings, cut false positives, export case file for second opinion",
+      "status": "in_progress",
+      "priority": "high",
+      "acceptance": [
+        "Every match carries verdict, confidence and reasons",
+        "Weak single signals never shown as confirmed threats",
+        "Cleared items retired with audit",
+        "Case file export with reviewer instructions"
+      ],
+      "notes": "claude-parity-audit 2026-10-08: ThreatVerdictEngine, DnsCacheResolver, sinkhole/shared-host retirement, firewall/hardening downgrades, CaseFileBuilder/Exporter. Remaining: persistence signer checks, alert path capture."
     }
   ]
 }

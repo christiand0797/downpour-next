@@ -49,6 +49,9 @@ public sealed partial class MainWindow : Window
         SetTitleBar(AppTitleBar);
         AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
         AppWindow.SetIcon("Assets/AppIcon.ico");
+        FitToWorkArea();
+        AppWindow.Changed += (_, args) => { if (args.DidPresenterChange || args.DidSizeChange) UpdateMaximizedInset(); };
+        UpdateMaximizedInset();
         InitializeStorm();
         StormModeController.ModeChanged += ApplyStormMode;
         AppPreferences.Changed += ApplyVisualPreferences;
@@ -395,6 +398,36 @@ public sealed partial class MainWindow : Window
     }
 
     /// <summary>Navigates to a route by id (used when a notification is clicked).</summary>
+    /// <summary>Keeps the first window inside the usable screen area (above the taskbar), centered.</summary>
+    private void FitToWorkArea()
+    {
+        var area = Microsoft.UI.Windowing.DisplayArea.GetFromWindowId(AppWindow.Id, Microsoft.UI.Windowing.DisplayAreaFallback.Primary).WorkArea;
+        var width = Math.Min(AppWindow.Size.Width, area.Width);
+        var height = Math.Min(AppWindow.Size.Height, area.Height);
+        var x = Math.Clamp(AppWindow.Position.X, area.X, area.X + area.Width - width);
+        var y = Math.Clamp(AppWindow.Position.Y, area.Y, area.Y + area.Height - height);
+        if (width != AppWindow.Size.Width || height != AppWindow.Size.Height || x != AppWindow.Position.X || y != AppWindow.Position.Y)
+            AppWindow.MoveAndResize(new Windows.Graphics.RectInt32(x, y, width, height));
+    }
+
+    /// <summary>
+    /// A maximized window with content extended into the title bar also draws into the hidden resize border, so the
+    /// bottom few pixels would sit under the taskbar. Pad the content by that border while maximized.
+    /// </summary>
+    private void UpdateMaximizedInset()
+    {
+        var maximized = AppWindow.Presenter is Microsoft.UI.Windowing.OverlappedPresenter { State: Microsoft.UI.Windowing.OverlappedPresenterState.Maximized };
+        var scale = ShellRoot.XamlRoot?.RasterizationScale ?? 1.0;
+        var border = maximized ? (GetSystemMetrics(SmCySizeFrame) + GetSystemMetrics(SmCxPaddedBorder)) / Math.Max(1.0, scale) : 0;
+        ShellRoot.Padding = new Thickness(0, 0, 0, border);
+    }
+
+    private const int SmCySizeFrame = 33;
+    private const int SmCxPaddedBorder = 92;
+
+    [System.Runtime.InteropServices.DllImport("user32.dll")]
+    private static extern int GetSystemMetrics(int index);
+
     internal void ShowRoute(string routeId)
     {
         var capability = _capabilities.FirstOrDefault(candidate => candidate.RouteId.Equals(routeId, StringComparison.OrdinalIgnoreCase));
