@@ -220,6 +220,22 @@
 
 
     <!-- HUD building blocks for pages -->
+    <LinearGradientBrush x:Key="HudMeterBrush" StartPoint="0,0" EndPoint="1,0">
+        <GradientStop Color="#FF00E5FF" Offset="0" />
+        <GradientStop Color="#FF2F8BFF" Offset="0.5" />
+        <GradientStop Color="#FFFF2BD6" Offset="1" />
+    </LinearGradientBrush>
+    <Style x:Key="HudMeterStyle" TargetType="ProgressBar">
+        <Setter Property="Height" Value="8" />
+        <Setter Property="MinHeight" Value="8" />
+        <Setter Property="Foreground" Value="{StaticResource HudMeterBrush}" />
+        <Setter Property="Background" Value="#2A20C8FF" />
+        <Setter Property="BorderBrush" Value="#5000E5FF" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="CornerRadius" Value="4" />
+    </Style>
+    <Style TargetType="ProgressBar" BasedOn="{StaticResource HudMeterStyle}" />
+
     <Style x:Key="HudCardStyle" TargetType="Border">
         <Setter Property="Background" Value="{StaticResource HudPanelGradientBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource HudEdgeBrush}" />

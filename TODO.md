@@ -17,6 +17,8 @@
 - [ ] Persistence: signer checks for RunOnce targets (Microsoft Edge cleanup FP) and vendor-signed BYOVD severity alignment.
 - [ ] Alerts: capture file path / service name for YARA and 7045 findings so reviewers can tell test fixtures from real events.
 - [ ] More databases (owner request): evaluate additional live, licensed feeds; keep update-at-launch and cache across restarts.
+- [x] Sakura Sentinel scene on Dashboard and Performance (load-driven petals, Kuro the cat with mood and threat awareness).
+- [x] HUD gradient meter bars app-wide; Performance right column filled.
 - [ ] HUD visuals kit: segmented glowing meters, sparklines, radar sweep, hex status tiles on every feature page.
 - [ ] Invented features: Threat Pulse (per-PC baseline spikes), watch timeline ribbon (camera/mic/screen), tripwire canary files.
 - [ ] Security hardening roadmap: signed builds and updates, hash-chained audit log, parser fuzzing, least-privilege review.

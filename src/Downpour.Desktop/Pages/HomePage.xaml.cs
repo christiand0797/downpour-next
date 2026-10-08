@@ -23,6 +23,7 @@ public sealed partial class HomePage : Page
     private bool _securityRequestInFlight;
     private DateTimeOffset _hardeningCheckedAt = DateTimeOffset.MinValue;
     private readonly SecurityAlertClient _alertClient = new();
+    private readonly BlossomScene _blossom = new();
     private readonly HardeningPostureClient _hardeningClient = new();
     private readonly SensorSettingsClient _settingsClient = new();
     private DateTimeOffset _settingsCheckedAt = DateTimeOffset.MinValue;
@@ -37,6 +38,7 @@ public sealed partial class HomePage : Page
     public HomePage()
     {
         InitializeComponent();
+        BlossomHost.Content = _blossom;
         _cpuGauge = new CircularGauge("CPU", Color.FromArgb(255, 74, 220, 243));
         _memoryGauge = new CircularGauge("MEMORY", Color.FromArgb(255, 178, 121, 248));
         GaugeHost.Children.Add(_cpuGauge);
@@ -171,6 +173,7 @@ public sealed partial class HomePage : Page
                 var open = alerts.Alerts.Where(a => a.State is "Open" or "Acknowledged").ToArray();
                 var threats = open.Count(SecurityFindingCatalog.IsThreat);
                 ThreatsMetricValue.Text = threats.ToString("N0");
+                _blossom.SetThreats(threats);
                 ThreatsMetricDetail.Text = threats == 0
                     ? $"No open threats · {open.Length - threats:N0} possible threats awaiting review"
                     : $"{open.Count(a => a.Severity == "CRITICAL"):N0} critical · {open.Length - threats:N0} possible threats · open Triage to review";
@@ -245,6 +248,7 @@ public sealed partial class HomePage : Page
             double? memoryPercent = snapshot.MemoryTotalBytes > 0 ? usedBytes * 100d / snapshot.MemoryTotalBytes : null;
             _cpuGauge?.SetValue(snapshot.CpuPercent);
             _memoryGauge?.SetValue(memoryPercent);
+            _blossom.SetLoad(snapshot.CpuPercent ?? 0, memoryPercent ?? 0);
 
             SetMetricCards(snapshot.ProcessCount.ToString("N0"), "Current Windows process snapshot",
                 snapshot.ActiveTcpConnections?.ToString("N0") ?? "—", "Current connection count",

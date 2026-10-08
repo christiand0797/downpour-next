@@ -22,6 +22,7 @@ public sealed partial class PerformancePage : Page
     private readonly NetworkInventoryClient _networkClient = new();
     private readonly DispatcherQueueTimer _timer;
     private readonly Queue<PerformanceSample> _history = new();
+    private readonly BlossomScene _blossom = new();
     private readonly CircularGauge _cpuGauge;
     private readonly CircularGauge _memoryGauge;
     private readonly CircularGauge _commitGauge;
@@ -70,6 +71,7 @@ public sealed partial class PerformancePage : Page
     public PerformancePage()
     {
         InitializeComponent();
+        BlossomHost.Content = _blossom;
         _cpuGauge = new CircularGauge("CPU", Color.FromArgb(255, 74, 220, 243));
         _memoryGauge = new CircularGauge("MEMORY", Color.FromArgb(255, 178, 121, 248));
         _commitGauge = new CircularGauge("COMMIT", Color.FromArgb(255, 255, 174, 92));
@@ -364,6 +366,7 @@ public sealed partial class PerformancePage : Page
                 : null;
             _cpuGauge.SetValue(snapshot.CpuPercent);
             _memoryGauge.SetValue(memoryPercent);
+            _blossom.SetLoad(snapshot.CpuPercent ?? 0, memoryPercent ?? 0);
             _commitGauge.SetMetric(commitPercent, commitPercent is { } commitValue ? $"{commitValue:0}%" : null);
 
             // Update per-core CPU gauges

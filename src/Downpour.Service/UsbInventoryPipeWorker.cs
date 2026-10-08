@@ -15,6 +15,7 @@ public sealed class UsbInventoryPipeWorker(
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        _cache.Warm();
         while (!stoppingToken.IsCancellationRequested)
         {
             try

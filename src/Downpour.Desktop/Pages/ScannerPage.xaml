@@ -79,7 +79,7 @@
                 <CheckBox x:Name="YaraSkipSigned" Content="Skip Microsoft-signed files" IsChecked="True" />
                 <Button x:Name="YaraCancelButton" Content="Cancel" Click="YaraCancel_Click" Visibility="Collapsed" />
             </StackPanel>
-            <ProgressBar x:Name="YaraProgress" IsIndeterminate="True" Visibility="Collapsed" />
+            <ProgressBar Style="{StaticResource HudMeterStyle}" x:Name="YaraProgress" IsIndeterminate="True" Visibility="Collapsed" />
             <TextBlock x:Name="YaraStatusText" TextWrapping="Wrap" />
             <StackPanel x:Name="YaraFindingsPanel" Spacing="8" />
         </StackPanel>

@@ -1,5 +1,15 @@
 # Downpour Next shared context
 
+## 2026-10-08 checkpoint: Sakura Sentinel scene, HUD meters, Performance layout, pipe warm-up (claude-parity-audit, DN-032)
+
+Done and verified (969/969 tests twice; portable build checked on screen):
+- `BlossomScene` (Desktop): procedural vector sunset, misty mountains, cherry tree with full canopy, rock ledge and Kuro the black cat, at the top of Dashboard and Performance (owner request with reference painting). Petal rate rises with CPU/memory load (1.5/s idle to ~40/s at full load), petals tumble on wind, settle on the ledge and ground, and Kuro's tail sweeps them aside; tail speed follows load; ears twitch, breathing, occasional glance back with lit eyes; stays "on guard" with eyes lit while threats are open. Status text states load and mood (no reliance on animation); motion stops with Reduce motion or when the window is hidden. 33 ms timer, pooled petals (max 220 falling, 160 settled).
+- HUD meter bars: `HudMeterStyle` (8 px rounded gradient cyan→blue→magenta on a tinted track) is the app-wide ProgressBar style; dashboard/performance/scanner bars use it.
+- Performance: empty right column filled by stacking the utilization and per-core history charts (230 px) beside the gauges.
+- Service: every `SnapshotCache` is warmed at worker start so the first desktop request is answered from cache (fixed a load-dependent driver pipe test timeout).
+
+Next: release v0.1.18 once `gh auth login` is done (package rebuilt at 74d7c7b is ready; rebuild again from this commit), more databases, persistence signer checks, alert path capture, HUD visuals kit (sparklines, radar sweep), invented features (Threat Pulse, watch timeline ribbon, tripwire canary files), security-hardening roadmap.
+
 ## 2026-10-08 checkpoint: verification engine, case-file export, false-positive reduction (claude-parity-audit, DN-034)
 
 Owner requests: "triple check everything", "not create false flags", "export file for a third-party agent to double check". Done and verified (969/969 tests; live run on this PC):

@@ -16,6 +16,7 @@ public sealed class RemoteAccessPipeWorker(
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        _cache.Warm();
         while (!stoppingToken.IsCancellationRequested)
         {
             try

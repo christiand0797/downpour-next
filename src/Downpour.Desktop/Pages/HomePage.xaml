@@ -9,6 +9,7 @@
     <ScrollViewer x:Name="PageScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
                   HorizontalScrollMode="Disabled" ZoomMode="Disabled">
         <StackPanel x:Name="HomeContent" Padding="24,20,24,36" Spacing="16" HorizontalAlignment="Stretch">
+            <ContentControl x:Name="BlossomHost" HorizontalContentAlignment="Stretch" HorizontalAlignment="Stretch" />
             <Grid ColumnSpacing="20">
                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                 <StackPanel Spacing="4">
@@ -127,7 +128,7 @@
                             <Grid.ColumnDefinitions><ColumnDefinition Width="30" /><ColumnDefinition Width="2*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                             <TextBlock Text="&#xE9D9;" FontFamily="Segoe MDL2 Assets" Foreground="#FF5DCAE5" VerticalAlignment="Center" />
                             <TextBlock Grid.Column="1" Text="{Binding Name}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
-                            <ProgressBar Grid.Column="2" Height="5" Minimum="0" Maximum="100" Value="{Binding MemoryShare}" VerticalAlignment="Center" Foreground="#FF38CFE7" />
+                            <ProgressBar Style="{StaticResource HudMeterStyle}" Grid.Column="2" Minimum="0" Maximum="100" Value="{Binding MemoryShare}" VerticalAlignment="Center" />
                             <TextBlock Grid.Column="3" Text="{Binding Detail}" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
                         </Grid>
                     </DataTemplate>

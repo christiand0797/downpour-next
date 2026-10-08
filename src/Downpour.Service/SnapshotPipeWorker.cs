@@ -15,6 +15,7 @@ public sealed class SnapshotPipeWorker(
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        _cache.Warm();
         logger.LogInformation("Downpour sensor service started. Connected sensors: read-only process, CPU, memory, and TCP summary.");
         while (!stoppingToken.IsCancellationRequested)
         {

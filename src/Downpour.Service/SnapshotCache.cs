@@ -15,6 +15,14 @@ public sealed class SnapshotCache<T>(Func<T> capture, TimeSpan refreshAfter, ILo
 
     public TimeSpan RefreshAfter { get; } = refreshAfter;
 
+    /// <summary>Starts the first capture in the background at service start, so the first request is answered from cache.</summary>
+    public void Warm()
+    {
+        lock (_gate)
+            if (_value is null) _inFlight ??= Task.Run(CaptureAndStore, CancellationToken.None);
+        _inFlight?.ContinueWith(t => _ = t.Exception, TaskContinuationOptions.OnlyOnFaulted);
+    }
+
     public async Task<T> GetAsync(CancellationToken token)
     {
         Task<T>? wait = null;

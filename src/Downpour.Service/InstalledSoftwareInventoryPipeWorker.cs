@@ -15,6 +15,7 @@ public sealed class InstalledSoftwareInventoryPipeWorker(
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        _cache.Warm();
         while (!stoppingToken.IsCancellationRequested)
         {
             try
