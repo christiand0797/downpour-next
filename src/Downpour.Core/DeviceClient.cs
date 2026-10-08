@@ -62,7 +62,9 @@ public sealed class DeviceClient(string pipeName = DeviceClient.PipeName)
             && Optional(d.InfName, 128) && Optional(d.DriverSigner, 200) && Optional(d.HardwareId, 256))
         && s.Updates.All(u => u is not null && Text(u.Title, 300) && Optional(u.DriverClass, 64) && Optional(u.DriverModel, 200)
             && Optional(u.DriverProvider, 128) && Optional(u.DriverManufacturer, 128) && Optional(u.DriverHardwareId, 256) && u.MaximumDownloadBytes is null or >= 0)
-        && s.Warnings.All(w => Text(w, 300));
+        && s.Warnings.All(w => Text(w, 300))
+        && Optional(s.SystemManufacturer, 128) && Optional(s.SystemModel, 128) && Optional(s.BoardManufacturer, 128) && Optional(s.BoardProduct, 128)
+        && (s.VendorTools is null || s.VendorTools.Count <= 32 && s.VendorTools.All(t => Text(t, 64)));
 
     private static bool Optional(string? value, int max) => value is null || Text(value, max);
 

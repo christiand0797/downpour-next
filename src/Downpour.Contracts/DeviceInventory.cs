@@ -50,7 +50,12 @@ public sealed record DeviceInventorySnapshot(
     string UpdateSearchState,
     DateTimeOffset? UpdatesCheckedAtUtc,
     string? UpdateSearchError,
-    IReadOnlyList<string> Warnings);
+    IReadOnlyList<string> Warnings,
+    string? SystemManufacturer = null,
+    string? SystemModel = null,
+    string? BoardManufacturer = null,
+    string? BoardProduct = null,
+    IReadOnlyList<string>? VendorTools = null);
 
 public sealed record DeviceRequest(int SchemaVersion, string Operation);
 

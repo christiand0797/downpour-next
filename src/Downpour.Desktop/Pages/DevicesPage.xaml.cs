@@ -128,10 +128,13 @@ public sealed partial class DevicesPage : Page
                 .Select(d => (d.Name, (double)(DeviceAnalyzer.AgeYears(d, now) ?? 0))), " yr",
             colorFor: years => years >= 5 ? HudPalette.Serious : years >= 3 ? HudPalette.Warning : HudPalette.Categorical[0]);
 
-        var structure = string.Join("|", problems.Select(p => p.Device.InstanceId + p.Device.ProblemCode)) + "#" + s.UpdateSearchState + s.Updates.Count + s.UpdatesCheckedAtUtc + "#" + s.Devices.Count;
+        var structure = string.Join("|", problems.Select(p => p.Device.InstanceId + p.Device.ProblemCode)) + "#" + s.UpdateSearchState + s.Updates.Count + s.UpdatesCheckedAtUtc + "#" + s.Devices.Count
+            + "#" + s.SystemManufacturer + s.BoardManufacturer + string.Join(",", s.VendorTools ?? []);
         if (structure == _structure) return;
         _structure = structure;
         RenderProblems(problems.Where(p => p.Device.Present || p.MissingDriver).ToArray());
+        RenderSources(s);
+        RenderChecks(s);
         RenderUpdates(s);
         RebuildClassFilter(s);
         ApplyFilter();
@@ -154,11 +157,69 @@ public sealed partial class DevicesPage : Page
             var actions = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Margin = new Thickness(0, 4, 0, 0) };
             if (p.MissingDriver || p.Device.ProblemCode is 1 or 10 or 18 or 31 or 37 or 39 or 43 or 48 or 52)
                 actions.Children.Add(Action("Search Windows Update", async () => { await _client.SearchUpdatesAsync(); await RefreshAsync(); }));
+            foreach (var source in DriverSourceAdvisor.SourcesFor(p.Device, _snapshot?.SystemManufacturer, _snapshot?.BoardManufacturer).Take(2))
+                actions.Children.Add(Action($"Get from {source.Name}", () => OpenOfficial(source)));
             actions.Children.Add(Action("Open Device Manager", () => { OpenDeviceManager(); return Task.CompletedTask; }));
             actions.Children.Add(Action("Hardware troubleshooter", () => OpenSettings("ms-settings:troubleshoot")));
             body.Children.Add(actions);
             var tone = HudPalette.Severity(p.Severity) is { } c ? new SolidColorBrush(c) : HudPalette.Resource("HudAmberBrush");
             ProblemsPanel.Children.Add(Card(p.MissingDriver ? "NO DRIVER" : p.Severity, tone, body));
+        }
+    }
+
+    /// <summary>Opens a maker page from the fixed, verified table in <see cref="DriverSourceAdvisor"/> (never a URL from data).</summary>
+    private static Task OpenOfficial(DriverSource source) => Windows.System.Launcher.LaunchUriAsync(new Uri(source.Url)).AsTask();
+
+    private void RenderSources(DeviceInventorySnapshot s)
+    {
+        SourcesPanel.Children.Clear();
+        var system = string.Join(" ", new[] { s.SystemManufacturer, s.SystemModel }.Where(t => !string.IsNullOrWhiteSpace(t)));
+        var board = string.Join(" ", new[] { s.BoardManufacturer, s.BoardProduct }.Where(t => !string.IsNullOrWhiteSpace(t)));
+        SourcesPanel.Children.Add(new TextBlock
+        {
+            Text = $"This PC: {(system.Length > 0 ? system : "maker not reported")}{(board.Length > 0 ? $"  ·  Motherboard: {board}" : "")}",
+            FontWeight = Microsoft.UI.Text.FontWeights.SemiBold, TextWrapping = TextWrapping.Wrap,
+        });
+        var makers = new[] { DriverSourceAdvisor.MakerSource(s.SystemManufacturer), DriverSourceAdvisor.MakerSource(s.BoardManufacturer) }
+            .OfType<DriverSource>().DistinctBy(m => m.Url).ToArray();
+        var chips = s.Devices.Where(d => d.Present).Select(DriverSourceAdvisor.ChipMaker).Where(c => c?.Source is not null)
+            .Select(c => c!.Value.Source!).DistinctBy(c => c.Url).ToArray();
+        var actions = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
+        foreach (var source in makers.Concat(chips).Take(6))
+        {
+            var button = Action(source.IsPcMaker ? source.Name : $"{source.Name} drivers", () => OpenOfficial(source));
+            ToolTipService.SetToolTip(button, $"{source.Why} Opens {source.Url}");
+            actions.Children.Add(button);
+        }
+        if (actions.Children.Count > 0) SourcesPanel.Children.Add(actions);
+        else SourcesPanel.Children.Add(new TextBlock { Text = "No maker-specific driver source was recognised; use Windows Update and Device Manager.", FontSize = 12, Foreground = HudPalette.Resource("HudTextDimBrush") });
+        SourcesPanel.Children.Add(new TextBlock
+        {
+            Text = s.VendorTools is { Count: > 0 } tools
+                ? $"Official updater apps already installed: {string.Join(", ", tools)}. They know your exact hardware and are the easiest way to update these drivers."
+                : "No official maker updater app was found. The maker pages above find the right drivers for your exact model.",
+            FontSize = 12, Foreground = HudPalette.Resource("HudTextDimBrush"), TextWrapping = TextWrapping.Wrap,
+        });
+    }
+
+    private void RenderChecks(DeviceInventorySnapshot s)
+    {
+        ChecksPanel.Children.Clear();
+        var checks = DriverSourceAdvisor.Checks(s.Devices, s.SystemManufacturer, s.BoardManufacturer, DateTimeOffset.UtcNow);
+        ChecksStatus.Text = checks.Count == 0
+            ? "No third-party drivers look out of date (graphics older than six months or other drivers older than three years)."
+            : $"{checks.Count} driver{(checks.Count == 1 ? "" : "s")} may have a newer version from the maker. Windows Update often does not carry these.";
+        foreach (var c in checks)
+        {
+            var body = new StackPanel { Spacing = 3 };
+            body.Children.Add(new TextBlock { Text = c.Label ?? c.Device.Name, FontWeight = Microsoft.UI.Text.FontWeights.SemiBold, TextWrapping = TextWrapping.Wrap });
+            body.Children.Add(new TextBlock { Text = $"{c.Device.DriverProvider} {c.Device.DriverVersion} · released {c.Device.DriverDate:yyyy-MM-dd}. {c.Reason}", FontSize = 12, Foreground = HudPalette.Resource("HudTextDimBrush"), TextWrapping = TextWrapping.Wrap });
+            body.Children.Add(new TextBlock { Text = c.Sources[0].Why, FontSize = 11, Foreground = HudPalette.Resource("HudTextFaintBrush"), TextWrapping = TextWrapping.Wrap });
+            var actions = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Margin = new Thickness(0, 4, 0, 0) };
+            foreach (var source in c.Sources.Take(3)) actions.Children.Add(Action($"Get from {source.Name}", () => OpenOfficial(source)));
+            body.Children.Add(actions);
+            var tone = c.Device.Class.Equals("Display", StringComparison.OrdinalIgnoreCase) ? HudPalette.Resource("HudVioletBrush") : HudPalette.Resource("HudBlueBrush");
+            ChecksPanel.Children.Add(Card(c.AgeYears is { } years && years > 0 ? $"{years} YR OLD" : "CHECK", tone, body));
         }
     }
 

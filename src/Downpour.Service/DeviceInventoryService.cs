@@ -15,13 +15,17 @@ namespace Downpour.Service;
 /// rolling back or uninstalling is handed to Windows' own Optional updates page and Device Manager, which elevate
 /// themselves. Served on Downpour.Devices.v1 (length-prefixed JSON, current-user ACL).
 /// </summary>
-public sealed class DeviceInventoryService(ILogger<DeviceInventoryService> logger, string pipeName = DeviceClient.PipeName) : BackgroundService
+public sealed class DeviceInventoryService(ILogger<DeviceInventoryService> logger, string pipeName = DeviceClient.PipeName,
+    InstalledSoftwareInventoryProvider? installed = null) : BackgroundService
 {
+    private sealed record SystemIdentity(string? Manufacturer, string? Model, string? BoardManufacturer, string? BoardProduct, IReadOnlyList<string> Tools);
+
     public const int MaximumDevices = 1200;
     public const int MaximumUpdates = 200;
     private static readonly TimeSpan SearchTimeout = TimeSpan.FromMinutes(5);
     private readonly object _gate = new();
     private readonly SnapshotCache<IReadOnlyList<DeviceEntry>> _devices = new(ReadDevices, TimeSpan.FromSeconds(20));
+    private SnapshotCache<SystemIdentity>? _identity;
     private IReadOnlyList<DriverUpdateOffer> _updates = [];
     private string _searchState = UpdateSearchStates.NotSearched;
     private DateTimeOffset? _searchedAt;
@@ -30,6 +34,7 @@ public sealed class DeviceInventoryService(ILogger<DeviceInventoryService> logge
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _devices.Warm();
+        Identity.Warm();
         return Task.Run(() => ServePipeAsync(stoppingToken), stoppingToken);
     }
 
@@ -66,8 +71,12 @@ public sealed class DeviceInventoryService(ILogger<DeviceInventoryService> logge
             devices = [];
             warnings.Add($"Windows did not return the device list ({ex.GetType().Name}).");
         }
+        SystemIdentity? identity = null;
+        try { identity = await Identity.GetAsync(token); }
+        catch (Exception ex) when (ex is ManagementException or COMException or UnauthorizedAccessException or IOException) { }
         lock (_gate)
-            return new DeviceInventorySnapshot(1, DateTimeOffset.UtcNow, devices, _updates, _searchState, _searchedAt, _searchError, warnings);
+            return new DeviceInventorySnapshot(1, DateTimeOffset.UtcNow, devices, _updates, _searchState, _searchedAt, _searchError, warnings,
+                identity?.Manufacturer, identity?.Model, identity?.BoardManufacturer, identity?.BoardProduct, identity?.Tools);
     }
 
     /// <summary>Windows Update driver search on an STA thread (the agent's preferred apartment). Never installs.</summary>
@@ -116,6 +125,24 @@ public sealed class DeviceInventoryService(ILogger<DeviceInventoryService> logge
     {
         try { return read(); }
         catch (Exception) { return default; }
+    }
+
+    private SnapshotCache<SystemIdentity> Identity => _identity ??= new SnapshotCache<SystemIdentity>(ReadIdentity, TimeSpan.FromMinutes(10));
+
+    /// <summary>PC and motherboard maker (where model-specific drivers come from) and installed official maker update apps.</summary>
+    private SystemIdentity ReadIdentity()
+    {
+        string? maker = null, model = null, board = null, product = null;
+        using (var system = new ManagementObjectSearcher("SELECT Manufacturer, Model FROM Win32_ComputerSystem"))
+            foreach (ManagementObject item in system.Get())
+                using (item) { maker = Clean(item["Manufacturer"] as string, 128); model = Clean(item["Model"] as string, 128); }
+        using (var baseboard = new ManagementObjectSearcher("SELECT Manufacturer, Product FROM Win32_BaseBoard"))
+            foreach (ManagementObject item in baseboard.Get())
+                using (item) { board = Clean(item["Manufacturer"] as string, 128); product = Clean(item["Product"] as string, 128); }
+        IReadOnlyList<string> tools = [];
+        try { if (installed is not null) tools = DriverSourceAdvisor.MatchTools(installed.Capture().Software.Select(s => s.Name)); }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.Security.SecurityException) { }
+        return new SystemIdentity(maker, model, board, product, tools);
     }
 
     internal static IReadOnlyList<DeviceEntry> ReadDevices()

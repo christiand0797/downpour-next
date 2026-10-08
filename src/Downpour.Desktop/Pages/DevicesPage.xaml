@@ -36,6 +36,13 @@
 
             <Grid x:Name="ChartRow" />
 
+            <TextBlock Text="Where your drivers come from" Style="{StaticResource HudSectionTitleStyle}" />
+            <TextBlock FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"
+                       Text="Windows Update carries many drivers, but graphics, chipset, audio, network and laptop-specific drivers often come only from the chip maker or your PC or motherboard maker. These are their official pages; Downpour never downloads or runs installers itself." />
+            <Border Style="{StaticResource HudCardStyle}">
+                <StackPanel x:Name="SourcesPanel" Spacing="8" />
+            </Border>
+
             <TextBlock Text="Needs attention" Style="{StaticResource HudSectionTitleStyle}" />
             <TextBlock x:Name="ProblemsEmpty" Text="Every connected device has a working driver." Foreground="{StaticResource HudGreenBrush}" Visibility="Collapsed" />
             <StackPanel x:Name="ProblemsPanel" Spacing="8" />
@@ -43,6 +50,10 @@
             <TextBlock Text="Driver updates from Windows Update" Style="{StaticResource HudSectionTitleStyle}" />
             <TextBlock x:Name="UpdatesStatus" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
             <StackPanel x:Name="UpdatesPanel" Spacing="8" />
+
+            <TextBlock Text="Check with the maker" Style="{StaticResource HudSectionTitleStyle}" />
+            <TextBlock x:Name="ChecksStatus" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+            <StackPanel x:Name="ChecksPanel" Spacing="8" />
 
             <Grid ColumnSpacing="12">
                 <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="220" /></Grid.ColumnDefinitions>
