@@ -1,6 +1,6 @@
 namespace Downpour.Service;
 
-/// <summary>Guarantees host isolation ends on time even if Downpour is closed, crashes, or the user signs out.</summary>
+/// <summary>Schedules host-isolation cleanup independently of the desktop lifetime.</summary>
 public interface IIsolationReleaseScheduler
 {
     /// <summary>Registers the release; returns null on success or the reason it could not be scheduled.</summary>
@@ -42,6 +42,8 @@ public sealed class TaskSchedulerIsolationRelease : IIsolationReleaseScheduler
             definition.Settings.DisallowStartIfOnBatteries = false;
             definition.Settings.StopIfGoingOnBatteries = false;
             definition.Settings.ExecutionTimeLimit = "PT5M";
+            definition.Settings.RestartInterval = "PT1M";
+            definition.Settings.RestartCount = 3;
             definition.Settings.DeleteExpiredTaskAfter = "PT0S";
             dynamic trigger = definition.Triggers.Create(1); // TASK_TRIGGER_TIME
             var local = releaseAtUtc.ToLocalTime();

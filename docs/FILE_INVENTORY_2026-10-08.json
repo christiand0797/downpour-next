@@ -1,0 +1,4317 @@
+{
+  "schemaVersion": 1,
+  "scope": "All tracked repository files; pattern signals are triage candidates, not vulnerability verdicts. Generated/build/cache files excluded by Git. Existing drafts separately reviewed.",
+  "sourceCommit": "e933f0bda6d87b881931cbb4486930ceb4788b09",
+  "fileCount": 530,
+  "extensions": {
+    "": 2,
+    ".appxmanifest": 1,
+    ".bat": 1,
+    ".cmd": 1,
+    ".cs": 358,
+    ".csproj": 7,
+    ".ico": 1,
+    ".json": 11,
+    ".manifest": 1,
+    ".md": 34,
+    ".png": 10,
+    ".props": 1,
+    ".py": 2,
+    ".sha256": 1,
+    ".slnx": 1,
+    ".xaml": 44,
+    ".yar": 33,
+    ".yml": 21
+  },
+  "reviewSignals": {
+    "native_api": 145,
+    "simulation": 50,
+    "catch_all": 39,
+    "ui_disk_io": 15,
+    "process_launch": 17
+  },
+  "syntaxErrors": [],
+  "files": [
+    {
+      "path": ".github/dependabot.yml",
+      "bytes": 364,
+      "sha256": "41fc35a3177f257a5dab7e25d26deb20f4cd232675783d05182b0771721d126c",
+      "review": "inventory",
+      "lines": 19
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "bytes": 791,
+      "sha256": "1c0c035aca3c4a3b12e16bb35f393136841c0b5fee69168fa9564b34ca60cf72",
+      "review": "inventory",
+      "lines": 33
+    },
+    {
+      "path": ".gitignore",
+      "bytes": 178,
+      "sha256": "a2cc3c6aeca50f79ec3342d66e79c53680d314b69680365b133ae05c4e3d9e0c",
+      "review": "inventory"
+    },
+    {
+      "path": "AGENTS.md",
+      "bytes": 3137,
+      "sha256": "65ebf0739b15c762f54cdb11eff1bba1599fdfa82ba92b2d05c023f12b702423",
+      "review": "inventory",
+      "lines": 39
+    },
+    {
+      "path": "AGENT_REGISTRY.json",
+      "bytes": 8408,
+      "sha256": "bd2b49bd8ce00e5b423b3cc55b2b4553c7e62063f1aecd8c8105606888545da7",
+      "review": "inventory",
+      "lines": 110
+    },
+    {
+      "path": "Directory.Build.props",
+      "bytes": 176,
+      "sha256": "7332233596a5fa2a5365be064749bfdb8a6bf10fd041d4760b221ad1faee8e5d",
+      "review": "inventory",
+      "lines": 7
+    },
+    {
+      "path": "Downpour.slnx",
+      "bytes": 592,
+      "sha256": "058048d2007c699d0b9d5332a74c5371a92651613ff42ac11d36fbedfdc3d0cf",
+      "review": "inventory",
+      "lines": 13
+    },
+    {
+      "path": "README.md",
+      "bytes": 6283,
+      "sha256": "098a10e0b57443de3ee0ae4f1cf257d7b6e5c7db2fe4db88a94573a80487381d",
+      "review": "inventory",
+      "lines": 50
+    },
+    {
+      "path": "SECURITY.md",
+      "bytes": 7482,
+      "sha256": "532d3155470b562fd907257f6bb21de55cfc5f0ba8d2a13117979070ff642eca",
+      "review": "inventory",
+      "lines": 39
+    },
+    {
+      "path": "SHARED_CONTEXT.md",
+      "bytes": 139479,
+      "sha256": "3a157995a02eaca2ec986284e6c44f50d37d5534b0e2a6cdf5902b2a1e6fc5ba",
+      "review": "inventory",
+      "lines": 1207
+    },
+    {
+      "path": "Start-Downpour-Next.bat",
+      "bytes": 352,
+      "sha256": "80eb2e164bd8064ce063eb473f14e6b5d1789f5c8621d5805ec47309cda7a38a",
+      "review": "inventory",
+      "lines": 14
+    },
+    {
+      "path": "Start-Downpour-Next.cmd",
+      "bytes": 1258,
+      "sha256": "cce132ca05a7b178b63afa37b9438a392beb75b6977838d30cb536682d2b9f04",
+      "review": "inventory",
+      "lines": 26
+    },
+    {
+      "path": "TODO.md",
+      "bytes": 67808,
+      "sha256": "6610b99582cafd9619a7432173830f09186d84d1d970686000de98f6f816e213",
+      "review": "inventory",
+      "lines": 450
+    },
+    {
+      "path": "WORK_QUEUE.json",
+      "bytes": 80066,
+      "sha256": "4a7eac1dfeb8277d29bb02ce5c7ae271ca401ded6203fa0bebfae131d3b80946",
+      "review": "inventory",
+      "lines": 767
+    },
+    {
+      "path": "capabilities.json",
+      "bytes": 17750,
+      "sha256": "b39c2c8a40cf75b6ad6ad4b3d9ef474d5af3beadd71eda262fe56c2f71541458",
+      "review": "inventory",
+      "lines": 47
+    },
+    {
+      "path": "docs/ACTION_BROKER.md",
+      "bytes": 8945,
+      "sha256": "e9c93aa89b762cac5f6e92b29153efceeafb2201a6e4f9065623e38fb93bfef1",
+      "review": "inventory",
+      "lines": 215
+    },
+    {
+      "path": "docs/ACTION_BROKER_THREAT_MODEL.md",
+      "bytes": 9492,
+      "sha256": "5fbed4b1c0d63e5251d32900a078a78eff3742106d793ef29662fcf109a87802",
+      "review": "inventory",
+      "lines": 88
+    },
+    {
+      "path": "docs/ACTION_JOURNAL.md",
+      "bytes": 3141,
+      "sha256": "be4e2b9e0770ef00048aff1e42c0ff39e6d211e6eda0c4b9ad31d018fd8cf861",
+      "review": "inventory",
+      "lines": 19
+    },
+    {
+      "path": "docs/AGENT_COORDINATION.md",
+      "bytes": 6837,
+      "sha256": "7d13740f247f68d8a333b29cd4a059b4f325e82877c107e70e25c565f6f7c261",
+      "review": "inventory",
+      "lines": 78
+    },
+    {
+      "path": "docs/AGENT_HANDOFF.md",
+      "bytes": 5366,
+      "sha256": "d3455bc955601c77758f09974e5e9615cadb9487b85d69f2e6f42ca797a1ba09",
+      "review": "inventory",
+      "lines": 57
+    },
+    {
+      "path": "docs/ALERTS.md",
+      "bytes": 6251,
+      "sha256": "6dbc8df251e248d43d6580eae513038adc26f6f2b92174d873c483807cd8af41",
+      "review": "inventory",
+      "lines": 46
+    },
+    {
+      "path": "docs/ARCHITECTURE_AND_MIGRATION.md",
+      "bytes": 18567,
+      "sha256": "5b52d86df0dfd99d7b2c901559d44b87ae9a361e8f8ef837c33644997e932940",
+      "review": "inventory",
+      "lines": 140
+    },
+    {
+      "path": "docs/BUILD_WINDOWS.md",
+      "bytes": 6183,
+      "sha256": "4e6b811ee93934e640f04611d43beac56e85554f455561f4627687487a1a254e",
+      "review": "inventory",
+      "lines": 41
+    },
+    {
+      "path": "docs/CHANGELOG.md",
+      "bytes": 26142,
+      "sha256": "fb977f4a53e48d5acd1ecb06d91b566a30bdff7fd21f0d384e21fc8b3fd7d592",
+      "review": "inventory",
+      "lines": 190
+    },
+    {
+      "path": "docs/CIS.md",
+      "bytes": 3457,
+      "sha256": "8f9bbc41bb08dc841c1e69886d70da3365968a2d679b14284d0fe098925c4d7f",
+      "review": "inventory",
+      "lines": 23
+    },
+    {
+      "path": "docs/CONTINUATION_AUDIT.md",
+      "bytes": 6047,
+      "sha256": "c2cb4ac815eaede4c7fddeb76fe4b9dbd6eb5fbb661055683e1c78eb417b8935",
+      "review": "inventory",
+      "lines": 35
+    },
+    {
+      "path": "docs/CONTINUATION_HANDOFF_2026-10-07.md",
+      "bytes": 8162,
+      "sha256": "82074b1a35edf85d35f26749ad75ad67fef0001f91f910f2fa2e76658c4021c2",
+      "review": "inventory",
+      "lines": 101
+    },
+    {
+      "path": "docs/DESIGN_REFERENCES.md",
+      "bytes": 4684,
+      "sha256": "b3e83c6f7711caa86fe7fcb8ea0fb9e6c90f9bb23e4a1b6655be40c62d926206",
+      "review": "inventory",
+      "lines": 48
+    },
+    {
+      "path": "docs/DETECTION_FIXTURES_CORE.md",
+      "bytes": 6567,
+      "sha256": "ded04cd7cc21f7d8149d2002ff5ce526bfe73d3a1f90bbfc886401e8a38841ca",
+      "review": "inventory",
+      "lines": 115
+    },
+    {
+      "path": "docs/DETECTION_FIXTURES_MONITORS.md",
+      "bytes": 5543,
+      "sha256": "51eea2188025b4700b2fee6c8946ff45cc130036bd782e88804ce26a0c85f243",
+      "review": "inventory",
+      "lines": 110
+    },
+    {
+      "path": "docs/DETECTION_FIXTURES_SYSTEM_NETWORK.md",
+      "bytes": 4204,
+      "sha256": "3a097806d9ce027f303b2ea95edd91910f8bd81d0a29e0ad783e6c077331c0f6",
+      "review": "inventory",
+      "lines": 73
+    },
+    {
+      "path": "docs/FEATURE_PARITY.md",
+      "bytes": 6950,
+      "sha256": "f69f0583f73087b22c83bf4973f72912d239f4f2f095b052ba6f9f8e2d2fd3a4",
+      "review": "inventory",
+      "lines": 75
+    },
+    {
+      "path": "docs/FILE_INSPECTOR.md",
+      "bytes": 1503,
+      "sha256": "78d79f09bb5c1678daea667e6310c14eab98c0aa8b4022ba29e79a4601d01995",
+      "review": "inventory",
+      "lines": 13
+    },
+    {
+      "path": "docs/SECURITY_MODEL.md",
+      "bytes": 10012,
+      "sha256": "53801309cab2fdde374bb32d73beed8cad316b547ff346d404967d84acf50efb",
+      "review": "inventory",
+      "lines": 49
+    },
+    {
+      "path": "docs/SETTINGS.md",
+      "bytes": 2239,
+      "sha256": "5946331ab42a05d73f9de253c4675c6936d7d8d4c07b7822267f968d06d94189",
+      "review": "inventory",
+      "lines": 17
+    },
+    {
+      "path": "docs/THREAT_INTELLIGENCE.md",
+      "bytes": 8488,
+      "sha256": "6172597191c601494c76ea4a9508719ffb1ed79a2419b47a241e49b706844eec",
+      "review": "inventory",
+      "lines": 57
+    },
+    {
+      "path": "docs/UI_POLISH.md",
+      "bytes": 6422,
+      "sha256": "f8072bb986adbd9541d07bdc494f645773e536ecc2efc9db031713d948e65df4",
+      "review": "inventory",
+      "lines": 33
+    },
+    {
+      "path": "docs/UPDATES.md",
+      "bytes": 4680,
+      "sha256": "65aa0ea6d41f91e185709d7542d13f2acea9360a5398bde59d519b83313b14ca",
+      "review": "inventory",
+      "lines": 26
+    },
+    {
+      "path": "docs/V29_DETECTION_THRESHOLDS.md",
+      "bytes": 54570,
+      "sha256": "c46a6f643a3c22e1b725f80b865676eab1bbe9d6647c8bd90bf78e8ca69f3c4a",
+      "review": "inventory",
+      "lines": 990
+    },
+    {
+      "path": "docs/V29_PARITY_AUDIT.md",
+      "bytes": 18792,
+      "sha256": "5437f72993ea9c71408807be5b52ca37907e5e05adec25ce938093c4e9c53d2d",
+      "review": "inventory",
+      "lines": 165
+    },
+    {
+      "path": "docs/WINDOWS_EVENTS.md",
+      "bytes": 4065,
+      "sha256": "3cc1f86dd9fed728a7495d484721b7efd5fc34d147f196cf166d368b694de65e",
+      "review": "inventory",
+      "lines": 27
+    },
+    {
+      "path": "docs/YARA_EVALUATION.md",
+      "bytes": 4881,
+      "sha256": "d17586c8d74d808315ce5f539878370b167c6ceb367c6709fdde18f98527fedc",
+      "review": "inventory",
+      "lines": 55
+    },
+    {
+      "path": "global.json",
+      "bytes": 81,
+      "sha256": "f81cf69b41cdc548a0319a7c94065f0ab3554598ddd294969a393df2ccba157f",
+      "review": "inventory",
+      "lines": 6
+    },
+    {
+      "path": "parity-checklist.json",
+      "bytes": 31823,
+      "sha256": "eb2ceaa7bb4b303bf98802791693e51b3c06cdcfd7275ca5c55f2579b717977f",
+      "review": "inventory",
+      "lines": 859
+    },
+    {
+      "path": "source-modules.json",
+      "bytes": 36706,
+      "sha256": "ce9eadd55d953a17a15de0f8562b335651655d19976b13ccc5a3f80a4711cb10",
+      "review": "inventory",
+      "lines": 905
+    },
+    {
+      "path": "src/Downpour.Contracts/ActionBroker.cs",
+      "bytes": 4846,
+      "sha256": "91929589b8035b680ee94b432297a09e0783058553fcdb34e6f5f9b0c0d856a8",
+      "review": "inventory",
+      "lines": 127
+    },
+    {
+      "path": "src/Downpour.Contracts/AlertIndicators.cs",
+      "bytes": 1620,
+      "sha256": "5f90d87f867c56c4804fe03df0be92c341cf5d5c37f52716c7d57b6c45c711d6",
+      "review": "inventory",
+      "lines": 35
+    },
+    {
+      "path": "src/Downpour.Contracts/AntiStalker.cs",
+      "bytes": 3097,
+      "sha256": "6c8ed8289ee9ad77076c9a1d97461bedfc8b9adc6bc6129a7e29dbadbd528086",
+      "review": "inventory",
+      "lines": 60
+    },
+    {
+      "path": "src/Downpour.Contracts/AudioShield.cs",
+      "bytes": 3435,
+      "sha256": "e82bb2a5ebe81463acc572a7dd5b3c49ea1fb7009c05d4cbfbbc26eb8c26b435",
+      "review": "inventory",
+      "lines": 96
+    },
+    {
+      "path": "src/Downpour.Contracts/CapabilityDefinition.cs",
+      "bytes": 216,
+      "sha256": "455b89b0e1774fa29b29bcb8f786b3eba916aa3341bf9ca01124b1c059e80bd5",
+      "review": "inventory",
+      "lines": 10
+    },
+    {
+      "path": "src/Downpour.Contracts/CleanupInventory.cs",
+      "bytes": 547,
+      "sha256": "002c1ee2f8b7dbf2ff573d6a5f187c0b4bc104c7818fe8d2b3c711a6906772cf",
+      "review": "inventory",
+      "lines": 20
+    },
+    {
+      "path": "src/Downpour.Contracts/CognitiveImmuneSystem.cs",
+      "bytes": 1368,
+      "sha256": "d337f7b7681862510c8e7a19b18f4b2c9ab0e30f0ffc7a05b39cb6e073d019c4",
+      "review": "inventory",
+      "lines": 22
+    },
+    {
+      "path": "src/Downpour.Contracts/DefenseSuite.cs",
+      "bytes": 1078,
+      "sha256": "f3f2f6aedd8a799df60d49936f50986aa06c437931b4e5d8c2129d8ebc3d0407",
+      "review": "inventory",
+      "lines": 37
+    },
+    {
+      "path": "src/Downpour.Contracts/DnsInventory.cs",
+      "bytes": 863,
+      "sha256": "f1ccc5759c793a02069983da8dcc9b9953623a0a8dd91863f121d0d0b64ba28b",
+      "review": "inventory",
+      "lines": 36
+    },
+    {
+      "path": "src/Downpour.Contracts/Downpour.Contracts.csproj",
+      "bytes": 219,
+      "sha256": "61e3f2d043e37f0db4be1d8083dd31bebbfbb8fde2cf027327db2556c16bc385",
+      "review": "inventory",
+      "lines": 9
+    },
+    {
+      "path": "src/Downpour.Contracts/DriverBroker.cs",
+      "bytes": 4215,
+      "sha256": "2ad68864faf63e9628cc2f386f1cf6a7b63ebaebb3146b8805aef31755a21b8f",
+      "review": "inventory",
+      "lines": 130
+    },
+    {
+      "path": "src/Downpour.Contracts/EmergencyResponse.cs",
+      "bytes": 2689,
+      "sha256": "a941979e8fb0497c89c6be637a64fb04372d3e500e8cc513e980f86eb378aac7",
+      "review": "inventory",
+      "lines": 108
+    },
+    {
+      "path": "src/Downpour.Contracts/FirewallActionContracts.cs",
+      "bytes": 1884,
+      "sha256": "e92d05528717a4d6b6755d921e6a325b23894a6863fdd9b8c3aa61416060ea3a",
+      "review": "inventory",
+      "lines": 59
+    },
+    {
+      "path": "src/Downpour.Contracts/FirewallInventory.cs",
+      "bytes": 1667,
+      "sha256": "5902f690b1e562a8e9cff7ae259f53f5fae45e09f68b1c15aec9d7bd89f36485",
+      "review": "inventory",
+      "lines": 51
+    },
+    {
+      "path": "src/Downpour.Contracts/ForensicBundle.cs",
+      "bytes": 1879,
+      "sha256": "4ef70baf8cb4794aee0bf2762e8e76d9e634e4aecef6f652a608a37d893a7eae",
+      "review": "inventory",
+      "lines": 37
+    },
+    {
+      "path": "src/Downpour.Contracts/HardeningPosture.cs",
+      "bytes": 798,
+      "sha256": "6cbb13a2e2655ccd57da6fd515cf5d743b72649ffc86aaa424df0f73e291f678",
+      "review": "inventory",
+      "lines": 26
+    },
+    {
+      "path": "src/Downpour.Contracts/HostIsolationContracts.cs",
+      "bytes": 1725,
+      "sha256": "167d131cacef73798c53a5d898442bf2f904ed5d70cee3a52960b9c92167413c",
+      "review": "inventory",
+      "lines": 58
+    },
+    {
+      "path": "src/Downpour.Contracts/IntelLookup.cs",
+      "bytes": 1910,
+      "sha256": "f5eef9f28083cc92bd649dc7a23de38fb5c0fce0ba396d947e66f09ed6ebaabf",
+      "review": "inventory",
+      "lines": 52
+    },
+    {
+      "path": "src/Downpour.Contracts/IoTInspection.cs",
+      "bytes": 1053,
+      "sha256": "291170134d21dfb04056c5e0d03be2ab538923682384a12484138a9c64db76a0",
+      "review": "inventory",
+      "lines": 38
+    },
+    {
+      "path": "src/Downpour.Contracts/MemoryForensics.cs",
+      "bytes": 663,
+      "sha256": "b870bb33129efa3ab47b93db406859e69a7347da0464fdc9384e1e2afadec54a",
+      "review": "inventory",
+      "lines": 23
+    },
+    {
+      "path": "src/Downpour.Contracts/ParentalControls.cs",
+      "bytes": 2473,
+      "sha256": "08bb0bc09c546f47f7a8a0db11cc5ceee079021c82d1a49b7a2b59255fb973b5",
+      "review": "inventory",
+      "lines": 85
+    },
+    {
+      "path": "src/Downpour.Contracts/PersistenceInventory.cs",
+      "bytes": 2042,
+      "sha256": "74e308629ecb600a5e1a43de9af6c53d8ce3fd78da8d992ab8fb054590f60511",
+      "review": "inventory",
+      "lines": 51
+    },
+    {
+      "path": "src/Downpour.Contracts/ProcessTerminationContracts.cs",
+      "bytes": 1812,
+      "sha256": "ba8e2e13f8845e11c4f88a5a4496316e4d869e3f8c44b7228e6bdc5e7057d308",
+      "review": "inventory",
+      "lines": 58
+    },
+    {
+      "path": "src/Downpour.Contracts/QuarantineContracts.cs",
+      "bytes": 1856,
+      "sha256": "758dfadd22292d4d7ee3053091f0f7eb8434a86c218dda58fcc4e4deddde76bc",
+      "review": "inventory",
+      "lines": 56
+    },
+    {
+      "path": "src/Downpour.Contracts/RansomwareDefense.cs",
+      "bytes": 1147,
+      "sha256": "fc05582a4ba6be0bfd1bbc0e036d28201236e0170a09637a155977ad90923a14",
+      "review": "inventory",
+      "lines": 40
+    },
+    {
+      "path": "src/Downpour.Contracts/RemoteAccessInventory.cs",
+      "bytes": 1072,
+      "sha256": "6e4e8f7cf4a2ba9d4244e0922c36f529fe196125e625ab7c7238603f439d5a3f",
+      "review": "inventory",
+      "lines": 33
+    },
+    {
+      "path": "src/Downpour.Contracts/SandboxInspection.cs",
+      "bytes": 962,
+      "sha256": "af0915baab99febdae386bcdbca4c24761ff6a87985cf95ab5910c316aec6cfe",
+      "review": "inventory",
+      "lines": 36
+    },
+    {
+      "path": "src/Downpour.Contracts/SecurityFindings.cs",
+      "bytes": 2426,
+      "sha256": "bddd43a5ab47b9ef14e4d7311a16ff074b532b8877aae107fe3d139175e1c8fe",
+      "review": "inventory",
+      "lines": 39
+    },
+    {
+      "path": "src/Downpour.Contracts/SensorSettings.cs",
+      "bytes": 2253,
+      "sha256": "de939b37fd4e0690fc18a54eabd8964b7c402dd526456a98c483531d348667a8",
+      "review": "inventory",
+      "lines": 36
+    },
+    {
+      "path": "src/Downpour.Contracts/ServiceHealthSnapshot.cs",
+      "bytes": 13847,
+      "sha256": "6aaf0ee60ff0de1dba7601d5337ec2972cce462300b873c8e662aba0b3d31466",
+      "review": "inventory",
+      "lines": 272
+    },
+    {
+      "path": "src/Downpour.Contracts/ThreatDatabases.cs",
+      "bytes": 4778,
+      "sha256": "0e72e285704e811ecf8edd4e3759d789ece3f512a5af51b8122d875a3d08c5cd",
+      "review": "inventory",
+      "lines": 133
+    },
+    {
+      "path": "src/Downpour.Contracts/ToolsHub.cs",
+      "bytes": 936,
+      "sha256": "9e5b6a2960037c6191ff25fb8b4f284d54fceb7626e6a48393974d020881d18a",
+      "review": "inventory",
+      "lines": 35
+    },
+    {
+      "path": "src/Downpour.Contracts/UsbActionContracts.cs",
+      "bytes": 1847,
+      "sha256": "8e6da80b00707961fdc8db99dd88303ddf73b0821f319aabbdc7d6d71cb806ec",
+      "review": "inventory",
+      "lines": 59
+    },
+    {
+      "path": "src/Downpour.Contracts/UsbInventory.cs",
+      "bytes": 1030,
+      "sha256": "369871dca4df0999f01257581106425f424fc83154abe28df4dc41e400ab52ed",
+      "review": "inventory",
+      "lines": 39
+    },
+    {
+      "path": "src/Downpour.Contracts/VpnPosture.cs",
+      "bytes": 1715,
+      "sha256": "d66addb6593e193002ab47775e8f569e1efd892ce7272e494440eeb72744aae3",
+      "review": "inventory",
+      "lines": 59
+    },
+    {
+      "path": "src/Downpour.Contracts/WirelessInventory.cs",
+      "bytes": 900,
+      "sha256": "cfb4310f6b30846745abd61b4b3c0870ae450d9b3bd86e33ec193e0253bee61b",
+      "review": "inventory",
+      "lines": 35
+    },
+    {
+      "path": "src/Downpour.Contracts/YaraScanContracts.cs",
+      "bytes": 2728,
+      "sha256": "77d8d2ed15616435cadd0256ddb137e6790bb34683032d88b4136a3faf2f8052",
+      "review": "inventory",
+      "lines": 62
+    },
+    {
+      "path": "src/Downpour.Core/ActionCatalog.cs",
+      "bytes": 11786,
+      "sha256": "ba23b95f73b6e62542bde270bb59026e31df0aa2f8b429fe7d57dd8d0a3a412b",
+      "review": "inventory",
+      "lines": 238
+    },
+    {
+      "path": "src/Downpour.Core/ActionPolicyValidator.cs",
+      "bytes": 14515,
+      "sha256": "870e9f24e6ba5835171e8bcf4a353bdd3885ad695517e89488937b08c4cfd0ea",
+      "review": "inventory",
+      "lines": 271
+    },
+    {
+      "path": "src/Downpour.Core/AegisPhishingAnalyzer.cs",
+      "bytes": 9746,
+      "sha256": "8a4770732ff4d11d46382af59427843b7cdad2d00e3777517c96578eb5afb153",
+      "review": "inventory",
+      "lines": 211
+    },
+    {
+      "path": "src/Downpour.Core/AlertCorrelationEngine.cs",
+      "bytes": 5004,
+      "sha256": "5ec4990528c39655b05e811a47037109df16a3b88dd95d0e1890eba65f3caf6c",
+      "review": "inventory",
+      "lines": 91
+    },
+    {
+      "path": "src/Downpour.Core/AlertInvestigationExport.cs",
+      "bytes": 2886,
+      "sha256": "73ab862a403b7c0ea4b77836bb8e2e5da8279a2a54b8eb9887944802a105c46a",
+      "review": "inventory",
+      "lines": 79
+    },
+    {
+      "path": "src/Downpour.Core/AlertNotificationPolicy.cs",
+      "bytes": 3059,
+      "sha256": "b837c8f516f64ebc3f4d5b2403ee37cbaa73f882409271a932d23ce70dce342f",
+      "review": "inventory",
+      "lines": 68
+    },
+    {
+      "path": "src/Downpour.Core/AntiStalkerAnalyzer.cs",
+      "bytes": 15091,
+      "sha256": "68b71fe561901da9818ab6af65a1994d168219330a304ec10c67983a5a8f5b08",
+      "review": "inventory",
+      "lines": 221
+    },
+    {
+      "path": "src/Downpour.Core/AntiStalkerClient.cs",
+      "bytes": 2578,
+      "sha256": "c6ff240607342c315f257212d8f644782fb92b75d0976436d07b137a7d72a79d",
+      "review": "inventory",
+      "lines": 42
+    },
+    {
+      "path": "src/Downpour.Core/AudioClient.cs",
+      "bytes": 3781,
+      "sha256": "c450455bef4972387ec94b244d33429749afca791a1c6dc0da8412190cde2bdf",
+      "review": "inventory",
+      "lines": 57
+    },
+    {
+      "path": "src/Downpour.Core/AudioThreatAnalyzer.cs",
+      "bytes": 19067,
+      "sha256": "7890d91d5b707625a5cffa6b0d9214ea13b7001aa1d99c36630fc3d3c399ea32",
+      "review": "inventory",
+      "lines": 260
+    },
+    {
+      "path": "src/Downpour.Core/AuditChain.cs",
+      "bytes": 7123,
+      "sha256": "5e4dd41cee05f5b4aedbf76149bec02d1785ef992a4dd3f0e968b5f27003c42b",
+      "review": "inventory",
+      "lines": 127
+    },
+    {
+      "path": "src/Downpour.Core/BoundedJson.cs",
+      "bytes": 6099,
+      "sha256": "99569e8cc6b3b4e21b7f3368b749d642314284e1e4216f9469a907aae16cf71b",
+      "review": "inventory",
+      "lines": 130
+    },
+    {
+      "path": "src/Downpour.Core/CapabilityRegistry.cs",
+      "bytes": 3129,
+      "sha256": "6c88bae02070a899c4653c9850ea9ff10bbfe7cd518f72ee819e15a8cf53d79c",
+      "review": "inventory",
+      "lines": 78
+    },
+    {
+      "path": "src/Downpour.Core/CaseFileBuilder.cs",
+      "bytes": 10955,
+      "sha256": "c6ae33f5f1300162f63bf781264523fae1add7d4f3fb9589a0046662e70ba583",
+      "review": "inventory",
+      "lines": 173
+    },
+    {
+      "path": "src/Downpour.Core/CleanupInspector.cs",
+      "bytes": 14611,
+      "sha256": "090d3a25cbd43ff0d7c883b39708879479575a93ef332e384362a7a2c43da3b9",
+      "review": "inventory",
+      "lines": 382,
+      "reviewSignals": {
+        "native_api": [
+          23
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Core/CognitiveImmuneSystemCoordinator.cs",
+      "bytes": 6181,
+      "sha256": "dd40d5832b3b96f327c628ebd2e2ae2b28bfd38b6fcabaa273adf5b82c56784a",
+      "review": "inventory",
+      "lines": 80
+    },
+    {
+      "path": "src/Downpour.Core/DefenseSuiteCoordinator.cs",
+      "bytes": 22915,
+      "sha256": "d3e8e73a566a452f557000a138914013642b2ce1c56f22ef9ae9c2727f882718",
+      "review": "inventory",
+      "lines": 511,
+      "reviewSignals": {
+        "simulation": [
+          30,
+          33
+        ],
+        "catch_all": [
+          209
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Core/DgaDetector.cs",
+      "bytes": 7241,
+      "sha256": "1d292d4e499bcb979f9013b6d8909358d5012e70d83c5e891b63a0a0bf7bc255",
+      "review": "inventory",
+      "lines": 225
+    },
+    {
+      "path": "src/Downpour.Core/DnsInventoryClient.cs",
+      "bytes": 2361,
+      "sha256": "cd717092b79ae29820fbf7197ff3f33b673986b739cfe62f95a5702d00fb5a19",
+      "review": "inventory",
+      "lines": 51
+    },
+    {
+      "path": "src/Downpour.Core/Downpour.Core.csproj",
+      "bytes": 405,
+      "sha256": "804ee360ef4156613022322c023fb92c45c47588fea79916f135ed216c293b4d",
+      "review": "inventory",
+      "lines": 14
+    },
+    {
+      "path": "src/Downpour.Core/DriverActionCatalog.cs",
+      "bytes": 6124,
+      "sha256": "5603dc2de929f3f9ce3a43ac2cbfd5e3457c71b2a6c12bee8d76981c29f82f63",
+      "review": "inventory",
+      "lines": 133
+    },
+    {
+      "path": "src/Downpour.Core/DriverActionPolicyValidator.cs",
+      "bytes": 10050,
+      "sha256": "4b947d4241c4b4b1b079f9cdcfd7aa203416e9137bce19c35b7cc1b95a2bdefd",
+      "review": "inventory",
+      "lines": 216
+    },
+    {
+      "path": "src/Downpour.Core/DriverInventoryClient.cs",
+      "bytes": 2035,
+      "sha256": "f152faa80e1db9596b56618f7edf43f2a29ea2a8147d5b012bfa459d8c2cd3d8",
+      "review": "inventory",
+      "lines": 55
+    },
+    {
+      "path": "src/Downpour.Core/DriverPackageInventoryClient.cs",
+      "bytes": 3174,
+      "sha256": "7cf39c41725ccc5a659a3d51f91f1101e731c7fcb1ae9d06c0d9621ed57043e0",
+      "review": "inventory",
+      "lines": 64
+    },
+    {
+      "path": "src/Downpour.Core/EmailSecurityAnalyzer.cs",
+      "bytes": 6476,
+      "sha256": "8b514712c109d967e7c04ad219cc4e3507236d63f0bcdab9bd2597bbf81fd81d",
+      "review": "inventory",
+      "lines": 179,
+      "reviewSignals": {
+        "native_api": [
+          12,
+          21
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Core/EmergencyResponseCoordinator.cs",
+      "bytes": 23962,
+      "sha256": "83a61cedac71ceac13c4c474850ee885a2a085e3e683cbdfc1ca59e595d1e43c",
+      "review": "inventory",
+      "lines": 551,
+      "reviewSignals": {
+        "simulation": [
+          55,
+          56,
+          62,
+          63,
+          95,
+          141,
+          146,
+          147,
+          201,
+          219
+        ],
+        "native_api": [
+          33
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Core/EpssClient.cs",
+      "bytes": 7056,
+      "sha256": "fe8f68a60842fc3925d45bfb4b0a771d6ccde636f2e222d7eee699c1640cd20f",
+      "review": "inventory",
+      "lines": 128
+    },
+    {
+      "path": "src/Downpour.Core/FeatureSwitchManager.cs",
+      "bytes": 5898,
+      "sha256": "b75cafed384defeb6e78a4f86e17ac0826904655796d3f9cc0fd1e2592762657",
+      "review": "inventory",
+      "lines": 164
+    },
+    {
+      "path": "src/Downpour.Core/FirewallActionClient.cs",
+      "bytes": 5280,
+      "sha256": "30a482da63db3ea9770086962b8ad0c66aa9dd1aed2dd08aff58896724b04631",
+      "review": "inventory",
+      "lines": 133
+    },
+    {
+      "path": "src/Downpour.Core/FirewallInventoryClient.cs",
+      "bytes": 3197,
+      "sha256": "757169d77de2e8dda677ca071cc15e341cb12bb691e366184a5104d45ca6a0ff",
+      "review": "inventory",
+      "lines": 58
+    },
+    {
+      "path": "src/Downpour.Core/FirewallRuleAnalyzer.cs",
+      "bytes": 8931,
+      "sha256": "984f8d06a30224ab7ca4538aa184a87653ab5601c520fef636f05a5968cafc92",
+      "review": "inventory",
+      "lines": 154
+    },
+    {
+      "path": "src/Downpour.Core/ForensicEvidenceCollector.cs",
+      "bytes": 33189,
+      "sha256": "afc88d6336d52e8e3492e074a44a4f6785a1eb9785f4b107a8c184f01ac3d6da",
+      "review": "inventory",
+      "lines": 698,
+      "reviewSignals": {
+        "catch_all": [
+          54,
+          64,
+          74,
+          84,
+          94,
+          104
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Core/HardeningPostureClient.cs",
+      "bytes": 2396,
+      "sha256": "54c9c340a48d87f8ac83dd216ea5552d6e5d216b322156ba52c7c0db2d3b34fe",
+      "review": "inventory",
+      "lines": 51
+    },
+    {
+      "path": "src/Downpour.Core/HardeningPostureEvaluator.cs",
+      "bytes": 10793,
+      "sha256": "2dea0f45573eebc8c494ff5ae2d5f94325b4c430165a217b07fb0b2ae924c798",
+      "review": "inventory",
+      "lines": 166
+    },
+    {
+      "path": "src/Downpour.Core/HostIsolationClient.cs",
+      "bytes": 4941,
+      "sha256": "d05f0d0ff097d7b313a0f736e6aad200d8540a909333810cd43ea2241fb88fae",
+      "review": "inventory",
+      "lines": 140
+    },
+    {
+      "path": "src/Downpour.Core/InstalledSoftwareInventoryClient.cs",
+      "bytes": 2381,
+      "sha256": "7d6a6d9ade1211061dafc52e86a7e3688c3ba9cf6eae3210ea00020139593cd5",
+      "review": "inventory",
+      "lines": 41
+    },
+    {
+      "path": "src/Downpour.Core/IntelClient.cs",
+      "bytes": 2202,
+      "sha256": "1551d883d38e9d26d7f26a682c87a43cad075a2fd5bcddc578ba1756f1d60a58",
+      "review": "inventory",
+      "lines": 43
+    },
+    {
+      "path": "src/Downpour.Core/IntelIndicatorExtractor.cs",
+      "bytes": 3899,
+      "sha256": "bbe86a5f27d3c9c41698805a52e2a7afbc4ffa6d3f12c25feb1723ce59b1acc3",
+      "review": "inventory",
+      "lines": 72
+    },
+    {
+      "path": "src/Downpour.Core/IntelProviders.cs",
+      "bytes": 8287,
+      "sha256": "345efb015afb52d74e4da78ece87e3944972f806fc969055b5a5624724858fc3",
+      "review": "inventory",
+      "lines": 149
+    },
+    {
+      "path": "src/Downpour.Core/IoTDeviceScanner.cs",
+      "bytes": 17289,
+      "sha256": "34761c40c409034df6ed681d3c4dadbdc234861368bcb785e04219a45f3966c0",
+      "review": "inventory",
+      "lines": 466,
+      "reviewSignals": {
+        "native_api": [
+          453
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Core/IpOriginDatabase.cs",
+      "bytes": 7238,
+      "sha256": "a6dda9188265b937fa0da7bee28b1f377e9e794977a516bcf6bec22aa91dcce0",
+      "review": "inventory",
+      "lines": 146
+    },
+    {
+      "path": "src/Downpour.Core/KevCatalogCache.cs",
+      "bytes": 5011,
+      "sha256": "7b3b55f19549b4173e6bbf77ffaee912b7a8dc46b35992886a9977f15f0bf785",
+      "review": "inventory",
+      "lines": 95
+    },
+    {
+      "path": "src/Downpour.Core/KevCatalogClient.cs",
+      "bytes": 9385,
+      "sha256": "19697e1732827ab1e0f263a076d7b7d8fbd08c9575be05568bd101bfa4d7a550",
+      "review": "inventory",
+      "lines": 160
+    },
+    {
+      "path": "src/Downpour.Core/KevSoftwareMatchEngine.cs",
+      "bytes": 4490,
+      "sha256": "aaa1662cc50c58833ab6a0d5acb41dcd747a71f091c4f097c9aa527a43bf0f5f",
+      "review": "inventory",
+      "lines": 100
+    },
+    {
+      "path": "src/Downpour.Core/MemoryForensicsInspector.cs",
+      "bytes": 11993,
+      "sha256": "d9787810f42ad18fb6e286a5861b94dcc74d4890deda6578caeb96ccdf527621",
+      "review": "inventory",
+      "lines": 302,
+      "reviewSignals": {
+        "simulation": [
+          31,
+          34
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Core/NetworkInventoryClient.cs",
+      "bytes": 2651,
+      "sha256": "1fd4228559be1021cdd9822c5208b024225469e71829cede2d003c2853b47091",
+      "review": "inventory",
+      "lines": 60
+    },
+    {
+      "path": "src/Downpour.Core/NvdClient.cs",
+      "bytes": 15417,
+      "sha256": "cfdb83a506df51ee3087c6b8ec83c33b06c8a2f985f31efa59bd715deb36becc",
+      "review": "inventory",
+      "lines": 332
+    },
+    {
+      "path": "src/Downpour.Core/PackageIntegrityInspector.cs",
+      "bytes": 10096,
+      "sha256": "7f820a33da7bb4963dec75c050881fcdf6a0e60b6f781b79eb7f7ff30237a147",
+      "review": "inventory",
+      "lines": 161
+    },
+    {
+      "path": "src/Downpour.Core/ParentalControlsManager.cs",
+      "bytes": 24059,
+      "sha256": "03b1b2f773954f90163ff8ed31e1f35cab6e36c7dc971e0b3f39821a6fd6566e",
+      "review": "inventory",
+      "lines": 549,
+      "reviewSignals": {
+        "simulation": [
+          313,
+          323,
+          325,
+          377,
+          385
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Core/PersistenceAnalyzer.cs",
+      "bytes": 17917,
+      "sha256": "e9eacf743b9cc21f899690b80ba03a73fe5678a38ed365367ce65e73876edf10",
+      "review": "inventory",
+      "lines": 301
+    },
+    {
+      "path": "src/Downpour.Core/PersistenceInventoryClient.cs",
+      "bytes": 2625,
+      "sha256": "936aead042d8d2644606fb4761d3b7357af41a9245cc05cad151976f11024e29",
+      "review": "inventory",
+      "lines": 52
+    },
+    {
+      "path": "src/Downpour.Core/ProcessTerminationClient.cs",
+      "bytes": 3608,
+      "sha256": "0d67f7b230b362a38dcd941db9c85a80020c089cb5bbc1a06d89b6998d9c7c2a",
+      "review": "inventory",
+      "lines": 88
+    },
+    {
+      "path": "src/Downpour.Core/Properties/AssemblyInfo.cs",
+      "bytes": 89,
+      "sha256": "c37c48dd1aa4a2a0bb589c43a7a52d04191f32ab03e14a90d453f80d9c3dc3ae",
+      "review": "inventory",
+      "lines": 3
+    },
+    {
+      "path": "src/Downpour.Core/QuarantineClient.cs",
+      "bytes": 3994,
+      "sha256": "051203bf263c24b9124a2e5a1451da5fb28ef999c5827e8931e145431ae8092e",
+      "review": "inventory",
+      "lines": 63
+    },
+    {
+      "path": "src/Downpour.Core/RansomwareDefenseInspector.cs",
+      "bytes": 23004,
+      "sha256": "c368435efcacd1c97e8e9d400a5de28572a762b00b6f27713bcf34de3a294b08",
+      "review": "inventory",
+      "lines": 525
+    },
+    {
+      "path": "src/Downpour.Core/ReleaseUpdateClient.cs",
+      "bytes": 18926,
+      "sha256": "b15672208aa7f09ea13a73c5011ed12a5aaca83867bf17363d8b739c2ead70eb",
+      "review": "inventory",
+      "lines": 317,
+      "reviewSignals": {
+        "catch_all": [
+          313
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Core/RemoteAccessAnalyzer.cs",
+      "bytes": 6924,
+      "sha256": "3d75f9fa8f70a09e0186b7bedf483a6a744c4659ff467579338dca29d9131b9d",
+      "review": "inventory",
+      "lines": 118
+    },
+    {
+      "path": "src/Downpour.Core/RemoteAccessClient.cs",
+      "bytes": 2643,
+      "sha256": "b91e4b1eefe7277b418abee9a67fd12e483c75d860c60bae0272bf541f47e48d",
+      "review": "inventory",
+      "lines": 52
+    },
+    {
+      "path": "src/Downpour.Core/SafeFileSandbox.cs",
+      "bytes": 18645,
+      "sha256": "3dfe9f20695619e4d1d8af11254d4c93eb475a84cb283c1443c0de25e48e7c10",
+      "review": "inventory",
+      "lines": 441
+    },
+    {
+      "path": "src/Downpour.Core/SecurityAlertClient.cs",
+      "bytes": 8988,
+      "sha256": "43e3c1f6f1e7f345773cc4eca8d0fcc4a5f44a07acc20441f544c4f70520ce44",
+      "review": "inventory",
+      "lines": 142
+    },
+    {
+      "path": "src/Downpour.Core/SecurityEventClient.cs",
+      "bytes": 4967,
+      "sha256": "2d7be22eaf566662ed6e3f8232abd1e9084328c7dad007a61758daaf37611e3f",
+      "review": "inventory",
+      "lines": 82
+    },
+    {
+      "path": "src/Downpour.Core/SecurityFindingMapper.cs",
+      "bytes": 4293,
+      "sha256": "018d4169b61bdd2edb9234bfcb97d526ebd1bc2f4599664cd125c8a5cf29a456",
+      "review": "inventory",
+      "lines": 62
+    },
+    {
+      "path": "src/Downpour.Core/SensorSettingsClient.cs",
+      "bytes": 3455,
+      "sha256": "f27034d3a8cd907f3e34c584b121a9457d97995ed6a7af7f73bd45aa8f6b88e0",
+      "review": "inventory",
+      "lines": 61
+    },
+    {
+      "path": "src/Downpour.Core/ServiceInstallAnalyzer.cs",
+      "bytes": 5260,
+      "sha256": "d519fec52b7ad7af64a446f77a53a9b59cc3a95004388404b1330c9ebf6b0b06",
+      "review": "inventory",
+      "lines": 99
+    },
+    {
+      "path": "src/Downpour.Core/ServiceRiskAnalyzer.cs",
+      "bytes": 7038,
+      "sha256": "5a91bfc771af7551d95c090c427a4e372f7f0b6d5b0e43b3124a8f0df0858544",
+      "review": "inventory",
+      "lines": 133
+    },
+    {
+      "path": "src/Downpour.Core/StaticFileInspector.cs",
+      "bytes": 5699,
+      "sha256": "18a2c520114a4693ef3e1ce8e130328df4b58fcf97a2f7db7b2f96c3bc658fb0",
+      "review": "inventory",
+      "lines": 113
+    },
+    {
+      "path": "src/Downpour.Core/SystemSnapshotClient.cs",
+      "bytes": 3532,
+      "sha256": "3748b2914bc8c4c3b60e23c875ce3811bb31a86d39efac3311f1327c647cf177",
+      "review": "inventory",
+      "lines": 68
+    },
+    {
+      "path": "src/Downpour.Core/ThreatDatabaseClient.cs",
+      "bytes": 6929,
+      "sha256": "41f73bf6f06eecdf72f8a544575f3b94c52e5b4d4e8a154a924ea4e168e378ad",
+      "review": "inventory",
+      "lines": 99
+    },
+    {
+      "path": "src/Downpour.Core/ThreatFeedCatalog.cs",
+      "bytes": 9630,
+      "sha256": "978a127fd5c11b2f6fe6563c08d0860c4ab1fd1ff37d73c956835996eb212765",
+      "review": "inventory",
+      "lines": 112
+    },
+    {
+      "path": "src/Downpour.Core/ThreatFeedParser.cs",
+      "bytes": 22341,
+      "sha256": "9a4e99e02f934f1c7b4ed7b9c58c5908d7feadf0c69dafd75cd2ee910b0b482d",
+      "review": "inventory",
+      "lines": 397
+    },
+    {
+      "path": "src/Downpour.Core/ThreatIndex.cs",
+      "bytes": 12981,
+      "sha256": "b93eec0600e5c4b31e543ab557cf60ad1d70d3e4e8a024cddd7e79a66803810f",
+      "review": "inventory",
+      "lines": 244
+    },
+    {
+      "path": "src/Downpour.Core/ThreatPulse.cs",
+      "bytes": 6211,
+      "sha256": "733d1dfb2202cff39558ef56ab111136109a175ad60a80cbde3011f01b526843",
+      "review": "inventory",
+      "lines": 116
+    },
+    {
+      "path": "src/Downpour.Core/ThreatVerdictEngine.cs",
+      "bytes": 10360,
+      "sha256": "2bd45654aced2c1e84b236e25eec600afaccc4402de744a705db6d95754f368e",
+      "review": "inventory",
+      "lines": 188
+    },
+    {
+      "path": "src/Downpour.Core/TimelineAttackDetector.cs",
+      "bytes": 11814,
+      "sha256": "9483569266ecc7f2eab4e594c11208dcfdc9796bb603df0d500e2f54d797ce1e",
+      "review": "inventory",
+      "lines": 227
+    },
+    {
+      "path": "src/Downpour.Core/ToolsHubCoordinator.cs",
+      "bytes": 10523,
+      "sha256": "67b724bd23081888e3b5d0a66506acb3900676d478754847c56c486fb5c1d421",
+      "review": "inventory",
+      "lines": 250
+    },
+    {
+      "path": "src/Downpour.Core/UpdatePathPolicy.cs",
+      "bytes": 865,
+      "sha256": "575fa49be0282745e31c99dfe65c0efb3d60fba895a20544c9a946ab015d2389",
+      "review": "inventory",
+      "lines": 17
+    },
+    {
+      "path": "src/Downpour.Core/UsbActionClient.cs",
+      "bytes": 5656,
+      "sha256": "7986fc6d5ffceb80dd5e5e8eca7788df38e282b62d4ba1269901d1d280c64314",
+      "review": "inventory",
+      "lines": 164
+    },
+    {
+      "path": "src/Downpour.Core/UsbInventoryClient.cs",
+      "bytes": 2619,
+      "sha256": "f586c778614bf48a11420266ca14d79bb37fa2eea90fbe9d393acaf5fae7c2be",
+      "review": "inventory",
+      "lines": 51
+    },
+    {
+      "path": "src/Downpour.Core/UsbPostureEvaluator.cs",
+      "bytes": 2644,
+      "sha256": "dba5bba06a98f4c0c3b5e828ff6684afea64fd69ad06c329e69b98b09a54ca04",
+      "review": "inventory",
+      "lines": 84
+    },
+    {
+      "path": "src/Downpour.Core/VpnPostureInspector.cs",
+      "bytes": 15090,
+      "sha256": "d1a5dfdb86eb900d12d959ef39014a38c6dce8bed9ed8875b3608f20d0ec7e35",
+      "review": "inventory",
+      "lines": 389
+    },
+    {
+      "path": "src/Downpour.Core/VulnerabilityMatchEngine.cs",
+      "bytes": 17075,
+      "sha256": "3a8b7a652c73a4e6d2bce07a207f1d5fddd8c9681d76369a9f1f9d4391fe4c22",
+      "review": "inventory",
+      "lines": 424
+    },
+    {
+      "path": "src/Downpour.Core/WindowsServiceInventoryClient.cs",
+      "bytes": 3807,
+      "sha256": "eaa42cd2344f0509829cc981ee301988593c7e2ef0406111844de8bcaf7ddd68",
+      "review": "inventory",
+      "lines": 83
+    },
+    {
+      "path": "src/Downpour.Core/WirelessInventoryClient.cs",
+      "bytes": 2691,
+      "sha256": "a0542cacea187aaadb125dce334d9453a8b044335124e928d77da6bc6aa70f3e",
+      "review": "inventory",
+      "lines": 53
+    },
+    {
+      "path": "src/Downpour.Core/WirelessPostureEvaluator.cs",
+      "bytes": 7075,
+      "sha256": "f775b76f25cb008074709e688b27ab54576c7cf811d5148efa688d26d08ef64f",
+      "review": "inventory",
+      "lines": 167
+    },
+    {
+      "path": "src/Downpour.Core/YaraScanClient.cs",
+      "bytes": 3107,
+      "sha256": "b7af28ccb35812768e558de818041c7346eab76335ccae350cde59a015f54897",
+      "review": "inventory",
+      "lines": 56
+    },
+    {
+      "path": "src/Downpour.Desktop/.gitignore",
+      "bytes": 654,
+      "sha256": "c4f96b392ec6774e18b04d2ebae2a854b615f7788ebd93b3f2b3d68d37da937c",
+      "review": "inventory"
+    },
+    {
+      "path": "src/Downpour.Desktop/AlertNotifier.cs",
+      "bytes": 4083,
+      "sha256": "141748df3d3ae8e0e2bd49b130925db41374dba365176d5df134fd3a22b6fb2b",
+      "review": "inventory",
+      "lines": 115,
+      "reviewSignals": {
+        "native_api": [
+          112
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Desktop/App.xaml",
+      "bytes": 699,
+      "sha256": "2db40095031ddcb94afd457a087f044f0e556bc75bfcffaa6de5e7a456beaa9e",
+      "review": "inventory",
+      "lines": 16
+    },
+    {
+      "path": "src/Downpour.Desktop/App.xaml.cs",
+      "bytes": 6675,
+      "sha256": "f09fadc17441415c57dfe83f992686dab0ca1d2572d124db49eb66aa64fc42cb",
+      "review": "inventory",
+      "lines": 144
+    },
+    {
+      "path": "src/Downpour.Desktop/AppPreferences.cs",
+      "bytes": 5853,
+      "sha256": "9d555bbceed2c74d4caefe016c43eba1c3b5f9c9609f60593e0d3f107dc1682f",
+      "review": "inventory",
+      "lines": 131,
+      "reviewSignals": {
+        "ui_disk_io": [
+          118
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Desktop/Assets/AppIcon.ico",
+      "bytes": 370070,
+      "sha256": "b622196badeced33cc37b6fe166979395a1af41d6c421326be5f2671ce38260a",
+      "review": "inventory"
+    },
+    {
+      "path": "src/Downpour.Desktop/Assets/CrescentMoon.png",
+      "bytes": 1844585,
+      "sha256": "713bf8a60cb12bb8adf90ab383f5088b6fa8b9525abfc2fbf45c13301699feb3",
+      "review": "inventory"
+    },
+    {
+      "path": "src/Downpour.Desktop/Assets/LockScreenLogo.scale-200.png",
+      "bytes": 1090,
+      "sha256": "e984d6aa2d6f40aefc88b728f7e237eefabbdc5b0128df7b457d4c877f1233d7",
+      "review": "inventory"
+    },
+    {
+      "path": "src/Downpour.Desktop/Assets/SplashScreen.scale-200.png",
+      "bytes": 12625,
+      "sha256": "67728828f1a1b3d6c12c30e6812096e9ffca4a7eced2c787725907370d0024cd",
+      "review": "inventory"
+    },
+    {
+      "path": "src/Downpour.Desktop/Assets/Square150x150Logo.scale-200.png",
+      "bytes": 6357,
+      "sha256": "ad31b15fefd7d478fe9439a3086b32fd1eb7d51b8fe99e3be7607ca95d812bd1",
+      "review": "inventory"
+    },
+    {
+      "path": "src/Downpour.Desktop/Assets/Square44x44Logo.scale-200.png",
+      "bytes": 1910,
+      "sha256": "e6b32f937da4211811da9eaa51e14248adf5100e2b972ff5803fd4e10ae53272",
+      "review": "inventory"
+    },
+    {
+      "path": "src/Downpour.Desktop/Assets/Square44x44Logo.targetsize-24_altform-unplated.png",
+      "bytes": 574,
+      "sha256": "e7aa3d860ce3d95e7ec17f82c65295bace2a09b56f0b94290b635f65375cef87",
+      "review": "inventory"
+    },
+    {
+      "path": "src/Downpour.Desktop/Assets/Square44x44Logo.targetsize-48_altform-lightunplated.png",
+      "bytes": 1091,
+      "sha256": "c8afdea34791a9a64a53c44f49141c05cd73b91e9b8497fe88dbfb0219feb22c",
+      "review": "inventory"
+    },
+    {
+      "path": "src/Downpour.Desktop/Assets/StoreLogo.png",
+      "bytes": 1106,
+      "sha256": "4ded64b29f7f0d2cc865d32dd89febe2423f2de41851b37d18f7806467315f2f",
+      "review": "inventory"
+    },
+    {
+      "path": "src/Downpour.Desktop/Assets/StormBackdrop.png",
+      "bytes": 1529918,
+      "sha256": "fad4d32998d07530d729c7e31350808cc42d8b3c7b0fa02ade68683d926fc8e4",
+      "review": "inventory"
+    },
+    {
+      "path": "src/Downpour.Desktop/Assets/Wide310x150Logo.scale-200.png",
+      "bytes": 5843,
+      "sha256": "2b942434c18690cc43e8924036e5688eebbd39858fe1835357b2ee4078a2d45b",
+      "review": "inventory"
+    },
+    {
+      "path": "src/Downpour.Desktop/BlossomScene.cs",
+      "bytes": 43196,
+      "sha256": "e1435ed38906406ba163251ff668cf6b0bee374f80330a55d84fd76fe7df587b",
+      "review": "inventory",
+      "lines": 817,
+      "reviewSignals": {
+        "simulation": [
+          353
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Desktop/CaseFileExporter.cs",
+      "bytes": 6282,
+      "sha256": "6ba3f268e1676d0b762f821c1ebb84ee9230064f69a749274115012812058e8e",
+      "review": "inventory",
+      "lines": 121,
+      "reviewSignals": {
+        "ui_disk_io": [
+          95
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Desktop/ChartLineRenderer.cs",
+      "bytes": 8783,
+      "sha256": "9313c43e82bda32de927679627d65e80a8480597c74b0e220932f3f3099def95",
+      "review": "inventory",
+      "lines": 219
+    },
+    {
+      "path": "src/Downpour.Desktop/CircularGauge.cs",
+      "bytes": 8916,
+      "sha256": "70041b482f3fce7158c7f3218fcc67b6d8df2569574dbb523e85b5d38dc1594b",
+      "review": "inventory",
+      "lines": 174
+    },
+    {
+      "path": "src/Downpour.Desktop/CollectionReconciler.cs",
+      "bytes": 1304,
+      "sha256": "3eb533d39c99b15f542cd43f1102e3a7aab2642e6551fc47ef6fcdd8445e8e44",
+      "review": "inventory",
+      "lines": 37
+    },
+    {
+      "path": "src/Downpour.Desktop/Converters/BooleanToVisibilityConverter.cs",
+      "bytes": 686,
+      "sha256": "160df8bd7b8abae51840657f81b4f4d6cbf0346f9a46fdbbc0fdd49635b385a5",
+      "review": "inventory",
+      "lines": 25
+    },
+    {
+      "path": "src/Downpour.Desktop/Downpour.Desktop.csproj",
+      "bytes": 4862,
+      "sha256": "b9aa3f468c45bfe76e409b93734c885c1d114934cf293d4e961988d9f05f8be9",
+      "review": "inventory",
+      "lines": 93
+    },
+    {
+      "path": "src/Downpour.Desktop/LiveCollection.cs",
+      "bytes": 8792,
+      "sha256": "f3569ad5107d74527c33c2ca02974608ef89367fa6d27eb32e64c804679c01d5",
+      "review": "inventory",
+      "lines": 193
+    },
+    {
+      "path": "src/Downpour.Desktop/MainWindow.xaml",
+      "bytes": 2323,
+      "sha256": "371400570e443788e90999d060307715f283d9821ef79a820888bec68ffa4c6e",
+      "review": "inventory",
+      "lines": 36
+    },
+    {
+      "path": "src/Downpour.Desktop/MainWindow.xaml.cs",
+      "bytes": 30513,
+      "sha256": "266c3df66b4e05c0cf43d39c8f93ff2192cde75fb6122a00957000c352a44e30",
+      "review": "inventory",
+      "lines": 611,
+      "reviewSignals": {
+        "native_api": [
+          428
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Desktop/MinimizeWatcher.cs",
+      "bytes": 1984,
+      "sha256": "a60dd099d7584ae0966d0aec92fd90b69a61fc2112f8adc070590ba145e6e065",
+      "review": "inventory",
+      "lines": 49,
+      "reviewSignals": {
+        "native_api": [
+          39,
+          43,
+          47
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Desktop/ObservableRow.cs",
+      "bytes": 682,
+      "sha256": "d4c877b9007a4f1ce9fedc0a4c28eeda04bd7b6593b62604b63097fcb90b34c4",
+      "review": "inventory",
+      "lines": 20
+    },
+    {
+      "path": "src/Downpour.Desktop/Package.appxmanifest",
+      "bytes": 2203,
+      "sha256": "2b096262fa707691a6a0b7936678213504bf8ec79adb438094521160e1fd3138",
+      "review": "inventory"
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/AegisPage.xaml",
+      "bytes": 15027,
+      "sha256": "b5ecd1f9bd8c5dfdf4686956fd2e48669ba69259fbac3b8a13f59956a87488a9",
+      "review": "inventory",
+      "lines": 197
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/AegisPage.xaml.cs",
+      "bytes": 2728,
+      "sha256": "94e25d48c6d9e784d4d3a939e8cf337ea79f1df184dca31c74ed24a2f2066589",
+      "review": "inventory",
+      "lines": 78
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/AlertsPage.xaml",
+      "bytes": 11656,
+      "sha256": "3f7732fec20b68303d33ed8aefbcb387c1686b2d4321a0a1e1805fffe2699ee7",
+      "review": "inventory",
+      "lines": 110
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/AlertsPage.xaml.cs",
+      "bytes": 13805,
+      "sha256": "942481a5f2675ff8deb8ece4e36330a2dae7ce581c895bb92cd8a7febeabf583",
+      "review": "inventory",
+      "lines": 288
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/AntiStalkerPage.xaml",
+      "bytes": 5700,
+      "sha256": "a28927143fc71ff0c6951935f26e56f327a9b6e6f6ee1ca9a3691159838c11b1",
+      "review": "inventory",
+      "lines": 58
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/AntiStalkerPage.xaml.cs",
+      "bytes": 10780,
+      "sha256": "562e95902470ce35cf81eb71ab9070e23e6a1a2b51ec46f3f715d4ccbf877813",
+      "review": "inventory",
+      "lines": 196
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/AudioPage.xaml",
+      "bytes": 12117,
+      "sha256": "71aa9c28128b0de6206f390f34836b4d305e858ae2d898fa77057c046ecf33cb",
+      "review": "inventory",
+      "lines": 139
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/AudioPage.xaml.cs",
+      "bytes": 30471,
+      "sha256": "5f57cbda472b4e7994affe23c79b7655ab43763c4e40d077d58b38a829260fb3",
+      "review": "inventory",
+      "lines": 538,
+      "reviewSignals": {
+        "process_launch": [
+          402
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/CapabilityPage.xaml",
+      "bytes": 2979,
+      "sha256": "83c885909804be10b49b33df71c1088981a611e81f1a075cdf579183c795a6af",
+      "review": "inventory",
+      "lines": 36
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/CapabilityPage.xaml.cs",
+      "bytes": 1405,
+      "sha256": "96a57fb5abd328f52dc0b73ef1a31a4e45825b0143b9eef2225b2c74c19a00a0",
+      "review": "inventory",
+      "lines": 34
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/CleanupPage.xaml",
+      "bytes": 9973,
+      "sha256": "92fe8369ea3b0609d3bdee6b6b52ce9dda19d0ebcb91aa3ee11ce8592b6807b9",
+      "review": "inventory",
+      "lines": 123
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/CleanupPage.xaml.cs",
+      "bytes": 5019,
+      "sha256": "fe9e108c6e2e851b9d63cffe75bcf0170bf7ab0977f9277699c67caee461bce2",
+      "review": "inventory",
+      "lines": 142,
+      "reviewSignals": {
+        "ui_disk_io": [
+          94
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/CognitiveImmuneSystemPage.xaml",
+      "bytes": 7156,
+      "sha256": "7205528d06d9c2cdbb549f1f89ab75dc90899d09c6e181f03a6a5fdeb377b9ce",
+      "review": "inventory",
+      "lines": 75,
+      "reviewSignals": {
+        "simulation": [
+          10
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/CognitiveImmuneSystemPage.xaml.cs",
+      "bytes": 9042,
+      "sha256": "9b78669f869adcb1ce6574282df58a6f47187640ad1761821f265485070ecdfd",
+      "review": "inventory",
+      "lines": 170
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/DefenseSuitePage.xaml",
+      "bytes": 21101,
+      "sha256": "183d322064515e095a94cd0709ab4bcc8fb6bd87e72522c46d7fc766624ad700",
+      "review": "inventory",
+      "lines": 274
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/DefenseSuitePage.xaml.cs",
+      "bytes": 9518,
+      "sha256": "e8577ed4043b1f8795539b6821b1f072f40107f02c25b242dab5cc950f1b2e26",
+      "review": "inventory",
+      "lines": 207
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/DnsPage.xaml",
+      "bytes": 12017,
+      "sha256": "dc0399080c977f0f24e93b23b58b647749ab71d11b9861a14bdce7fbcf088617",
+      "review": "inventory",
+      "lines": 136
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/DnsPage.xaml.cs",
+      "bytes": 10436,
+      "sha256": "f58be415234f5503d71193ab97e1de9780e27067a7566d61390392723d1fe2e9",
+      "review": "inventory",
+      "lines": 256
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/DriverPackagesPage.xaml",
+      "bytes": 5277,
+      "sha256": "d55bb3322f5b8938ffa5aa67684a2863aa58dbca19ec44853463bb3c6900cb42",
+      "review": "inventory",
+      "lines": 55
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/DriverPackagesPage.xaml.cs",
+      "bytes": 5091,
+      "sha256": "38ad56189c231aa9161be909ae1a384bb63a19a3939b1446530d76c73c70c815",
+      "review": "inventory",
+      "lines": 113
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/DriverPage.xaml",
+      "bytes": 5095,
+      "sha256": "a1f2e09505c6820a1a0876c2656f1817cfdc9a71626b421d9382b09185f8c9e3",
+      "review": "inventory",
+      "lines": 55
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/DriverPage.xaml.cs",
+      "bytes": 5640,
+      "sha256": "a966bfd8cfa2c50a36582ea73c8ca482d1906e13ea44ada5e9ad422dfa8ad236",
+      "review": "inventory",
+      "lines": 140
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/EmergencyPage.xaml",
+      "bytes": 20182,
+      "sha256": "937f34cfb1f3772846a90337dc83fffedb9194872c695bb96022abc07408ee96",
+      "review": "inventory",
+      "lines": 271
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/EmergencyPage.xaml.cs",
+      "bytes": 28088,
+      "sha256": "6d2c7ebda20d71893397ba0b5da6c087ffa478bfb66e1e57ed8934c8f1bdcc6e",
+      "review": "inventory",
+      "lines": 606,
+      "reviewSignals": {
+        "ui_disk_io": [
+          549
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/FirewallPage.xaml",
+      "bytes": 10363,
+      "sha256": "67d3490aa2cc45473af6d1f3d845b66b359b400b96c0fe6fbc5eaeb0569672fa",
+      "review": "inventory",
+      "lines": 121
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/FirewallPage.xaml.cs",
+      "bytes": 18401,
+      "sha256": "4165a89c4fde70ac4e44084caa37eb4cb0ada30027d9f2de5b3d5ffc48fa3597",
+      "review": "inventory",
+      "lines": 392
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/ForensicsPage.xaml",
+      "bytes": 15424,
+      "sha256": "5d874c83b9f34981474949d6c3ff5845037e8aed1a83871e8bd0f0d708dba869",
+      "review": "inventory",
+      "lines": 192
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/ForensicsPage.xaml.cs",
+      "bytes": 9122,
+      "sha256": "05cb1904772d387d0770dd3fe57f3a87084b182eca7300d0fa2ad4211fa97ec6",
+      "review": "inventory",
+      "lines": 241,
+      "reviewSignals": {
+        "ui_disk_io": [
+          113,
+          144
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/HardeningPage.xaml",
+      "bytes": 4627,
+      "sha256": "683241b49aecc5254e2b95108d2e5dbfefcfc7cd0eb8a53b1fe34af16613e270",
+      "review": "inventory",
+      "lines": 54
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/HardeningPage.xaml.cs",
+      "bytes": 4449,
+      "sha256": "bab0ed51c562028ab27e97825f00c0bfba223641a08dc9f784e889846694e69f",
+      "review": "inventory",
+      "lines": 110
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/HomePage.xaml",
+      "bytes": 19166,
+      "sha256": "be6a7b475b339dfd45b0f60d1b8514d712904083b0124f69767d9ec430cc8c91",
+      "review": "inventory",
+      "lines": 177
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/HomePage.xaml.cs",
+      "bytes": 22806,
+      "sha256": "1691e0940c0f7179b0b41e817d015896bca40026dd47d8793bdd71c9035d4836",
+      "review": "inventory",
+      "lines": 444
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/IntelPage.xaml",
+      "bytes": 6923,
+      "sha256": "86c133d70b9e316e50f6912f0e669e3d7b97c2a838e6e49969f58806c84ef234",
+      "review": "inventory",
+      "lines": 78
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/IntelPage.xaml.cs",
+      "bytes": 10588,
+      "sha256": "a87d25e69e775d7b533be560790bb44dd648f855c92322a5e41e732aa0079a73",
+      "review": "inventory",
+      "lines": 204
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/InvestigationTimelinePage.xaml",
+      "bytes": 7556,
+      "sha256": "627b2232e73dc95a4d8214001e49046d2151ccbf5872ebc359a821f1af9086a3",
+      "review": "inventory",
+      "lines": 80
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/InvestigationTimelinePage.xaml.cs",
+      "bytes": 13945,
+      "sha256": "fe24f2b818a16af63d7ddf18a4bcadaf0a4d0f17a68f265a2c56975da19c0417",
+      "review": "inventory",
+      "lines": 312,
+      "reviewSignals": {
+        "ui_disk_io": [
+          203
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/IoTPage.xaml",
+      "bytes": 15643,
+      "sha256": "9353972bf4609846e06f7a5aef0c09665ba901b2ba9d491969baa6fa05d06e40",
+      "review": "inventory",
+      "lines": 205
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/IoTPage.xaml.cs",
+      "bytes": 12751,
+      "sha256": "754570da0f581d155be080a23ea5e64a21a35759ef82e5da16254ce524bfe452",
+      "review": "inventory",
+      "lines": 328,
+      "reviewSignals": {
+        "ui_disk_io": [
+          224
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/MemoryPage.xaml",
+      "bytes": 13296,
+      "sha256": "99e5705a0717701c47bfc04fd6b579758b7acde9b35edd7f359ca43556c194a9",
+      "review": "inventory",
+      "lines": 158
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/MemoryPage.xaml.cs",
+      "bytes": 14601,
+      "sha256": "d2b9963e25430b259b8de61be8c77110488f21a635052c17aa5f7e82ad3d5e7e",
+      "review": "inventory",
+      "lines": 375,
+      "reviewSignals": {
+        "ui_disk_io": [
+          325
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/NetworkPage.xaml",
+      "bytes": 10690,
+      "sha256": "3577037f806ad292b1545628202076a12de09b0ac727fbb0c1d8796accc9745e",
+      "review": "inventory",
+      "lines": 96
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/NetworkPage.xaml.cs",
+      "bytes": 11134,
+      "sha256": "61ffee9727483480f65cea52e703e17c23ad6d68dc835713002ce7464ad9e55f",
+      "review": "inventory",
+      "lines": 232
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/ParentalControlsPage.xaml",
+      "bytes": 17886,
+      "sha256": "180b52a9328ff30a688786770fe65c950dbdb3eee035aa96501f45da0704f6a0",
+      "review": "inventory",
+      "lines": 244
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/ParentalControlsPage.xaml.cs",
+      "bytes": 11667,
+      "sha256": "7923f9d483bbed3dd7ecefa60d286e0d7f9e7e343fb19ba9342b91fe21ef88ee",
+      "review": "inventory",
+      "lines": 245
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/PerformancePage.xaml",
+      "bytes": 28765,
+      "sha256": "a52d30307a343d899e6d045998a2b75c9b0388518986f957c0752cb0f0054d96",
+      "review": "inventory",
+      "lines": 161
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/PerformancePage.xaml.cs",
+      "bytes": 59615,
+      "sha256": "aca8b28536c87e4558916b090d1403b0006633cbb48127c3ad0a5cff80e40c16",
+      "review": "inventory",
+      "lines": 1124,
+      "reviewSignals": {
+        "process_launch": [
+          585
+        ],
+        "native_api": [
+          1116,
+          1119,
+          1122
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/PersistencePage.xaml",
+      "bytes": 6911,
+      "sha256": "6b4bee8d0a677b4744f3f52c737060876e8c90d7c5b86c933da73d087da75297",
+      "review": "inventory",
+      "lines": 77
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/PersistencePage.xaml.cs",
+      "bytes": 6599,
+      "sha256": "e70b94ecccebc015cf8916eb03495b88fbc02210be84c55b3b1a904b36006431",
+      "review": "inventory",
+      "lines": 146
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/ProcessPage.xaml",
+      "bytes": 4416,
+      "sha256": "ce49cdb34f4c1242057df5d276a85f2182be7a9274ab100845740fa4caafde83",
+      "review": "inventory",
+      "lines": 54
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/ProcessPage.xaml.cs",
+      "bytes": 5530,
+      "sha256": "39b089ba91345e01af86662dc93174873130f7cf9530f0880baf97e42fc90788",
+      "review": "inventory",
+      "lines": 144
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/RansomwarePage.xaml",
+      "bytes": 17249,
+      "sha256": "740e2fc1b8aa7a511574d4993725c3dc1eaf494145ad2d61bb57d407384d8327",
+      "review": "inventory",
+      "lines": 205
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/RansomwarePage.xaml.cs",
+      "bytes": 11892,
+      "sha256": "4621ea94dccde5d0cc57aca89b4dbb86ffb64f2ec3768df6a9e13aa5835cb61d",
+      "review": "inventory",
+      "lines": 303,
+      "reviewSignals": {
+        "ui_disk_io": [
+          166,
+          217
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/RemediationPage.xaml",
+      "bytes": 4296,
+      "sha256": "b8213d3d518c080495144c7b999b75c6baaa64577972d19b4a0379fe3702b89d",
+      "review": "inventory",
+      "lines": 39
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/RemediationPage.xaml.cs",
+      "bytes": 36621,
+      "sha256": "59fa58bdf594484441e783d5e139d23298ea1e18375f4a26fff304d56cf026ef",
+      "review": "inventory",
+      "lines": 797
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/RemoteAccessPage.xaml",
+      "bytes": 5757,
+      "sha256": "68a62dfc8ae11b502c85ec6cb8f46d62b6c3c0ee84502fa4665ad42e6e3903be",
+      "review": "inventory",
+      "lines": 75
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/RemoteAccessPage.xaml.cs",
+      "bytes": 4661,
+      "sha256": "e7b342a0c94780daf19a74ddc9c9121a6b5101efd5ac8cac568d690f9c21d1fb",
+      "review": "inventory",
+      "lines": 102
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/SandboxPage.xaml",
+      "bytes": 12910,
+      "sha256": "a9727670b93d060f18c2cf84780b12f592f91af2056db05884656adfc1bb77b2",
+      "review": "inventory",
+      "lines": 163
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/SandboxPage.xaml.cs",
+      "bytes": 10834,
+      "sha256": "96c44c55d79273386c6b2080c2e1cb83d5f8247b42eeb64dc80ebeb792ec69f1",
+      "review": "inventory",
+      "lines": 254,
+      "reviewSignals": {
+        "ui_disk_io": [
+          189
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/ScannerPage.xaml",
+      "bytes": 8486,
+      "sha256": "0b0b7a64bce0c56a311ebad2c3ba764f90496f8653c7bf899c3b186d3582318a",
+      "review": "inventory",
+      "lines": 87
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/ScannerPage.xaml.cs",
+      "bytes": 11609,
+      "sha256": "17054cd113ef3e48afeab2c9335ec61ac3ceae12b78c87f6b770afc1f506660e",
+      "review": "inventory",
+      "lines": 240
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/SecurityEventsPage.xaml",
+      "bytes": 6705,
+      "sha256": "90d63500b796f678d7f8e105de336e65d9e427ea59bbfa5d090be3bf4cde0878",
+      "review": "inventory",
+      "lines": 75
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/SecurityEventsPage.xaml.cs",
+      "bytes": 8452,
+      "sha256": "5b7fd16373635afd72ec746ea50cc7e89e777529c242882de53123c629715ade",
+      "review": "inventory",
+      "lines": 200
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/ServicesPage.xaml",
+      "bytes": 7274,
+      "sha256": "2e886c62e02dd1a24fbd104bdbc5442c919c385d58d624ec49b34db4a478dc82",
+      "review": "inventory",
+      "lines": 74
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/ServicesPage.xaml.cs",
+      "bytes": 9442,
+      "sha256": "ab4b56d96e3618ad956cfbe53e0aef66dd60b1ef02874cd81c88d26a54e83cbb",
+      "review": "inventory",
+      "lines": 205
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/SettingsPage.xaml",
+      "bytes": 22640,
+      "sha256": "342caab74a63b9f67b97b19997a657c1e3219327f9138750db451c935c09d366",
+      "review": "inventory",
+      "lines": 183
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/SettingsPage.xaml.cs",
+      "bytes": 11261,
+      "sha256": "6818757227fa9a870fd24d106423514b3fe7136880d644ccbe2f3b7e39c16675",
+      "review": "inventory",
+      "lines": 215
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/ThreatDatabasesPage.xaml",
+      "bytes": 15757,
+      "sha256": "fe8cac2e53b2116f0a16320cad201f68f76026e4c6b8f255e9663e53bc68d134",
+      "review": "inventory",
+      "lines": 204
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/ThreatDatabasesPage.xaml.cs",
+      "bytes": 14692,
+      "sha256": "5bd63894165c0b7acb87ecf896c23a09982295fd1ebcfa9d1a1179ec11bd1bcf",
+      "review": "inventory",
+      "lines": 281
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/ThreatIntelligencePage.xaml",
+      "bytes": 5068,
+      "sha256": "ffcfa321ebebdd9ea47633d128b712aff26f52085f969c0b2cf92236a6c5b7d9",
+      "review": "inventory",
+      "lines": 83
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/ThreatIntelligencePage.xaml.cs",
+      "bytes": 5065,
+      "sha256": "86c9b14b0d599ecbe915a88495c11f11903248c247c50550177153bb156909c5",
+      "review": "inventory",
+      "lines": 110
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/ToolsPage.xaml",
+      "bytes": 17425,
+      "sha256": "bca5babacc2e71df712ee004b6586de04327071f74cb6aa8d54d52535d416e9f",
+      "review": "inventory",
+      "lines": 227
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/ToolsPage.xaml.cs",
+      "bytes": 4971,
+      "sha256": "b1ad7921f38235cd53f9e2500815ef563a1f4e2db9187a6ec1ba8d1f1997cdc3",
+      "review": "inventory",
+      "lines": 144
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/TriagePage.xaml",
+      "bytes": 7301,
+      "sha256": "8d695d6d59af55d94fe3390cf33c1073e38ba68109abdb7a8ab259cbaa7313d8",
+      "review": "inventory",
+      "lines": 75
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/TriagePage.xaml.cs",
+      "bytes": 15299,
+      "sha256": "9c403ea382ae0db885ac52a34afc9ad26cabe51afe77a193a56e8a1fca68a802",
+      "review": "inventory",
+      "lines": 265
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/UsbPage.xaml",
+      "bytes": 9929,
+      "sha256": "6adf9f6faef69101e990e2ec22297efcc2b765c392e2885d49b00157aa876544",
+      "review": "inventory",
+      "lines": 113
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/UsbPage.xaml.cs",
+      "bytes": 15651,
+      "sha256": "3b89a2dcbe4bf8bee2ba8e4a575869a04cd10e0843bc9e0ec0b06ffec8ac4d5f",
+      "review": "inventory",
+      "lines": 346
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/VpnPage.xaml",
+      "bytes": 18262,
+      "sha256": "99ac986aafe1a3771f50be5811e760daa9786fb6b9f6f1ebcf31a753207d2a51",
+      "review": "inventory",
+      "lines": 239
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/VpnPage.xaml.cs",
+      "bytes": 12431,
+      "sha256": "ca080711087d0f617b238e7e3d4b926865232fafc11d65dff6244053d41d8032",
+      "review": "inventory",
+      "lines": 316,
+      "reviewSignals": {
+        "ui_disk_io": [
+          234
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/VulnerabilitiesPage.xaml",
+      "bytes": 9713,
+      "sha256": "8e6117234ccdaf52f00eb4596b33f04f1ee02d7590e1c65705bdb530f9b34314",
+      "review": "inventory",
+      "lines": 92
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/VulnerabilitiesPage.xaml.cs",
+      "bytes": 16975,
+      "sha256": "60d344a0f51ee427938a0370c4068dd7960009f1c93a964f48fd68aa37985601",
+      "review": "inventory",
+      "lines": 371
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/WifiPage.xaml",
+      "bytes": 9534,
+      "sha256": "484a1a90da85e9849f85e8c0c267310ddca1e3353743e204a7a6a2bf0868edd3",
+      "review": "inventory",
+      "lines": 112
+    },
+    {
+      "path": "src/Downpour.Desktop/Pages/WifiPage.xaml.cs",
+      "bytes": 7225,
+      "sha256": "978bc7b2396386354917059df289418de9debfef4fd0b0ed76e8fcb5e9f62611",
+      "review": "inventory",
+      "lines": 176
+    },
+    {
+      "path": "src/Downpour.Desktop/PortableUpdateInstaller.cs",
+      "bytes": 6838,
+      "sha256": "c09fa1de124adefbb24b3f7237127af716bc7272dc6fcb644f72de34c9e1993d",
+      "review": "inventory",
+      "lines": 119,
+      "reviewSignals": {
+        "process_launch": [
+          58,
+          62
+        ],
+        "catch_all": [
+          115
+        ],
+        "ui_disk_io": [
+          44,
+          105
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Desktop/Properties/launchSettings.json",
+      "bytes": 186,
+      "sha256": "c6823aec84333b70e25a8b44fe5c456bfd024a03895958a8ab26013eb23a3835",
+      "review": "inventory",
+      "lines": 10
+    },
+    {
+      "path": "src/Downpour.Desktop/SensorServiceProcess.cs",
+      "bytes": 4205,
+      "sha256": "8d7bfa2ca8672edfe95b3a00a8b087e7208908aabbecfb378c51372be3033957",
+      "review": "inventory",
+      "lines": 113,
+      "reviewSignals": {
+        "process_launch": [
+          51
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Desktop/StormModeController.cs",
+      "bytes": 882,
+      "sha256": "54cb184465e179253aa747ce229d72013477f17e78441860009a30cf246a8378",
+      "review": "inventory",
+      "lines": 32
+    },
+    {
+      "path": "src/Downpour.Desktop/Themes/HudTheme.xaml",
+      "bytes": 19478,
+      "sha256": "1590e005011fc7cb0371da73215cc74b2d1fd6a36bb7f72aec7d2320d3ddaa60",
+      "review": "inventory",
+      "lines": 292
+    },
+    {
+      "path": "src/Downpour.Desktop/TrayIcon.cs",
+      "bytes": 9580,
+      "sha256": "46b5ec93cbfe546ea3a8f84dc7e9a87e0d4b8c778303eb0cf9278e206b2511de",
+      "review": "inventory",
+      "lines": 251,
+      "reviewSignals": {
+        "native_api": [
+          189,
+          193,
+          196,
+          200,
+          204,
+          207,
+          210,
+          213,
+          216,
+          219,
+          222,
+          226,
+          229,
+          233,
+          236,
+          240,
+          244,
+          248
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Desktop/app.manifest",
+      "bytes": 1048,
+      "sha256": "700e7d53aaed1a44e694c7a182ce69dd02e03d5ebb6e036143177cbefd639efc",
+      "review": "inventory",
+      "lines": 19
+    },
+    {
+      "path": "src/Downpour.Scanner/Downpour.Scanner.csproj",
+      "bytes": 3948,
+      "sha256": "e69ac5a146abc2e2f3c077cf18bb71dc578b996f1e6438f684b231bb1664a5f9",
+      "review": "inventory",
+      "lines": 73
+    },
+    {
+      "path": "src/Downpour.Scanner/Program.cs",
+      "bytes": 3848,
+      "sha256": "2c0c37dc02634a6ce996a2ec3a0eb0db7a0c874bb65ae7a93f5b916cbaf9e2a7",
+      "review": "inventory",
+      "lines": 91
+    },
+    {
+      "path": "src/Downpour.Scanner/RuleQuality.cs",
+      "bytes": 1053,
+      "sha256": "5d012bfd26cf35d82961d9ec1ebdb2460abebb2b7b26f1a3d44da5dcaf922664",
+      "review": "inventory",
+      "lines": 25
+    },
+    {
+      "path": "src/Downpour.Scanner/YaraEngine.cs",
+      "bytes": 10980,
+      "sha256": "4b2ea7c84060ca40a5d954263194c8713bb286f78120289a7e0dc8cec777a40d",
+      "review": "inventory",
+      "lines": 238
+    },
+    {
+      "path": "src/Downpour.Scanner/YaraX.cs",
+      "bytes": 6393,
+      "sha256": "2c386f268c7626552d0498845b3d4fb5724e186ae88695ab04fca5293b8648b5",
+      "review": "inventory",
+      "lines": 98,
+      "reviewSignals": {
+        "native_api": [
+          41,
+          80,
+          81,
+          82,
+          83,
+          84,
+          85,
+          86,
+          87,
+          88,
+          89,
+          90,
+          91,
+          92,
+          93,
+          94,
+          95,
+          96,
+          97
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Scanner/rule_quality.json",
+      "bytes": 5923,
+      "sha256": "0f1e420c94f1c92bc36bd5901b00baf1f1909debb16e935a56af8c8527b43f3e",
+      "review": "inventory",
+      "lines": 119
+    },
+    {
+      "path": "src/Downpour.Scanner/yara_rules.sha256",
+      "bytes": 3235,
+      "sha256": "d0e00c3044e90709931c0721e3d43172456cb76001e73d58b1782c580551020e",
+      "review": "inventory"
+    },
+    {
+      "path": "src/Downpour.Scanner/yara_rules/PROVENANCE.md",
+      "bytes": 1439,
+      "sha256": "b95f4434632c04e0ddd7b065e76bbad82f0ae5df5c110cccba52f32abab291e7",
+      "review": "inventory",
+      "lines": 24
+    },
+    {
+      "path": "src/Downpour.Scanner/yara_rules/additional_malware.yar",
+      "bytes": 17011,
+      "sha256": "cbca6c3cf54ec8730e946f6d6cb9ce34d9c41954d0fcd13969b89103384f9ddf",
+      "review": "inventory",
+      "lines": 526
+    },
+    {
+      "path": "src/Downpour.Scanner/yara_rules/amsi_bypass.yar",
+      "bytes": 3053,
+      "sha256": "c3bf724908151ffee6d50415e02ba68be6d7fd0ee8f5d49e65b89c025a2edb5d",
+      "review": "inventory",
+      "lines": 93
+    },
+    {
+      "path": "src/Downpour.Scanner/yara_rules/anti_forensics.yar",
+      "bytes": 2087,
+      "sha256": "5c7018879e462ff4445f9d8d838e0901e1f48f8d009dbb9812a7fcf50a651290",
+      "review": "inventory",
+      "lines": 58
+    },
+    {
+      "path": "src/Downpour.Scanner/yara_rules/apt_frameworks.yar",
+      "bytes": 4250,
+      "sha256": "74c725ef0585b63c86be8ed3d1f534f25a34b786b4139f0f50a135af91e765e6",
+      "review": "inventory",
+      "lines": 123
+    },
+    {
+      "path": "src/Downpour.Scanner/yara_rules/badusb_attacks.yar",
+      "bytes": 2146,
+      "sha256": "b091bf0155e0f3c0bea9bce2100ef5fc57bd54ab516ce23b5e969999ca0ca943",
+      "review": "inventory",
+      "lines": 61
+    },
+    {
+      "path": "src/Downpour.Scanner/yara_rules/botnet_detection.yar",
+      "bytes": 2967,
+      "sha256": "c74bf25102d2b7c4f26fe2c6db17a72842ae2d413cd0903e1798f36f3d6f695b",
+      "review": "inventory",
+      "lines": 101
+    },
+    {
+      "path": "src/Downpour.Scanner/yara_rules/browser_threats.yar",
+      "bytes": 4347,
+      "sha256": "a336a922ef4b861c772bdc51c83bf84edf9f348cdaa0aa2ae52cffc8c30fe8d9",
+      "review": "inventory",
+      "lines": 131
+    },
+    {
+      "path": "src/Downpour.Scanner/yara_rules/byovd_attacks.yar",
+      "bytes": 6121,
+      "sha256": "3511b1ce045f2a035c7b54f9043add8e9f64a60f3bf3a17c45e219ef1b73f798",
+      "review": "inventory",
+      "lines": 162
+    },
+    {
+      "path": "src/Downpour.Scanner/yara_rules/c2_communication.yar",
+      "bytes": 3506,
+      "sha256": "4a73a2e78c874f9f7dc0692088e67727c99b223f3684b3c02708c4ac74f343bd",
+      "review": "inventory",
+      "lines": 109
+    },
+    {
+      "path": "src/Downpour.Scanner/yara_rules/common_malware.yar",
+      "bytes": 4387,
+      "sha256": "bcc0ae5f753400d0ed5ee1b94861b6b300f063c58681454934e9d024a772d053",
+      "review": "inventory",
+      "lines": 134
+    },
+    {
+      "path": "src/Downpour.Scanner/yara_rules/comprehensive_malware.yar",
+      "bytes": 16554,
+      "sha256": "918e399398842675dbf0b87204f7a0409706b465780d6e85cc73bba847620817",
+      "review": "inventory",
+      "lines": 501
+    },
+    {
+      "path": "src/Downpour.Scanner/yara_rules/credential_dumpers.yar",
+      "bytes": 5405,
+      "sha256": "14c6824871f2e791d1aa9a069280e4af8239c8375238ba70ed02c36dbc43dfac",
+      "review": "inventory",
+      "lines": 151
+    },
+    {
+      "path": "src/Downpour.Scanner/yara_rules/cryptominer.yar",
+      "bytes": 1301,
+      "sha256": "c1ddfa59c9e021c2318ceab129aacf453ed83b328b4fb94f8e3021e27f074cf1",
+      "review": "inventory",
+      "lines": 56
+    },
+    {
+      "path": "src/Downpour.Scanner/yara_rules/data_exfiltration.yar",
+      "bytes": 2055,
+      "sha256": "2ab63aa5e5b77faa7b2e9c681fa431b870ec2ac0efcea222985fab6ef6546ea8",
+      "review": "inventory",
+      "lines": 62
+    },
+    {
+      "path": "src/Downpour.Scanner/yara_rules/dll_hijacking.yar",
+      "bytes": 3036,
+      "sha256": "89798fdb0e0fcfef0d48a4299a7154d692aa05cf241d7b2e46b6fb7802431601",
+      "review": "inventory",
+      "lines": 85
+    },
+    {
+      "path": "src/Downpour.Scanner/yara_rules/dll_sideload_injection.yar",
+      "bytes": 4564,
+      "sha256": "61956fa3ee20e5b9e36e000b663efea9f5c026ca6484a9af58c6a19d2b31a6e0",
+      "review": "inventory",
+      "lines": 135
+    },
+    {
+      "path": "src/Downpour.Scanner/yara_rules/exploit_patterns.yar",
+      "bytes": 4035,
+      "sha256": "aa57bf34ca6a738777f1ad10e5eb328bde475a998157796215c50cf0d27336d7",
+      "review": "inventory",
+      "lines": 123
+    },
+    {
+      "path": "src/Downpour.Scanner/yara_rules/fileless_malware.yar",
+      "bytes": 6722,
+      "sha256": "3dc795c8c306e465e9c75336258e567196b565bc3a19be2ab7c52fabe2947ad1",
+      "review": "inventory",
+      "lines": 162
+    },
+    {
+      "path": "src/Downpour.Scanner/yara_rules/gaming_cheats.yar",
+      "bytes": 2749,
+      "sha256": "898acfe26c0260d374e9511ee6b803c2567429f529c207accf7beda72e0f70ad",
+      "review": "inventory",
+      "lines": 88
+    },
+    {
+      "path": "src/Downpour.Scanner/yara_rules/infostealer_2026.yar",
+      "bytes": 4539,
+      "sha256": "291a4bdf57e57909079e37282ddcf5fdc845ed6d719047c8286e64ebaaf1d98e",
+      "review": "inventory",
+      "lines": 124
+    },
+    {
+      "path": "src/Downpour.Scanner/yara_rules/iot_botnets.yar",
+      "bytes": 9761,
+      "sha256": "2c1d3796656a667b6e5a3186e313eaa9e52449416b51e01dec998e7633992cd1",
+      "review": "inventory",
+      "lines": 181
+    },
+    {
+      "path": "src/Downpour.Scanner/yara_rules/lateral_movement.yar",
+      "bytes": 3507,
+      "sha256": "ff1d79bf67e20220206675bf6fa4a95dcbe17b322a5c24a101515377a0653162",
+      "review": "inventory",
+      "lines": 103
+    },
+    {
+      "path": "src/Downpour.Scanner/yara_rules/malicious_scripts.yar",
+      "bytes": 3225,
+      "sha256": "a7c7a20c489a22e0b95ba69fed0b0b3c6aca004859dba930a5ac0a1329254136",
+      "review": "inventory",
+      "lines": 101
+    },
+    {
+      "path": "src/Downpour.Scanner/yara_rules/middleware.yar",
+      "bytes": 1763,
+      "sha256": "64a7fc2e16b0fee19620a056ae90ee44134d4ca49657fe85d877eed2bb8c9546",
+      "review": "inventory",
+      "lines": 73
+    },
+    {
+      "path": "src/Downpour.Scanner/yara_rules/network_patterns.yar",
+      "bytes": 4675,
+      "sha256": "ac820d3772d38ed0ff9b4f505bb920706ebfcc9d65eca175c0ca51cb0ff02934",
+      "review": "inventory",
+      "lines": 136
+    },
+    {
+      "path": "src/Downpour.Scanner/yara_rules/powershell_obfuscation.yar",
+      "bytes": 4841,
+      "sha256": "28522466463255fc35a208e1f1db79941fa390d9e80d7d4a374230615ffb66b8",
+      "review": "inventory",
+      "lines": 137
+    },
+    {
+      "path": "src/Downpour.Scanner/yara_rules/ransomware.yar",
+      "bytes": 1356,
+      "sha256": "79a7b047e2d26a6ce3af5c3a578ab5d404ed21b384dbe6286172b4c8402c6b15",
+      "review": "inventory",
+      "lines": 56
+    },
+    {
+      "path": "src/Downpour.Scanner/yara_rules/rat_frameworks.yar",
+      "bytes": 5795,
+      "sha256": "b413c6fae9727c7540b3b88964663aad612e092ac5f82af9ab85609a246212fb",
+      "review": "inventory",
+      "lines": 165
+    },
+    {
+      "path": "src/Downpour.Scanner/yara_rules/rootkit.yar",
+      "bytes": 1209,
+      "sha256": "ce3a128de439949e06699d5f6b28d0a3bc7ffacd9e066916473b6b6caa918921",
+      "review": "inventory",
+      "lines": 52
+    },
+    {
+      "path": "src/Downpour.Scanner/yara_rules/supply_chain_attacks.yar",
+      "bytes": 4045,
+      "sha256": "be6561d4174543823b66c08e046c399b9b81bf4e616555302710ab66be34571c",
+      "review": "inventory",
+      "lines": 124
+    },
+    {
+      "path": "src/Downpour.Scanner/yara_rules/webshell_backdoor.yar",
+      "bytes": 3963,
+      "sha256": "99cf306be1eea12d0bed3d0ab48e9ce66b587dc206e106790390da196836d4f2",
+      "review": "inventory",
+      "lines": 125
+    },
+    {
+      "path": "src/Downpour.Scanner/yara_rules/wiper_malware.yar",
+      "bytes": 4536,
+      "sha256": "8904deb1edd9f06cec4b80b74561ce02029ad64254579132a7fff7dc0215df5a",
+      "review": "inventory",
+      "lines": 136
+    },
+    {
+      "path": "src/Downpour.Scanner/yara_rules/wmi_persistence.yar",
+      "bytes": 1942,
+      "sha256": "b5e5b39aed831406eeaa02c582fc2b278a3d3b5418e7de5fcb201856847e31b3",
+      "review": "inventory",
+      "lines": 54
+    },
+    {
+      "path": "src/Downpour.Service/ActionBrokerPipeWorker.cs",
+      "bytes": 2808,
+      "sha256": "4d680ce21eb9559931e8520935afd991e8d90f1081714015704fabc9dc1bd925",
+      "review": "inventory",
+      "lines": 65
+    },
+    {
+      "path": "src/Downpour.Service/ActionCallerVerifier.cs",
+      "bytes": 6364,
+      "sha256": "70b47b78da1efa0ae13bd83e5c4d02c8b9bdc2479a5f72d37e1f671ae8153fb6",
+      "review": "inventory",
+      "lines": 136,
+      "reviewSignals": {
+        "process_launch": [
+          37,
+          71
+        ],
+        "native_api": [
+          115,
+          118,
+          122,
+          126,
+          129,
+          133
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Service/ActionConsentStore.cs",
+      "bytes": 2113,
+      "sha256": "a7d9ba98194f8c6375d7826a42a1b7da6170ac692dd81b1d4a1cac5528cce9a2",
+      "review": "inventory",
+      "lines": 45
+    },
+    {
+      "path": "src/Downpour.Service/AmsiIntegration.cs",
+      "bytes": 3034,
+      "sha256": "d2e70fc9967deb78ae148d8239cef2717c38fa34a59f6ccc07aaf8f247d464a9",
+      "review": "inventory",
+      "lines": 55
+    },
+    {
+      "path": "src/Downpour.Service/AmsiSession.cs",
+      "bytes": 4429,
+      "sha256": "0c5018bf21632c48899a799fde3aea157dda7b706edcb33111775a4bb25439b0",
+      "review": "inventory",
+      "lines": 97,
+      "reviewSignals": {
+        "native_api": [
+          76,
+          77,
+          79,
+          80,
+          82,
+          83,
+          85,
+          86
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Service/AntiStalkerMonitor.cs",
+      "bytes": 15001,
+      "sha256": "785755e8dc9888886715b1a59254e087cdbf76f580f8f490b1b2edda779ed35c",
+      "review": "inventory",
+      "lines": 335,
+      "reviewSignals": {
+        "native_api": [
+          187,
+          191,
+          195
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Service/AudioShieldMonitor.cs",
+      "bytes": 27058,
+      "sha256": "8ee287e52a10b4102fd71a285e17943b414225f5e00f056d1ebd55fef068f011",
+      "review": "inventory",
+      "lines": 577,
+      "reviewSignals": {
+        "native_api": [
+          444,
+          447
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Service/AuditIntegrityMonitor.cs",
+      "bytes": 2657,
+      "sha256": "c90dca4e5dd14ebbe35780a2805e60ccd0ec2cf5cc1a59b04d989d1b9c784874",
+      "review": "inventory",
+      "lines": 56
+    },
+    {
+      "path": "src/Downpour.Service/AuthenticodeVerifier.cs",
+      "bytes": 9902,
+      "sha256": "5c102930afa410f62f50e2c04a4ad197d524e7975a346889bbe82a3e2d0c47d9",
+      "review": "inventory",
+      "lines": 245,
+      "reviewSignals": {
+        "native_api": [
+          237,
+          240,
+          243
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Service/CoreAudioInterop.cs",
+      "bytes": 9271,
+      "sha256": "b1ba6f619d938e42b69af10f2bac59b3d96caa7bd1ae0414e9f68f7ce6e0ad83",
+      "review": "inventory",
+      "lines": 196,
+      "reviewSignals": {
+        "native_api": [
+          78
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Service/DnsCacheResolver.cs",
+      "bytes": 2666,
+      "sha256": "0fae81375657fd96798831a300e7ff23a4114f186f43d3451b842f15b541a9d6",
+      "review": "inventory",
+      "lines": 61,
+      "reviewSignals": {
+        "native_api": [
+          56,
+          59
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Service/DnsInventoryPipeWorker.cs",
+      "bytes": 2641,
+      "sha256": "aed0c1e8ccf0bd9f17fca97ab58eb7f6ac13b4651963ec504dd9946380bc44a8",
+      "review": "inventory",
+      "lines": 61
+    },
+    {
+      "path": "src/Downpour.Service/DnsInventoryProvider.cs",
+      "bytes": 9217,
+      "sha256": "3f2902576260fdf80ba97733638531376bc35195850b2915e6f5e486fa9d947f",
+      "review": "inventory",
+      "lines": 222,
+      "reviewSignals": {
+        "native_api": [
+          37
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Service/Downpour.Service.csproj",
+      "bytes": 1856,
+      "sha256": "f6aefa2ec34f418cdcbe98338a1ed1051b24a04a3b0ec62f7f48a8cd4f7db1e2",
+      "review": "inventory",
+      "lines": 41
+    },
+    {
+      "path": "src/Downpour.Service/DriverInventoryPipeWorker.cs",
+      "bytes": 2216,
+      "sha256": "6fd0a2c438ff0c3becc3c89a1abb554b149e4df959ac6f9dbc8ce0fc4bd4c2c8",
+      "review": "inventory",
+      "lines": 50
+    },
+    {
+      "path": "src/Downpour.Service/DriverInventoryProvider.cs",
+      "bytes": 7491,
+      "sha256": "27a61cd946e155ee61bffd9da8ece7bb9587d1a8ab6006e0e56ade1fdf20cb11",
+      "review": "inventory",
+      "lines": 127,
+      "reviewSignals": {
+        "native_api": [
+          118,
+          122,
+          125
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Service/DriverPackageBroker.cs",
+      "bytes": 3786,
+      "sha256": "1811a69bc866b99e275b8b50bf4f973597a3797e5b190f1d580aaca25a367db2",
+      "review": "inventory",
+      "lines": 89
+    },
+    {
+      "path": "src/Downpour.Service/DriverPackageBrokerPipeWorker.cs",
+      "bytes": 2506,
+      "sha256": "5e7fee23491203822d0fe4d8a2c72df034631b5d59eee3d52fac3f174a161c8f",
+      "review": "inventory",
+      "lines": 58
+    },
+    {
+      "path": "src/Downpour.Service/DriverPackageInventoryPipeWorker.cs",
+      "bytes": 2548,
+      "sha256": "29a8bec3ef10dd0d52606f48e06556021f1cdc7a0784c990673229124f22f1b9",
+      "review": "inventory",
+      "lines": 57
+    },
+    {
+      "path": "src/Downpour.Service/DriverPackageInventoryProvider.cs",
+      "bytes": 23867,
+      "sha256": "adeae2dd9b4c3edc95f1d3c02b4fbfcdb01d96c7b8ebca1a34a8354a0d01cf52",
+      "review": "inventory",
+      "lines": 538,
+      "reviewSignals": {
+        "native_api": [
+          244,
+          499,
+          502,
+          505,
+          508,
+          512,
+          516,
+          520,
+          524,
+          528,
+          531,
+          535
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Service/FileSignatureChecker.cs",
+      "bytes": 2886,
+      "sha256": "823cf423decc5ad3aafab9981f86507fb7e769164ed648549aeeccdaa59e4e78",
+      "review": "inventory",
+      "lines": 74
+    },
+    {
+      "path": "src/Downpour.Service/FileSystemExposure.cs",
+      "bytes": 2667,
+      "sha256": "89cf1df9083efcb01e6c57ece05d35ba660751232f9a15caa30ee74ed8f83822",
+      "review": "inventory",
+      "lines": 57
+    },
+    {
+      "path": "src/Downpour.Service/FirewallActionExecutor.cs",
+      "bytes": 14295,
+      "sha256": "09974d986d564dfa7ab8e29dc23242a233bc3c54675cd549b664fe3dfa253f61",
+      "review": "inventory",
+      "lines": 367,
+      "reviewSignals": {
+        "catch_all": [
+          51,
+          229,
+          315,
+          357,
+          363
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Service/FirewallActionPipeWorker.cs",
+      "bytes": 19708,
+      "sha256": "c612519378670067564a8b79dfa3ce9a8a82861e3013621aabb68b9b914dfa19",
+      "review": "inventory",
+      "lines": 439
+    },
+    {
+      "path": "src/Downpour.Service/FirewallInventoryPipeWorker.cs",
+      "bytes": 2223,
+      "sha256": "13371265ed1f0e5cffb786571481ab4c686383211ca85486ec396fb4f5180899",
+      "review": "inventory",
+      "lines": 52
+    },
+    {
+      "path": "src/Downpour.Service/FirewallInventoryProvider.cs",
+      "bytes": 11527,
+      "sha256": "12035294c0aad7616a2b0b2f640285de6431c4508084f35475a814626d4226c1",
+      "review": "inventory",
+      "lines": 251
+    },
+    {
+      "path": "src/Downpour.Service/GpuThermalCounterReader.cs",
+      "bytes": 7563,
+      "sha256": "e32df11f65bcdcdda1d5e9e2cc619020717e85fdf0154344cd194068304ff62e",
+      "review": "inventory",
+      "lines": 166,
+      "reviewSignals": {
+        "native_api": [
+          152,
+          155,
+          158,
+          161,
+          164
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Service/HardeningPosturePipeWorker.cs",
+      "bytes": 2334,
+      "sha256": "d0f3f4dd328111e1e1c4f5783409fc0088480190039fb04b23a1ba8a4164d72a",
+      "review": "inventory",
+      "lines": 53
+    },
+    {
+      "path": "src/Downpour.Service/HardeningPostureProvider.cs",
+      "bytes": 9484,
+      "sha256": "cbf3c02252f227a8056947fb3ea948188c6dc707de3dfe17e55b4e35fe786b3f",
+      "review": "inventory",
+      "lines": 215,
+      "reviewSignals": {
+        "native_api": [
+          213
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Service/HostIsolationExecutor.cs",
+      "bytes": 14606,
+      "sha256": "94da70fb0ae6a66687dddc345c5e3464c8ca9ffe12deb7989fa2018dc6d3db8a",
+      "review": "inventory",
+      "lines": 346,
+      "reviewSignals": {
+        "native_api": [
+          46
+        ],
+        "catch_all": [
+          188,
+          320
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Service/HostIsolationPipeWorker.cs",
+      "bytes": 16026,
+      "sha256": "81d4491a60b8f003a819ec9db5cfb538ce2a2b21b385f4ab2321ac004312d3ec",
+      "review": "inventory",
+      "lines": 356
+    },
+    {
+      "path": "src/Downpour.Service/InstalledSoftwareInventoryPipeWorker.cs",
+      "bytes": 2255,
+      "sha256": "25751ca398901dd155af8094e9de4c5746b03c67d5666dcebb1a3a369c3cd031",
+      "review": "inventory",
+      "lines": 50
+    },
+    {
+      "path": "src/Downpour.Service/InstalledSoftwareInventoryProvider.cs",
+      "bytes": 5122,
+      "sha256": "5be96016147d1c86d46d8e043b3228d4efa56c1872d4c32bceec026e0a7cf515",
+      "review": "inventory",
+      "lines": 96
+    },
+    {
+      "path": "src/Downpour.Service/IntelKeyStore.cs",
+      "bytes": 5768,
+      "sha256": "9acddd77a734456de3f4f34bfd5f102d785e519149b54d79448e741e1e6d1209",
+      "review": "inventory",
+      "lines": 150,
+      "reviewSignals": {
+        "native_api": [
+          140,
+          144,
+          148
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Service/IntelLookupWorker.cs",
+      "bytes": 7251,
+      "sha256": "932ddf33f7b036fcf345bcdfcd738d604a546ba04a83aa775e5cca13ae3dc77c",
+      "review": "inventory",
+      "lines": 157
+    },
+    {
+      "path": "src/Downpour.Service/IntelPipeWorker.cs",
+      "bytes": 2149,
+      "sha256": "f5aa3bca2ce6c75ca22a59ddeb94433aaf62b8ec429fe6ff22130e2c810fa646",
+      "review": "inventory",
+      "lines": 43
+    },
+    {
+      "path": "src/Downpour.Service/IntelResultStore.cs",
+      "bytes": 4698,
+      "sha256": "2a57ffed215140e232472c193f35ca1f4aad75162976e86620270734941584af",
+      "review": "inventory",
+      "lines": 116
+    },
+    {
+      "path": "src/Downpour.Service/IsolationReleaseScheduler.cs",
+      "bytes": 4977,
+      "sha256": "a5edb2751dce308341e16f138b36e69b716ed59d5a8157fc011fd6dc2b293789",
+      "review": "inventory",
+      "lines": 91
+    },
+    {
+      "path": "src/Downpour.Service/NetworkInventoryPipeWorker.cs",
+      "bytes": 2221,
+      "sha256": "94d70c163262cee472bc2cb65fb8303508de3ae0f6603152cafbd09e1c81d192",
+      "review": "inventory",
+      "lines": 50
+    },
+    {
+      "path": "src/Downpour.Service/NetworkInventoryProvider.cs",
+      "bytes": 5406,
+      "sha256": "046830d9725f6247176a669fb9a29af9eda6754bf5ae5f2fd3e5423d26e1e754",
+      "review": "inventory",
+      "lines": 127
+    },
+    {
+      "path": "src/Downpour.Service/OperationJournal.cs",
+      "bytes": 28152,
+      "sha256": "c909ede2c298d472b97eceaec9e60dd717728306d3676f793f84cd915e0c9f22",
+      "review": "inventory",
+      "lines": 450,
+      "reviewSignals": {
+        "catch_all": [
+          241
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Service/OperationJournalStartupWorker.cs",
+      "bytes": 750,
+      "sha256": "f9b6e2b597ee42027e72b6d539998dbc9673adbff9447e6e565f48bd8236d5fb",
+      "review": "inventory",
+      "lines": 13
+    },
+    {
+      "path": "src/Downpour.Service/PersistenceInventoryPipeWorker.cs",
+      "bytes": 2241,
+      "sha256": "387d467d693b57988a0d59f4a08974fdaa31ed9ed4a16f59f3af1386c4e80c6c",
+      "review": "inventory",
+      "lines": 52
+    },
+    {
+      "path": "src/Downpour.Service/PersistenceInventoryProvider.cs",
+      "bytes": 20929,
+      "sha256": "386376d8fb0d05e239b64f740b0e601ca1c4f2b21fac418e986233b0b1a1a12e",
+      "review": "inventory",
+      "lines": 409
+    },
+    {
+      "path": "src/Downpour.Service/PhysicalDiskCounterReader.cs",
+      "bytes": 8341,
+      "sha256": "0ed57578de36548460ee103610a1b2ab4cacc7aa0d0137f12e828f930946c2e4",
+      "review": "inventory",
+      "lines": 189,
+      "reviewSignals": {
+        "native_api": [
+          172,
+          175,
+          178,
+          181,
+          184,
+          187
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Service/PipeSecurityFactory.cs",
+      "bytes": 983,
+      "sha256": "360ce16872e4e205e2204c8cd8f683c1d22dba101d6f28c58a82be099c9b146b",
+      "review": "inventory",
+      "lines": 22
+    },
+    {
+      "path": "src/Downpour.Service/ProcessTerminationActionPipeWorker.cs",
+      "bytes": 12847,
+      "sha256": "23e91af0cb68557e4334a580cfa50926c9e0bc15ffd195ebd458e70d78de3164",
+      "review": "inventory",
+      "lines": 289
+    },
+    {
+      "path": "src/Downpour.Service/ProcessTerminationExecutor.cs",
+      "bytes": 12346,
+      "sha256": "7d39aa48dc0417f7c752a8ef48ac8062780d19de93a65245d03b4c544e0a1c0c",
+      "review": "inventory",
+      "lines": 290,
+      "reviewSignals": {
+        "native_api": [
+          260,
+          263,
+          272,
+          280,
+          284,
+          288
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Service/Program.cs",
+      "bytes": 6864,
+      "sha256": "50938c0a3add17a0f4e7658bddc3a3987ae945e03f9189356fa1f5c25198b809",
+      "review": "inventory",
+      "lines": 108
+    },
+    {
+      "path": "src/Downpour.Service/Properties/AssemblyInfo.cs",
+      "bytes": 89,
+      "sha256": "c37c48dd1aa4a2a0bb589c43a7a52d04191f32ab03e14a90d453f80d9c3dc3ae",
+      "review": "inventory",
+      "lines": 3
+    },
+    {
+      "path": "src/Downpour.Service/Properties/launchSettings.json",
+      "bytes": 285,
+      "sha256": "0fbd6d67ec656e3f47611c932445ed26b7830834624539b77fceead5ae4e025b",
+      "review": "inventory",
+      "lines": 12
+    },
+    {
+      "path": "src/Downpour.Service/QuarantineActionPipeWorker.cs",
+      "bytes": 23697,
+      "sha256": "ed43de4aada6d08a8ef17af144ab2daa605eda1351b0ed1d37b3501688a4c0be",
+      "review": "inventory",
+      "lines": 452
+    },
+    {
+      "path": "src/Downpour.Service/QuarantineExecutor.cs",
+      "bytes": 20817,
+      "sha256": "bc32170f0a00c2d4b8849b9b208d652c0f1d51ac0cf62ceb25a2392b0c4c42eb",
+      "review": "inventory",
+      "lines": 360,
+      "reviewSignals": {
+        "native_api": [
+          342,
+          345,
+          349,
+          352
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Service/QuarantineManager.cs",
+      "bytes": 9682,
+      "sha256": "50252c4eb60f66b31b8945932354dadef385e830db8708ee40da138d2c30efa0",
+      "review": "inventory",
+      "lines": 246
+    },
+    {
+      "path": "src/Downpour.Service/QuarantineVault.cs",
+      "bytes": 8665,
+      "sha256": "9b26d89e0b455a1d676958a41d392270809873c0b42e459f8376442d265df728",
+      "review": "inventory",
+      "lines": 199
+    },
+    {
+      "path": "src/Downpour.Service/RemoteAccessPipeWorker.cs",
+      "bytes": 2282,
+      "sha256": "67dcd75c95c91ecad0729c1a2c0df5a6b4f079de44ae4e9803a7c9ed4d1b25c2",
+      "review": "inventory",
+      "lines": 53
+    },
+    {
+      "path": "src/Downpour.Service/RemoteAccessProvider.cs",
+      "bytes": 5589,
+      "sha256": "82e9b3548a76a73e906348f65cc5afdc0b11690f364669ce82fc6919b30be4e4",
+      "review": "inventory",
+      "lines": 123,
+      "reviewSignals": {
+        "native_api": [
+          121
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Service/ScriptBlockSource.cs",
+      "bytes": 3757,
+      "sha256": "9279f0b0e8e948e5e39e7e60deb1cddce570a6c18b7c3e4aa559b61f34db1af9",
+      "review": "inventory",
+      "lines": 84
+    },
+    {
+      "path": "src/Downpour.Service/SecurityAlertControlPipeWorker.cs",
+      "bytes": 5524,
+      "sha256": "ff809e9ad16dfc44def4a79fa38fcf9c6cfd651724bf97a99b4a8dd1340e0c35",
+      "review": "inventory",
+      "lines": 105
+    },
+    {
+      "path": "src/Downpour.Service/SecurityAlertPipeWorker.cs",
+      "bytes": 1878,
+      "sha256": "91de8b4a16acbcb2c9ea2bf668748d87994cc23d6ce7ea77152ce987badb6b50",
+      "review": "inventory",
+      "lines": 40
+    },
+    {
+      "path": "src/Downpour.Service/SecurityAlertRepository.cs",
+      "bytes": 44436,
+      "sha256": "ad89acbb524d9d0c5ed2e4be8f0a52286054f27e3fc4101a7ff67c670fb7c47d",
+      "review": "inventory",
+      "lines": 645
+    },
+    {
+      "path": "src/Downpour.Service/SecurityAlertSnapshotStore.cs",
+      "bytes": 1767,
+      "sha256": "d80305c578702e7c91905dd8f5fe427d7efa8049c18329561246f40c7dc34cef",
+      "review": "inventory",
+      "lines": 44
+    },
+    {
+      "path": "src/Downpour.Service/SecurityEventMonitorService.cs",
+      "bytes": 5565,
+      "sha256": "ca61053b91bc1de68c336d2782329ca107245a9f52c84a6b7090725deaa8a617",
+      "review": "inventory",
+      "lines": 125
+    },
+    {
+      "path": "src/Downpour.Service/SecurityEventPipeWorker.cs",
+      "bytes": 2230,
+      "sha256": "71b1f787ff2818814a215f166bd0d91064245430c08bb4389716169185f1168b",
+      "review": "inventory",
+      "lines": 51
+    },
+    {
+      "path": "src/Downpour.Service/SecurityEventProvider.cs",
+      "bytes": 12812,
+      "sha256": "0fda6e7a5d7babc08f4f5d5ef7a0cc77ab4c138d30a243c98da804b823620711",
+      "review": "inventory",
+      "lines": 274
+    },
+    {
+      "path": "src/Downpour.Service/SecurityEventPushBatch.cs",
+      "bytes": 1549,
+      "sha256": "4e59226a7571dc5c216d44479dd0bfb244c5f1b2d8a683966154b2b9d3ed6ac8",
+      "review": "inventory",
+      "lines": 33
+    },
+    {
+      "path": "src/Downpour.Service/SecurityEventPushStatus.cs",
+      "bytes": 1288,
+      "sha256": "8c688643cde3840e4abf0f44aba1a5f2c97814786554ef0d43a1be5b5818dc3e",
+      "review": "inventory",
+      "lines": 32
+    },
+    {
+      "path": "src/Downpour.Service/SecurityEventPushWorker.cs",
+      "bytes": 4416,
+      "sha256": "f0677eb6d7af722388514818fa0db6f4d7a3567d43eb7643b605558fa5d9b1e0",
+      "review": "inventory",
+      "lines": 97
+    },
+    {
+      "path": "src/Downpour.Service/SecurityEventSnapshotStore.cs",
+      "bytes": 530,
+      "sha256": "c6d1b3261a745f23d604ce5c15c7335d7e539558ebed178afe4421063b1a240a",
+      "review": "inventory",
+      "lines": 14
+    },
+    {
+      "path": "src/Downpour.Service/SecurityFindingBridgeWorker.cs",
+      "bytes": 3245,
+      "sha256": "a63673c6f64e5298a82c9ea894f4c3566ecf4aa73d1969560782ed33f901762b",
+      "review": "inventory",
+      "lines": 71
+    },
+    {
+      "path": "src/Downpour.Service/SensorSettingsPipeWorker.cs",
+      "bytes": 6255,
+      "sha256": "bdb9b3a3183862699eef56107800bca3b0bae3a33568e128a71104d878342813",
+      "review": "inventory",
+      "lines": 115
+    },
+    {
+      "path": "src/Downpour.Service/SensorSettingsStore.cs",
+      "bytes": 4484,
+      "sha256": "65c10332fe013a2da29d060749c42612aada2936b29937ee259dce36acc723a4",
+      "review": "inventory",
+      "lines": 99
+    },
+    {
+      "path": "src/Downpour.Service/SigmaAmsiEventProcessor.cs",
+      "bytes": 9785,
+      "sha256": "b654945d8f2a2157479f67cb79bea5a69adcc4c05f7adb3f14b44a30878b7b9f",
+      "review": "inventory",
+      "lines": 214
+    },
+    {
+      "path": "src/Downpour.Service/SigmaAmsiPushWorker.cs",
+      "bytes": 6636,
+      "sha256": "0565c184f091b1c1fc4f7ebeb74cb81d3a00bb5bb574ec93aaab3662ef8b0fab",
+      "review": "inventory",
+      "lines": 141
+    },
+    {
+      "path": "src/Downpour.Service/SigmaEngine.cs",
+      "bytes": 39717,
+      "sha256": "1214bb471c9ec4790f56ffb9b8f31df8588bec2d525eda051a037e315617262e",
+      "review": "inventory",
+      "lines": 1150,
+      "reviewSignals": {
+        "catch_all": [
+          573
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Service/SnapshotCache.cs",
+      "bytes": 2553,
+      "sha256": "661132dd8ee1c386c6a888611b6c073549bd8d11d5035955bdff5f4c39d1d869",
+      "review": "inventory",
+      "lines": 70
+    },
+    {
+      "path": "src/Downpour.Service/SnapshotPipeWorker.cs",
+      "bytes": 2362,
+      "sha256": "d4080d59c4c86a524af7cc0c511f40dd18d62757a0be1d6c408bb10ab15e80e0",
+      "review": "inventory",
+      "lines": 52
+    },
+    {
+      "path": "src/Downpour.Service/SysmonAlertBatch.cs",
+      "bytes": 1251,
+      "sha256": "6807e4d7ed7e454d38eff493d5690a6add41c2ef44c3e5468d87e2c7fd5bbdcf",
+      "review": "inventory",
+      "lines": 24
+    },
+    {
+      "path": "src/Downpour.Service/SysmonProvider.cs",
+      "bytes": 9350,
+      "sha256": "50c9aca529ed72b9e80045833a7417cd54b6337ab9e4b60a57b790f088d87918",
+      "review": "inventory",
+      "lines": 217
+    },
+    {
+      "path": "src/Downpour.Service/SysmonPushWorker.cs",
+      "bytes": 5422,
+      "sha256": "424e14a64432eb635fc8a1a20a6f3e290d10b5ebe3011d604667389329f0910c",
+      "review": "inventory",
+      "lines": 115
+    },
+    {
+      "path": "src/Downpour.Service/SysmonSnapshotStore.cs",
+      "bytes": 543,
+      "sha256": "265570b2fdf5d866eaefc3609be2e68ea14d3d6385b54c361ad8c16834bf9fe0",
+      "review": "inventory",
+      "lines": 24
+    },
+    {
+      "path": "src/Downpour.Service/SystemSnapshotProvider.cs",
+      "bytes": 12067,
+      "sha256": "1d2696d9298b54f8828e61239686762847fa593f672271987059ebe3b7934fc2",
+      "review": "inventory",
+      "lines": 279,
+      "reviewSignals": {
+        "process_launch": [
+          44
+        ],
+        "native_api": [
+          268,
+          272,
+          276
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Service/ThreatDatabaseService.cs",
+      "bytes": 38984,
+      "sha256": "8a28a7873a0ae0dbae084776b8ca121ff4f02c8405b7bf318ddba8a5a8bd026e",
+      "review": "inventory",
+      "lines": 693,
+      "reviewSignals": {
+        "native_api": [
+          470,
+          473,
+          691
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Service/UsbActionExecutor.cs",
+      "bytes": 17937,
+      "sha256": "a9dc03361eca63ffbe6753889fd9727db14c7dc8accdeb995a1e2db6f6537ae6",
+      "review": "inventory",
+      "lines": 454,
+      "reviewSignals": {
+        "simulation": [
+          152
+        ],
+        "native_api": [
+          39,
+          42,
+          45,
+          48
+        ],
+        "catch_all": [
+          114,
+          435,
+          451
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Service/UsbActionPipeWorker.cs",
+      "bytes": 17114,
+      "sha256": "47240abb215153853be88e0fa9270fbc0a698fe5aa5e0490370a74d2d2a05c2d",
+      "review": "inventory",
+      "lines": 387
+    },
+    {
+      "path": "src/Downpour.Service/UsbInventoryPipeWorker.cs",
+      "bytes": 2636,
+      "sha256": "d066362ddb96120f37a5692cbe9e375b5479812520c82ecbd4dd0bdcfd9eb843",
+      "review": "inventory",
+      "lines": 61
+    },
+    {
+      "path": "src/Downpour.Service/UsbInventoryProvider.cs",
+      "bytes": 12623,
+      "sha256": "5b979a96671defb8dc1952d1a2eec5e5e068416a7ffa4c547bac3554371f68e6",
+      "review": "inventory",
+      "lines": 299
+    },
+    {
+      "path": "src/Downpour.Service/WindowsServiceInventoryPipeWorker.cs",
+      "bytes": 2264,
+      "sha256": "8fa3d6967514181267fe8de2d6a31dc699e3d5897a2293f4f660796246d03352",
+      "review": "inventory",
+      "lines": 50
+    },
+    {
+      "path": "src/Downpour.Service/WindowsServiceInventoryProvider.cs",
+      "bytes": 12847,
+      "sha256": "37dc337e869d6f3b9172f0304cde9b89be66b2e969cdb27c8170fc8477186dc9",
+      "review": "inventory",
+      "lines": 300,
+      "reviewSignals": {
+        "native_api": [
+          229,
+          232,
+          246,
+          249,
+          253
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Service/WirelessInventoryPipeWorker.cs",
+      "bytes": 2671,
+      "sha256": "433052469ba9064b6cea6554191b28ff3c0fc9c8848a0f803a7e5b0b4f8305b2",
+      "review": "inventory",
+      "lines": 61
+    },
+    {
+      "path": "src/Downpour.Service/WirelessInventoryProvider.cs",
+      "bytes": 5379,
+      "sha256": "bac1a1f904e8ef50e3d110eb65aadde9e89efae1ea068821ab858b7134f0be08",
+      "review": "inventory",
+      "lines": 152
+    },
+    {
+      "path": "src/Downpour.Service/WlanNative.cs",
+      "bytes": 11878,
+      "sha256": "204a15f1332ae0e76bf04cb648ea28006368cde8c5b519c610457381d18645d2",
+      "review": "inventory",
+      "lines": 295,
+      "reviewSignals": {
+        "native_api": [
+          270,
+          273,
+          276,
+          279,
+          283,
+          286,
+          290
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Service/YaraScanCoordinator.cs",
+      "bytes": 15120,
+      "sha256": "a4ddef4cb58d5a6ea0b5982ebca8449f104ef506b3be6b44f4dbebd769e33f80",
+      "review": "inventory",
+      "lines": 277
+    },
+    {
+      "path": "src/Downpour.Service/YaraScannerHost.cs",
+      "bytes": 9822,
+      "sha256": "e7992310703af36aa66f55099d8bd8edd2d475a8182589eaf8d0d330bd12563b",
+      "review": "inventory",
+      "lines": 215,
+      "reviewSignals": {
+        "process_launch": [
+          92,
+          104
+        ],
+        "native_api": [
+          205,
+          208,
+          212
+        ]
+      }
+    },
+    {
+      "path": "src/Downpour.Service/appsettings.Development.json",
+      "bytes": 137,
+      "sha256": "ab16b7b75d012475e615a41c21000c9215c6e02cd70b9c2618d25d885aa6ff33",
+      "review": "inventory",
+      "lines": 8
+    },
+    {
+      "path": "src/Downpour.Service/appsettings.json",
+      "bytes": 137,
+      "sha256": "ab16b7b75d012475e615a41c21000c9215c6e02cd70b9c2618d25d885aa6ff33",
+      "review": "inventory",
+      "lines": 8
+    },
+    {
+      "path": "src/Downpour.Service/sigma_rules/README.md",
+      "bytes": 1049,
+      "sha256": "19ea10079111c2ca6e0e1f5900e6f6343325c1eba48c1b02b029736d22646cd7",
+      "review": "inventory",
+      "lines": 15
+    },
+    {
+      "path": "src/Downpour.Service/sigma_rules/beacon_detection.yml",
+      "bytes": 3708,
+      "sha256": "32c4ca289683b3df0568db731a07bc4674a515ec1ff71d33c87f52a97af29d7a",
+      "review": "inventory",
+      "lines": 152
+    },
+    {
+      "path": "src/Downpour.Service/sigma_rules/credential_access_detection.yml",
+      "bytes": 3019,
+      "sha256": "b178fad75ccae7b94816df0b1e1f01dd6db9d861ca6def8a82c901eaa52c5796",
+      "review": "inventory",
+      "lines": 116
+    },
+    {
+      "path": "src/Downpour.Service/sigma_rules/data_exfiltration.yml",
+      "bytes": 4915,
+      "sha256": "045cfd4791515b93dd047fd04cd58ddec4f4f12bee36d00936f36673284e8891",
+      "review": "inventory",
+      "lines": 192
+    },
+    {
+      "path": "src/Downpour.Service/sigma_rules/defense_evasion_tampering.yml",
+      "bytes": 3564,
+      "sha256": "3046982e89c8573e50a44f55d1b4306b5f9609fe001ea7a12563d5e5a4ad8d7d",
+      "review": "inventory",
+      "lines": 132
+    },
+    {
+      "path": "src/Downpour.Service/sigma_rules/discovery_execution.yml",
+      "bytes": 3415,
+      "sha256": "4492622acc3bc6fabe6f4bfd0f9932e8a52d7718d41d8049e03b7caa0da1ea29",
+      "review": "inventory",
+      "lines": 132
+    },
+    {
+      "path": "src/Downpour.Service/sigma_rules/execution_scripting.yml",
+      "bytes": 4006,
+      "sha256": "add65baf1df268ba4744b778df8c6dea4682e8e61003c52085de066a70658cee",
+      "review": "inventory",
+      "lines": 157
+    },
+    {
+      "path": "src/Downpour.Service/sigma_rules/gaming_antiforensics_persist.yml",
+      "bytes": 3256,
+      "sha256": "bcf4519c10d2cd7be6221137df1484e082a964c9d59dcd52d96629bcb04280bc",
+      "review": "inventory",
+      "lines": 149
+    },
+    {
+      "path": "src/Downpour.Service/sigma_rules/impact_exfiltration.yml",
+      "bytes": 3527,
+      "sha256": "1708c5831be3abf1cb78bfd1f9596be96a25b5f18dbe6f4b465a7fa0a83e87cb",
+      "review": "inventory",
+      "lines": 141
+    },
+    {
+      "path": "src/Downpour.Service/sigma_rules/kerberos_attacks.yml",
+      "bytes": 3615,
+      "sha256": "bcd66262233c19f45465c25055d7c2a32e9cf3e948538156b07d134d0a160094",
+      "review": "inventory",
+      "lines": 139
+    },
+    {
+      "path": "src/Downpour.Service/sigma_rules/lateral_movement_detection.yml",
+      "bytes": 2201,
+      "sha256": "b96684cea0b6d09bfd37a3bdb6294ba5594627b77e007fdc25733d57885936f0",
+      "review": "inventory",
+      "lines": 86
+    },
+    {
+      "path": "src/Downpour.Service/sigma_rules/lateral_movement_tools.yml",
+      "bytes": 4516,
+      "sha256": "a6dac88b0de034f20d18a53b7fe1079f8239e03d7fef7e3b31d5fc699ce84687",
+      "review": "inventory",
+      "lines": 166
+    },
+    {
+      "path": "src/Downpour.Service/sigma_rules/living_off_the_land_drivers.yml",
+      "bytes": 4162,
+      "sha256": "21cc67c470ecabeaeab24b8d0e0af8bf5e32af632f7e6c4663ccef1182a7d908",
+      "review": "inventory",
+      "lines": 164
+    },
+    {
+      "path": "src/Downpour.Service/sigma_rules/persistence_techniques.yml",
+      "bytes": 2862,
+      "sha256": "a4e97d9c4e5c91c855ee7f44eef82d700be15d734f3ed90ae5f0ab93bfba147e",
+      "review": "inventory",
+      "lines": 105
+    },
+    {
+      "path": "src/Downpour.Service/sigma_rules/powershell_suspicious.yml",
+      "bytes": 3931,
+      "sha256": "60ca05f9e66ca38370fc26698c40ba57bda96828f88a66f72607735432fe3cd0",
+      "review": "inventory",
+      "lines": 146
+    },
+    {
+      "path": "src/Downpour.Service/sigma_rules/privilege_escalation.yml",
+      "bytes": 3429,
+      "sha256": "61a44d958e57c7f10ac9f5aa879b96e9e47bac24503c28d485209c94224994a8",
+      "review": "inventory",
+      "lines": 128
+    },
+    {
+      "path": "src/Downpour.Service/sigma_rules/proc_creation_lolbin_abuse.yml",
+      "bytes": 3936,
+      "sha256": "80ed6f6aac47ada92966a37119704800e5fc6be54bc9a46ece360860c1b9c51b",
+      "review": "inventory",
+      "lines": 154
+    },
+    {
+      "path": "src/Downpour.Service/sigma_rules/proc_creation_suspicious_parents.yml",
+      "bytes": 2810,
+      "sha256": "52cd2393ba86cba08ce5c35d2ffb194f45733599dcbdcb33fb31fc0241cd976d",
+      "review": "inventory",
+      "lines": 104
+    },
+    {
+      "path": "src/Downpour.Service/sigma_rules/scheduled_task_abuse.yml",
+      "bytes": 4420,
+      "sha256": "2a1186083997867be48fb532bf5b44b73c8847e572b02073e949212680e6fbf6",
+      "review": "inventory",
+      "lines": 169
+    },
+    {
+      "path": "src/Downpour.Service/sigma_rules/wmi_abuse_detection.yml",
+      "bytes": 4200,
+      "sha256": "22b421a82bf446b28fb0a052d1c45862f2600d1b8ab867f9cfc641b0b78a1616",
+      "review": "inventory",
+      "lines": 163
+    },
+    {
+      "path": "src/Downpour.UpdateHelper/Downpour.UpdateHelper.csproj",
+      "bytes": 494,
+      "sha256": "a7b09366f65f3470125a06111ba548ee1bfd617c66a2142b1c84d7f76b497190",
+      "review": "inventory",
+      "lines": 14
+    },
+    {
+      "path": "src/Downpour.UpdateHelper/Program.cs",
+      "bytes": 11404,
+      "sha256": "1c59a2d57c3efa5be84be857f3c2c7ef147b3e70da09bc5ce52b52cfd454b7e0",
+      "review": "inventory",
+      "lines": 212,
+      "reviewSignals": {
+        "process_launch": [
+          117
+        ],
+        "native_api": [
+          208
+        ],
+        "catch_all": [
+          132,
+          200,
+          205
+        ]
+      }
+    },
+    {
+      "path": "tests/Downpour.Tests/ActionPipeEndToEndTests.cs",
+      "bytes": 4644,
+      "sha256": "9b34ea47b40eb35dde8d28ce6707e73d1c409f26f18f2dad9364dee48f639f00",
+      "review": "inventory",
+      "lines": 109,
+      "reviewSignals": {
+        "process_launch": [
+          45
+        ]
+      }
+    },
+    {
+      "path": "tests/Downpour.Tests/ActionPolicyValidatorTests.cs",
+      "bytes": 14699,
+      "sha256": "f0222f0948da65f0185325f30bdbdb4679ec15dc542ee452e98a22fd4ec0ccb7",
+      "review": "inventory",
+      "lines": 378
+    },
+    {
+      "path": "tests/Downpour.Tests/AegisPhishingAnalyzerTests.cs",
+      "bytes": 4830,
+      "sha256": "fbdd3f0571c5e78c9d0e11156c3384233450212f7caf00f2c4e682c3ba3fa57f",
+      "review": "inventory",
+      "lines": 134
+    },
+    {
+      "path": "tests/Downpour.Tests/AlertCorrelationEngineTests.cs",
+      "bytes": 4306,
+      "sha256": "85c0757b755fa1ffb44d20bc56cf77ce2e5cc1fc8eb98afd25a57e7460d4b670",
+      "review": "inventory",
+      "lines": 85
+    },
+    {
+      "path": "tests/Downpour.Tests/AlertIndicatorTests.cs",
+      "bytes": 3821,
+      "sha256": "e9b004888e5d376b17b46705a033681611de8f2c73811feff37141414bc46c57",
+      "review": "inventory",
+      "lines": 65
+    },
+    {
+      "path": "tests/Downpour.Tests/AlertInvestigationExportTests.cs",
+      "bytes": 3703,
+      "sha256": "6bfdaceca0c6b2f6c3458f5f7882d2a21f4493ece4ffe5e8431afadbe1387538",
+      "review": "inventory",
+      "lines": 67
+    },
+    {
+      "path": "tests/Downpour.Tests/AlertNotificationPolicyTests.cs",
+      "bytes": 2630,
+      "sha256": "06abe344d317a1914ce45bc0ce5247d36f0d426c2233214243a2b64838ce0206",
+      "review": "inventory",
+      "lines": 69
+    },
+    {
+      "path": "tests/Downpour.Tests/AmsiSessionTests.cs",
+      "bytes": 4655,
+      "sha256": "23ff05e6ad5b80e971e2778bd58f52c651c1cf9d78361e2d5dd572a98ef24bf1",
+      "review": "inventory",
+      "lines": 114
+    },
+    {
+      "path": "tests/Downpour.Tests/AntiStalkerTests.cs",
+      "bytes": 7239,
+      "sha256": "76e823baf6f93c00dfb0359129081d26c64ba0036597188c5d7d4b170426e4cf",
+      "review": "inventory",
+      "lines": 146
+    },
+    {
+      "path": "tests/Downpour.Tests/AudioShieldTests.cs",
+      "bytes": 10799,
+      "sha256": "94f67af3f8a11aee3ee96084357cbad8dfd12595ec524c989b7729dc6c4c0397",
+      "review": "inventory",
+      "lines": 192
+    },
+    {
+      "path": "tests/Downpour.Tests/AuditChainTests.cs",
+      "bytes": 7693,
+      "sha256": "f161ba691f51ead4db6e274b3e66c62c1bbdee5dd0bb145d9db9dccac9907609",
+      "review": "inventory",
+      "lines": 193
+    },
+    {
+      "path": "tests/Downpour.Tests/CapabilityRegistryTests.cs",
+      "bytes": 2036,
+      "sha256": "3c06375df0c7047d5a3261c2741ecdd7e708d02b022416f61fe2eb2757f3d6ce",
+      "review": "inventory",
+      "lines": 30
+    },
+    {
+      "path": "tests/Downpour.Tests/CaseFileBuilderTests.cs",
+      "bytes": 3605,
+      "sha256": "2f9055e0eb4c50baab7478c68a549b00bcaf1272aa19ad2c5faee3b94e736eb3",
+      "review": "inventory",
+      "lines": 56
+    },
+    {
+      "path": "tests/Downpour.Tests/CleanupInspectorTests.cs",
+      "bytes": 2395,
+      "sha256": "f4e6c10cc49d8ce6da07776d749ea0872a00197698b4d016c51c5aa9c93cb874",
+      "review": "inventory",
+      "lines": 65
+    },
+    {
+      "path": "tests/Downpour.Tests/CognitiveImmuneSystemCoordinatorTests.cs",
+      "bytes": 3738,
+      "sha256": "c995ea3bc729f08051209965bd5aa59c707457d95f61a7cb846288c01552ab79",
+      "review": "inventory",
+      "lines": 78
+    },
+    {
+      "path": "tests/Downpour.Tests/DefenseSuiteCoordinatorTests.cs",
+      "bytes": 7057,
+      "sha256": "a293ef577daab187e2e5e8ca13483a7188e3ff0f3bb07210e5d102760362ad0f",
+      "review": "inventory",
+      "lines": 152
+    },
+    {
+      "path": "tests/Downpour.Tests/DetectionHealthTests.cs",
+      "bytes": 3743,
+      "sha256": "b449ba84e7152250f231e666ce96379ef66f7230176d37a16a8ee6764e5fcf00",
+      "review": "inventory",
+      "lines": 79
+    },
+    {
+      "path": "tests/Downpour.Tests/DnsBaselinePrivacyTests.cs",
+      "bytes": 1347,
+      "sha256": "7fede138f2b6669a8ecf56dcf92354aefb09ce3349bbb64f47265c074d59b562",
+      "review": "inventory",
+      "lines": 36
+    },
+    {
+      "path": "tests/Downpour.Tests/DnsInventoryTests.cs",
+      "bytes": 6816,
+      "sha256": "553a534976c78ca7d7bf54321e84580fb9b1208d4cf0f780806af7fec8519b24",
+      "review": "inventory",
+      "lines": 179
+    },
+    {
+      "path": "tests/Downpour.Tests/DnsPipeRoundTripTests.cs",
+      "bytes": 4189,
+      "sha256": "5aa1923159ce0af6f2d2bae35195ac61947314d3c550f9d471eeba300b4f2a2b",
+      "review": "inventory",
+      "lines": 103
+    },
+    {
+      "path": "tests/Downpour.Tests/Downpour.Tests.csproj",
+      "bytes": 1411,
+      "sha256": "2ecd0def052f33fa5ab507d4b08509a5d864ce294aa03b97aafbb1e37579c73a",
+      "review": "inventory",
+      "lines": 31
+    },
+    {
+      "path": "tests/Downpour.Tests/DriverActionPolicyValidatorTests.cs",
+      "bytes": 13933,
+      "sha256": "a2c0ae8ba9ce9442f0bc834a86170656872e31c8d31c8c8f5f7a9efb69eb65e4",
+      "review": "inventory",
+      "lines": 331
+    },
+    {
+      "path": "tests/Downpour.Tests/DriverInventoryProviderTests.cs",
+      "bytes": 676,
+      "sha256": "68078cb8af3128979e143f18771eda87c6bd8270b7dda8ed4db1a4ca03f7883a",
+      "review": "inventory",
+      "lines": 22
+    },
+    {
+      "path": "tests/Downpour.Tests/DriverPackageInventoryProviderTests.cs",
+      "bytes": 5693,
+      "sha256": "8129f55674825fde283145e16afa79ae95b0322c0150a88322f0b5cac14b8b2c",
+      "review": "inventory",
+      "lines": 137
+    },
+    {
+      "path": "tests/Downpour.Tests/EmergencyResponseCoordinatorTests.cs",
+      "bytes": 8784,
+      "sha256": "a97c9d76cae25d092373111a6aa09657e7ac53a9b7de81777e5206138269f669",
+      "review": "inventory",
+      "lines": 196,
+      "reviewSignals": {
+        "simulation": [
+          33,
+          37,
+          44,
+          50,
+          130,
+          140
+        ]
+      }
+    },
+    {
+      "path": "tests/Downpour.Tests/EpssClientTests.cs",
+      "bytes": 5111,
+      "sha256": "3463596e9e2b52a2967d097c561596a734975fa9464b4916c07f8c418e11431a",
+      "review": "inventory",
+      "lines": 120
+    },
+    {
+      "path": "tests/Downpour.Tests/FeatureSwitchManagerTests.cs",
+      "bytes": 8003,
+      "sha256": "edf6d7fb7e0cc51c45cf36c17ec525935f99658155298f840ba3271ced6b9903",
+      "review": "inventory",
+      "lines": 253,
+      "reviewSignals": {
+        "simulation": [
+          168
+        ],
+        "catch_all": [
+          31,
+          62,
+          95,
+          121,
+          150,
+          183,
+          213,
+          249
+        ]
+      }
+    },
+    {
+      "path": "tests/Downpour.Tests/FirewallActionTests.cs",
+      "bytes": 14745,
+      "sha256": "3c56f323f4ae2c98f78a91323c05bd9585ea841f91bbab06a653394be672ed77",
+      "review": "inventory",
+      "lines": 356,
+      "reviewSignals": {
+        "catch_all": [
+          69
+        ]
+      }
+    },
+    {
+      "path": "tests/Downpour.Tests/FirewallInventoryTests.cs",
+      "bytes": 8400,
+      "sha256": "65346c62b288d522ab6a4e98854e6a98c840bccad0947e8e4047388fd184859d",
+      "review": "inventory",
+      "lines": 169
+    },
+    {
+      "path": "tests/Downpour.Tests/ForensicEvidenceCollectorTests.cs",
+      "bytes": 9782,
+      "sha256": "9f5edffd05f81d4cd9aa907fcaab57a2c02b16878a83dc4c5b90ab1f57a7b4a9",
+      "review": "inventory",
+      "lines": 247
+    },
+    {
+      "path": "tests/Downpour.Tests/GpuThermalCounterTests.cs",
+      "bytes": 1539,
+      "sha256": "0754849475633fdbfb3693cb1f57880d75505465ae290755a11c7fde45b2e589",
+      "review": "inventory",
+      "lines": 40
+    },
+    {
+      "path": "tests/Downpour.Tests/HardeningPostureTests.cs",
+      "bytes": 8953,
+      "sha256": "fd581ca1fea47c92579411f425dd91f21beba79ff54ecd2ae800aea96f17481d",
+      "review": "inventory",
+      "lines": 162
+    },
+    {
+      "path": "tests/Downpour.Tests/HostIsolationTests.cs",
+      "bytes": 9341,
+      "sha256": "f32e202cb96cfc849f7eccad505cc851175ccf0e30fa88e63c2074881250bc29",
+      "review": "inventory",
+      "lines": 220,
+      "reviewSignals": {
+        "simulation": [
+          212
+        ]
+      }
+    },
+    {
+      "path": "tests/Downpour.Tests/InstalledSoftwareInventoryTests.cs",
+      "bytes": 2063,
+      "sha256": "764cb388145fd32f41b239bd509d6b9ef7faec31c7a6d87b68acf559faf6887f",
+      "review": "inventory",
+      "lines": 51
+    },
+    {
+      "path": "tests/Downpour.Tests/IntelLookupTests.cs",
+      "bytes": 12507,
+      "sha256": "00f4e09a911eb4272f67402b412d25c63601e26ac77d38cbba1db8c898435ddc",
+      "review": "inventory",
+      "lines": 241
+    },
+    {
+      "path": "tests/Downpour.Tests/InventoryPipeEndToEndTests.cs",
+      "bytes": 4327,
+      "sha256": "1f5d612737b4df6b5e176280b17bf5dd2d318026e04ae7a73d817f205a8dd8b6",
+      "review": "inventory",
+      "lines": 102
+    },
+    {
+      "path": "tests/Downpour.Tests/IoTDeviceScannerTests.cs",
+      "bytes": 3933,
+      "sha256": "f2b90d75b95d14b6f23ee000f2c0e2d0011bd2032163255508382cfaf09f28a8",
+      "review": "inventory",
+      "lines": 99
+    },
+    {
+      "path": "tests/Downpour.Tests/KevCatalogClientTests.cs",
+      "bytes": 6678,
+      "sha256": "125df75f866332a3821c37d5e769bb49cdec611eb68f574335ac03d4e0893852",
+      "review": "inventory",
+      "lines": 156
+    },
+    {
+      "path": "tests/Downpour.Tests/KevSoftwareMatchEngineTests.cs",
+      "bytes": 3062,
+      "sha256": "b981c4cf29a0a2e3158fed4541b206f4eda4f33eac20258ccd21d42b1e1b7307",
+      "review": "inventory",
+      "lines": 69
+    },
+    {
+      "path": "tests/Downpour.Tests/MemoryForensicsInspectorTests.cs",
+      "bytes": 5597,
+      "sha256": "faff4325d506341fea14034c482ac3b3783776078f10be090eeab98dbd5b642b",
+      "review": "inventory",
+      "lines": 150,
+      "reviewSignals": {
+        "simulation": [
+          108,
+          110,
+          122,
+          135,
+          140
+        ]
+      }
+    },
+    {
+      "path": "tests/Downpour.Tests/NetworkInventoryProviderTests.cs",
+      "bytes": 1314,
+      "sha256": "2f68c5f13b6a59746529261f9e7659667c690218051611b2c9443d073338fa35",
+      "review": "inventory",
+      "lines": 37
+    },
+    {
+      "path": "tests/Downpour.Tests/OperationJournalTests.cs",
+      "bytes": 13949,
+      "sha256": "cd452626a684a436ae8b3d129f5202b98a09c62a3217862eaadd25eb42aeb50b",
+      "review": "inventory",
+      "lines": 248
+    },
+    {
+      "path": "tests/Downpour.Tests/PackageIntegrityInspectorTests.cs",
+      "bytes": 10470,
+      "sha256": "5ce6371079a18a122b545f6b1393bc0b812006dab3a5581b0f51de32be389d6d",
+      "review": "inventory",
+      "lines": 205
+    },
+    {
+      "path": "tests/Downpour.Tests/ParentalControlsManagerTests.cs",
+      "bytes": 11295,
+      "sha256": "4708d678348aa95aec0d8225c03d8454ba503fcf386c8c9ed922ac8bf9c7f7b7",
+      "review": "inventory",
+      "lines": 265,
+      "reviewSignals": {
+        "simulation": [
+          13,
+          227,
+          234,
+          236,
+          249
+        ]
+      }
+    },
+    {
+      "path": "tests/Downpour.Tests/ParserFuzzTests.cs",
+      "bytes": 8868,
+      "sha256": "1bd36168f2fbf549da3d539046f1b546a32efc80ddfb140ed154e4f2a2e23620",
+      "review": "inventory",
+      "lines": 172,
+      "reviewSignals": {
+        "simulation": [
+          102,
+          116,
+          134,
+          142,
+          157
+        ]
+      }
+    },
+    {
+      "path": "tests/Downpour.Tests/PersistenceInventoryTests.cs",
+      "bytes": 14407,
+      "sha256": "7ab8e695b01b7470eb4b8bf2a66ab0d8c8658cfae8f3f51d3fe9a9b7caa41c54",
+      "review": "inventory",
+      "lines": 269
+    },
+    {
+      "path": "tests/Downpour.Tests/PhysicalDiskCounterReaderTests.cs",
+      "bytes": 619,
+      "sha256": "97207f7e3db7f1ea41856366b13b1813a67e765e76d9619b4ccbac09cec88df0",
+      "review": "inventory",
+      "lines": 17
+    },
+    {
+      "path": "tests/Downpour.Tests/ProcessTerminationActionTests.cs",
+      "bytes": 10397,
+      "sha256": "6a883571bd89cb0b2414162a5541b7e5db69159dcc5b62d41dd649de3875333a",
+      "review": "inventory",
+      "lines": 266,
+      "reviewSignals": {
+        "process_launch": [
+          115,
+          122,
+          185,
+          192,
+          199
+        ],
+        "catch_all": [
+          41,
+          136,
+          262
+        ]
+      }
+    },
+    {
+      "path": "tests/Downpour.Tests/QuarantineActionTests.cs",
+      "bytes": 11310,
+      "sha256": "7abd3ad44fd26ff7f547ce797df87560d952e27d26d780ccdca7b11b19fab99d",
+      "review": "inventory",
+      "lines": 227
+    },
+    {
+      "path": "tests/Downpour.Tests/QuarantineExecutorTests.cs",
+      "bytes": 13578,
+      "sha256": "a268fb622e2abfbf7e2b24d8ff805440170e6df89c262b89ab9c5ebe41c3a457",
+      "review": "inventory",
+      "lines": 279,
+      "reviewSignals": {
+        "simulation": [
+          205,
+          218,
+          232,
+          246,
+          256
+        ],
+        "native_api": [
+          276
+        ]
+      }
+    },
+    {
+      "path": "tests/Downpour.Tests/QuarantineManagerTests.cs",
+      "bytes": 9161,
+      "sha256": "605ea4fc49791219063d809e90a992455b1187bc7b09d20b8b635200a5e0d6ce",
+      "review": "inventory",
+      "lines": 275,
+      "reviewSignals": {
+        "catch_all": [
+          53
+        ]
+      }
+    },
+    {
+      "path": "tests/Downpour.Tests/RansomwareDefenseInspectorTests.cs",
+      "bytes": 6445,
+      "sha256": "b632208cd85c63dac941a467dadbccf0201a05f131a7012a59ab03bc5a34e48a",
+      "review": "inventory",
+      "lines": 163
+    },
+    {
+      "path": "tests/Downpour.Tests/ReleaseUpdateClientTests.cs",
+      "bytes": 7708,
+      "sha256": "650cf5ffbec0e86986c0563d9b45a78bf17435bf6391e5a0a7ef1480a44a1ee4",
+      "review": "inventory",
+      "lines": 159
+    },
+    {
+      "path": "tests/Downpour.Tests/RemoteAccessTests.cs",
+      "bytes": 3943,
+      "sha256": "24e8ec496a72525cd2430177e5bb1b5c9afc58c28a830b92cac4a613b2a85d5e",
+      "review": "inventory",
+      "lines": 83
+    },
+    {
+      "path": "tests/Downpour.Tests/SafeFileSandboxTests.cs",
+      "bytes": 8546,
+      "sha256": "dd50e316212f16a1daec58fe58d819761cb6d72e4d620805f43d4a1feb707e0d",
+      "review": "inventory",
+      "lines": 187
+    },
+    {
+      "path": "tests/Downpour.Tests/SecurityAlertRepositoryTests.cs",
+      "bytes": 17170,
+      "sha256": "f96153015ef23f61a26a29ab9f7913b1069cb2fc047ce046be99c05b57ea76fb",
+      "review": "inventory",
+      "lines": 279
+    },
+    {
+      "path": "tests/Downpour.Tests/SecurityEventProviderTests.cs",
+      "bytes": 5382,
+      "sha256": "2fb940af991acb46ba0d1a3c3f81b1b021dafe80bd0849d084f4306f2e161b3b",
+      "review": "inventory",
+      "lines": 125
+    },
+    {
+      "path": "tests/Downpour.Tests/SecurityEventPushBatchTests.cs",
+      "bytes": 3379,
+      "sha256": "8877b5ab92f8b5ecc8687eeeb1395743da944e6f27f36b594b8b2ddfdf1d05cd",
+      "review": "inventory",
+      "lines": 81
+    },
+    {
+      "path": "tests/Downpour.Tests/SecurityFindingTriageTests.cs",
+      "bytes": 8163,
+      "sha256": "5ae4896ff4e566f3b0db297b6b5128286f75a04fa04adad9d3dd01c1351d7b44",
+      "review": "inventory",
+      "lines": 164
+    },
+    {
+      "path": "tests/Downpour.Tests/SensorAvailabilityTests.cs",
+      "bytes": 1459,
+      "sha256": "c11b9a3e539faa4ebdc93cf17891b38a707b03a5710026d82b4e171cac38c5e6",
+      "review": "inventory",
+      "lines": 39
+    },
+    {
+      "path": "tests/Downpour.Tests/SensorSettingsStoreTests.cs",
+      "bytes": 6694,
+      "sha256": "30af30700f79999bd6d9187bb484a44d46a1ce1e2ae18cca58d42222614c0b24",
+      "review": "inventory",
+      "lines": 172,
+      "reviewSignals": {
+        "catch_all": [
+          26
+        ]
+      }
+    },
+    {
+      "path": "tests/Downpour.Tests/ServiceInstallAnalyzerTests.cs",
+      "bytes": 6258,
+      "sha256": "340a488b492cf354bc3e1277f51316146843ef74d0df9ce75a66286cb7aa9888",
+      "review": "inventory",
+      "lines": 104
+    },
+    {
+      "path": "tests/Downpour.Tests/ServiceRiskAnalyzerTests.cs",
+      "bytes": 6724,
+      "sha256": "1c6eb3a53dc5ab65f645be3342bec7406286f8749ea8e2d48408a3c783e44f04",
+      "review": "inventory",
+      "lines": 116
+    },
+    {
+      "path": "tests/Downpour.Tests/SigmaAlertPersistenceTests.cs",
+      "bytes": 3847,
+      "sha256": "85db76dd9d82bfe2e610c4bbe331490164a3094a1cb4bf3da038097503857925",
+      "review": "inventory",
+      "lines": 79
+    },
+    {
+      "path": "tests/Downpour.Tests/SigmaEngineTests.cs",
+      "bytes": 13026,
+      "sha256": "a01c99f11c7fb69e2776ca0f9afed343f6df95c2a18282a6a36f3494ce9a037e",
+      "review": "inventory",
+      "lines": 391
+    },
+    {
+      "path": "tests/Downpour.Tests/SnapshotCacheTests.cs",
+      "bytes": 2625,
+      "sha256": "e6d391c4ba792a223a02785f057e17263e4f1d7d394bb44ca7134c04fb1bc94e",
+      "review": "inventory",
+      "lines": 64
+    },
+    {
+      "path": "tests/Downpour.Tests/SnapshotPipeIntegrationTests.cs",
+      "bytes": 5668,
+      "sha256": "531dbecb8b09a05bfd8430ee552dfcd2bac6a38bffa33f89b85609c8ea48e502",
+      "review": "inventory",
+      "lines": 141
+    },
+    {
+      "path": "tests/Downpour.Tests/StaticFileInspectorTests.cs",
+      "bytes": 4469,
+      "sha256": "ac3ae9db8b07af64fd4076069be10079db2ae010c92cd8242feca6ea98d2a242",
+      "review": "inventory",
+      "lines": 100
+    },
+    {
+      "path": "tests/Downpour.Tests/SysmonAlertTests.cs",
+      "bytes": 4329,
+      "sha256": "118652a80cbe58105c65e8db8af6aa536d2f8b9da8d131d7b59020dd0c6351f8",
+      "review": "inventory",
+      "lines": 94
+    },
+    {
+      "path": "tests/Downpour.Tests/SystemSnapshotClientTests.cs",
+      "bytes": 1054,
+      "sha256": "89c1781f8a3481ad247ca6847c13e9cdb9116504904dc73dce31532434cb0e89",
+      "review": "inventory",
+      "lines": 33
+    },
+    {
+      "path": "tests/Downpour.Tests/SystemSnapshotProviderTests.cs",
+      "bytes": 6814,
+      "sha256": "4a049fe27d433c4a9735d9520b4771585c382fb2a60666a8a4e27dbdc6a8ec4a",
+      "review": "inventory",
+      "lines": 136
+    },
+    {
+      "path": "tests/Downpour.Tests/ThreatDatabaseTests.cs",
+      "bytes": 20517,
+      "sha256": "3c32598bc9bbf32fcdc1a1c6ecbb1cd961fc30de2f33612dbd8007b16861c75d",
+      "review": "inventory",
+      "lines": 376
+    },
+    {
+      "path": "tests/Downpour.Tests/ThreatPulseTests.cs",
+      "bytes": 5079,
+      "sha256": "f47dfd7c0aa9896731307522cf5ea6552dd393f4fd881e6f88157f4ab16db12c",
+      "review": "inventory",
+      "lines": 116
+    },
+    {
+      "path": "tests/Downpour.Tests/ThreatVerdictEngineTests.cs",
+      "bytes": 5888,
+      "sha256": "a700273183177eb15bd8dfa949f3aadf807349ffc6a7290563609d1c6f55ac40",
+      "review": "inventory",
+      "lines": 112
+    },
+    {
+      "path": "tests/Downpour.Tests/TimelineAttackDetectorTests.cs",
+      "bytes": 5858,
+      "sha256": "57f3d45b56a0cf4df4f7208bd2e798d2e62b765e27d9455cac6c7f7c648b0501",
+      "review": "inventory",
+      "lines": 165
+    },
+    {
+      "path": "tests/Downpour.Tests/ToolsHubCoordinatorTests.cs",
+      "bytes": 3092,
+      "sha256": "953c5e3912c230699169330969b6bf0695d76eb5e49f32f27e6c9b0f2c1c06fa",
+      "review": "inventory",
+      "lines": 79
+    },
+    {
+      "path": "tests/Downpour.Tests/UpdatePathPolicyTests.cs",
+      "bytes": 879,
+      "sha256": "1e032a74e454ddd54dc1d08ac294d059b0a45fb42451bfc556a94e96478712ec",
+      "review": "inventory",
+      "lines": 24
+    },
+    {
+      "path": "tests/Downpour.Tests/UsbActionTests.cs",
+      "bytes": 19105,
+      "sha256": "06d7ef1a28c9449ab4d14f8d90f252d75fd6e36a2635f2522e890b0ab037c5bd",
+      "review": "inventory",
+      "lines": 422,
+      "reviewSignals": {
+        "catch_all": [
+          44
+        ]
+      }
+    },
+    {
+      "path": "tests/Downpour.Tests/UsbInventoryTests.cs",
+      "bytes": 4765,
+      "sha256": "c30c279b1752cf9c4ebb74943545bcd06936fad2f15bad20108c4c9a2f73023d",
+      "review": "inventory",
+      "lines": 138
+    },
+    {
+      "path": "tests/Downpour.Tests/VpnPostureInspectorTests.cs",
+      "bytes": 6716,
+      "sha256": "d037efb4c91b81da7570b5fae22ab11f1b8d154d07c23934fcab95a8133d3bfa",
+      "review": "inventory",
+      "lines": 180
+    },
+    {
+      "path": "tests/Downpour.Tests/VulnerabilityMatchEngineTests.cs",
+      "bytes": 6950,
+      "sha256": "328147fead3608e7d8d47ba7cd9eb53133381461587ee9ee386682a803bd89d7",
+      "review": "inventory",
+      "lines": 166
+    },
+    {
+      "path": "tests/Downpour.Tests/WindowsServiceInventoryProviderTests.cs",
+      "bytes": 2535,
+      "sha256": "03d809e0f430f35e33d6096e29c1b70a734aad8184562ef604c4b8e581bc72d9",
+      "review": "inventory",
+      "lines": 53
+    },
+    {
+      "path": "tests/Downpour.Tests/WirelessInventoryTests.cs",
+      "bytes": 7060,
+      "sha256": "5f5729f187d14112538a13ba11f7418a8d7651f1a8a425115c7bb852317e47b5",
+      "review": "inventory",
+      "lines": 177
+    },
+    {
+      "path": "tests/Downpour.Tests/YaraScannerTests.cs",
+      "bytes": 22143,
+      "sha256": "9c7f674beafd3670c486fdbfc48cd89238d7e17de16c4096cdab6348eb903c9c",
+      "review": "inventory",
+      "lines": 487
+    },
+    {
+      "path": "tools/extract_v29_constants.py",
+      "bytes": 5575,
+      "sha256": "e8d4c0b62258b923c0e711ad3ee949f5ba27da560f7a36b82cebb753699f9b5e",
+      "review": "inventory",
+      "lines": 119
+    },
+    {
+      "path": "tools/yara_rule_quality.py",
+      "bytes": 2357,
+      "sha256": "26d1d016ad9bc1ddbaffd09ef29dc6fa2ce43a1247300e9a9f8fc44b3f0f7cf2",
+      "review": "inventory",
+      "lines": 43
+    }
+  ]
+}

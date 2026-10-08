@@ -1,5 +1,12 @@
 # Downpour Next TODO
 
+## 2026-10-08 reanalysis and recovery milestone (codex-primary, DN-036)
+
+- [x] Reconcile current agent work, inventory all 530 tracked files, parse tracked JSON/XML, run current Debug suite (1,065 passed).
+- [x] Repair host-isolation failed cleanup/rollback/state-write handling and actual IPC state; 18 focused tests pass.
+- [ ] Clean committed Release build/tests, native route smoke, verified v0.1.19 archive and GitHub publication.
+- [ ] Installed elevation/signing boundary, parental measurement/enforcement, clean-machine/reboot recovery, full route accessibility and v29 acceptance remain open.
+
 ## Active owner continuation (2026-10-07, claude-parity-audit)
 
 - [x] Fix Parental Controls initialization crash; remove simulated usage; expose persistence errors; verified real page launch (dd1ecc1).

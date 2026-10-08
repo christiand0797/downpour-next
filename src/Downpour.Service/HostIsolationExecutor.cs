@@ -14,7 +14,7 @@ public sealed record HostIsolationRecord(
     IReadOnlyList<string> RulesCreated);
 
 /// <summary>
-/// Executes policy-checked, audited emergency host isolation with an enforced auto-expiry guarantee (DN-008 Phase 5).
+/// Executes policy-checked, audited emergency host isolation with scheduled automatic expiry (DN-008 Phase 5).
 /// Creates inbound and outbound block-all rules across all profiles (loopback traffic is exempt from Windows Firewall).
 /// Expiry does not depend on Downpour staying open: before any rule is added, a one-time Windows scheduled task is
 /// registered that runs this binary with --release-isolation at the expiry time. If that cannot be scheduled, isolation
@@ -126,6 +126,9 @@ public sealed class HostIsolationExecutor : IDisposable
 
         lock (_gate)
         {
+            if (_currentState?.IsIsolated == true)
+                return (false, "already-isolated", "Release the existing isolation before starting another duration.", _currentState.RulesCreated, _currentState.ExpiresAtUtc);
+
             // Cancel any pending timer
             _expiryCts?.Cancel();
             _expiryCts?.Dispose();
@@ -138,46 +141,35 @@ public sealed class HostIsolationExecutor : IDisposable
                 return (false, "denied-release-unscheduled", scheduleError, [], DateTimeOffset.MinValue);
             }
 
+            var record = new HostIsolationRecord(true, now, expiresAtUtc, durationMinutes, reason, rulesCreated);
+            // Persist recovery intent before the first system change. A failed write must not
+            // leave firewall rules with no durable record of their expiry.
             try
             {
-                // Inbound and outbound block-all rules on every profile (Action 0 = Block; loopback is exempt).
+                SaveState(record);
+                _audit.Record("isolate-host", "starting", "host", reason);
+            }
+            catch (Exception ex)
+            {
+                _releaseScheduler.Cancel();
+                return (false, "recovery-state-error", $"Isolation was not applied: recovery state or audit could not be saved ({ex.GetType().Name}).", [], DateTimeOffset.MinValue);
+            }
+            _currentState = record;
+            try
+            {
                 _backend.AddRule(RuleBlockOut, $"Downpour host isolation outbound block (expires {expiresAtUtc:O})", 0, 2, true, "*", 2147483647, "DownpourNext_Isolation");
                 _backend.AddRule(RuleBlockIn, $"Downpour host isolation inbound block (expires {expiresAtUtc:O})", 0, 1, true, "*", 2147483647, "DownpourNext_Isolation");
             }
             catch (Exception ex)
             {
-                // Roll back any partially added isolation rules and the scheduled release.
-                TryRemoveRules();
-                _releaseScheduler.Cancel();
-                return (false, "firewall-error", $"Failed to configure host isolation firewall rules: {ex.Message}", [], DateTimeOffset.MinValue);
+                var rollback = Release("Rollback after firewall setup failure");
+                if (!rollback.Succeeded && IsIsolated) StartExpiryTimer(TimeSpan.FromSeconds(30));
+                return (false, rollback.Succeeded ? "firewall-error" : "rollback-incomplete",
+                    $"Isolation setup failed ({ex.GetType().Name}). {rollback.Message}",
+                    IsIsolated ? rulesCreated : [], IsIsolated ? expiresAtUtc : DateTimeOffset.MinValue);
             }
 
-            var record = new HostIsolationRecord(
-                IsIsolated: true,
-                IsolatedAtUtc: now,
-                ExpiresAtUtc: expiresAtUtc,
-                DurationMinutes: durationMinutes,
-                Reason: reason,
-                RulesCreated: rulesCreated);
-
-            SaveState(record);
-            _currentState = record;
-
-            // Schedule auto-expiry
-            var delay = expiresAtUtc - now;
-            var token = _expiryCts.Token;
-            _ = Task.Run(async () =>
-            {
-                try
-                {
-                    await Task.Delay(delay, token);
-                    if (!token.IsCancellationRequested)
-                    {
-                        AutoExpireIsolation();
-                    }
-                }
-                catch (OperationCanceledException) { }
-            }, token);
+            StartExpiryTimer(expiresAtUtc - now);
 
             // If lockWorkstation requested, trigger workstation lock
             if (lockWorkstation)
@@ -204,43 +196,63 @@ public sealed class HostIsolationExecutor : IDisposable
     {
         lock (_gate)
         {
-            if (_currentState is null || !_currentState.IsIsolated)
+            bool wasIsolated = _currentState?.IsIsolated == true;
+            var errors = TryRemoveRules();
+            if (errors.Count > 0)
             {
-                // Ensure rules are removed even if state already says not isolated
-                TryRemoveRules();
-                return (true, "not-isolated", "Host is not currently isolated.");
+                // Keep every release path alive. Never announce restored connectivity while
+                // removal failed or absence could not be verified.
+                _currentState ??= new HostIsolationRecord(true, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow,
+                    0, "Recovery required", [RuleBlockOut, RuleBlockIn]);
+                _currentState = _currentState with { IsIsolated = true };
+                try { SaveState(_currentState); } catch (IOException) { } catch (UnauthorizedAccessException) { }
+                _audit.Record("release-isolation", "cleanup-incomplete", "host", string.Join("; ", errors));
+                return (false, "cleanup-incomplete", "Some isolation rules could not be removed or verified. Existing automatic recovery is retained; retry release with administrator access.");
             }
 
             _expiryCts?.Cancel();
             _expiryCts?.Dispose();
             _expiryCts = null;
-
-            TryRemoveRules();
+            if (_currentState is not null) _currentState = _currentState with { IsIsolated = false };
+            try
+            {
+                if (_currentState is not null) SaveState(_currentState);
+                _audit.Record("release-isolation", "released", "host", reason);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                // Rules are gone, but retain the task to retry the durable bookkeeping.
+                return (false, "released-state-error", "Isolation rules were removed; the recovery state or audit could not be saved. The scheduled recovery task is retained.");
+            }
             _releaseScheduler.Cancel();
-
-            var updated = _currentState with { IsIsolated = false };
-            SaveState(updated);
-            _currentState = updated;
+            return (true, wasIsolated ? "released" : "not-isolated", "Downpour isolation rules were verified absent. Other firewall policies still apply.");
         }
-
-        return (true, "released", "Host isolation has been released and normal network traffic is restored.");
     }
 
-    private void AutoExpireIsolation()
+    private void StartExpiryTimer(TimeSpan delay)
     {
-        lock (_gate)
+        _expiryCts?.Cancel();
+        _expiryCts?.Dispose();
+        _expiryCts = new CancellationTokenSource();
+        var token = _expiryCts.Token;
+        _ = Task.Run(async () =>
         {
-            if (_currentState is null || !_currentState.IsIsolated) return;
-
-            TryRemoveRules();
-            _releaseScheduler.Cancel();
-
-            var updated = _currentState with { IsIsolated = false };
-            SaveState(updated);
-            _currentState = updated;
-
-            _audit.Record("auto-expire-isolation", "released", "host", "Host isolation automatically expired");
-        }
+            try
+            {
+                await Task.Delay(delay < TimeSpan.Zero ? TimeSpan.Zero : delay, token);
+                while (!token.IsCancellationRequested)
+                {
+                    var result = Release("Automatic expiry recovery");
+                    if (result.Succeeded || !IsIsolated) break;
+                    await Task.Delay(TimeSpan.FromSeconds(30), token);
+                }
+            }
+            catch (OperationCanceledException) { }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                // An independent scheduled task remains registered if local audit/storage fails.
+            }
+        }, token);
     }
 
     /// <summary>
@@ -250,9 +262,8 @@ public sealed class HostIsolationExecutor : IDisposable
     public static int ReleaseFromScheduledTask()
     {
         using var executor = new HostIsolationExecutor(releaseScheduler: new NoReleaseScheduler());
-        executor.Release("Scheduled automatic release");
-        executor._audit.Record("auto-expire-isolation", "released", "host", "Host isolation released by its scheduled task");
-        return 0;
+        var result = executor.Release("Scheduled automatic release");
+        return result.Succeeded ? 0 : 1;
     }
 
     private sealed class NoReleaseScheduler : IIsolationReleaseScheduler
@@ -261,56 +272,37 @@ public sealed class HostIsolationExecutor : IDisposable
         public void Cancel() { }
     }
 
-    private void TryRemoveRules()
+    private IReadOnlyList<string> TryRemoveRules()
     {
-        try { _backend.RemoveRule(RuleBlockOut); } catch { }
-        try { _backend.RemoveRule(RuleBlockIn); } catch { }
-        try { _backend.RemoveRule(RuleAllowLoopbackIn); } catch { }
-        try { _backend.RemoveRule(RuleAllowLoopbackOut); } catch { }
+        var errors = new List<string>();
+        var names = new[] { RuleBlockOut, RuleBlockIn, RuleAllowLoopbackIn, RuleAllowLoopbackOut };
+        foreach (var name in names)
+        {
+            try { _backend.RemoveRule(name); }
+            catch (Exception ex) { errors.Add($"{name}: {ex.GetType().Name}"); }
+        }
+        try
+        {
+            if (_backend.EnumerateRules().Any(rule => names.Contains(rule.Name, StringComparer.OrdinalIgnoreCase)))
+                errors.Add("Isolation rules remain present.");
+        }
+        catch (Exception ex) { errors.Add($"Cannot verify rule removal: {ex.GetType().Name}"); }
+        return errors;
     }
 
     private void RecoverStartupState()
     {
         lock (_gate)
         {
-            var loaded = LoadState();
-            if (loaded is { IsIsolated: true })
+            _currentState = LoadState();
+            if (_currentState is not { IsIsolated: true }) return;
+            var remaining = _currentState.ExpiresAtUtc - DateTimeOffset.UtcNow;
+            if (remaining <= TimeSpan.Zero)
             {
-                var now = DateTimeOffset.UtcNow;
-                if (now >= loaded.ExpiresAtUtc)
-                {
-                    // Expired while service was stopped
-                    TryRemoveRules();
-                    var expired = loaded with { IsIsolated = false };
-                    SaveState(expired);
-                    _currentState = expired;
-                    _audit.Record("startup-recovery", "released", "host", "Expired host isolation released during startup recovery");
-                }
-                else
-                {
-                    // Still active: schedule remaining time
-                    _currentState = loaded;
-                    var remaining = loaded.ExpiresAtUtc - now;
-                    _expiryCts = new CancellationTokenSource();
-                    var token = _expiryCts.Token;
-                    _ = Task.Run(async () =>
-                    {
-                        try
-                        {
-                            await Task.Delay(remaining, token);
-                            if (!token.IsCancellationRequested)
-                            {
-                                AutoExpireIsolation();
-                            }
-                        }
-                        catch (OperationCanceledException) { }
-                    }, token);
-                }
+                var result = Release("Expired isolation startup recovery");
+                if (!result.Succeeded && IsIsolated) StartExpiryTimer(TimeSpan.FromSeconds(30));
             }
-            else
-            {
-                _currentState = loaded;
-            }
+            else StartExpiryTimer(remaining);
         }
     }
 
@@ -320,6 +312,7 @@ public sealed class HostIsolationExecutor : IDisposable
         {
             if (File.Exists(_storePath))
             {
+                if (new FileInfo(_storePath).Length > 64 * 1024) throw new IOException("Isolation state exceeds limit.");
                 var bytes = File.ReadAllBytes(_storePath);
                 return JsonSerializer.Deserialize<HostIsolationRecord>(bytes);
             }
@@ -331,7 +324,7 @@ public sealed class HostIsolationExecutor : IDisposable
 
     private void SaveState(HostIsolationRecord record)
     {
-        var temp = _storePath + ".tmp";
+        var temp = _storePath + "." + Guid.NewGuid().ToString("N") + ".tmp";
         try
         {
             var bytes = JsonSerializer.SerializeToUtf8Bytes(record, new JsonSerializerOptions { WriteIndented = true });
@@ -340,7 +333,8 @@ public sealed class HostIsolationExecutor : IDisposable
         }
         catch
         {
-            try { File.Delete(temp); } catch { }
+            try { File.Delete(temp); } catch (IOException) { } catch (UnauthorizedAccessException) { }
+            throw;
         }
     }
 

@@ -40,7 +40,8 @@ public sealed class HostIsolationHandler(
         if (callerDenial is not null)
             return Respond(false, "denied-caller", callerDenial, executor.IsIsolated, executor.ActiveUntilUtc);
 
-        if (!enabled)
+        // Turning off new isolation must never disable recovery from an existing one.
+        if (!enabled && request.Operation is not (HostIsolationOperations.GetStatus or HostIsolationOperations.PreviewRelease or HostIsolationOperations.Release))
             return Respond(false, "disabled", "Host isolation actions are turned off in Settings.", executor.IsIsolated, executor.ActiveUntilUtc);
 
         switch (request.Operation)
@@ -50,7 +51,7 @@ public sealed class HostIsolationHandler(
                 var isIso = executor.IsIsolated;
                 var until = executor.ActiveUntilUtc;
                 var rules = executor.CurrentState?.RulesCreated;
-                return Respond(true, isIso ? "isolated" : "normal", isIso ? $"Host is isolated until {until:HH:mm:ss} UTC." : "Host network traffic is normal.", isIso, until, rules);
+                return Respond(true, isIso ? "isolated" : "normal", isIso ? $"Isolation or incomplete cleanup is recorded; scheduled expiry: {until:HH:mm:ss} UTC." : "No active Downpour isolation is recorded. Other firewall policies may apply.", isIso, until, rules);
             }
 
             case HostIsolationOperations.PreviewIsolate:
@@ -124,7 +125,7 @@ public sealed class HostIsolationHandler(
                 }
 
                 var outcome = executor.Isolate(request.DurationMinutes, request.LockWorkstation, request.Reason);
-                return Respond(outcome.Succeeded, outcome.ResultCode, outcome.Message, outcome.Succeeded, outcome.ExpiresAtUtc, outcome.RulesCreated);
+                return Respond(outcome.Succeeded, outcome.ResultCode, outcome.Message, executor.IsIsolated, executor.ActiveUntilUtc, outcome.RulesCreated);
             }
 
             case HostIsolationOperations.PreviewRelease:
@@ -174,7 +175,7 @@ public sealed class HostIsolationHandler(
                 }
 
                 var outcome = executor.Release(request.Reason);
-                return Respond(outcome.Succeeded, outcome.ResultCode, outcome.Message, false);
+                return Respond(outcome.Succeeded, outcome.ResultCode, outcome.Message, executor.IsIsolated, executor.ActiveUntilUtc);
             }
 
             default:

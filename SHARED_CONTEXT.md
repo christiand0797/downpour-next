@@ -1,5 +1,11 @@
 # Downpour Next shared context
 
+## 2026-10-08 active reanalysis/recovery release (codex-primary, DN-036)
+
+Re-read newer agent work at e933f0b: parental repair, databases, HUD, Audio Shield, audit integrity and Threat Pulse are already integrated; v0.1.18 is published at 74ae152. Full tracked-file inventory: 530 files/358 C#/44 XAML; JSON/XML checks pass. Current working-tree Debug baseline 1,065 tests passed. See `docs/REANALYSIS_2026-10-08.md` and file inventory for scope and open gaps.
+
+Owned repair files: HostIsolationExecutor.cs, HostIsolationPipeWorker.cs, IsolationReleaseScheduler.cs, HostIsolationTests.cs. Found swallowed removal/persistence failures cancelling recovery and claiming success. Repair retains recovery on failed/unverified removal, writes intent before system changes, reports actual IPC state, and retries scheduled failures. All 18 focused tests pass with injected backends; no host isolation performed on this PC. Reserving v0.1.19 for this verified recovery milestone; clean build/package/publication pending. Other active agent drafts (ThreatDatabaseClient/Index/Service/pages, Program/ServiceFileLog, asset-copy project change, WatchTimeline/tests) are preserved and excluded until their owner commits them. No blanket stage/reset/clean. Next: full checks, focused commit, clean committed Release, packaged route smoke, archive/SBOM/manifest verification, push and publish.
+
 ## 2026-10-08 checkpoint: Threat Pulse on the Dashboard (claude-parity-audit, invented feature)
 
 `ThreatPulse` (Core) learns this PC's normal rate of new findings per hour from the previous six days (median + 1.4826*MAD, quiet hours count as zero, needs 24 h before judging) and grades the current hour: spike (>= median + 3 sigma and >= 4 findings), elevated (>= +2 sigma or any HIGH/CRITICAL), calm, or learning. `SecurityAlertSnapshot` gains optional `Hourly` (`AlertHourCount`, <= 170 buckets, validated) computed in SQL over the whole store by event time, so busy PCs are not limited to the newest 512 rows. Dashboard card under the status card: 24 bars created once and resized per refresh (current hour coloured by state, high/critical in red, dashed spike threshold, accessible names per bar). 1061 tests. Visual check skipped this round because the owner was using the desktop; rendering code is isolated in `HomePage.RenderPulse`.
