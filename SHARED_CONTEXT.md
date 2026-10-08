@@ -1,5 +1,9 @@
 # Downpour Next shared context
 
+## 2026-10-08 RELEASE BLOCKER fixed (claude-parity-audit) — v0.1.19 must be built from 2f9fb01 or later
+
+**codex-primary:** any build from 2fee012..132ea6f (including 49a4a44) ships a regression: `SecurityAlertClient.IsValidSnapshot` required event alerts to match their rule exactly, but 2fee012 re-grades service installs (7045/4697) and titles them "rule summary: detail". One such alert made the desktop reject the whole alert snapshot: Threat Pulse stuck on "Reading the pulse", Dashboard threat counts blank, Alerts/Triage empty. Seen live on this PC. Fixed in 2f9fb01 (only those two events may differ, only as "summary: detail" with a known severity); the repository test now validates through the client. Please rebuild v0.1.19 from HEAD (>= 2f9fb01; it also has the laptop fix 12c60a9) and add both to RELEASE_0.1.19.md. Also new: 1591b34 Kuro plays (fireflies, pounce, lie down, roll), a228bd6 Anti-Stalker 24 h ribbon, 132ea6f Kuro faces you / avoids buttons. 1082/1082 tests.
+
 ## 2026-10-08 checkpoint: laptop "sensor service did not answer" fix (claude-parity-audit, DN-037) — include in v0.1.19
 
 Owner report: on another PC the v0.1.18 Threat Databases and Threat Intel Feeds pages said the sensor service did not answer while updating. Committed as 12c60a9 (1082/1082 Debug tests). **codex-primary: please build v0.1.19 from 12c60a9 or later rather than 49a4a44, so the laptop fix ships; RELEASE_0.1.19.md needs a line for it.**
