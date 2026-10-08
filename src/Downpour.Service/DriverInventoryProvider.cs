@@ -4,7 +4,11 @@ using Downpour.Contracts;
 
 namespace Downpour.Service;
 
-public sealed class DriverInventoryProvider
+/// <summary>
+/// Loaded kernel drivers with their location and signature (embedded Authenticode or Windows catalog, through the
+/// shared cached <see cref="FileSignatureChecker"/>, so unchanged drivers are checked once).
+/// </summary>
+public sealed class DriverInventoryProvider(FileSignatureChecker? signatures = null)
 {
     private const int MaximumDrivers = 512;
     private const int MaximumTextLength = 512;
@@ -65,12 +69,12 @@ public sealed class DriverInventoryProvider
             if (running.Count > 0)
             {
                 warnings.Add($"Windows hides kernel module addresses from standard accounts; showing the {running.Count:N0} running driver services instead of all {totalCount:N0} loaded modules.");
-                return new DriverInventorySnapshot(1, DateTimeOffset.UtcNow, totalCount, running.Take(MaximumDrivers).ToArray(), warnings);
+                return new DriverInventorySnapshot(1, DateTimeOffset.UtcNow, totalCount, WithSignatures(running.Take(MaximumDrivers)), warnings);
             }
             warnings.Add("Windows hid every loaded kernel module from this account and the driver service list was unavailable.");
         }
 
-        return new DriverInventorySnapshot(1, DateTimeOffset.UtcNow, totalCount, results, warnings);
+        return new DriverInventorySnapshot(1, DateTimeOffset.UtcNow, totalCount, WithSignatures(results), warnings);
     }
 
     /// <summary>Running kernel and file-system driver services from WMI Win32_SystemDriver (documented, read-only).</summary>
@@ -108,6 +112,17 @@ public sealed class DriverInventoryProvider
             warnings.Add("Windows Management Instrumentation did not return the running driver list.");
         }
         return entries;
+    }
+
+    private IReadOnlyList<DriverInventoryEntry> WithSignatures(IEnumerable<DriverInventoryEntry> drivers)
+    {
+        if (signatures is null) return drivers.ToArray();
+        return drivers.Select(driver =>
+        {
+            if (ThreatDatabaseService.DriverPath(driver.ImagePath) is not { } path || signatures.Check(path) is not { } signature) return driver;
+            var signer = signature.Signer is { Length: > 0 } s ? Bound(s) : null;
+            return driver with { Signed = signature.Signed, Signer = signer, MicrosoftSigned = signature.Signed == true && signature.Microsoft };
+        }).ToArray();
     }
 
     private static DriverInventorySnapshot Empty(IReadOnlyList<string> warnings) =>

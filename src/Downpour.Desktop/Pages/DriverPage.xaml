@@ -28,31 +28,33 @@
         </Grid>
         <Border Grid.Row="3" Padding="13,10" CornerRadius="9" Background="#B8161712" BorderBrush="#78D3A14D" BorderThickness="1">
             <StackPanel Spacing="3">
-                <TextBlock FontWeight="SemiBold" Text="Inventory only · no driver package changes are enabled" />
-                <TextBlock FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="This view lists loaded kernel modules and highlights paths that deserve review. It does not verify digital signatures or decide that a driver is malicious. Install, update, reinstall, and removal workflows will require signed-package verification, a recovery path, elevation, and an audit trail." TextWrapping="Wrap" />
+                <TextBlock FontWeight="SemiBold" Text="Every loaded driver is signature-checked and matched against known malicious and vulnerable drivers" />
+                <TextBlock FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Signatures are verified locally (embedded Authenticode, then the Windows catalog). Each driver&#x2019;s SHA-256 is matched against the LOLDrivers database of malicious and vulnerable (BYOVD) drivers by Threat Databases. Click a driver for details and hash lookups; right-click for actions. Update, roll back, or uninstall through Find driver updates or Device Manager." TextWrapping="Wrap" />
             </StackPanel>
         </Border>
         <Grid Grid.Row="4" RowSpacing="10">
             <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
             <Grid Padding="13,10" ColumnSpacing="12" Background="{StaticResource DownpourSurfaceElevatedBrush}">
-                <Grid.ColumnDefinitions><ColumnDefinition Width="2*" /><ColumnDefinition Width="3*" /><ColumnDefinition Width="2*" /></Grid.ColumnDefinitions>
+                <Grid.ColumnDefinitions><ColumnDefinition Width="2*" /><ColumnDefinition Width="3*" /><ColumnDefinition Width="2*" /><ColumnDefinition Width="2*" /></Grid.ColumnDefinitions>
                 <TextBlock FontSize="11" FontWeight="SemiBold" CharacterSpacing="70" Text="KERNEL MODULE" />
                 <TextBlock Grid.Column="1" FontSize="11" FontWeight="SemiBold" CharacterSpacing="70" Text="IMAGE PATH" />
-                <TextBlock Grid.Column="2" FontSize="11" FontWeight="SemiBold" CharacterSpacing="70" Text="LOCATION REVIEW" />
+                <TextBlock Grid.Column="2" FontSize="11" FontWeight="SemiBold" CharacterSpacing="70" Text="SIGNED BY" />
+                <TextBlock Grid.Column="3" FontSize="11" FontWeight="SemiBold" CharacterSpacing="70" Text="VERDICT" />
             </Grid>
             <ListView x:Name="DriverList" Grid.Row="1" ItemsSource="{x:Bind Drivers}" SelectionMode="None" IsItemClickEnabled="False" Background="{StaticResource DownpourSurfaceBrush}">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <Grid Padding="13,8" ColumnSpacing="12">
-                            <Grid.ColumnDefinitions><ColumnDefinition Width="2*" /><ColumnDefinition Width="3*" /><ColumnDefinition Width="2*" /></Grid.ColumnDefinitions>
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="2*" /><ColumnDefinition Width="3*" /><ColumnDefinition Width="2*" /><ColumnDefinition Width="2*" /></Grid.ColumnDefinitions>
                             <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
                             <TextBlock Grid.Column="1" Text="{Binding ImagePath}" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
-                            <TextBlock Grid.Column="2" Text="{Binding LocationStatus}" FontSize="11" Foreground="{Binding StatusBrush}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="2" Text="{Binding Signature}" FontSize="11" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="3" Text="{Binding Verdict}" FontSize="11" FontWeight="SemiBold" Foreground="{Binding StatusBrush}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
                         </Grid>
                     </DataTemplate>
                 </ListView.ItemTemplate>
                 <ListView.Footer>
-                    <TextBlock Padding="13,12" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Loaded-driver inventory is not the same as the installed Driver Store package list. Missing paths and restricted access remain unknown, not safe." TextWrapping="Wrap" />
+                    <TextBlock Padding="13,12" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Loaded-driver inventory is not the same as the installed Driver Store package list. A driver whose file could not be read shows &#x201C;Not checked&#x201D;, which is unknown, not safe. Hash matches appear after the threat databases finish their first sweep." TextWrapping="Wrap" />
                 </ListView.Footer>
             </ListView>
         </Grid>

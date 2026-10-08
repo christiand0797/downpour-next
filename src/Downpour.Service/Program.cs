@@ -16,7 +16,7 @@ builder.Services.AddWindowsService(options =>
 builder.Services.Configure<HostOptions>(options => options.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore);
 builder.Logging.AddProvider(new ServiceFileLoggerProvider(ServiceFileLoggerProvider.DefaultPath()));
 builder.Services.AddSingleton<SystemSnapshotProvider>();
-builder.Services.AddSingleton<DriverInventoryProvider>();
+builder.Services.AddSingleton(provider => new DriverInventoryProvider(provider.GetRequiredService<FileSignatureChecker>()));
 builder.Services.AddSingleton<DriverPackageInventoryProvider>();
 builder.Services.AddSingleton<WindowsServiceInventoryProvider>();
 builder.Services.AddSingleton<InstalledSoftwareInventoryProvider>();

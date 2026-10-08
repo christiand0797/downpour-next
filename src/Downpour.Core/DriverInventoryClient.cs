@@ -23,7 +23,8 @@ public sealed class DriverInventoryClient(string pipeName = DriverInventoryClien
             if (snapshot is null || snapshot.SchemaVersion != 1 || snapshot.DriverCount < 0 ||
                 snapshot.Drivers is null || snapshot.Warnings is null ||
                 snapshot.Drivers.Count > MaximumRows || snapshot.Warnings.Count > 64 ||
-                snapshot.Drivers.Any(driver => driver is null || driver.Name is null || driver.ImagePath is null || driver.Name.Length > 512 || driver.ImagePath.Length > 512) ||
+                snapshot.Drivers.Any(driver => driver is null || driver.Name is null || driver.ImagePath is null || driver.Name.Length > 512 || driver.ImagePath.Length > 512 ||
+                    driver.Signer is { Length: > 512 } || driver.Signer?.Any(char.IsControl) == true) ||
                 snapshot.Warnings.Any(warning => warning is null || warning.Length > 512))
             {
                 return null;

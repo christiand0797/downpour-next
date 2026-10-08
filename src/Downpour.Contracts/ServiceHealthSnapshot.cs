@@ -38,7 +38,9 @@ public sealed record PhysicalDiskSnapshot(
     long? ReadBytesPerSecond,
     long? WriteBytesPerSecond);
 
-public sealed record DriverInventoryEntry(string Name, string ImagePath, bool IsUnderSystemDrivers, bool IsInUserWritableLocation);
+/// <summary>A loaded kernel driver. Signed is the Authenticode (embedded or Windows catalog) result; null when it could not be checked.</summary>
+public sealed record DriverInventoryEntry(string Name, string ImagePath, bool IsUnderSystemDrivers, bool IsInUserWritableLocation,
+    bool? Signed = null, string? Signer = null, bool MicrosoftSigned = false);
 
 public sealed record DriverInventorySnapshot(
     int SchemaVersion,

@@ -1,5 +1,10 @@
 # Downpour Next changelog
 
+## Unreleased
+
+- **Drivers tab verifies and judges every loaded driver**: each driver's signature is checked on this PC (embedded Authenticode, then the Windows catalog) and shown with its signer, and each gets a verdict: known malicious (its exact hash is in LOLDrivers), legitimate but vulnerable (BYOVD), loaded from a user-writable folder, not validly signed, Windows driver, or signed vendor driver. Problems sort to the top; a signatures chart joins the location, folder and count charts; click a driver for the reason, its hash and a threat-database lookup.
+- Click any row on Processes, Drivers, Driver Packages, Services, Network, Security Events, DNS, Persistence and Devices & Drivers for full details (file hash, signature, threat-database and IP-origin lookups); right-click for actions such as open file location, file properties, YARA scan, end process, quarantine or block an address, each previewed and confirmed.
+
 ## v0.1.19 — Devices & Drivers, rootkit check, per-tab charts, reliability
 
 - **Fixed for other PCs**: Threat Databases and Threat Intel Feeds no longer report "the sensor service did not answer" on networks or PCs where a download or saved copy fails (owner laptop report); one failing sensor no longer stops the rest; the service keeps a troubleshooting log.
