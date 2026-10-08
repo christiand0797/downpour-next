@@ -63,8 +63,16 @@ public sealed class SecurityAlertClient(string pipeName = SecurityAlertClient.Pi
     }
 
     private static bool IsValidEventAlert(SecurityAlert alert) =>
-        SecurityEventCatalog.TryGetRule(alert.LogName, alert.EventId, out var rule) && rule.Severity == alert.Severity &&
-        rule.Technique == alert.Technique && rule.Summary == alert.Title;
+        SecurityEventCatalog.TryGetRule(alert.LogName, alert.EventId, out var rule) && rule.Technique == alert.Technique &&
+        (rule.Severity == alert.Severity && rule.Summary == alert.Title || IsGradedServiceInstall(alert, rule.Summary));
+
+    /// <summary>
+    /// Service installs (7045/4697) are re-graded by signer and titled "rule summary: name · verdict · path"; only those
+    /// two events may differ from their rule, and only in that shape.
+    /// </summary>
+    private static bool IsGradedServiceInstall(SecurityAlert alert, string ruleSummary) =>
+        ServiceInstallAnalyzer.Applies(alert.LogName, alert.EventId) && SecurityFindingCatalog.Severities.Contains(alert.Severity) &&
+        (alert.Title == ruleSummary || alert.Title.StartsWith(ruleSummary + ": ", StringComparison.Ordinal));
 
     /// <summary>Finding alerts (hardening, firewall, persistence) carry free-text titles but a fixed source, identity shape and event ID 0.</summary>
     private static bool IsValidFindingAlert(SecurityAlert alert) =>

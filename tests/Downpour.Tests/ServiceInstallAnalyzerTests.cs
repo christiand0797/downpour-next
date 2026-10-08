@@ -99,6 +99,12 @@ public sealed class ServiceInstallAnalyzerTests
         Assert.StartsWith("Windows service installed: MpKslDrv · ", alert.Title, StringComparison.Ordinal);
         Assert.True(alert.Title.Length <= 160);
         Assert.Equal(AlertIndicatorKinds.File, alert.IndicatorKind);
+        // Regression: the desktop must accept a snapshot containing a graded service install (it rejected the whole
+        // snapshot, which blanked Threat Pulse, threat counts and the alert pages).
+        var snapshot = await repository.ReadSnapshotAsync();
+        Assert.True(SecurityAlertClient.IsValidSnapshot(snapshot));
+        Assert.False(SecurityAlertClient.IsValidSnapshot(snapshot with { Alerts = [alert with { Title = "Something else: x" }] }));
+        Assert.False(SecurityAlertClient.IsValidSnapshot(snapshot with { Alerts = [alert with { Severity = "URGENT" }] }));
         Assert.Equal(@"C:\Windows\System32\drivers\MpKslDrv.sys", alert.Indicator);
     }
 }
