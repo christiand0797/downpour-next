@@ -1,5 +1,9 @@
 # Downpour Next shared context
 
+## 2026-10-08 checkpoint: parser fuzzing (claude-parity-audit, security roadmap)
+
+`tests/Downpour.Tests/ParserFuzzTests.cs`: deterministic, seeded fuzzing (random bytes, token soup, deep JSON past MaxDepth, mutated samples, bracket bombs, gzip payloads) of all threat-feed parsers, the IP-origin database, the CISA KEV parser, every pipe-reply validator (Audio, Anti-Stalker, security events, alerts, threat databases) and the total helpers (TryClassify, CommandTarget, SignerDisplay, NormalizeImagePath, ClassifyKind, DescribeFormat, AuditChain.Verify). Parsers may only return or throw their documented exception; a 60 s bound catches super-linear parsing. Found and fixed: `KevCatalogClient.Parse` leaked Newtonsoft `JsonReaderException` and could throw cast/overflow on a mistyped `count`; it now surfaces only `InvalidDataException` (inner exception kept) and requires an integer count. 1053/1053 tests.
+
 ## 2026-10-08 checkpoint: tamper-evident action audit log (claude-parity-audit, security roadmap)
 
 Done (1048/1048 tests; verified on this PC: 192 pre-chain records accepted as legacy, status written):

@@ -55,7 +55,20 @@ public sealed class KevCatalogClient
         return new KevCatalogDownload(snapshot, payload);
     }
 
+    /// <summary>Parses the CISA catalog. Any malformed input surfaces as <see cref="InvalidDataException"/> only.</summary>
     public static KevCatalogSnapshot Parse(ReadOnlyMemory<byte> payload)
+    {
+        try
+        {
+            return ParseCore(payload);
+        }
+        catch (Exception exception) when (exception is JsonException or FormatException or InvalidCastException or OverflowException or ArgumentException)
+        {
+            throw new InvalidDataException("The KEV catalog is not valid JSON in the expected shape.", exception);
+        }
+    }
+
+    private static KevCatalogSnapshot ParseCore(ReadOnlyMemory<byte> payload)
     {
         if (payload.Length is 0 or > MaximumPayloadBytes)
             throw new InvalidDataException("The KEV payload is empty or exceeds the configured size limit.");
@@ -76,7 +89,7 @@ public sealed class KevCatalogClient
         }
         if (root.GetValue("vulnerabilities", StringComparison.OrdinalIgnoreCase) is not JArray vulnerabilities || vulnerabilities.Count > MaximumEntries)
             throw new InvalidDataException("The KEV catalog has an invalid envelope or too many records.");
-        if (root.GetValue("count", StringComparison.OrdinalIgnoreCase)?.Value<int?>() != vulnerabilities.Count)
+        if (root.GetValue("count", StringComparison.OrdinalIgnoreCase) is not JValue { Type: JTokenType.Integer } count || count.Value<long>() != vulnerabilities.Count)
             throw new InvalidDataException("The KEV catalog record count does not match its envelope.");
 
         var version = RequiredString(root, "catalogVersion", 64);

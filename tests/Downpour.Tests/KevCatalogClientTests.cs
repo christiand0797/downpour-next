@@ -59,8 +59,8 @@ public sealed class KevCatalogClientTests
         var duplicate = ValidCatalog.Replace("\"catalogVersion\":\"2026.10.03\"", "\"catalogVersion\":\"2026.10.03\",\"catalogVersion\":\"forged\"");
         var comment = ValidCatalog.Replace("{\"catalogVersion\"", "{/* untrusted comment */\"catalogVersion\"");
 
-        Assert.Throws<JsonReaderException>(() => KevCatalogClient.Parse(Encoding.UTF8.GetBytes(duplicate)));
-        Assert.Throws<JsonReaderException>(() => KevCatalogClient.Parse(Encoding.UTF8.GetBytes(comment)));
+        Assert.IsType<JsonReaderException>(Assert.Throws<InvalidDataException>(() => KevCatalogClient.Parse(Encoding.UTF8.GetBytes(duplicate))).InnerException);
+        Assert.IsType<JsonReaderException>(Assert.Throws<InvalidDataException>(() => KevCatalogClient.Parse(Encoding.UTF8.GetBytes(comment))).InnerException);
     }
 
     [Fact]

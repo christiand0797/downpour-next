@@ -25,7 +25,8 @@
 - [ ] HUD visuals kit: segmented glowing meters, sparklines, radar sweep, hex status tiles on every feature page.
 - [ ] Invented features: Threat Pulse (per-PC baseline spikes), watch timeline ribbon (camera/mic/screen), tripwire canary files.
 - [x] Hash-chained, DPAPI-keyed action audit log with anchor, integrity monitor and CRITICAL finding on tampering.
-- [ ] Security hardening roadmap: signed builds and updates, off-box audit anchoring, parser fuzzing, least-privilege review.
+- [x] Parser fuzzing for feeds, KEV, IP origin, pipe replies and helpers (found and fixed a KEV exception leak).
+- [ ] Security hardening roadmap: signed builds and updates, off-box audit anchoring, least-privilege review.
 - [x] Publish v0.1.18 (x64) with release manifest, SBOM and evidence (74ae152).
 - [ ] Native ARM64 package (needs an arm64 YARA-X build or a scanner fallback).
 - [ ] Anti-Stalker: origin for remote sessions/remote-control connections and an evidence export.
