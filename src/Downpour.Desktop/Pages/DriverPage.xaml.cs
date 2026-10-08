@@ -22,6 +22,14 @@ public sealed partial class DriverPage : Page
     private readonly TopBarsChart _folderChart = new() { Title = "Drivers by folder", Subtitle = "Loaded kernel drivers per folder" };
     private readonly TrendChart _countChart = new() { Title = "Loaded kernel drivers", Subtitle = "Sampled while this page is open" };
 
+    private void FindUpdates_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e) => App.NavigateToRoute("devices");
+
+    private void DeviceManager_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("devmgmt.msc") { UseShellExecute = true })?.Dispose(); }
+        catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException) { }
+    }
+
     private void UpdateCharts(DriverInventorySnapshot snapshot)
     {
         _locationChart.SetData(

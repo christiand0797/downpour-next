@@ -34,7 +34,10 @@
 - [x] Watch timeline ribbon on Anti-Stalker.
 - [x] Cross-view hidden-process (rootkit) check, findings Downpour/Rootkit (T1014).
 - [ ] Invented features: tripwire canary files (opt-in).
-- [ ] HUD visuals kit on every tab (owner request: graphs and visual displays everywhere).
+- [x] Per-tab charts: Processes, Drivers, Driver Packages, Network, Security Events, Services, Devices & Drivers.
+- [ ] Per-tab charts on the remaining tabs (each with its own data).
+- [x] Devices & Drivers tab with missing-driver detection and Windows Update driver search.
+- [ ] Elevated driver broker (DN-012): one-click update/roll back/uninstall/reinstall with automatic driver backup, signature check, audit and rollback tests.
 - [x] Hash-chained, DPAPI-keyed action audit log with anchor, integrity monitor and CRITICAL finding on tampering.
 - [x] Parser fuzzing for feeds, KEV, IP origin, pipe replies and helpers (found and fixed a KEV exception leak).
 - [ ] Security hardening roadmap: signed builds and updates, off-box audit anchoring, least-privilege review.

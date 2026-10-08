@@ -784,6 +784,28 @@
         "Service log exists for diagnosis"
       ],
       "notes": "claude-parity-audit 2026-10-08: committed 12c60a9; needs shipping in v0.1.19 and owner confirmation on the laptop."
+    },
+    {
+      "id": "DN-038",
+      "title": "Devices & Drivers: problem devices, missing drivers, Windows Update driver search, per-tab charts",
+      "status": "in_progress",
+      "priority": "high",
+      "files": [
+        "src/Downpour.Contracts/DeviceInventory.cs",
+        "src/Downpour.Core/DeviceAnalyzer.cs",
+        "src/Downpour.Core/DeviceClient.cs",
+        "src/Downpour.Service/DeviceInventoryService.cs",
+        "src/Downpour.Desktop/Pages/DevicesPage.xaml",
+        "src/Downpour.Desktop/HudCharts.cs"
+      ],
+      "acceptance": [
+        "All PnP devices with explained problem codes",
+        "Missing drivers found",
+        "Read-only WU driver search",
+        "Changes only via Windows tools until the elevated broker exists",
+        "Every tab has its own charts"
+      ],
+      "notes": "claude-parity-audit 2026-10-08: devices page + charts on 7 tabs done; remaining tabs next; one-click driver changes depend on DN-012 elevated broker."
     }
   ]
 }

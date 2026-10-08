@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **Devices & Drivers** tab: every device with its status and Device Manager problem code explained in plain words with a fix, devices missing a driver, oldest drivers, driver signers, and a read-only Windows Update search for driver updates with the device each one is for. Install, roll back, uninstall and reinstall open in Windows' own Optional updates and Device Manager (they ask for administrator rights themselves). The Drivers tab links to it.
+- Charts on Processes, Drivers, Driver Packages, Network, Security Events and Services, each built from that tab's own data.
 - **Rootkit check**: every ten minutes Downpour probes every process ID directly and compares the answers with Windows' process list; a running program hidden from the list raises a critical alert. Exited and just-started programs are excluded so normal activity cannot trigger it.
 - **Kuro plays**: fireflies drift around him; he watches them, pounces, lies down for a while and rolls along his card, and faces you instead of turning away.
 - **Anti-Stalker 24-hour timeline**: one row per camera, microphone, screen capture, location and remote control showing exactly when each was in use.

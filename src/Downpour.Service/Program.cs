@@ -100,6 +100,7 @@ builder.Services.AddSingleton<AudioShieldProvider>();
 builder.Services.AddHostedService<AudioShieldMonitor>();
 builder.Services.AddHostedService<AuditIntegrityMonitor>();
 builder.Services.AddHostedService<HiddenProcessMonitor>();
+builder.Services.AddHostedService<DeviceInventoryService>();
 builder.Services.AddSingleton<ThreatDatabaseService>();
 builder.Services.AddHostedService(provider => provider.GetRequiredService<ThreatDatabaseService>());
 builder.Services.AddHostedService<YaraScanPipeWorker>();

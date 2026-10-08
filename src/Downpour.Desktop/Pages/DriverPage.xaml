@@ -14,7 +14,11 @@
                 <TextBlock Style="{StaticResource TitleTextBlockStyle}" FontSize="30" Text="Drivers" />
                 <TextBlock x:Name="InventoryStatus" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Connecting to the local sensor service…" TextWrapping="Wrap" />
             </StackPanel>
-            <Button Grid.Column="1" Content="Refresh" Click="Refresh_Click" VerticalAlignment="Center" />
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                <Button Content="Find driver updates" Click="FindUpdates_Click" Style="{StaticResource AccentButtonStyle}" ToolTipService.ToolTip="Devices &amp; Drivers: missing drivers, problem devices and Windows Update driver search" />
+                <Button Content="Device Manager" Click="DeviceManager_Click" ToolTipService.ToolTip="Update, roll back, uninstall or reinstall a driver in Windows Device Manager" />
+                <Button Content="Refresh" Click="Refresh_Click" />
+            </StackPanel>
         </Grid>
         <Grid x:Name="ChartRow" Grid.Row="1" />
         <Grid Grid.Row="2" ColumnSpacing="12">
