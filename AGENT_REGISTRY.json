@@ -101,10 +101,10 @@
     {
       "id": "claude-parity-audit",
       "role": "agent",
-      "taskId": "DN-036 release v0.1.19 (taken over) / DN-038",
+      "taskId": "DN-038 per-tab charts / devices",
       "status": "active",
-      "heartbeatUtc": "2026-10-08T21:15:00Z",
-      "notes": "Took over v0.1.19 publication from codex-primary (heartbeat stale since 06:00Z). Its local package was built from 49a4a44, which has the alert-snapshot regression and lacks the laptop fix; it is kept as artifacts/*stale-49a4a44*. Rebuilding from current HEAD with its v0.1.19-package.ps1 and v0.1.19-smoke.ps1 (commit and notes updated)."
+      "heartbeatUtc": "2026-10-08T21:25:00Z",
+      "notes": "v0.1.19 published from a672449. Continuing per-tab charts on remaining tabs and DN-038 follow-ups."
     }
   ]
 }

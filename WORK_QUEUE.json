@@ -761,7 +761,7 @@
         "Concrete findings fixed and regression tested without overlapping active drafts",
         "Release from clean committed source with verified assets and truthful limitations"
       ],
-      "notes": "codex-primary active: 530-file inventory at e933f0b; initial Debug 1065 passed. Own HostIsolationExecutor/HostIsolationPipeWorker/IsolationReleaseScheduler/HostIsolationTests recovery repair: retain scheduled recovery on failed removal/rollback, durable intent before changes, actual IPC state, release allowed with new actions disabled. Version 0.1.19 reserved; full checks and clean release pending. Preserve claude active threat database, logging, asset-copy, WatchTimeline drafts."
+      "notes": "codex-primary active: 530-file inventory at e933f0b; initial Debug 1065 passed. Own HostIsolationExecutor/HostIsolationPipeWorker/IsolationReleaseScheduler/HostIsolationTests recovery repair: retain scheduled recovery on failed removal/rollback, durable intent before changes, actual IPC state, release allowed with new actions disabled. Version 0.1.19 reserved; full checks and clean release pending. Preserve claude active threat database, logging, asset-copy, WatchTimeline drafts. 2026-10-08: v0.1.19 published by claude-parity-audit from a672449 (codex package from 49a4a44 had a release blocker; kept as stale)."
     },
     {
       "id": "DN-037",
@@ -783,7 +783,7 @@
         "Desktop states why a request failed",
         "Service log exists for diagnosis"
       ],
-      "notes": "claude-parity-audit 2026-10-08: committed 12c60a9; needs shipping in v0.1.19 and owner confirmation on the laptop."
+      "notes": "claude-parity-audit 2026-10-08: committed 12c60a9; needs shipping in v0.1.19 and owner confirmation on the laptop. Shipped in v0.1.19 (a672449); awaiting owner confirmation on the laptop."
     },
     {
       "id": "DN-038",

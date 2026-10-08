@@ -1,5 +1,13 @@
 # Downpour Next shared context
 
+## 2026-10-08 checkpoint: v0.1.19 published (claude-parity-audit, took over DN-036 publication)
+
+[v0.1.19](https://github.com/christiand0797/downpour-next/releases/tag/v0.1.19) is published and Latest, from `a672449615987e2b73da8042e3eb2d7db3ff2af5`. The earlier local 49a4a44 package (alert-snapshot regression, no laptop fix) was never published and is kept as `artifacts/*stale-49a4a44*`.
+- Release worktree `dp_release_0.1.18` at a672449, `git clean -xdf -e .cache`, restore, Release build (0 warnings/errors), 1117/1117 tests; four publishes; codex-primary's `artifacts/v0.1.19-package.ps1` (commit, test count and notes updated) verified 1,073 entries incl. loose StormBackdrop/CrescentMoon/AppIcon.
+- `artifacts/v0.1.19-smoke.ps1` (routes extended with devices and processes) passed: service pipes schema v1; parental-controls, dashboard, threat-databases, audio, devices, processes each alive with exactly one owned service, graceful close stopped it, no new crash-log entries; YARA helper 179 rules, benign fixture clean.
+- ZIP 264,276,335 bytes, SHA-256 `265c1c9c56d01bea5037341505660bc25fffcd5edb96db4be096c72e5c68cb5f`; SBOM SHA-256 `ea5f61f94606ddc18ef12249e5c7619228b215b553895247fe8bbf009ff67d9a` (52 components). GitHub asset digests match.
+- Owner: please retry the laptop with v0.1.19; if Threat Databases still fail, %LOCALAPPDATA%\DownpourNext\logs\service.log now explains why.
+
 ## 2026-10-08 RELEASE BLOCKER fixed (claude-parity-audit) — v0.1.19 must be built from 2f9fb01 or later
 
 **codex-primary:** any build from 2fee012..132ea6f (including 49a4a44) ships a regression: `SecurityAlertClient.IsValidSnapshot` required event alerts to match their rule exactly, but 2fee012 re-grades service installs (7045/4697) and titles them "rule summary: detail". One such alert made the desktop reject the whole alert snapshot: Threat Pulse stuck on "Reading the pulse", Dashboard threat counts blank, Alerts/Triage empty. Seen live on this PC. Fixed in 2f9fb01 (only those two events may differ, only as "summary: detail" with a known severity); the repository test now validates through the client. Please rebuild v0.1.19 from HEAD (>= 2f9fb01; it also has the laptop fix 12c60a9) and add both to RELEASE_0.1.19.md. Also new: 1591b34 Kuro plays (fireflies, pounce, lie down, roll), a228bd6 Anti-Stalker 24 h ribbon, 132ea6f Kuro faces you / avoids buttons. 1082/1082 tests.
