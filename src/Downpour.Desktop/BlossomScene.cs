@@ -51,6 +51,7 @@ public sealed class BlossomScene : UserControl
     private readonly ScaleTransform _eyeScale = new();
     private readonly Ellipse _leftEye;
     private readonly Ellipse _rightEye;
+    private readonly Canvas _face = new() { Opacity = 0, IsHitTestVisible = false };
     private readonly TextBlock _status;
     private readonly Border _labels;
     private readonly bool _animate;
@@ -447,6 +448,38 @@ public sealed class BlossomScene : UserControl
         var rightEye = new Ellipse { Width = 7.5, Height = 5, Fill = eyeBrush, Opacity = 0, RenderTransform = _eyeScale };
         Canvas.SetLeft(leftEye, 18); Canvas.SetTop(leftEye, 29);
         Canvas.SetLeft(rightEye, 34.5); Canvas.SetTop(rightEye, 29);
+        // Face (shown with the eyes when he turns toward you): pink nose with a soft highlight, the muzzle line and a small "w" mouth.
+        var noseFigure = new PathFigure { StartPoint = new Point(27.2, 36.2), IsClosed = true, IsFilled = true };
+        noseFigure.Segments.Add(new QuadraticBezierSegment { Point1 = new Point(30, 35.2), Point2 = new Point(32.8, 36.2) });
+        noseFigure.Segments.Add(new QuadraticBezierSegment { Point1 = new Point(31.6, 38.6), Point2 = new Point(30, 39.4) });
+        noseFigure.Segments.Add(new QuadraticBezierSegment { Point1 = new Point(28.4, 38.6), Point2 = new Point(27.2, 36.2) });
+        var noseGeometry = new PathGeometry();
+        noseGeometry.Figures.Add(noseFigure);
+        _face.Children.Add(new Microsoft.UI.Xaml.Shapes.Path
+        {
+            Data = noseGeometry, Stroke = new SolidColorBrush(Color.FromArgb(200, 120, 40, 80)), StrokeThickness = 0.5,
+            Fill = new LinearGradientBrush
+            {
+                StartPoint = new Point(0.5, 0), EndPoint = new Point(0.5, 1),
+                GradientStops = { new GradientStop { Color = Color.FromArgb(255, 255, 170, 205), Offset = 0 }, new GradientStop { Color = Color.FromArgb(255, 214, 96, 150), Offset = 1 } },
+            },
+        });
+        var noseHighlight = new Ellipse { Width = 1.6, Height = 0.9, Fill = new SolidColorBrush(Color.FromArgb(220, 255, 236, 246)) };
+        Canvas.SetLeft(noseHighlight, 28.6);
+        Canvas.SetTop(noseHighlight, 36.1);
+        _face.Children.Add(noseHighlight);
+        var mouthBrush = new SolidColorBrush(Color.FromArgb(190, 255, 170, 214));
+        _face.Children.Add(new Line { X1 = 30, Y1 = 39.4, X2 = 30, Y2 = 41.2, Stroke = mouthBrush, StrokeThickness = 0.7 });
+        _face.Children.Add(Curve(new Point(30, 41.2), new Point(28.6, 42.8), new Point(26.8, 41.8), mouthBrush, 0.7));
+        _face.Children.Add(Curve(new Point(30, 41.2), new Point(31.4, 42.8), new Point(33.2, 41.8), mouthBrush, 0.7));
+        foreach (var (x, y) in new[] { (24.5, 39.5), (23.0, 41.0), (35.5, 39.5), (37.0, 41.0) }) // whisker pads
+        {
+            var dot = new Ellipse { Width = 0.9, Height = 0.9, Fill = new SolidColorBrush(Color.FromArgb(120, 255, 200, 230)) };
+            Canvas.SetLeft(dot, x);
+            Canvas.SetTop(dot, y);
+            _face.Children.Add(dot);
+        }
+        head.Children.Add(_face);
         head.Children.Add(leftEye);
         head.Children.Add(rightEye);
         _cat.Children.Add(head);
@@ -677,6 +710,7 @@ public sealed class BlossomScene : UserControl
     private void SetEyes(bool visible)
     {
         _leftEye.Opacity = visible ? 1 : 0;
+        _face.Opacity = visible ? 1 : 0;
         _rightEye.Opacity = visible ? 1 : 0;
     }
 
