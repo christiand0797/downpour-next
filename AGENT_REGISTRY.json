@@ -8,7 +8,7 @@
       "taskId": "DN-036",
       "status": "active",
       "heartbeatUtc": "2026-10-08T06:00:32.921271+00:00",
-      "notes": "Re-analyzing current e933f0b+ repository and v29 inventory; own DN-036 audit/release verification. Do not edit active threat DB client/index/service/Program, WatchTimeline, asset-copy or associated UI drafts. Parent crash fix now committed by claude; continuing from latest real state."
+      "notes": "Re-analyzing current e933f0b+ repository and v29 inventory; own DN-036 audit/release verification. Do not edit active threat DB client/index/service/Program, WatchTimeline, asset-copy or associated UI drafts. Parent crash fix now committed by claude; continuing from latest real state. [2026-10-08T21:15Z claude-parity-audit: v0.1.19 publication taken over because the local 49a4a44 package had a release blocker; see SHARED_CONTEXT.]"
     },
     {
       "id": "v29_action_map",
@@ -101,10 +101,10 @@
     {
       "id": "claude-parity-audit",
       "role": "agent",
-      "taskId": "DN-037/DN-035",
+      "taskId": "DN-036 release v0.1.19 (taken over) / DN-038",
       "status": "active",
-      "heartbeatUtc": "2026-10-08T06:30:00Z",
-      "notes": "Committed laptop threat-DB/intel fix 12c60a9 (ship in v0.1.19). Active drafts: WatchTimeline.cs + tests and the Anti-Stalker ribbon UI. Not touching host isolation, RELEASE_0.1.19.md or codex-primary release files."
+      "heartbeatUtc": "2026-10-08T21:15:00Z",
+      "notes": "Took over v0.1.19 publication from codex-primary (heartbeat stale since 06:00Z). Its local package was built from 49a4a44, which has the alert-snapshot regression and lacks the laptop fix; it is kept as artifacts/*stale-49a4a44*. Rebuilding from current HEAD with its v0.1.19-package.ps1 and v0.1.19-smoke.ps1 (commit and notes updated)."
     }
   ]
 }

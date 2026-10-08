@@ -1,7 +1,11 @@
 # Downpour Next changelog
 
-## Unreleased
+## v0.1.19 — Devices & Drivers, rootkit check, per-tab charts, reliability
 
+- **Fixed for other PCs**: Threat Databases and Threat Intel Feeds no longer report "the sensor service did not answer" on networks or PCs where a download or saved copy fails (owner laptop report); one failing sensor no longer stops the rest; the service keeps a troubleshooting log.
+- **Fixed**: alert lists, threat counts and Threat Pulse went blank once a graded service-install alert existed (never released; caught before this release).
+- **Host isolation recovery** keeps its scheduled release and reports failure when firewall cleanup or rollback is incomplete; recovery intent is saved first and failed scheduled cleanup retries.
+- Portable builds include the HUD backdrop, crescent moon and tray icon again.
 - **Devices & Drivers** tab: every device with its status and Device Manager problem code explained in plain words with a fix, devices missing a driver, oldest drivers, driver signers, and a read-only Windows Update search for driver updates with the device each one is for. Install, roll back, uninstall and reinstall open in Windows' own Optional updates and Device Manager (they ask for administrator rights themselves). The Drivers tab links to it. Because many drivers never reach Windows Update, it also reads each device's chip maker from its hardware ID, recognises your PC or motherboard maker and the official updater apps you have installed, and lists graphics, network, audio, chipset and storage drivers worth checking with the maker, each with a button to the maker's verified official page (Downpour never downloads or runs installers).
 - Charts on Processes, Drivers, Driver Packages, Network, Security Events and Services, each built from that tab's own data.
 - **Rootkit check**: every ten minutes Downpour probes every process ID directly and compares the answers with Windows' process list; a running program hidden from the list raises a critical alert. Exited and just-started programs are excluded so normal activity cannot trigger it.
