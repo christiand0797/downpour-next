@@ -97,6 +97,90 @@ public sealed class PersistenceInventoryTests
         Assert.Equal(3, findings.Count);
     }
 
+    private static IReadOnlyList<PersistenceFinding> NewRunFindings(string value, PersistenceSignature? signature)
+    {
+        var (_, baseline, _) = PersistenceAnalyzer.Compare([], null, T0);
+        var observations = new[] { new PersistenceObservation(PersistenceCategories.RegistryRun,
+            @"HKLM\Software\Microsoft\Windows\CurrentVersion\RunOnce", "msedge_cleanup", value, "T1547.001") };
+        var (entries, _, _) = PersistenceAnalyzer.Compare(observations, baseline, T0.AddHours(1));
+        return PersistenceAnalyzer.Findings(entries, observations, _ => signature);
+    }
+
+    [Fact]
+    public void MicrosoftSignedAutostartInProgramFilesIsLow()
+    {
+        var finding = Assert.Single(NewRunFindings(
+            "\"C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\141.0.3537.57\\Installer\\setup.exe\" --msedge --channel=stable --cleanup-old-versions",
+            new(true, "Microsoft Corporation", true)));
+        Assert.Equal("LOW", finding.Severity);
+        Assert.Contains("signed by Microsoft Corporation", finding.Summary);
+    }
+
+    [Theory]
+    [InlineData(@"C:\Users\a\AppData\Local\Discord\Update.exe --processStart Discord.exe", true, "MEDIUM")]
+    [InlineData(@"C:\Users\a\AppData\Roaming\x\evil.exe", false, "HIGH")]
+    [InlineData(@"C:\Windows\System32\rundll32.exe C:\Users\a\x.dll,Start", true, "HIGH")]
+    public void SignerCheckNeverHidesUserWritableUnsignedOrLolbinTargets(string value, bool signed, string severity)
+    {
+        var finding = Assert.Single(NewRunFindings(value, new(signed, signed ? "CN=Vendor Inc, O=Vendor Inc, C=US" : null, false)));
+        Assert.Equal(severity, finding.Severity);
+    }
+
+    [Fact]
+    public void UnverifiableAutostartKeepsHighSeverity()
+    {
+        Assert.Equal("HIGH", Assert.Single(NewRunFindings(@"C:\Program Files\x\x.exe", null)).Severity);
+    }
+
+    [Theory]
+    [InlineData(true, "MEDIUM", "legitimate but vulnerable, signed by Micro-Star International CO., LTD.")]
+    [InlineData(false, "CRITICAL", "not validly signed")]
+    public void ByovdSeverityFollowsTheDriverSignature(bool signed, string severity, string text)
+    {
+        var observations = new[] { new PersistenceObservation(PersistenceCategories.DriverFile, @"C:\Windows\System32\drivers", "msio64.sys", "path", "T1068") };
+        var (entries, _, _) = PersistenceAnalyzer.Compare(observations, null, T0);
+        PersistenceEntry? checkedEntry = null;
+        var finding = Assert.Single(PersistenceAnalyzer.Findings(entries, observations, entry =>
+        {
+            checkedEntry = entry;
+            return new(signed, signed ? "CN=\"Micro-Star International CO., LTD.\", O=x" : null, false);
+        }));
+        Assert.Equal(severity, finding.Severity);
+        Assert.Contains(text, finding.Summary);
+        Assert.Equal(@"C:\Windows\System32\drivers\msio64.sys", PersistenceAnalyzer.LaunchTarget(checkedEntry!));
+    }
+
+    [Fact]
+    public void SignerIsNotCalledForQuietBaselineItems()
+    {
+        var observations = new[] { Run("OneDrive", "onedrive.exe"),
+            new PersistenceObservation(PersistenceCategories.DriverFile, @"C:\Windows\System32\drivers", "ntfs.sys", "path", "T1068") };
+        var (entries, _, _) = PersistenceAnalyzer.Compare(observations, null, T0);
+        Assert.Empty(PersistenceAnalyzer.Findings(entries, observations, _ => throw new InvalidOperationException("should not verify")));
+    }
+
+    [Theory]
+    [InlineData("\"C:\\Program Files\\A B\\a.exe\" --flag", @"C:\Program Files\A B\a.exe")]
+    [InlineData(@"C:\Program Files\A B\a.exe --flag", @"C:\Program Files\A B\a.exe")]
+    [InlineData(@"C:\Windows\system32\userinit.exe,", @"C:\Windows\system32\userinit.exe")]
+    [InlineData("explorer.exe", "explorer.exe")]
+    [InlineData(@"%ProgramFiles%\x\y.exe /background", @"%ProgramFiles%\x\y.exe")]
+    [InlineData("   ", null)]
+    public void CommandTargetFindsTheExecutable(string command, string? expected) =>
+        Assert.Equal(expected, PersistenceAnalyzer.CommandTarget(command));
+
+    [Theory]
+    [InlineData(@"\\server\share\x.exe")]
+    [InlineData(@"relative\x.exe")]
+    [InlineData(@"C:\definitely\missing\file.exe")]
+    [InlineData("")]
+    public void ResolveTargetRejectsNetworkRelativeAndMissingPaths(string target) =>
+        Assert.Null(PersistenceInventoryProvider.ResolveTarget(target));
+
+    [Fact]
+    public void ResolveTargetFindsBareSystemBinaries() =>
+        Assert.EndsWith(@"\notepad.exe", PersistenceInventoryProvider.ResolveTarget("notepad.exe"), StringComparison.OrdinalIgnoreCase);
+
     [Fact]
     public void LegitimateWmiFilterIsNotReportedWhenNew()
     {

@@ -28,7 +28,7 @@ builder.Services.AddSingleton<QuarantineManager>();
 builder.Services.AddSingleton<DriverPackageBroker>();
 builder.Services.AddSingleton<HardeningPostureProvider>();
 builder.Services.AddSingleton<FirewallInventoryProvider>();
-builder.Services.AddSingleton(PersistenceInventoryProvider.CreateForCurrentUser());
+builder.Services.AddSingleton(provider => PersistenceInventoryProvider.CreateForCurrentUser(provider.GetRequiredService<IAuthenticodeVerifier>()));
 builder.Services.AddSingleton<UsbInventoryProvider>();
 builder.Services.AddSingleton<WirelessInventoryProvider>();
 builder.Services.AddSingleton<RemoteAccessProvider>();

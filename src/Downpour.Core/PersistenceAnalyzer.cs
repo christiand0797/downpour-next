@@ -11,6 +11,12 @@ public sealed record PersistenceObservation(string Category, string Location, st
 /// <summary>Stored per-item baseline state: a value hash, never the value itself.</summary>
 public sealed record PersistenceBaselineItem(string ValueSha256, DateTimeOffset? FirstSeenUtc, DateTimeOffset? LastChangedUtc);
 
+/// <summary>
+/// Authenticode result for the file an autostart entry or driver points at. <c>Signed</c> is null when the file could
+/// not be checked; <c>Microsoft</c> is true only for Microsoft's own production signers.
+/// </summary>
+public sealed record PersistenceSignature(bool? Signed, string? Signer, bool Microsoft);
+
 public sealed record PersistenceBaseline(int SchemaVersion, DateTimeOffset CreatedAtUtc, IReadOnlyDictionary<string, PersistenceBaselineItem> Items);
 
 /// <summary>
@@ -119,7 +125,14 @@ public static partial class PersistenceAnalyzer
         return indicators;
     }
 
-    public static IReadOnlyList<PersistenceFinding> Findings(IReadOnlyList<PersistenceEntry> entries, IReadOnlyList<PersistenceObservation> observations)
+    /// <summary>
+    /// Builds findings. <paramref name="signer"/> (optional) verifies the file an entry launches; it is only called for
+    /// entries that would otherwise raise a finding, so signed vendor software (for example Microsoft Edge's
+    /// msedge_cleanup RunOnce value) is reported at LOW instead of HIGH, and a signed vendor driver on the BYOVD list is
+    /// reported as legitimate but vulnerable rather than CRITICAL. Without a signer the v29 severities apply.
+    /// </summary>
+    public static IReadOnlyList<PersistenceFinding> Findings(IReadOnlyList<PersistenceEntry> entries, IReadOnlyList<PersistenceObservation> observations,
+        Func<PersistenceEntry, PersistenceSignature?>? signer = null)
     {
         var runAs = observations.GroupBy(Key).ToDictionary(group => group.Key, group => group.First().RunAs, StringComparer.Ordinal);
         var findings = new List<PersistenceFinding>();
@@ -130,7 +143,7 @@ public static partial class PersistenceAnalyzer
             switch (entry.Category)
             {
                 case PersistenceCategories.DriverFile when ByovdBlocklist.TryGetValue(entry.Name, out var driver):
-                    findings.Add(new("CRITICAL", "T1068", entry.Category, $"Known-vulnerable driver present (BYOVD): {entry.Name} ({driver})", entry.Value));
+                    findings.Add(ByovdFinding(entry, driver, signer?.Invoke(entry)));
                     break;
                 case PersistenceCategories.DriverFile when recent:
                     findings.Add(new("MEDIUM", "T1068", entry.Category, $"New kernel driver file: {entry.Name}", entry.Value));
@@ -147,12 +160,18 @@ public static partial class PersistenceAnalyzer
                     findings.Add(new("HIGH", "T1546.003", entry.Category, $"New WMI event filter: {entry.Name}", entry.Value));
                     break;
                 case PersistenceCategories.RegistryRun or PersistenceCategories.Winlogon when recent:
-                    findings.Add(new("HIGH", entry.Change == PersistenceChanges.Modified ? "T1574.011" : entry.Technique, entry.Category,
-                        $"Autostart value {verb}: {entry.Location}\\{entry.Name}", entry.Value));
+                {
+                    var (severity, reason) = AutostartSeverity(entry, signer);
+                    findings.Add(new(severity, entry.Change == PersistenceChanges.Modified ? "T1574.011" : entry.Technique, entry.Category,
+                        $"Autostart value {verb}: {entry.Location}\\{entry.Name}{reason}", entry.Value));
                     break;
+                }
                 case PersistenceCategories.StartupFolder when recent:
-                    findings.Add(new("HIGH", entry.Technique, entry.Category, $"Startup folder item {verb}: {entry.Name}", entry.Value));
+                {
+                    var (severity, reason) = AutostartSeverity(entry, signer);
+                    findings.Add(new(severity, entry.Technique, entry.Category, $"Startup folder item {verb}: {entry.Name}{reason}", entry.Value));
                     break;
+                }
                 case PersistenceCategories.ScheduledTask when recent:
                     findings.Add(TaskFinding(entry, runAs.GetValueOrDefault($"{entry.Category}|{entry.Location}|{entry.Name}", ""), verb));
                     break;
@@ -162,6 +181,89 @@ public static partial class PersistenceAnalyzer
     }
 
     private static string Bound(string value) => value.Length <= 1000 ? value : value[..1000];
+
+    private static PersistenceFinding ByovdFinding(PersistenceEntry entry, string driver, PersistenceSignature? signature)
+    {
+        var summary = $"Known-vulnerable driver present (BYOVD): {entry.Name} ({driver})";
+        return signature?.Signed switch
+        {
+            // Matches ThreatVerdictEngine's "legitimate but vulnerable" verdict: a vendor tool installed it, but an
+            // attacker with admin rights could load it to reach the kernel.
+            true => new("MEDIUM", "T1068", entry.Category,
+                $"{summary}: legitimate but vulnerable, signed by {SignerDisplay(signature.Signer)}. Update or uninstall the vendor tool if unused", entry.Value),
+            false => new("CRITICAL", "T1068", entry.Category, $"{summary}: not validly signed", entry.Value),
+            _ => new("CRITICAL", "T1068", entry.Category, summary, entry.Value),
+        };
+    }
+
+    /// <summary>
+    /// Severity for a new or changed Run/RunOnce, Winlogon or Startup item. Script hosts and LOLBins stay HIGH even
+    /// though they are Microsoft-signed; a signed target in a protected folder drops to LOW; a signed target in a
+    /// user-writable folder is MEDIUM; unsigned or unverifiable targets stay HIGH.
+    /// </summary>
+    internal static (string Severity, string Reason) AutostartSeverity(PersistenceEntry entry, Func<PersistenceEntry, PersistenceSignature?>? signer)
+    {
+        if (SuspiciousTaskAction().IsMatch(entry.Value)) return ("HIGH", " (starts a script host or LOLBin)");
+        if (signer?.Invoke(entry) is not { } signature) return ("HIGH", "");
+        var userWritable = SuspiciousTaskPath().IsMatch(LaunchTarget(entry) ?? entry.Value);
+        return signature.Signed switch
+        {
+            true when !userWritable => ("LOW", $" (signed by {SignerDisplay(signature.Signer)})"),
+            true => ("MEDIUM", $" (signed by {SignerDisplay(signature.Signer)}, but runs from a user-writable folder)"),
+            false => ("HIGH", " (target is not validly signed)"),
+            _ => ("HIGH", ""),
+        };
+    }
+
+    /// <summary>
+    /// The file an entry launches, unexpanded: the executable at the start of a Run/Winlogon command line, the startup
+    /// folder file, or the driver file. Null for entries without a file target.
+    /// </summary>
+    public static string? LaunchTarget(PersistenceEntry entry) => entry.Category switch
+    {
+        PersistenceCategories.RegistryRun or PersistenceCategories.Winlogon => CommandTarget(entry.Value),
+        PersistenceCategories.StartupFolder => entry.Value.Length == 0 ? null : entry.Value,
+        PersistenceCategories.DriverFile => entry.Location.Length == 0 ? null : $"{entry.Location.TrimEnd('\\')}\\{entry.Name}",
+        _ => null,
+    };
+
+    /// <summary>The executable at the start of a command line: a quoted path, an unquoted path ending in .exe, or the first token.</summary>
+    public static string? CommandTarget(string command)
+    {
+        var text = command.Trim();
+        if (text.Length == 0) return null;
+        if (text[0] == '"')
+        {
+            var close = text.IndexOf('"', 1);
+            var quoted = (close > 1 ? text[1..close] : text[1..]).Trim();
+            return quoted.Length == 0 ? null : quoted;
+        }
+        var match = UnquotedExecutable().Match(text);
+        if (match.Success) return match.Value;
+        var end = text.IndexOfAny([' ', ',']);
+        return end > 0 ? text[..end] : text;
+    }
+
+    /// <summary>Common name from a certificate subject such as "CN=Vendor, O=Vendor, C=US"; plain names pass through.</summary>
+    public static string SignerDisplay(string? signer)
+    {
+        if (string.IsNullOrWhiteSpace(signer)) return "a trusted publisher";
+        var index = signer.IndexOf("CN=", StringComparison.OrdinalIgnoreCase);
+        if (index < 0) return Shorten(signer.Trim(), 120);
+        var value = signer[(index + 3)..];
+        if (value.StartsWith('"'))
+        {
+            var close = value.IndexOf('"', 1);
+            value = close > 0 ? value[1..close] : value[1..];
+        }
+        else
+        {
+            value = value.Split(',')[0];
+        }
+        return Shorten(value.Trim(), 120);
+    }
+
+    private static string Shorten(string value, int length) => value.Length <= length ? value : value[..length];
 
     /// <summary>scheduled_task_monitor.py _check_new_tasks severity for a new task (highest applicable).</summary>
     private static PersistenceFinding TaskFinding(PersistenceEntry entry, string runAs, string verb)
@@ -187,6 +289,9 @@ public static partial class PersistenceAnalyzer
 
     [GeneratedRegex(@"\\Users\\.*\\AppData|\\Temp\\|\\ProgramData\\|\\Public\\|\\Downloads\\|\\Desktop\\|%APPDATA%|%TEMP%|%USERPROFILE%", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex SuspiciousTaskPath();
+
+    [GeneratedRegex(@"^.+?\.exe(?=$|[\s,])", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex UnquotedExecutable();
 
     [GeneratedRegex(@"^WindowsUpdate\d{3,}$|^SystemCheck\d+$|^MicrosoftUpdate|^Updater[A-Z]|^GoogleUpdate[A-Z]{4,}|^[a-f0-9]{32}$|^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex MalwareTaskName();

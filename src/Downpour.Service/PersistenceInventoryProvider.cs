@@ -12,7 +12,7 @@ namespace Downpour.Service;
 /// Read-only autostart and persistence inventory (v29 persistence_watchers, scheduled_task_monitor and
 /// wmi_persistence_detector). Live values are displayed but only their SHA-256 is persisted in the baseline.
 /// </summary>
-public sealed class PersistenceInventoryProvider(string baselinePath)
+public sealed class PersistenceInventoryProvider(string baselinePath, IAuthenticodeVerifier? signatures = null)
 {
     internal const int MaximumEntries = 4096;
     private const int MaximumText = 512;
@@ -21,13 +21,13 @@ public sealed class PersistenceInventoryProvider(string baselinePath)
     private static readonly JsonSerializerOptions BaselineJson = new(JsonSerializerDefaults.Web);
     private readonly object _gate = new();
 
-    public static PersistenceInventoryProvider CreateForCurrentUser()
+    public static PersistenceInventoryProvider CreateForCurrentUser(IAuthenticodeVerifier? signatures = null)
     {
         var root = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DownpourNext", "state");
         SecureJournalDirectory.Ensure(root);
         var path = Path.Combine(root, "persistence-baseline.v1.json");
         SecureJournalDirectory.RestrictExistingFile(path);
-        return new PersistenceInventoryProvider(path);
+        return new PersistenceInventoryProvider(path, signatures);
     }
 
     private static readonly (RegistryHive Hive, string HiveName, string Path)[] RunKeys =
@@ -72,7 +72,7 @@ public sealed class PersistenceInventoryProvider(string baselinePath)
             var baseline = LoadBaseline(warnings);
             var (entries, updated, first) = PersistenceAnalyzer.Compare(all, baseline, now);
             SaveBaseline(updated, warnings);
-            var findings = PersistenceAnalyzer.Findings(entries, all);
+            var findings = PersistenceAnalyzer.Findings(entries, all, Signature);
             var visible = entries
                 .Where(entry => entry.Category != PersistenceCategories.DriverFile
                     || entry.Change != PersistenceChanges.Baseline
@@ -80,6 +80,51 @@ public sealed class PersistenceInventoryProvider(string baselinePath)
                 .Take(MaximumEntries)
                 .ToArray();
             return new PersistenceSnapshot(1, now, updated.CreatedAtUtc, first, visible, findings.Take(256).ToArray(), status, warnings);
+        }
+    }
+
+    /// <summary>
+    /// Authenticode check of the file an autostart entry or driver points at. Only fully qualified local paths (after
+    /// environment expansion, or a bare name found in the Windows or System32 folder) are opened; network paths and
+    /// anything that cannot be read return null so the stricter default severity applies.
+    /// </summary>
+    private PersistenceSignature? Signature(PersistenceEntry entry)
+    {
+        if (ResolveTarget(PersistenceAnalyzer.LaunchTarget(entry)) is not { } path) return null;
+        try
+        {
+            if (AuthenticodeVerifier.VerifyEmbeddedSignature(path, out var signer))
+                return new(true, signer, AuthenticodeVerifier.IsMicrosoftSignerName(signer));
+            if (signatures?.IsMicrosoftSigned(path) == true) return new(true, "Microsoft (catalog)", true);
+            return new(false, null, false);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.ComponentModel.Win32Exception)
+        {
+            return null;
+        }
+    }
+
+    internal static string? ResolveTarget(string? target)
+    {
+        if (string.IsNullOrWhiteSpace(target) || target.Length > 1024) return null;
+        try
+        {
+            var expanded = Environment.ExpandEnvironmentVariables(target.Trim());
+            if (expanded.StartsWith(@"\\", StringComparison.Ordinal) || expanded.IndexOfAny(Path.GetInvalidPathChars()) >= 0) return null;
+            if (!Path.IsPathFullyQualified(expanded))
+            {
+                if (expanded.Contains('\\') || expanded.Contains('/')) return null;
+                var windows = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+                var system = Environment.GetFolderPath(Environment.SpecialFolder.System);
+                expanded = new[] { Path.Combine(system, expanded), Path.Combine(windows, expanded) }.FirstOrDefault(File.Exists) ?? "";
+                if (expanded.Length == 0) return null;
+            }
+            var full = Path.GetFullPath(expanded);
+            return File.Exists(full) ? full : null;
+        }
+        catch (Exception ex) when (ex is ArgumentException or NotSupportedException or IOException or UnauthorizedAccessException or SecurityException)
+        {
+            return null;
         }
     }
 
