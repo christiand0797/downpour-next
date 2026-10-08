@@ -55,6 +55,8 @@ public sealed partial class DriverPage : Page
     {
         InitializeComponent();
         Charts.Row(ChartRow, _locationChart, _folderChart, _countChart);
+        EntityDetails.Attach(DriverList, item => item is DriverRow d ? new DetailEntity(d.Name, "Loaded kernel driver",
+            [new("Name", d.Name), new("Image path", d.ImagePath), new("Location", d.LocationStatus)], FilePath: d.ImagePath, Kind: "driver") : null);
         _refreshTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
         _refreshTimer.Interval = TimeSpan.FromSeconds(1);
         _refreshTimer.IsRepeating = true;

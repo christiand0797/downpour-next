@@ -54,7 +54,7 @@
                     <CheckBox Grid.Column="2" x:Name="RecentOnly" Content="New or changed (7 days)" Checked="Filter_Changed" Unchecked="Filter_Changed" />
                 </Grid>
                 <TextBlock x:Name="EntryCount" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                <ListView ItemsSource="{x:Bind Entries}" SelectionMode="None" MaxHeight="520" Background="{StaticResource DownpourSurfaceBrush}">
+                <ListView x:Name="EntryList" ItemsSource="{x:Bind Entries}" SelectionMode="None" MaxHeight="520" Background="{StaticResource DownpourSurfaceBrush}">
                     <ListView.ItemTemplate>
                         <DataTemplate>
                             <Grid Padding="10,6" ColumnSpacing="12">

@@ -33,6 +33,8 @@ public sealed partial class SecurityEventsPage : Page
     {
         InitializeComponent();
         Charts.Row(ChartRow, _severityChart, _channelChart, _kindChart);
+        EntityDetails.Attach(EventList, item => item is SecurityEventRow e ? new DetailEntity(e.Summary, $"{e.Severity} · {e.Time}",
+            [new("Time", e.Time), new("Severity", e.Severity), new("Source", e.Source), new("Summary", e.Summary), new("MITRE technique", e.Technique)], Kind: "event") : null);
         _refreshTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
         _refreshTimer.Interval = TimeSpan.FromSeconds(1);
         _refreshTimer.IsRepeating = true;

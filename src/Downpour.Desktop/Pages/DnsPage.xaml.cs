@@ -71,6 +71,9 @@ public sealed partial class DnsPage : Page, INotifyPropertyChanged
     {
         InitializeComponent();
         Charts.Row(ChartRow, _riskChart, _typeChart, _domainChart);
+        EntityDetails.Attach(EntryList, item => item is DnsEntryRow d ? new DetailEntity(d.Domain, "Cached DNS name",
+            [new("Domain", d.Domain), new("Record type", d.RecordTypeDisplay), new("Risk score", d.ScoreDisplay), new("Why", d.FactorsDisplay)],
+            Domain: d.Domain, Kind: "domain") : null);
         LiveRefresh.Attach(this, () => RefreshAsync(quiet: true));
     }
 

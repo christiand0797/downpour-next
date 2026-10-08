@@ -27,6 +27,11 @@ public sealed partial class ServicesPage : Page
     {
         InitializeComponent();
         Charts.Row(ChartRow, _stateChart, _startupChart, _riskChart);
+        EntityDetails.Attach(ServiceList, item => item is WindowsServiceRow s ? new DetailEntity(s.DisplayName, $"Windows service {s.ServiceName}",
+        [
+            new("Service name", s.ServiceName), new("Display name", s.DisplayName), new("State", s.State), new("Startup type", s.StartupType),
+            new("Risk", s.Risk), new("Program and indicators", s.RiskDetail),
+        ], FilePath: s.RiskDetail.Split(" — ")[0], Kind: "service") : null);
         _refreshTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
         _refreshTimer.Interval = TimeSpan.FromSeconds(1);
         _refreshTimer.IsRepeating = true;

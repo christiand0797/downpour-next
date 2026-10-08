@@ -27,6 +27,10 @@ public sealed partial class ProcessPage : Page
         InitializeComponent();
         _memoryChart.Limit = _cpuChart.Limit = 6;
         Charts.Row(ChartRow, _cpuChart, _memoryChart, _countChart);
+        EntityDetails.Attach(ProcessList, item => item is ProcessRow p ? new DetailEntity(p.Name, $"Process {p.ProcessId}",
+        [
+            new("Process ID", p.ProcessId.ToString()), new("Name", p.Name), new("Memory", p.MemoryDisplay), new("Threads", p.ThreadCount.ToString()), new("CPU", p.CpuDisplay),
+        ], ProcessId: p.ProcessId) : null);
         _timer = DispatcherQueue.GetForCurrentThread().CreateTimer();
         _timer.Interval = TimeSpan.FromSeconds(1);
         _timer.IsRepeating = true;

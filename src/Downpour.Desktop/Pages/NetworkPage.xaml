@@ -79,7 +79,7 @@
                 <StackPanel Spacing="3"><TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Text="CURRENT CONNECTIONS" /><TextBlock FontSize="19" FontWeight="SemiBold" Text="Active TCP endpoints" /></StackPanel>
                 <TextBlock Grid.Column="1" x:Name="ConnectionFootnote" VerticalAlignment="Bottom" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="READ ONLY" />
             </Grid>
-            <ListView ItemsSource="{x:Bind Connections}" SelectionMode="None" IsItemClickEnabled="False" Background="{StaticResource HudPanelBrush}" MaxHeight="420">
+            <ListView x:Name="ConnectionList" ItemsSource="{x:Bind Connections}" SelectionMode="None" IsItemClickEnabled="False" Background="{StaticResource HudPanelBrush}" MaxHeight="420">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <Grid Padding="10,8" ColumnSpacing="12">

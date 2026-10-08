@@ -111,7 +111,7 @@
                 <TextBox Grid.Column="1" x:Name="SearchBox" PlaceholderText="Filter domains..." TextChanged="SearchBox_TextChanged" VerticalAlignment="Center" />
             </Grid>
 
-            <ListView ItemsSource="{x:Bind FilteredEntries}" SelectionMode="None" IsItemClickEnabled="False" MaxHeight="400" Background="{StaticResource DownpourSurfaceBrush}">
+            <ListView x:Name="EntryList" ItemsSource="{x:Bind FilteredEntries}" SelectionMode="None" IsItemClickEnabled="False" MaxHeight="400" Background="{StaticResource DownpourSurfaceBrush}">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <Grid Padding="12,8" ColumnSpacing="12">

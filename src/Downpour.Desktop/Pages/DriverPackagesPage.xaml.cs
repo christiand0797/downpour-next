@@ -25,6 +25,11 @@ public sealed partial class DriverPackagesPage : Page
     {
         InitializeComponent();
         Charts.Row(ChartRow, _signatureChart, _classChart, _providerChart);
+        EntityDetails.Attach(PackageList, item => item is DriverPackageRow r ? new DetailEntity(r.InfFile, "Driver Store package",
+        [
+            new("INF", r.Entry.InfFile), new("Original INF", r.Entry.OriginalInfFile), new("Class", r.DriverClass), new("Provider", r.ProviderDisplay),
+            new("Version and date", r.VersionDateDisplay), new("Hardware ID", r.HardwareId), new("Signature", r.SignatureDisplay), new("Signer", r.Entry.SignerName ?? ""),
+        ], FilePath: Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "INF", r.Entry.InfFile), Kind: "driver package") : null);
         LiveRefresh.Attach(this, () => RefreshAsync(quiet: true));
     }
 

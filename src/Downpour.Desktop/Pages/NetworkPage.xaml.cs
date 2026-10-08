@@ -39,6 +39,9 @@ public sealed partial class NetworkPage : Page
     {
         InitializeComponent();
         Charts.Row(ChartRow, _stateChart, _remoteChart, _portChart);
+        EntityDetails.Attach(ConnectionList, item => item is NetworkConnectionRow c ? new DetailEntity(c.RemoteEndpoint, "TCP connection",
+            [new("Local endpoint", c.LocalEndpoint), new("Remote endpoint", c.RemoteEndpoint), new("State", c.State)],
+            Address: SplitEndpoint(c.RemoteEndpoint).Host, Kind: "connection") : null);
         _refreshTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
         _refreshTimer.Interval = TimeSpan.FromSeconds(1);
         _refreshTimer.IsRepeating = true;

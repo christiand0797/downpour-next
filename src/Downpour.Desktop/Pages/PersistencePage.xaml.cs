@@ -27,6 +27,10 @@ public sealed partial class PersistencePage : Page
     {
         InitializeComponent();
         Charts.Row(ChartRow, _categoryChart, _changeChart, _findingChart);
+        EntityDetails.Attach(EntryList, item => item is PersistenceEntryRow p ? new DetailEntity(p.Name, $"{p.Category} · {p.Change}",
+        [
+            new("Name", p.Name), new("Type", p.Category), new("Location", p.Location), new("Command or path", p.Value), new("Change", p.Change), new("Indicators", p.Indicators),
+        ], FilePath: p.Value, Kind: "autostart") : null);
         LiveRefresh.Attach(this, () => RefreshAsync(quiet: true));
         CategoryFilter.Items.Add(AllCategories);
         foreach (var category in new[]

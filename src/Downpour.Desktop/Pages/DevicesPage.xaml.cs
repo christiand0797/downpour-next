@@ -30,6 +30,7 @@ public sealed partial class DevicesPage : Page
     {
         InitializeComponent();
         Charts.Row(ChartRow, _healthChart, _classChart, _ageChart);
+        EntityDetails.Attach(DeviceList, item => item is PnpDeviceRow r ? DescribeDevice(r.Device) : null);
         LiveRefresh.Attach(this, () => RefreshAsync());
     }
 
@@ -284,6 +285,22 @@ public sealed partial class DevicesPage : Page
         ListCount.Text = $"Showing {rows.Length:N0} of {_snapshot.Devices.Count:N0} devices";
     }
 
+    private DetailEntity DescribeDevice(DeviceEntry d)
+    {
+        var problem = DeviceAnalyzer.Problem(d);
+        var chip = DriverSourceAdvisor.ChipMaker(d);
+        var sources = DriverSourceAdvisor.SourcesFor(d, _snapshot?.SystemManufacturer, _snapshot?.BoardManufacturer);
+        return new DetailEntity(d.Name, $"{d.Class} · {(d.Present ? "connected" : "not connected")}",
+        [
+            new("Status", problem is null ? "Working" : $"{problem.Title}: {problem.Explanation} {problem.Fix}"),
+            new("Class", d.Class), new("Manufacturer", d.Manufacturer), new("Chip maker (from hardware ID)", chip?.Maker ?? "Not recognised"),
+            new("Driver", d.DriverProvider is null ? "No driver information" : $"{d.DriverProvider} {d.DriverVersion}"),
+            new("Driver date", d.DriverDate?.ToString("yyyy-MM-dd") ?? ""), new("INF", d.InfName ?? ""),
+            new("Signed by", d.DriverSigned == false ? "NOT signed" : d.DriverSigner ?? ""), new("Hardware ID", d.HardwareId ?? ""), new("Instance ID", d.InstanceId),
+            new("Where to get drivers", sources.Count == 0 ? "Windows Update and Device Manager" : string.Join("; ", sources.Select(s => $"{s.Name} ({s.Url})"))),
+        ], FilePath: d.InfName is { Length: > 0 } inf ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "INF", inf) : null, Kind: "device");
+    }
+
     private static Button Action(string text, Func<Task> run)
     {
         var button = new Button { Content = text, FontSize = 12, Padding = new Thickness(10, 4, 10, 4) };
@@ -319,6 +336,7 @@ public sealed partial class DevicesPage : Page
 
 public sealed class PnpDeviceRow(DeviceEntry device)
 {
+    public DeviceEntry Device { get; } = device;
     public string Name { get; } = device.Name;
     public string Manufacturer { get; } = device.Manufacturer;
     public string Class { get; } = device.Class;
