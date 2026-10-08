@@ -40,6 +40,9 @@ public sealed class SecurityAlertClient(string pipeName = SecurityAlertClient.Pi
             snapshot.CapturedAtUtc < DateTimeOffset.UtcNow.AddMinutes(-10) ||
             snapshot.CapturedAtUtc > DateTimeOffset.UtcNow.AddMinutes(1) || snapshot.TotalCount < snapshot.Alerts.Count)
             return false;
+        if (snapshot.Hourly is { } hourly && (hourly.Count > 7 * 24 + 2 || hourly.Any(h => h is null || h.HourUtc.Offset != TimeSpan.Zero
+                || h.Count is < 0 or > 1_000_000 || h.Serious < 0 || h.Serious > h.Count)))
+            return false;
 
         var ids = new HashSet<string>(StringComparer.Ordinal);
         foreach (var alert in snapshot.Alerts)

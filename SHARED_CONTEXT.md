@@ -1,5 +1,9 @@
 # Downpour Next shared context
 
+## 2026-10-08 checkpoint: Threat Pulse on the Dashboard (claude-parity-audit, invented feature)
+
+`ThreatPulse` (Core) learns this PC's normal rate of new findings per hour from the previous six days (median + 1.4826*MAD, quiet hours count as zero, needs 24 h before judging) and grades the current hour: spike (>= median + 3 sigma and >= 4 findings), elevated (>= +2 sigma or any HIGH/CRITICAL), calm, or learning. `SecurityAlertSnapshot` gains optional `Hourly` (`AlertHourCount`, <= 170 buckets, validated) computed in SQL over the whole store by event time, so busy PCs are not limited to the newest 512 rows. Dashboard card under the status card: 24 bars created once and resized per refresh (current hour coloured by state, high/critical in red, dashed spike threshold, accessible names per bar). 1061 tests. Visual check skipped this round because the owner was using the desktop; rendering code is isolated in `HomePage.RenderPulse`.
+
 ## 2026-10-08 checkpoint: parser fuzzing (claude-parity-audit, security roadmap)
 
 `tests/Downpour.Tests/ParserFuzzTests.cs`: deterministic, seeded fuzzing (random bytes, token soup, deep JSON past MaxDepth, mutated samples, bracket bombs, gzip payloads) of all threat-feed parsers, the IP-origin database, the CISA KEV parser, every pipe-reply validator (Audio, Anti-Stalker, security events, alerts, threat databases) and the total helpers (TryClassify, CommandTarget, SignerDisplay, NormalizeImagePath, ClassifyKind, DescribeFormat, AuditChain.Verify). Parsers may only return or throw their documented exception; a 60 s bound catches super-linear parsing. Found and fixed: `KevCatalogClient.Parse` leaked Newtonsoft `JsonReaderException` and could throw cast/overflow on a mistyped `count`; it now surfaces only `InvalidDataException` (inner exception kept) and requires an integer count. 1053/1053 tests.

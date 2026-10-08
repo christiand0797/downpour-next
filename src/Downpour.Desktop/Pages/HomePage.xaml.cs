@@ -24,6 +24,9 @@ public sealed partial class HomePage : Page
     private DateTimeOffset _hardeningCheckedAt = DateTimeOffset.MinValue;
     private readonly SecurityAlertClient _alertClient = new();
     private readonly BlossomScene _blossom = new();
+    private readonly List<(Rectangle All, Rectangle Serious)> _pulseBars = [];
+    private Line? _pulseThreshold;
+    private ThreatPulseReading? _pulse;
     private readonly HardeningPostureClient _hardeningClient = new();
     private readonly SensorSettingsClient _settingsClient = new();
     private DateTimeOffset _settingsCheckedAt = DateTimeOffset.MinValue;
@@ -153,6 +156,76 @@ public sealed partial class HomePage : Page
             : $"Confirm to act · {string.Join(", ", enabled)}";
     }
 
+    private void PulseChart_SizeChanged(object sender, Microsoft.UI.Xaml.SizeChangedEventArgs e) => RenderPulse();
+
+    /// <summary>Threat Pulse bars: created once, then only resized and recoloured, so the 1 s refresh costs no layout churn.</summary>
+    private void RenderPulse()
+    {
+        if (_pulse is not { } pulse || PulseChart.ActualWidth < 40) return;
+        if (_pulseBars.Count == 0)
+        {
+            for (var i = 0; i < 24; i++)
+            {
+                var all = new Rectangle { RadiusX = 2, RadiusY = 2 };
+                var serious = new Rectangle { RadiusX = 2, RadiusY = 2, Fill = (Brush)Microsoft.UI.Xaml.Application.Current.Resources["HudRedBrush"] };
+                PulseChart.Children.Add(all);
+                PulseChart.Children.Add(serious);
+                _pulseBars.Add((all, serious));
+            }
+            _pulseThreshold = new Line
+            {
+                Stroke = (Brush)Microsoft.UI.Xaml.Application.Current.Resources["HudAmberBrush"],
+                StrokeThickness = 1,
+                StrokeDashArray = [4, 3],
+                Opacity = 0.8,
+            };
+            PulseChart.Children.Add(_pulseThreshold);
+        }
+
+        var width = PulseChart.ActualWidth;
+        var height = PulseChart.Height;
+        var scale = Math.Max(1, Math.Max(pulse.Last24Hours.Max(h => h.Count), pulse.Threshold));
+        var slot = width / 24;
+        var barWidth = Math.Max(2, slot - 3);
+        var tone = pulse.State switch
+        {
+            ThreatPulseStates.Spike => "HudMagentaBrush",
+            ThreatPulseStates.Elevated => "HudAmberBrush",
+            ThreatPulseStates.Learning => "HudTextDimBrush",
+            _ => "HudGreenBrush",
+        };
+        var current = (Brush)Microsoft.UI.Xaml.Application.Current.Resources[tone];
+        var normal = (Brush)Microsoft.UI.Xaml.Application.Current.Resources["HudCyanBrush"];
+        for (var i = 0; i < 24; i++)
+        {
+            var hour = pulse.Last24Hours[i];
+            var (all, serious) = _pulseBars[i];
+            var h = hour.Count == 0 ? 2 : Math.Max(3, hour.Count / scale * (height - 2));
+            var sh = hour.Serious == 0 ? 0 : Math.Max(2, hour.Serious / scale * (height - 2));
+            all.Width = serious.Width = barWidth;
+            all.Height = h;
+            serious.Height = sh;
+            all.Fill = i == 23 ? current : normal;
+            all.Opacity = hour.Count == 0 ? 0.25 : i == 23 ? 1 : 0.65;
+            Microsoft.UI.Xaml.Controls.Canvas.SetLeft(all, i * slot);
+            Microsoft.UI.Xaml.Controls.Canvas.SetTop(all, height - h);
+            Microsoft.UI.Xaml.Controls.Canvas.SetLeft(serious, i * slot);
+            Microsoft.UI.Xaml.Controls.Canvas.SetTop(serious, height - sh);
+            Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(all, $"{hour.StartUtc.ToLocalTime():HH}:00, {hour.Count} new findings, {hour.Serious} high or critical");
+        }
+        if (_pulseThreshold is not null)
+        {
+            var y = height - pulse.Threshold / scale * (height - 2);
+            _pulseThreshold.X1 = 0;
+            _pulseThreshold.X2 = width;
+            _pulseThreshold.Y1 = _pulseThreshold.Y2 = y;
+            _pulseThreshold.Visibility = pulse.State == ThreatPulseStates.Learning ? Microsoft.UI.Xaml.Visibility.Collapsed : Microsoft.UI.Xaml.Visibility.Visible;
+        }
+        PulseHeadline.Text = pulse.Headline;
+        PulseDetail.Text = pulse.Detail;
+        PulseDot.Fill = current;
+    }
+
     private async Task RefreshSecurityAsync()
     {
         if (_securityRequestInFlight) return;
@@ -171,6 +244,8 @@ public sealed partial class HomePage : Page
             }
             else
             {
+                _pulse = ThreatPulse.Compute(alerts, DateTimeOffset.UtcNow);
+                RenderPulse();
                 var open = alerts.Alerts.Where(a => a.State is "Open" or "Acknowledged").ToArray();
                 var threats = open.Count(SecurityFindingCatalog.IsThreat);
                 ThreatsMetricValue.Text = threats.ToString("N0");

@@ -139,7 +139,11 @@ public sealed record SecurityAlertSnapshot(
     DateTimeOffset CapturedAtUtc,
     int TotalCount,
     IReadOnlyList<SecurityAlert> Alerts,
-    IReadOnlyList<string> Warnings);
+    IReadOnlyList<string> Warnings,
+    IReadOnlyList<AlertHourCount>? Hourly = null);
+
+/// <summary>Alerts per hour of event time across the whole store (not just the snapshot's newest rows), for Threat Pulse.</summary>
+public sealed record AlertHourCount(DateTimeOffset HourUtc, int Count, int Serious);
 
 public sealed record AlertStateChangeRequest(int SchemaVersion, Guid RequestId, string AlertId, string ExpectedState, string State);
 public sealed record AlertStateChangeResponse(int SchemaVersion, Guid RequestId, bool Accepted, string ResultCode);

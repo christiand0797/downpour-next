@@ -48,6 +48,29 @@
                 </Grid>
             </Border>
 
+            <Border x:Name="PulseCard" Padding="16,12" CornerRadius="12" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource DownpourStrokeBrush}" BorderThickness="1">
+                <Grid ColumnSpacing="18">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="320" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                    <StackPanel Spacing="3" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Ellipse x:Name="PulseDot" Width="9" Height="9" Fill="{StaticResource HudCyanBrush}" VerticalAlignment="Center" />
+                            <TextBlock Text="THREAT PULSE" FontSize="11" FontWeight="SemiBold" CharacterSpacing="120" Foreground="{StaticResource HudTextDimBrush}" />
+                        </StackPanel>
+                        <TextBlock x:Name="PulseHeadline" Text="Reading the pulse…" FontSize="16" FontWeight="SemiBold" TextWrapping="Wrap" />
+                        <TextBlock x:Name="PulseDetail" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"
+                                   Text="New findings per hour compared with this PC's own normal, learned from your alert history." />
+                    </StackPanel>
+                    <Grid Grid.Column="1" RowSpacing="4">
+                        <Grid.RowDefinitions><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                        <Canvas x:Name="PulseChart" Height="70" SizeChanged="PulseChart_SizeChanged" AutomationProperties.Name="New findings per hour over the last 24 hours" />
+                        <Grid Grid.Row="1">
+                            <TextBlock Text="24 h ago" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                            <TextBlock Text="now" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" HorizontalAlignment="Right" />
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </Border>
+
             <Grid ColumnSpacing="14">
                 <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                 <Border Padding="14,14,14,10" CornerRadius="12" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource DownpourStrokeBrush}" BorderThickness="1" VerticalAlignment="Stretch">

@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- **Threat Pulse** on the Dashboard: Downpour learns how many new findings per hour are normal for your PC and shows the last 24 hours as a pulse, flagging a spike when something unusual starts.
 - **Tamper-evident action log**: every quarantine, process end, firewall, USB and host-isolation action is now chained with a keyed hash, so editing, deleting, reordering or cutting off records is detected. Downpour checks the chain at start and every ten minutes and raises a critical alert if it was altered; the case file shows the result.
 - Service-install alerts now say which service was installed, which program it runs and who signed it, and are graded by that: Microsoft-signed components are low, signed apps (for example Claude, ChatGPT or NVIDIA services) medium, unsigned ones high, and services that run a command shell (how remote-control attack tools work) critical. The program file is attached as evidence.
 - The case file shows the evidence behind each alert (scanned file, service program) and includes an Audio Shield section.

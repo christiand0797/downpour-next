@@ -243,9 +243,30 @@ public sealed class SecurityAlertRepository(string databasePath)
                     ParseUtc(reader.GetString(8)), ParseUtc(reader.GetString(9)), ParseUtc(reader.GetString(10)), reader.GetInt32(11), reader.GetString(12),
                     reader.GetInt64(13) != 0, reader.IsDBNull(14) ? null : reader.GetString(14), reader.IsDBNull(15) ? null : reader.GetString(15)));
             }
-            return new SecurityAlertSnapshot(1, DateTimeOffset.UtcNow, total, alerts, []);
+            return new SecurityAlertSnapshot(1, DateTimeOffset.UtcNow, total, alerts, [], await ReadHourlyAsync(connection, cancellationToken));
         }
         finally { _gate.Release(); }
+    }
+
+    public const int MaximumHourlyBuckets = 7 * 24 + 2;
+
+    /// <summary>Per-hour counts for the last seven days by event time (stored as UTC ISO-8601, so the first 13 chars are the hour).</summary>
+    private static async Task<IReadOnlyList<AlertHourCount>> ReadHourlyAsync(SqliteConnection connection, CancellationToken cancellationToken)
+    {
+        await using var command = connection.CreateCommand();
+        command.CommandText = "SELECT substr(event_time_utc,1,13) AS hour, COUNT(*), SUM(CASE WHEN severity IN ('CRITICAL','HIGH') THEN 1 ELSE 0 END) " +
+            "FROM alerts WHERE event_time_utc >= $since GROUP BY hour ORDER BY hour DESC LIMIT $limit;";
+        command.Parameters.AddWithValue("$since", DateTimeOffset.UtcNow.AddDays(-7).AddHours(-1).ToString("O"));
+        command.Parameters.AddWithValue("$limit", MaximumHourlyBuckets);
+        var hours = new List<AlertHourCount>();
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            if (!DateTimeOffset.TryParseExact(reader.GetString(0) + ":00:00+00:00", "yyyy-MM-dd'T'HH:mm:sszzz",
+                    System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var hour)) continue;
+            hours.Add(new AlertHourCount(hour.ToUniversalTime(), reader.GetInt32(1), reader.GetInt32(2)));
+        }
+        return hours;
     }
 
     public async Task<AlertStateChangeResponse> ChangeStateAsync(

@@ -23,7 +23,8 @@
 - [x] Sakura Sentinel scene on Dashboard and Performance (load-driven petals, Kuro the cat with mood and threat awareness).
 - [x] HUD gradient meter bars app-wide; Performance right column filled.
 - [ ] HUD visuals kit: segmented glowing meters, sparklines, radar sweep, hex status tiles on every feature page.
-- [ ] Invented features: Threat Pulse (per-PC baseline spikes), watch timeline ribbon (camera/mic/screen), tripwire canary files.
+- [x] Threat Pulse on the Dashboard (per-PC hourly baseline, spike/elevated/calm).
+- [ ] Invented features: watch timeline ribbon (camera/mic/screen), tripwire canary files (opt-in).
 - [x] Hash-chained, DPAPI-keyed action audit log with anchor, integrity monitor and CRITICAL finding on tampering.
 - [x] Parser fuzzing for feeds, KEV, IP origin, pipe replies and helpers (found and fixed a KEV exception leak).
 - [ ] Security hardening roadmap: signed builds and updates, off-box audit anchoring, least-privilege review.
