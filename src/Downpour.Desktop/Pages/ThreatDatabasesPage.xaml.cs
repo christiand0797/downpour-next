@@ -46,7 +46,7 @@ public sealed class FeedRow
 public sealed partial class ThreatDatabasesPage : Page
 {
     private readonly ThreatDatabaseClient _client = new();
-    private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromSeconds(20) };
+    private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromSeconds(1) };
     private readonly CircularGauge _coverage = new("ONLINE", Color.FromArgb(255, 0, 229, 255));
     private CancellationTokenSource _lifetime = new();
     private ThreatDatabaseSnapshot? _snapshot;
@@ -119,7 +119,7 @@ public sealed partial class ThreatDatabasesPage : Page
         SweepDetail.Text = s.Coverage.LastSweepDuration is { } took ? $"took {took.TotalSeconds:0.0} s · repeats every 5 min" : "first sweep is running";
 
         MatchesEmpty.Visibility = s.Matches.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
-        MatchList.ItemsSource = s.Matches.Select(m => new ThreatMatchRow
+        LiveList.Set(MatchList, s.Matches.Select(m => new ThreatMatchRow
         {
             Severity = m.Severity,
             Title = $"{m.Label} · {m.Where}",
@@ -128,10 +128,10 @@ public sealed partial class ThreatDatabasesPage : Page
             When = m.SeenAtUtc.ToLocalTime().ToString("MMM d HH:mm"),
             SeverityBrush = SeverityBrush(m.Severity),
             SeverityTint = SeverityTint(m.Severity),
-        }).ToArray();
+        }).ToArray());
 
         ConnectionsEmpty.Visibility = s.Connections.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
-        ConnectionList.ItemsSource = s.Connections.Select(c => new ConnectionRow
+        LiveList.Set(ConnectionList, s.Connections.Select(c => new ConnectionRow
         {
             Program = c.Program,
             Pid = $"PID {c.ProcessId}{(c.Listed ? " · LISTED IN A THREAT DATABASE" : "")}",
@@ -139,9 +139,9 @@ public sealed partial class ThreatDatabasesPage : Page
             Country = c.CountryCode is { } code ? $"{IpOriginDatabase.CountryName(code)} ({code})" : "Origin unknown",
             Network = c.Asn is { } asn ? $"AS{asn} · {c.Network}" : c.Network ?? "",
             MarkerBrush = c.Listed ? Brush("HudRedBrush") : Brush("HudCyanBrush"),
-        }).ToArray();
+        }).ToArray());
 
-        FeedRepeater.ItemsSource = s.Feeds.Select(f => new FeedRow
+        LiveList.Set(FeedRepeater, s.Feeds.Select(f => new FeedRow
         {
             Name = f.Name,
             Provider = $"{f.Provider} · {f.License}".ToUpperInvariant(),
@@ -152,11 +152,11 @@ public sealed partial class ThreatDatabasesPage : Page
                 f.RetrievedAtUtc is { } at ? $"Updated {Age(s.CapturedAtUtc - at)} ago · {f.Bytes / 1024d:N0} KB" : "Not downloaded yet",
             StateBrush = StateBrush(f.State),
             StateTint = StateTint(f.State),
-        }).ToArray();
+        }).ToArray());
 
-        LolbinList.ItemsSource = s.Lolbins.Count == 0
+        LiveList.Set(LolbinList, s.Lolbins.Count == 0
             ? new[] { "None of the catalogued built-in tools are running." }
-            : s.Lolbins.Select(l => $"{l.Name} ×{l.Instances} — can be used for: {l.Categories} ({l.Techniques})").ToArray();
+            : s.Lolbins.Select(l => $"{l.Name} ×{l.Instances} — can be used for: {l.Categories} ({l.Techniques})").ToArray());
         WarningsText.Text = string.Join(Environment.NewLine, s.Warnings);
         ReportButton.IsEnabled = true;
     }

@@ -1,3 +1,4 @@
+using Downpour.Contracts;
 using System.IO.Pipes;
 using System.Text.Json;
 using Downpour.Core;
@@ -10,6 +11,7 @@ public sealed class NetworkInventoryPipeWorker(
     string pipeName = NetworkInventoryClient.PipeName) : BackgroundService
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
+    private readonly SnapshotCache<NetworkInventorySnapshot> _cache = new(provider.Capture, TimeSpan.FromSeconds(1), logger);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -30,7 +32,7 @@ public sealed class NetworkInventoryPipeWorker(
                 using var connectionTimeout = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
                 connectionTimeout.CancelAfter(TimeSpan.FromSeconds(5));
                 await pipe.WaitForConnectionAsync(connectionTimeout.Token);
-                var snapshot = provider.Capture();
+                var snapshot = await _cache.GetAsync(stoppingToken);
                 await JsonSerializer.SerializeAsync(pipe, snapshot, JsonOptions, stoppingToken);
                 await pipe.FlushAsync(stoppingToken);
             }

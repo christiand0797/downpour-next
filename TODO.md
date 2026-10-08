@@ -8,8 +8,12 @@
 - [x] Drivers page empty on Windows 11 24H2+ (WMI fallback).
 - [x] Threat Intel Feeds broken by abuse.ch key requirement (rebuilt on local databases).
 - [x] CISA KEV failed on timestamp dateReleased.
-- [ ] DN-033: refresh every page every second smoothly (in-place updates, cached heavy collectors).
-- [ ] Fold repeated "PowerShell script block recorded" LOW alerts into counted rows.
+- [x] DN-033: refresh every page every second smoothly (in-place updates, cached heavy collectors).
+- [x] Fold repeated "PowerShell script block recorded" LOW alerts into counted rows (hourly roll-up).
+- [x] Dashboard strip data-driven; duplicate Sysmon warning removed.
+- [ ] HUD visuals kit: segmented glowing meters, sparklines, radar sweep, hex status tiles on every feature page.
+- [ ] Invented features: Threat Pulse (per-PC baseline spikes), watch timeline ribbon (camera/mic/screen), tripwire canary files.
+- [ ] Security hardening roadmap: signed builds and updates, hash-chained audit log, parser fuzzing, least-privilege review.
 - [ ] Publish v0.1.18 (x64 + arm64) with release manifest and record evidence.
 - [ ] Anti-Stalker: origin for remote sessions/remote-control connections and an evidence export.
 - [ ] List rows announce type names to screen readers; Parental header crowding at narrow widths.

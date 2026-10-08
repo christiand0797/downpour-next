@@ -23,7 +23,7 @@ public sealed class SysmonProvider
         var queried = 0;
 
         if (!IsSysmonLogPresent())
-            return new SysmonSnapshot(1, capturedAt, [], 0, ["Sysmon is not installed on this PC, so Sysmon telemetry is unavailable."]);
+            return new SysmonSnapshot(1, capturedAt, [], 0, ["Sysmon is not installed, so Sysmon telemetry is unavailable. Install Microsoft Sysinternals Sysmon to enable it."]);
 
         foreach (var source in Sources)
         {

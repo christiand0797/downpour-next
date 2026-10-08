@@ -26,11 +26,15 @@ public sealed partial class TriagePage : Page
     private string _mode = ThreatsMode;
     private bool _busy;
 
-    public ObservableCollection<TriageRow> Items { get; } = [];
+    public LiveCollection<TriageRow> Items { get; } = [];
 
     public string Mode => _mode;
 
-    public TriagePage() => InitializeComponent();
+    public TriagePage()
+    {
+        InitializeComponent();
+        LiveRefresh.Attach(this, () => RefreshAsync(quiet: true));
+    }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
@@ -65,7 +69,7 @@ public sealed partial class TriagePage : Page
         StatusHeadline.Text = "Details copied";
     }
 
-    private async Task RefreshAsync()
+    private async Task RefreshAsync(bool quiet = false)
     {
         var snapshot = await _client.TryGetSnapshotAsync();
         if (snapshot is null)

@@ -16,12 +16,13 @@ public sealed partial class PersistencePage : Page
     private IReadOnlyList<PersistenceEntry> _entries = [];
     private bool _requestInFlight;
 
-    public ObservableCollection<PersistenceFindingRow> Findings { get; } = [];
-    public ObservableCollection<PersistenceEntryRow> Entries { get; } = [];
+    public LiveCollection<PersistenceFindingRow> Findings { get; } = [];
+    public LiveCollection<PersistenceEntryRow> Entries { get; } = [];
 
     public PersistencePage()
     {
         InitializeComponent();
+        LiveRefresh.Attach(this, () => RefreshAsync(quiet: true));
         CategoryFilter.Items.Add(AllCategories);
         foreach (var category in new[]
         {
@@ -43,12 +44,12 @@ public sealed partial class PersistencePage : Page
 
     private void Filter_Changed(object sender, object e) => ApplyFilter();
 
-    private async Task RefreshAsync()
+    private async Task RefreshAsync(bool quiet = false)
     {
         if (_requestInFlight) return;
         _requestInFlight = true;
-        RefreshButton.IsEnabled = false;
-        StatusHeadline.Text = "Scanning autostart locations";
+        if (!quiet) RefreshButton.IsEnabled = false;
+        if (!quiet) StatusHeadline.Text = "Scanning autostart locations";
         try
         {
             var snapshot = await _client.TryGetSnapshotAsync();

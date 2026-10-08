@@ -16,11 +16,15 @@ public sealed partial class UsbPage : Page
     private bool _requestInFlight;
     private bool _usbStorageEnabled = true;
 
-    public ObservableCollection<UsbFindingRow> Findings { get; } = [];
-    public ObservableCollection<UsbDeviceRow> ConnectedDevices { get; } = [];
-    public ObservableCollection<UsbHistoryRow> History { get; } = [];
+    public LiveCollection<UsbFindingRow> Findings { get; } = [];
+    public LiveCollection<UsbDeviceRow> ConnectedDevices { get; } = [];
+    public LiveCollection<UsbHistoryRow> History { get; } = [];
 
-    public UsbPage() => InitializeComponent();
+    public UsbPage()
+    {
+        InitializeComponent();
+        LiveRefresh.Attach(this, () => RefreshAsync(quiet: true));
+    }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
@@ -30,13 +34,13 @@ public sealed partial class UsbPage : Page
 
     private async void Refresh_Click(object sender, RoutedEventArgs e) => await RefreshAsync();
 
-    private async Task RefreshAsync()
+    private async Task RefreshAsync(bool quiet = false)
     {
         if (_requestInFlight) return;
         _requestInFlight = true;
-        RefreshButton.IsEnabled = false;
-        ToggleUsbStorageButton.IsEnabled = false;
-        StatusHeadline.Text = "Checking USB device posture";
+        if (!quiet) RefreshButton.IsEnabled = false;
+        if (!quiet) ToggleUsbStorageButton.IsEnabled = false;
+        if (!quiet) StatusHeadline.Text = "Checking USB device posture";
 
         try
         {

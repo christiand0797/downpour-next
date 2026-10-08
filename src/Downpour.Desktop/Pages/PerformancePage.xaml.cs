@@ -17,7 +17,7 @@ namespace Downpour_Desktop.Pages;
 
 public sealed partial class PerformancePage : Page
 {
-    private const int HistoryLimit = 40; // 40 × 3 seconds = two minutes.
+    private const int HistoryLimit = 120; // 120 × 1 second = two minutes at the default rate.
     private readonly SystemSnapshotClient _client = new();
     private readonly NetworkInventoryClient _networkClient = new();
     private readonly DispatcherQueueTimer _timer;
@@ -147,7 +147,7 @@ public sealed partial class PerformancePage : Page
         CpuCount.Text = Environment.ProcessorCount.ToString("N0");
         CpuDetail.Text = "Logical processors · Windows reports topology only";
         _timer = DispatcherQueue.GetForCurrentThread().CreateTimer();
-        _timer.Interval = TimeSpan.FromSeconds(3);
+        _timer.Interval = TimeSpan.FromSeconds(1);
         _timer.IsRepeating = true;
         _timer.Tick += async (_, _) => await RefreshAsync();
         _timer.Start();
@@ -184,11 +184,11 @@ public sealed partial class PerformancePage : Page
         else if (IsLoaded && !_timer.IsRunning) _timer.Start();
         PauseButton.Content = _samplingPaused ? "▶  Resume" : "Ⅱ  Pause";
         ToolTipService.SetToolTip(PauseButton, _samplingPaused
-            ? "Resume automatic three-second sampling."
-            : "Pause automatic three-second sampling.");
+            ? "Resume automatic sampling."
+            : "Pause automatic sampling.");
         StatusDescription.Text = _samplingPaused
             ? "Automatic sampling is paused. Use Refresh for a one-time current snapshot."
-            : "CPU, memory, commit, and adapter rates update every three seconds. Missing readings remain visible as graph gaps.";
+            : "CPU, memory, commit, and adapter rates update every second. Missing readings remain visible as graph gaps.";
     }
 
     private void ProcessSortCombo_SelectionChanged(object sender, Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs e)
@@ -419,7 +419,7 @@ public sealed partial class PerformancePage : Page
             ConnectionCount.Text = network?.TotalConnectionCount.ToString("N0") ?? "—";
             StatusDescription.Text = network is null
                 ? "CPU/memory, commit, volume, and physical-disk readings are local. Adapter rates and connection totals are unavailable in this sample."
-                : "CPU, memory, commit, volume, physical-disk throughput, adapter rates, and process inventory update locally every three seconds. Missing measurements remain unknown.";
+                : "CPU, memory, commit, volume, physical-disk throughput, adapter rates, and process inventory update locally every second. Missing measurements remain unknown.";
             DiskIoSummary.Text = diskRead is { } readBytes && diskWrite is { } writeBytes
                 ? $"All physical disks · read {FormatRate(readBytes)} · write {FormatRate(writeBytes)}"
                 : "All physical disks · Windows counters are warming up or unavailable";

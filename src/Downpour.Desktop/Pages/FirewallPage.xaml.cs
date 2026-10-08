@@ -16,12 +16,16 @@ public sealed partial class FirewallPage : Page
     private IReadOnlyList<FirewallRuleEntry> _rules = [];
     private bool _requestInFlight;
 
-    public ObservableCollection<FirewallProfileRow> Profiles { get; } = [];
-    public ObservableCollection<FirewallFindingRow> Findings { get; } = [];
-    public ObservableCollection<FirewallRuleRow> Rules { get; } = [];
-    public ObservableCollection<FirewallBlockedRow> Blocked { get; } = [];
+    public LiveCollection<FirewallProfileRow> Profiles { get; } = [];
+    public LiveCollection<FirewallFindingRow> Findings { get; } = [];
+    public LiveCollection<FirewallRuleRow> Rules { get; } = [];
+    public LiveCollection<FirewallBlockedRow> Blocked { get; } = [];
 
-    public FirewallPage() => InitializeComponent();
+    public FirewallPage()
+    {
+        InitializeComponent();
+        LiveRefresh.Attach(this, () => RefreshAsync(quiet: true));
+    }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
@@ -33,11 +37,11 @@ public sealed partial class FirewallPage : Page
 
     private void Filter_Changed(object sender, object e) => ApplyFilter();
 
-    private async Task RefreshAsync()
+    private async Task RefreshAsync(bool quiet = false)
     {
         if (_requestInFlight) return;
         _requestInFlight = true;
-        RefreshButton.IsEnabled = false;
+        if (!quiet) RefreshButton.IsEnabled = false;
         try
         {
             var snapshot = await _client.TryGetSnapshotAsync();

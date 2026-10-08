@@ -8,6 +8,29 @@ namespace Downpour.Tests;
 public sealed class SecurityAlertRepositoryTests
 {
     [Fact]
+    public async Task NoisyInformationalEventsRollUpPerHourAndCountEachRecordOnce()
+    {
+        using var database = new TemporaryAlertDatabase();
+        var repository = new SecurityAlertRepository(database.Path);
+        await repository.InitializeAsync();
+        var past = DateTimeOffset.UtcNow.AddHours(-3);
+        var hour = new DateTimeOffset(past.Year, past.Month, past.Day, past.Hour, 0, 0, TimeSpan.Zero);
+        var events = Enumerable.Range(1, 3)
+            .Select(i => SecurityEventProvider.CreateObservation("Microsoft-Windows-PowerShell/Operational", "Microsoft-Windows-PowerShell", 4104, 100 + i, hour.AddMinutes(i))!)
+            .ToArray();
+        foreach (var e in events) await repository.IngestAsync(new SecurityEventSnapshot(1, DateTimeOffset.UtcNow, [e], 1, []));
+        // Polling reads the same records again; they must not be counted twice.
+        await repository.IngestAsync(new SecurityEventSnapshot(1, DateTimeOffset.UtcNow, events, 3, []));
+
+        var alert = Assert.Single((await repository.ReadSnapshotAsync()).Alerts);
+        Assert.Equal(3, alert.Occurrences);
+
+        var nextHour = SecurityEventProvider.CreateObservation("Microsoft-Windows-PowerShell/Operational", "Microsoft-Windows-PowerShell", 4104, 200, hour.AddHours(1).AddMinutes(1))!;
+        await repository.IngestAsync(new SecurityEventSnapshot(1, DateTimeOffset.UtcNow, [nextHour], 1, []));
+        Assert.Equal(2, (await repository.ReadSnapshotAsync()).Alerts.Count);
+    }
+
+    [Fact]
     public async Task EventRecordsBecomeStableDeduplicatedAndDurableAlerts()
     {
         using var database = new TemporaryAlertDatabase();

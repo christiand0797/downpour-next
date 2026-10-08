@@ -12,8 +12,7 @@ public sealed class DriverPackageInventoryPipeWorker(
     string pipeName = DriverPackageInventoryClient.PipeName) : BackgroundService
 {
     // Catalog verification of every package takes seconds; reuse a recent capture across quick refreshes.
-    private static readonly TimeSpan CacheLifetime = TimeSpan.FromSeconds(30);
-    private DriverPackageInventorySnapshot? _cached;
+    private readonly SnapshotCache<DriverPackageInventorySnapshot> _cache = new(provider.Capture, TimeSpan.FromSeconds(30), logger);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -35,9 +34,7 @@ public sealed class DriverPackageInventoryPipeWorker(
                 connectionTimeout.CancelAfter(TimeSpan.FromSeconds(5));
                 await pipe.WaitForConnectionAsync(connectionTimeout.Token);
 
-                var snapshot = _cached;
-                if (snapshot is null || DateTimeOffset.UtcNow - snapshot.CapturedAtUtc > CacheLifetime)
-                    _cached = snapshot = await Task.Run(provider.Capture, stoppingToken);
+                var snapshot = await _cache.GetAsync(stoppingToken);
 
                 var payload = BoundedJson.Serialize(snapshot);
                 var lengthBytes = new byte[4];

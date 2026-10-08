@@ -23,7 +23,7 @@ public sealed partial class ServicesPage : Page
     {
         InitializeComponent();
         _refreshTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
-        _refreshTimer.Interval = TimeSpan.FromSeconds(30);
+        _refreshTimer.Interval = TimeSpan.FromSeconds(1);
         _refreshTimer.IsRepeating = true;
         _refreshTimer.Tick += async (_, _) => await RefreshAsync();
     }

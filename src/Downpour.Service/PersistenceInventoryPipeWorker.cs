@@ -11,8 +11,7 @@ public sealed class PersistenceInventoryPipeWorker(
     string pipeName = PersistenceInventoryClient.PipeName) : BackgroundService
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
-    private static readonly TimeSpan CacheLifetime = TimeSpan.FromSeconds(30);
-    private PersistenceSnapshot? _cached;
+    private readonly SnapshotCache<PersistenceSnapshot> _cache = new(provider.Capture, TimeSpan.FromSeconds(20), logger);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -34,9 +33,7 @@ public sealed class PersistenceInventoryPipeWorker(
                 connectionTimeout.CancelAfter(TimeSpan.FromSeconds(5));
                 await pipe.WaitForConnectionAsync(connectionTimeout.Token);
 
-                var snapshot = _cached;
-                if (snapshot is null || DateTimeOffset.UtcNow - snapshot.CapturedAtUtc > CacheLifetime)
-                    _cached = snapshot = await Task.Run(provider.Capture, stoppingToken);
+                var snapshot = await _cache.GetAsync(stoppingToken);
 
                 await JsonSerializer.SerializeAsync(pipe, snapshot, JsonOptions, stoppingToken);
                 await pipe.FlushAsync(stoppingToken);

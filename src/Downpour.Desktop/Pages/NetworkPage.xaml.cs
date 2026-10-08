@@ -12,7 +12,7 @@ namespace Downpour_Desktop.Pages;
 
 public sealed partial class NetworkPage : Page
 {
-    private const int HistoryLimit = 60;
+    private const int HistoryLimit = 120;
     private readonly NetworkInventoryClient _client = new();
     private readonly DispatcherQueueTimer _refreshTimer;
     private readonly Queue<NetworkPoint> _history = new();
@@ -28,7 +28,7 @@ public sealed partial class NetworkPage : Page
     {
         InitializeComponent();
         _refreshTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
-        _refreshTimer.Interval = TimeSpan.FromSeconds(3);
+        _refreshTimer.Interval = TimeSpan.FromSeconds(1);
         _refreshTimer.IsRepeating = true;
         _refreshTimer.Tick += async (_, _) => await RefreshAsync();
         _refreshTimer.Start();

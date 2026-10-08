@@ -22,7 +22,7 @@ public sealed partial class ProcessPage : Page
     {
         InitializeComponent();
         _timer = DispatcherQueue.GetForCurrentThread().CreateTimer();
-        _timer.Interval = TimeSpan.FromSeconds(5);
+        _timer.Interval = TimeSpan.FromSeconds(1);
         _timer.IsRepeating = true;
         _timer.Tick += async (_, _) => await RefreshAsync();
         _timer.Start();

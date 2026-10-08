@@ -1,5 +1,15 @@
 # Downpour Next shared context
 
+## 2026-10-08 checkpoint: live one-second updates (claude-parity-audit, DN-033)
+
+Done and verified (Debug 0 errors; 952/952 tests; portable build checked):
+- Service: new `SnapshotCache<T>` (stale-while-revalidate, one background capture at a time, previous snapshot kept on failure). All 13 inventory pipe workers use it: system snapshot and network 1 s, USB/remote access 2 s, services/DNS/Wi-Fi 3 s, firewall 10 s, drivers 15 s, persistence 20 s, driver packages 30 s, hardening and installed software 60 s. A 1 s poll never waits on a slow collector. Anti-Stalker samples every 1 s.
+- Desktop: `LiveCollection<T>` (ObservableCollection subclass) stages Clear()/Add() rebuilds and applies only minimal moves/inserts/replaces/removes by `RowSignature`, so 1 s refreshes keep scroll, selection and focus. `LiveList.Set` does the same for array-bound lists. `LiveRefresh.Attach` gives 11 previously static pages a quiet 1 s tick (skips while a refresh runs or the window is hidden/minimized); existing timers on 11 pages set to 1 s; quiet mode suppresses "Checking…" text and button disabling. Performance defaults to 1 s sampling with 120-sample history; dashboard/network history 2 minutes.
+- Dashboard strip is data-driven (engine status from the alert store, response-action switches from Settings, route counts from the catalog) instead of stale "Not connected / Disabled / 33 routes" text.
+- Alert noise: PowerShell 4104 and Security 4688/4663/4672/4673 roll up into one alert per event type per hour; each newer record counts once and re-reads never inflate the count (regression test). Duplicate Sysmon warning text unified and the Alerts banner de-duplicates warnings.
+
+Next: release v0.1.18 (x64 + arm64), then HUD visuals kit (segmented meters, sparklines, radar sweep), invented features (Threat Pulse baseline, watch timeline ribbon, tripwire canary files), and the security-hardening roadmap (signed builds/updates, hash-chained audit log, parser fuzzing).
+
 ## 2026-10-07 checkpoint: threat databases, HUD theme, Drivers/KEV/Threat Intel Feeds fixes (claude-parity-audit, DN-031/DN-032)
 
 Done and verified (Debug 0 errors; 947/947 tests; live portable build checked on this PC):

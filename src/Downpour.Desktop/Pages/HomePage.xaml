@@ -76,7 +76,7 @@
                         <Grid Grid.Row="2" ColumnSpacing="10">
                             <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                             <TextBlock FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Oldest" />
-                            <TextBlock Grid.Column="1" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Last 60 samples · 3 second polling" HorizontalAlignment="Center" />
+                            <TextBlock Grid.Column="1" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Last 2 minutes · live, every second" HorizontalAlignment="Center" />
                             <TextBlock Grid.Column="2" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Now" />
                         </Grid>
                     </Grid>
@@ -139,9 +139,9 @@
             <Border Padding="14,11" CornerRadius="9" Background="#9B08111C" BorderBrush="#3B39AFC5" BorderThickness="1">
                 <Grid ColumnSpacing="14">
                     <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                    <StackPanel Spacing="3"><TextBlock FontSize="10" CharacterSpacing="90" Foreground="{StaticResource HudTextDimBrush}" Text="DETECTION ENGINE" /><TextBlock FontSize="12" Text="Not connected · no alert counts fabricated" TextWrapping="Wrap" /></StackPanel>
-                    <StackPanel Grid.Column="1" Spacing="3"><TextBlock FontSize="10" CharacterSpacing="90" Foreground="{StaticResource HudTextDimBrush}" Text="RESPONSE ACTIONS" /><TextBlock FontSize="12" Text="Disabled · observe-only service" TextWrapping="Wrap" /></StackPanel>
-                    <StackPanel Grid.Column="2" Spacing="3"><TextBlock FontSize="10" CharacterSpacing="90" Foreground="{StaticResource HudTextDimBrush}" Text="FEATURE MIGRATION" /><TextBlock FontSize="12" Text="33 routes tracked · parity in progress" TextWrapping="Wrap" /></StackPanel>
+                    <StackPanel Spacing="3"><TextBlock FontSize="10" CharacterSpacing="90" Foreground="{StaticResource HudTextDimBrush}" Text="DETECTION ENGINE" /><TextBlock x:Name="EngineStatusText" FontSize="12" Text="Checking the sensor service…" TextWrapping="Wrap" /></StackPanel>
+                    <StackPanel Grid.Column="1" Spacing="3"><TextBlock FontSize="10" CharacterSpacing="90" Foreground="{StaticResource HudTextDimBrush}" Text="RESPONSE ACTIONS" /><TextBlock x:Name="ActionsStatusText" FontSize="12" Text="Checking action switches…" TextWrapping="Wrap" /></StackPanel>
+                    <StackPanel Grid.Column="2" Spacing="3"><TextBlock FontSize="10" CharacterSpacing="90" Foreground="{StaticResource HudTextDimBrush}" Text="FEATURE MIGRATION" /><TextBlock x:Name="MigrationStatusText" FontSize="12" Text="" TextWrapping="Wrap" /></StackPanel>
                 </Grid>
             </Border>
         </StackPanel>

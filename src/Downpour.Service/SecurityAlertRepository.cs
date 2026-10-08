@@ -104,8 +104,12 @@ public sealed class SecurityAlertRepository(string databasePath)
                     "VALUES($id,$key,$title,$severity,$technique,$log,$provider,$event,$record,$eventTime,$firstSeen,$lastSeen,$occurrences,'Open') " +
                     "ON CONFLICT(dedup_key) DO UPDATE SET " +
                     "event_time_utc=MIN(alerts.event_time_utc,excluded.event_time_utc), " +
-                    "record_id=COALESCE(excluded.record_id,alerts.record_id), " +
-                    "last_seen_utc=excluded.last_seen_utc, occurrences=MAX(alerts.occurrences,excluded.occurrences);";
+                    // A roll-up counts each newer record once; re-reading the same events never inflates the count.
+                    "occurrences=CASE WHEN substr(alerts.dedup_key,1,6)='rollup' AND excluded.record_id > COALESCE(alerts.record_id,-1) " +
+                    "THEN MIN(alerts.occurrences+1,1000000000) ELSE MAX(alerts.occurrences,excluded.occurrences) END, " +
+                    "record_id=CASE WHEN substr(alerts.dedup_key,1,6)='rollup' THEN MAX(COALESCE(alerts.record_id,-1),COALESCE(excluded.record_id,-1)) " +
+                    "ELSE COALESCE(excluded.record_id,alerts.record_id) END, " +
+                    "last_seen_utc=excluded.last_seen_utc;";
                 command.Parameters.AddWithValue("$id", id);
                 command.Parameters.AddWithValue("$key", dedupKey);
                 command.Parameters.AddWithValue("$title", observation.Summary);
@@ -478,6 +482,10 @@ public sealed class SecurityAlertRepository(string databasePath)
         return await reader.ReadAsync(token) ? (reader.GetString(0), reader.GetString(1), reader.GetString(2), reader.GetInt32(3)) : null;
     }
 
+    private static bool IsRollupEvent(string logName, int eventId) =>
+        (logName.Equals("Microsoft-Windows-PowerShell/Operational", StringComparison.OrdinalIgnoreCase) && eventId == 4104) ||
+        (logName.Equals("Security", StringComparison.OrdinalIgnoreCase) && eventId is 4688 or 4663 or 4672 or 4673);
+
     private static string BuildDedupKey(SecurityEventObservation observation)
     {
         if (observation.EventId == 4625)
@@ -489,6 +497,12 @@ public sealed class SecurityAlertRepository(string databasePath)
         // Sysmon record IDs can restart after a log clear. Keep distinct event times distinct.
         if (observation.LogName.Equals(SysmonCatalog.LogName, StringComparison.OrdinalIgnoreCase) && observation.RecordId is { } sysmonRecord)
             return $"sysmon\0{observation.EventId}\0{sysmonRecord}\0{observation.CreatedAtUtc!.Value.UtcTicks}";
+        // High-volume informational events become one alert per event type per hour instead of one per record.
+        if (observation.RecordId is not null && IsRollupEvent(observation.LogName, observation.EventId))
+        {
+            var hour = observation.CreatedAtUtc!.Value.ToUniversalTime().ToString("yyyyMMddHH");
+            return $"rollup\0{observation.LogName}\0{observation.EventId}\0{hour}";
+        }
         if (observation.RecordId is { } recordId)
             return $"record\0{observation.LogName}\0{observation.EventId}\0{recordId}";
         var fallbackTime = observation.CreatedAtUtc!.Value.ToUniversalTime().ToString("yyyyMMddHHmm");

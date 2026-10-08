@@ -204,7 +204,7 @@ public sealed class AntiStalkerProvider(InstalledSoftwareInventoryProvider insta
 public sealed class AntiStalkerMonitor(AntiStalkerProvider provider, SecurityAlertRepository alerts, ILogger<AntiStalkerMonitor> logger,
     string? logPath = null, string pipeName = AntiStalkerClient.PipeName) : BackgroundService
 {
-    public static readonly TimeSpan SampleInterval = TimeSpan.FromSeconds(10);
+    public static readonly TimeSpan SampleInterval = TimeSpan.FromSeconds(1);
     private const int MaximumLogEntries = 500;
     private const long MaximumLogBytes = 2 * 1024 * 1024;
     private static readonly JsonSerializerOptions LogJson = new(JsonSerializerDefaults.Web);

@@ -12,7 +12,7 @@
                 <StackPanel Spacing="5">
                     <TextBlock Text="PROTECTION  /  ANTI-STALKER" Style="{StaticResource SubtitleTextBlockStyle}" />
                     <TextBlock Text="Is anyone watching this PC?" Style="{StaticResource TitleTextBlockStyle}" />
-                    <TextBlock Text="Checks every 10 seconds for anything that can see your screen, camera, or microphone, track your location, or control this PC from somewhere else, and keeps a log of when it starts and stops. Everything stays on this PC." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                    <TextBlock Text="Checks every second for anything that can see your screen, camera, or microphone, track your location, or control this PC from somewhere else, and keeps a log of when it starts and stops. Everything stays on this PC." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                 </StackPanel>
                 <Button Grid.Column="1" x:Name="RefreshButton" Content="Refresh" Click="Refresh_Click" VerticalAlignment="Top" />
             </Grid>

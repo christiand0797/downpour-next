@@ -11,8 +11,7 @@ public sealed class WirelessInventoryPipeWorker(
     ILogger<WirelessInventoryPipeWorker> logger,
     string pipeName = WirelessInventoryClient.PipeName) : BackgroundService
 {
-    private static readonly TimeSpan CacheLifetime = TimeSpan.FromSeconds(15);
-    private WirelessSnapshot? _cached;
+    private readonly SnapshotCache<WirelessSnapshot> _cache = new(provider.Capture, TimeSpan.FromSeconds(3), logger);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -34,9 +33,7 @@ public sealed class WirelessInventoryPipeWorker(
                 connectionTimeout.CancelAfter(TimeSpan.FromSeconds(5));
                 await pipe.WaitForConnectionAsync(connectionTimeout.Token);
 
-                var snapshot = _cached;
-                if (snapshot is null || DateTimeOffset.UtcNow - snapshot.CapturedAtUtc > CacheLifetime)
-                    _cached = snapshot = await Task.Run(provider.Capture, stoppingToken);
+                var snapshot = await _cache.GetAsync(stoppingToken);
 
                 var payload = BoundedJson.Serialize(snapshot);
                 var lengthBytes = new byte[4];

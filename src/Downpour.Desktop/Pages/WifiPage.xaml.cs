@@ -14,11 +14,15 @@ public sealed partial class WifiPage : Page
     private readonly WirelessInventoryClient _client = new();
     private bool _requestInFlight;
 
-    public ObservableCollection<WirelessFindingRow> Findings { get; } = [];
-    public ObservableCollection<WifiNetworkRow> Networks { get; } = [];
-    public ObservableCollection<BluetoothDeviceRow> BluetoothDevices { get; } = [];
+    public LiveCollection<WirelessFindingRow> Findings { get; } = [];
+    public LiveCollection<WifiNetworkRow> Networks { get; } = [];
+    public LiveCollection<BluetoothDeviceRow> BluetoothDevices { get; } = [];
 
-    public WifiPage() => InitializeComponent();
+    public WifiPage()
+    {
+        InitializeComponent();
+        LiveRefresh.Attach(this, () => RefreshAsync(quiet: true));
+    }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
@@ -28,12 +32,12 @@ public sealed partial class WifiPage : Page
 
     private async void Refresh_Click(object sender, RoutedEventArgs e) => await RefreshAsync();
 
-    private async Task RefreshAsync()
+    private async Task RefreshAsync(bool quiet = false)
     {
         if (_requestInFlight) return;
         _requestInFlight = true;
-        RefreshButton.IsEnabled = false;
-        StatusHeadline.Text = "Checking wireless posture";
+        if (!quiet) RefreshButton.IsEnabled = false;
+        if (!quiet) StatusHeadline.Text = "Checking wireless posture";
 
         try
         {

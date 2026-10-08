@@ -15,9 +15,13 @@ public sealed partial class DriverPackagesPage : Page
     private IReadOnlyList<DriverPackageEntry> _packages = [];
     private bool _requestInFlight;
 
-    public ObservableCollection<DriverPackageRow> VisiblePackages { get; } = [];
+    public LiveCollection<DriverPackageRow> VisiblePackages { get; } = [];
 
-    public DriverPackagesPage() => InitializeComponent();
+    public DriverPackagesPage()
+    {
+        InitializeComponent();
+        LiveRefresh.Attach(this, () => RefreshAsync(quiet: true));
+    }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
@@ -29,12 +33,12 @@ public sealed partial class DriverPackagesPage : Page
 
     private void SearchBox_TextChanged(object sender, TextChangedEventArgs e) => ApplyFilter();
 
-    private async Task RefreshAsync()
+    private async Task RefreshAsync(bool quiet = false)
     {
         if (_requestInFlight) return;
         _requestInFlight = true;
-        RefreshButton.IsEnabled = false;
-        StatusText.Text = "Enumerating driver packages from the Driver Store…";
+        if (!quiet) RefreshButton.IsEnabled = false;
+        if (!quiet) StatusText.Text = "Enumerating driver packages from the Driver Store…";
         try
         {
             var snapshot = await _client.TryGetSnapshotAsync();

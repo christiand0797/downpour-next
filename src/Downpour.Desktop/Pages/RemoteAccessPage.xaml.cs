@@ -14,11 +14,15 @@ public sealed partial class RemoteAccessPage : Page
     private readonly RemoteAccessClient _client = new();
     private bool _busy;
 
-    public ObservableCollection<RemoteAccessRow> Findings { get; } = [];
-    public ObservableCollection<RemoteAccessRow> Exposures { get; } = [];
-    public ObservableCollection<string> Tools { get; } = [];
+    public LiveCollection<RemoteAccessRow> Findings { get; } = [];
+    public LiveCollection<RemoteAccessRow> Exposures { get; } = [];
+    public LiveCollection<string> Tools { get; } = [];
 
-    public RemoteAccessPage() => InitializeComponent();
+    public RemoteAccessPage()
+    {
+        InitializeComponent();
+        LiveRefresh.Attach(this, () => RefreshAsync(quiet: true));
+    }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
@@ -28,11 +32,11 @@ public sealed partial class RemoteAccessPage : Page
 
     private async void Refresh_Click(object sender, RoutedEventArgs e) => await RefreshAsync();
 
-    private async Task RefreshAsync()
+    private async Task RefreshAsync(bool quiet = false)
     {
         if (_busy) return;
         _busy = true;
-        RefreshButton.IsEnabled = false;
+        if (!quiet) RefreshButton.IsEnabled = false;
         try
         {
             var snapshot = await _client.TryGetSnapshotAsync();

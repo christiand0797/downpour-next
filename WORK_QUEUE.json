@@ -699,7 +699,7 @@
     {
       "id": "DN-033",
       "title": "Live one-second refresh on every page without flicker",
-      "status": "queued",
+      "status": "in_progress",
       "priority": "high",
       "acceptance": [
         "Pages poll cached snapshots every 1 s while visible",
@@ -707,7 +707,7 @@
         "Heavy collectors keep their own cadence",
         "No UI-thread blocking"
       ],
-      "notes": "Owner request 2026-10-07."
+      "notes": "claude-parity-audit 2026-10-08: SnapshotCache in all inventory pipe workers, LiveCollection/LiveList/LiveRefresh on desktop, 1 s ticks on 22 pages. Remaining: per-page polish if any flicker is reported; release in v0.1.18."
     }
   ]
 }

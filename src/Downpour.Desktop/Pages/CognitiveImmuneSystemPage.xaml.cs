@@ -11,7 +11,7 @@ public sealed partial class CognitiveImmuneSystemPage : Page
     private readonly SecurityAlertClient _alerts = new();
     private readonly SystemSnapshotClient _system = new();
     private readonly SensorSettingsClient _settings = new();
-    private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromSeconds(30) };
+    private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromSeconds(1) };
     private CancellationTokenSource _lifetime = new();
     private CancellationTokenSource? _integrityCancellation;
     private CisAssessment? _assessment;
@@ -50,7 +50,6 @@ public sealed partial class CognitiveImmuneSystemPage : Page
     {
         if (_refreshing || _lifetime.IsCancellationRequested) return;
         _refreshing = true;
-        RefreshButton.IsEnabled = false;
         var generation = _generation;
         var token = _lifetime.Token;
         try
@@ -66,16 +65,16 @@ public sealed partial class CognitiveImmuneSystemPage : Page
                 response is { Accepted: true } ? response.Settings : null), token);
             if (generation != _generation || token.IsCancellationRequested) return;
             _assessment = assessment;
-            AssessmentStatus.Text = $"{assessment.Status} · checked {assessment.CapturedAtUtc:u} · refreshes every 30 seconds while this page is open";
+            AssessmentStatus.Text = $"{assessment.Status} · checked {assessment.CapturedAtUtc:u} · live, updates every second";
             WindowScope.Text = $"Returned {Count(assessment.ReviewedAlerts)} of {Count(assessment.StoredAlerts)} stored alerts. Alert snapshot: {assessment.AlertCapturedAtUtc?.ToString("u") ?? "unavailable"}.";
             MeasuredCounts.Text = $"Open: {Count(assessment.OpenAlerts)} · Urgent open: {Count(assessment.UrgentOpenAlerts)} · User-verified active: {Count(assessment.VerifiedActiveAlerts)}";
             TechniqueCounts.Text = $"Suppressed: {Count(assessment.SuppressedAlerts)} · Observed techniques: {Count(assessment.ObservedTechniques)}";
-            SourceList.ItemsSource = assessment.Sources.Select(s => $"{s.Name} — {s.Status}: {s.Detail}").ToArray();
-            WarningList.ItemsSource = assessment.Warnings.Count == 0 ? new[] { "No warnings in the returned measurements. This is not a complete protection verdict." } : assessment.Warnings;
-            RecentAlertList.ItemsSource = assessment.RecentAlerts.Count == 0 ? new[] { assessment.ReviewedAlerts is null ? "Alerts unavailable." : "No alerts in the returned window." } :
-                assessment.RecentAlerts.Select(a => $"{a.LastSeenUtc:u} · {a.Severity} · {a.State} · {a.Technique} · {a.Title}").ToArray();
-            CorrelationList.ItemsSource = assessment.Correlations.Count == 0 ? new[] { "No supported temporal pairs in the returned window." } :
-                assessment.Correlations.Select(c => $"{c.Title}: {c.EvidenceSummary} {c.Limitation}").ToArray();
+            LiveList.Set(SourceList, assessment.Sources.Select(s => $"{s.Name} — {s.Status}: {s.Detail}").ToArray());
+            LiveList.Set(WarningList, assessment.Warnings.Count == 0 ? new[] { "No warnings in the returned measurements. This is not a complete protection verdict." } : assessment.Warnings);
+            LiveList.Set(RecentAlertList, assessment.RecentAlerts.Count == 0 ? new[] { assessment.ReviewedAlerts is null ? "Alerts unavailable." : "No alerts in the returned window." } :
+                assessment.RecentAlerts.Select(a => $"{a.LastSeenUtc:u} · {a.Severity} · {a.State} · {a.Technique} · {a.Title}").ToArray());
+            LiveList.Set(CorrelationList, assessment.Correlations.Count == 0 ? new[] { "No supported temporal pairs in the returned window." } :
+                assessment.Correlations.Select(c => $"{c.Title}: {c.EvidenceSummary} {c.Limitation}").ToArray());
             CopyReportButton.IsEnabled = true;
         }
         catch (OperationCanceledException) { }
@@ -89,14 +88,14 @@ public sealed partial class CognitiveImmuneSystemPage : Page
                 WindowScope.Text = "Refresh failed. Previously rendered rows are historical; current counts are unknown.";
                 MeasuredCounts.Text = "Open: unknown · Urgent open: unknown · User-verified active: unknown";
                 TechniqueCounts.Text = "Suppressed: unknown · Observed techniques: unknown";
-                SourceList.ItemsSource = null;
-                WarningList.ItemsSource = new[] { "Refresh failed; absence of data is not absence of threats." };
-                RecentAlertList.ItemsSource = null;
-                CorrelationList.ItemsSource = null;
+                LiveList.Set(SourceList, null);
+                LiveList.Set(WarningList, new[] { "Refresh failed; absence of data is not absence of threats." });
+                LiveList.Set(RecentAlertList, null);
+                LiveList.Set(CorrelationList, null);
                 Notify(InfoBarSeverity.Error, "Refresh failed", ex.GetType().Name);
             }
         }
-        finally { _refreshing = false; RefreshButton.IsEnabled = true; }
+        finally { _refreshing = false; }
     }
 
     private async void Integrity_Click(object sender, RoutedEventArgs e)
@@ -110,7 +109,7 @@ public sealed partial class CognitiveImmuneSystemPage : Page
         var generation = _generation;
         IntegrityStatus.Text = "Checking package files…";
         _integrity = null;
-        IntegrityFindings.ItemsSource = null;
+        LiveList.Set(IntegrityFindings, null);
         var progress = new Progress<string>(message => { if (generation == _generation && !token.IsCancellationRequested) IntegrityProgress.Text = message; });
         try
         {
@@ -120,8 +119,8 @@ public sealed partial class CognitiveImmuneSystemPage : Page
             _integrity = result;
             IntegrityStatus.Text = $"{result.Status} · {result.MatchingFiles}/{result.ExpectedFiles} match · {result.CheckedFiles} checked · {result.BytesHashed:N0} bytes hashed";
             IntegrityProgress.Text = $"Checked {result.CapturedAtUtc:u}. Manifest SHA-256: {result.ManifestSha256 ?? "unavailable"}.";
-            IntegrityFindings.ItemsSource = result.Findings.Take(128).Select(f => $"{f.RelativePath}: {f.Status}").Concat(
-                result.Findings.Count > 128 ? new[] { $"Showing 128 of {result.Findings.Count} findings; full findings are included in the review report." } : []).ToArray();
+            LiveList.Set(IntegrityFindings, result.Findings.Take(128).Select(f => $"{f.RelativePath}: {f.Status}").Concat(
+                result.Findings.Count > 128 ? new[] { $"Showing 128 of {result.Findings.Count} findings; full findings are included in the review report." } : []).ToArray());
         }
         catch (OperationCanceledException)
         {

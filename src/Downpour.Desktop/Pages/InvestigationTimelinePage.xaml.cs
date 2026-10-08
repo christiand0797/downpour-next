@@ -18,9 +18,13 @@ public sealed partial class InvestigationTimelinePage : Page
     private SecurityAlertSnapshot? _currentSnapshot;
     private bool _requestInFlight;
 
-    public ObservableCollection<TimelineEventRow> TimelineEvents { get; } = [];
+    public LiveCollection<TimelineEventRow> TimelineEvents { get; } = [];
 
-    public InvestigationTimelinePage() => InitializeComponent();
+    public InvestigationTimelinePage()
+    {
+        InitializeComponent();
+        LiveRefresh.Attach(this, () => RefreshAsync(quiet: true));
+    }
 
     protected override async void OnNavigatedTo(NavigationEventArgs e)
     {
@@ -38,7 +42,7 @@ public sealed partial class InvestigationTimelinePage : Page
 
     private async void Refresh_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e) => await RefreshAsync();
 
-    private async Task RefreshAsync()
+    private async Task RefreshAsync(bool quiet = false)
     {
         if (_requestInFlight) return;
         _requestInFlight = true;

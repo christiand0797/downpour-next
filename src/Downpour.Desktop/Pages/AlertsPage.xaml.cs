@@ -22,14 +22,14 @@ public sealed partial class AlertsPage : Page
     private bool _stateChangeInFlight;
     private bool _exportInFlight;
 
-    public ObservableCollection<SecurityAlertRow> Alerts { get; } = [];
-    public ObservableCollection<CorrelationFindingRow> CorrelationFindings { get; } = [];
+    public LiveCollection<SecurityAlertRow> Alerts { get; } = [];
+    public LiveCollection<CorrelationFindingRow> CorrelationFindings { get; } = [];
 
     public AlertsPage()
     {
         InitializeComponent();
         _refreshTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
-        _refreshTimer.Interval = TimeSpan.FromSeconds(15);
+        _refreshTimer.Interval = TimeSpan.FromSeconds(1);
         _refreshTimer.IsRepeating = true;
         _refreshTimer.Tick += async (_, _) => await RefreshAsync();
     }
@@ -131,7 +131,7 @@ public sealed partial class AlertsPage : Page
                 : "Event collection or alert storage is partially unavailable";
             StatusDetail.Text = snapshot.Warnings.Count == 0
                 ? $"Captured {snapshot.CapturedAtUtc.ToLocalTime():MMM d · HH:mm:ss}. {openCount:N0} open in the latest {snapshot.Alerts.Count:N0} of {snapshot.TotalCount:N0} retained alerts; retention is 30 days / 10,000 alerts."
-                : string.Join("  •  ", snapshot.Warnings);
+                : string.Join("  •  ", snapshot.Warnings.Distinct());
             ApplyFilters(snapshot.TotalCount);
         }
         finally { _requestInFlight = false; }

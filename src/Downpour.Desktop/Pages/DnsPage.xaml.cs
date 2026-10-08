@@ -17,8 +17,8 @@ public sealed partial class DnsPage : Page, INotifyPropertyChanged
     private readonly List<DnsCacheEntry> _allEntries = [];
     private bool _requestInFlight;
 
-    public ObservableCollection<DnsFindingRow> Findings { get; } = [];
-    public ObservableCollection<DnsEntryRow> FilteredEntries { get; } = [];
+    public LiveCollection<DnsFindingRow> Findings { get; } = [];
+    public LiveCollection<DnsEntryRow> FilteredEntries { get; } = [];
 
     // Email auth state
     private string _spfStatus = "";
@@ -50,7 +50,11 @@ public sealed partial class DnsPage : Page, INotifyPropertyChanged
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    public DnsPage() => InitializeComponent();
+    public DnsPage()
+    {
+        InitializeComponent();
+        LiveRefresh.Attach(this, () => RefreshAsync(quiet: true));
+    }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
@@ -77,12 +81,12 @@ public sealed partial class DnsPage : Page, INotifyPropertyChanged
         EmptyCacheState.Visibility = FilteredEntries.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
     }
 
-    private async Task RefreshAsync()
+    private async Task RefreshAsync(bool quiet = false)
     {
         if (_requestInFlight) return;
         _requestInFlight = true;
-        RefreshButton.IsEnabled = false;
-        StatusHeadline.Text = "Checking DNS resolver cache";
+        if (!quiet) RefreshButton.IsEnabled = false;
+        if (!quiet) StatusHeadline.Text = "Checking DNS resolver cache";
 
         try
         {

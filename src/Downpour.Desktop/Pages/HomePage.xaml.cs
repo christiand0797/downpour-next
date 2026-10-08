@@ -24,6 +24,8 @@ public sealed partial class HomePage : Page
     private DateTimeOffset _hardeningCheckedAt = DateTimeOffset.MinValue;
     private readonly SecurityAlertClient _alertClient = new();
     private readonly HardeningPostureClient _hardeningClient = new();
+    private readonly SensorSettingsClient _settingsClient = new();
+    private DateTimeOffset _settingsCheckedAt = DateTimeOffset.MinValue;
     private CircularGauge? _cpuGauge;
     private CircularGauge? _memoryGauge;
     private ChartGrid? _resourceGrid;
@@ -41,7 +43,7 @@ public sealed partial class HomePage : Page
         GaugeHost.Children.Add(_memoryGauge);
 
         _snapshotTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
-        _snapshotTimer.Interval = TimeSpan.FromSeconds(3);
+        _snapshotTimer.Interval = TimeSpan.FromSeconds(1);
         _snapshotTimer.IsRepeating = true;
         _snapshotTimer.Tick += async (_, _) => { await RefreshSnapshotAsync(); await RefreshSecurityAsync(); };
         _snapshotTimer.Start();
@@ -114,6 +116,40 @@ public sealed partial class HomePage : Page
     /// Security status from data the service already collects: open CRITICAL/HIGH or verified alerts (Threats), the
     /// Security Center antivirus check, and hardening findings. Posture is re-read at most once a minute.
     /// </summary>
+    /// <summary>Response-action switches (every 10 s) and the route catalog, so the strip never shows stale claims.</summary>
+    private async Task RefreshFooterAsync()
+    {
+        if (MigrationStatusText.Text.Length == 0)
+        {
+            try
+            {
+                var routes = CapabilityRegistry.Load(System.IO.Path.Combine(AppContext.BaseDirectory, "capabilities.json"));
+                var complete = routes.Count(r => !r.Status.Equals("in-progress", StringComparison.OrdinalIgnoreCase));
+                MigrationStatusText.Text = $"{routes.Count} routes · {complete} complete · {routes.Count - complete} in progress";
+            }
+            catch (Exception ex) when (ex is IOException or InvalidDataException or UnauthorizedAccessException)
+            {
+                MigrationStatusText.Text = "Route catalog unavailable";
+            }
+        }
+        if (DateTimeOffset.UtcNow - _settingsCheckedAt < TimeSpan.FromSeconds(10)) return;
+        _settingsCheckedAt = DateTimeOffset.UtcNow;
+        var response = await _settingsClient.GetAsync();
+        if (response?.Settings is not { } settings)
+        {
+            ActionsStatusText.Text = "Unknown · sensor service offline";
+            return;
+        }
+        var enabled = new[]
+        {
+            (settings.QuarantineActions, "quarantine"), (settings.ProcessTerminationActions, "process"), (settings.FirewallActions, "firewall"),
+            (settings.UsbActions, "USB"), (settings.HostIsolationActions, "isolation"),
+        }.Where(a => a.Item1).Select(a => a.Item2).ToArray();
+        ActionsStatusText.Text = enabled.Length == 0
+            ? "All switched off in Settings · observe only"
+            : $"Confirm to act · {string.Join(", ", enabled)}";
+    }
+
     private async Task RefreshSecurityAsync()
     {
         if (_securityRequestInFlight) return;
@@ -121,6 +157,10 @@ public sealed partial class HomePage : Page
         try
         {
             var alerts = await _alertClient.TryGetSnapshotAsync();
+            EngineStatusText.Text = alerts is null
+                ? "Sensor service offline · no counts shown"
+                : $"Running · {alerts.Alerts.Count:N0} alerts from {alerts.Alerts.Select(a => a.LogName).Distinct().Count():N0} sources";
+            await RefreshFooterAsync();
             if (alerts is null)
             {
                 ThreatsMetricValue.Text = "—";
@@ -196,8 +236,8 @@ public sealed partial class HomePage : Page
             }
 
             App.MarkSensorServiceConnected();
-            SensorHeadline.Text = "Read-only sensor service connected";
-            SensorDescription.Text = "Downpour is online with live local measurements updating every three seconds. Detections feed Triage; response actions run only after you confirm each one.";
+            SensorHeadline.Text = "Sensor service connected · live";
+            SensorDescription.Text = "Downpour is online with live local measurements updating every second. Detections feed Triage; response actions run only after you confirm each one.";
             SensorBadge.Text = "ONLINE";
             SensorDot.Fill = new SolidColorBrush(Color.FromArgb(255, 73, 227, 193));
             var captured = snapshot.CapturedAtUtc.ToLocalTime();
@@ -212,7 +252,7 @@ public sealed partial class HomePage : Page
                 "Confirm to act", "Detection is automatic; quarantine, process, firewall, and USB actions need your confirmation");
 
             _history.Enqueue(new ResourceSample(snapshot.CpuPercent, memoryPercent));
-            while (_history.Count > 60) _history.Dequeue();
+            while (_history.Count > 120) _history.Dequeue();
             DrawResourceChart();
 
             var dashboardProcesses = snapshot.TopProcesses.Take(8).ToArray();
@@ -243,7 +283,7 @@ public sealed partial class HomePage : Page
                 "—", "No current service data", "Unknown", "Current sample unavailable");
             CollectionReconciler.Apply(Processes, Array.Empty<DashboardProcessRow>(), row => row.ProcessId, (_, _) => { });
             _history.Enqueue(new ResourceSample(null, null));
-            while (_history.Count > 60) _history.Dequeue();
+            while (_history.Count > 120) _history.Dequeue();
             DrawResourceChart();
             ChartEmpty.Text = "Sample unavailable · waiting for current telemetry";
             ChartEmpty.Visibility = Microsoft.UI.Xaml.Visibility.Visible;

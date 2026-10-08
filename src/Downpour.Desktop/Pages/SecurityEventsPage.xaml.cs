@@ -23,7 +23,7 @@ public sealed partial class SecurityEventsPage : Page
     {
         InitializeComponent();
         _refreshTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
-        _refreshTimer.Interval = TimeSpan.FromSeconds(15);
+        _refreshTimer.Interval = TimeSpan.FromSeconds(1);
         _refreshTimer.IsRepeating = true;
         _refreshTimer.Tick += async (_, _) => await RefreshAsync();
     }
@@ -73,7 +73,7 @@ public sealed partial class SecurityEventsPage : Page
                 ? $"Captured {snapshot.CapturedAtUtc.ToLocalTime():MMM d · HH:mm:ss}. Fixed local channels only; event message bodies are not collected."
                 : $"Captured {snapshot.CapturedAtUtc.ToLocalTime():MMM d · HH:mm:ss}. {snapshot.SourcesQueried} of 7 event sources were readable.";
             SourceWarnings.Text = snapshot.Warnings.Count == 0
-                ? "Refreshes every 15 seconds while this page is open. Event observations are not yet correlated into incidents or response actions."
+                ? "Updates live every second while this page is open. Event observations are not yet correlated into incidents or response actions."
                 : string.Join("  •  ", snapshot.Warnings);
             ApplyFilters();
         }

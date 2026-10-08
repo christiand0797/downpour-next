@@ -22,12 +22,13 @@ public sealed partial class RemediationPage : Page
     public RemediationPage()
     {
         InitializeComponent();
+        LiveRefresh.Attach(this, () => RefreshAsync(quiet: true));
         Loaded += async (_, _) => await RefreshAsync();
     }
 
     private async void Refresh_Click(object sender, RoutedEventArgs e) => await RefreshAsync();
 
-    private async Task RefreshAsync()
+    private async Task RefreshAsync(bool quiet = false)
     {
         if (_busy) return;
         SetBusy(true, "Loading remediation state…");

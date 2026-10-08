@@ -12,8 +12,7 @@ public sealed class HardeningPosturePipeWorker(
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
     // Posture is static state (v29 ran it one-shot); WMI probes take a moment, so reuse a recent reading.
-    private static readonly TimeSpan CacheLifetime = TimeSpan.FromMinutes(2);
-    private HardeningPostureSnapshot? _cached;
+    private readonly SnapshotCache<HardeningPostureSnapshot> _cache = new(provider.Capture, TimeSpan.FromSeconds(60), logger);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -35,9 +34,7 @@ public sealed class HardeningPosturePipeWorker(
                 connectionTimeout.CancelAfter(TimeSpan.FromSeconds(5));
                 await pipe.WaitForConnectionAsync(connectionTimeout.Token);
 
-                var snapshot = _cached;
-                if (snapshot is null || DateTimeOffset.UtcNow - snapshot.CapturedAtUtc > CacheLifetime)
-                    _cached = snapshot = await Task.Run(provider.Capture, stoppingToken);
+                var snapshot = await _cache.GetAsync(stoppingToken);
 
                 await JsonSerializer.SerializeAsync(pipe, snapshot, JsonOptions, stoppingToken);
                 await pipe.FlushAsync(stoppingToken);

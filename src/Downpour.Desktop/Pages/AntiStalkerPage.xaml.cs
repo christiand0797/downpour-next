@@ -24,7 +24,7 @@ public sealed partial class AntiStalkerPage : Page
     {
         InitializeComponent();
         _timer = DispatcherQueue.GetForCurrentThread().CreateTimer();
-        _timer.Interval = TimeSpan.FromSeconds(10);
+        _timer.Interval = TimeSpan.FromSeconds(1);
         _timer.IsRepeating = true;
         _timer.Tick += async (_, _) => await RefreshAsync();
     }

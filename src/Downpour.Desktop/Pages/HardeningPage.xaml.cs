@@ -14,9 +14,13 @@ public sealed partial class HardeningPage : Page
     private readonly HardeningPostureClient _client = new();
     private bool _requestInFlight;
 
-    public ObservableCollection<PostureRow> Checks { get; } = [];
+    public LiveCollection<PostureRow> Checks { get; } = [];
 
-    public HardeningPage() => InitializeComponent();
+    public HardeningPage()
+    {
+        InitializeComponent();
+        LiveRefresh.Attach(this, () => RefreshAsync(quiet: true));
+    }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
@@ -26,12 +30,12 @@ public sealed partial class HardeningPage : Page
 
     private async void Refresh_Click(object sender, RoutedEventArgs e) => await RefreshAsync();
 
-    private async Task RefreshAsync()
+    private async Task RefreshAsync(bool quiet = false)
     {
         if (_requestInFlight) return;
         _requestInFlight = true;
-        RefreshButton.IsEnabled = false;
-        StatusHeadline.Text = "Checking platform posture";
+        if (!quiet) RefreshButton.IsEnabled = false;
+        if (!quiet) StatusHeadline.Text = "Checking platform posture";
         try
         {
             var snapshot = await _client.TryGetSnapshotAsync();

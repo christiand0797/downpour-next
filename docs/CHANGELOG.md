@@ -9,6 +9,8 @@
 - **Drivers** list works on Windows 11 24H2+ (kernel addresses are hidden from standard accounts).
 - **HUD theme** across the app: neon controls, Bahnschrift type, HUD ring gauges and glowing charts over the rain.
 - Settings switches for host isolation and threat database updates.
+- **Live every second**: every monitoring page updates each second without flicker; slow scans run in the background and never block the view.
+- Repeated low-severity PowerShell/process/privilege events roll up into one alert per hour with an accurate count; the dashboard status strip reflects the real engine and action state.
 
 ## v0.1.17 — measured CIS review and package integrity
 
