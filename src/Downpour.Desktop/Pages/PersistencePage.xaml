@@ -17,6 +17,8 @@
                 <Button Grid.Column="1" x:Name="RefreshButton" Content="Re-scan" Click="Refresh_Click" VerticalAlignment="Center" />
             </Grid>
 
+            <Grid x:Name="ChartRow" />
+
             <Border Padding="14,11" CornerRadius="10" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
                 <StackPanel Spacing="3">
                     <TextBlock x:Name="StatusHeadline" FontWeight="SemiBold" Text="Scanning autostart locations" />

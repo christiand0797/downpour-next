@@ -18,9 +18,24 @@ public sealed partial class WifiPage : Page
     public LiveCollection<WifiNetworkRow> Networks { get; } = [];
     public LiveCollection<BluetoothDeviceRow> BluetoothDevices { get; } = [];
 
+    private readonly TopBarsChart _signalChart = new() { Title = "Signal strength", Subtitle = "Visible Wi-Fi networks" };
+    private readonly BreakdownChart _securityChart = new() { Title = "Network security", Subtitle = "How nearby networks are protected" };
+    private readonly TopBarsChart _channelChart = new() { Title = "Channel crowding", Subtitle = "Networks per Wi-Fi channel" };
+
+    private static string SecurityLabel(string authentication)
+    {
+        var a = authentication.ToUpperInvariant();
+        return a.Contains("OPEN") || a is "NONE" or "" ? "Open (no password)"
+            : a.Contains("WEP") ? "WEP (broken)"
+            : a.Contains("WPA3") || a.Contains("SAE") ? "WPA3"
+            : a.Contains("WPA2") || a.Contains("RSNA") ? "WPA2"
+            : a.Contains("WPA") ? "WPA (old)" : authentication;
+    }
+
     public WifiPage()
     {
         InitializeComponent();
+        Charts.Row(ChartRow, _signalChart, _securityChart, _channelChart);
         LiveRefresh.Attach(this, () => RefreshAsync(quiet: true));
     }
 
@@ -77,6 +92,11 @@ public sealed partial class WifiPage : Page
             EmptyNetworksState.Visibility = Networks.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
             EmptyBtState.Visibility = BluetoothDevices.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
 
+            _signalChart.SetData(snapshot.WifiNetworks
+                .Select(n => ((string.IsNullOrWhiteSpace(n.Ssid) ? "(hidden)" : n.Ssid) + (n.IsConnected ? " ●" : ""), (double)n.SignalPercent)), "%");
+            _securityChart.SetData(snapshot.WifiNetworks.GroupBy(n => SecurityLabel(n.Authentication)).Select(g => (g.Key, (double)g.Count())),
+                new Dictionary<string, Windows.UI.Color> { ["Open (no password)"] = HudPalette.Critical, ["WEP (broken)"] = HudPalette.Critical });
+            _channelChart.SetData(snapshot.WifiNetworks.Where(n => n.Channel > 0).GroupBy(n => $"Channel {n.Channel}").Select(g => (g.Key, (double)g.Count())), "", HudPalette.Categorical[3]);
             var findingCount = snapshot.Findings.Count;
             var netCount = snapshot.WifiNetworks.Count;
             var btCount = snapshot.BluetoothDevices.Count;

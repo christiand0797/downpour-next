@@ -20,9 +20,14 @@ public sealed partial class UsbPage : Page
     public LiveCollection<UsbDeviceRow> ConnectedDevices { get; } = [];
     public LiveCollection<UsbHistoryRow> History { get; } = [];
 
+    private readonly TopBarsChart _spaceChart = new() { Title = "Drive space used", Subtitle = "Connected removable drives" };
+    private readonly BreakdownChart _findingChart = new() { Title = "USB findings", Subtitle = "Autorun, suspicious files, new devices" };
+    private readonly TopBarsChart _vendorChart = new() { Title = "Devices seen by maker", Subtitle = "USB storage devices this PC has ever recorded" };
+
     public UsbPage()
     {
         InitializeComponent();
+        Charts.Row(ChartRow, _spaceChart, _findingChart, _vendorChart);
         LiveRefresh.Attach(this, () => RefreshAsync(quiet: true));
     }
 
@@ -83,6 +88,12 @@ public sealed partial class UsbPage : Page
             EmptyDevicesState.Visibility = ConnectedDevices.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
             EmptyHistoryState.Visibility = History.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
 
+            _spaceChart.SetData(snapshot.ConnectedDevices.Where(d => d.TotalSizeBytes > 0)
+                .Select(d => ($"{d.DriveLetter} {d.VolumeLabel}".Trim(), Math.Round(100.0 * (d.TotalSizeBytes - d.FreeSizeBytes) / d.TotalSizeBytes, 1))), "%",
+                colorFor: used => used >= 90 ? HudPalette.Serious : null);
+            _findingChart.SetData(snapshot.Findings.GroupBy(f => f.Severity, StringComparer.OrdinalIgnoreCase).Select(g => (g.Key, (double)g.Count())));
+            _vendorChart.SetData(snapshot.History.GroupBy(h => string.IsNullOrWhiteSpace(h.Vendor) ? "(unknown)" : h.Vendor.Trim(), StringComparer.OrdinalIgnoreCase)
+                .Select(g => (g.Key, (double)g.Count())), "", HudPalette.Categorical[1]);
             var findingCount = snapshot.Findings.Count;
             var devCount = snapshot.ConnectedDevices.Count;
             var svcState = snapshot.UsbStorageServiceEnabled ? "USB storage driver enabled" : "USB storage driver disabled";

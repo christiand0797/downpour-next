@@ -21,9 +21,18 @@ public sealed partial class FirewallPage : Page
     public LiveCollection<FirewallRuleRow> Rules { get; } = [];
     public LiveCollection<FirewallBlockedRow> Blocked { get; } = [];
 
+    private readonly BreakdownChart _directionChart = new() { Title = "Enabled rules", Subtitle = "By direction and action" };
+    private readonly TopBarsChart _groupChart = new() { Title = "Rules by group", Subtitle = "Enabled rules per feature or app group" };
+    private readonly BreakdownChart _findingChart = new() { Title = "Firewall findings", Subtitle = "Risky or unusual rules found" };
+
+    /// <summary>Firewall groups are often resource strings ("@FirewallAPI.dll,-28502"); show a readable name.</summary>
+    private static string GroupLabel(string grouping) =>
+        string.IsNullOrWhiteSpace(grouping) ? "(no group)" : grouping.StartsWith('@') ? "Windows feature group" : grouping.Length <= 40 ? grouping : grouping[..40];
+
     public FirewallPage()
     {
         InitializeComponent();
+        Charts.Row(ChartRow, _directionChart, _groupChart, _findingChart);
         LiveRefresh.Attach(this, () => RefreshAsync(quiet: true));
     }
 
@@ -72,6 +81,10 @@ public sealed partial class FirewallPage : Page
             NoFindings.Visibility = Findings.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
             foreach (var blocked in snapshot.BlockedConnections) Blocked.Add(new FirewallBlockedRow(blocked));
             _rules = snapshot.Rules;
+            var enabledRules = snapshot.Rules.Where(r => r.Enabled).ToArray();
+            _directionChart.SetData(enabledRules.GroupBy(r => $"{r.Direction} {r.Action.ToLowerInvariant()}").Select(g => (g.Key, (double)g.Count())));
+            _groupChart.SetData(enabledRules.GroupBy(r => GroupLabel(r.Grouping)).Select(g => (g.Key, (double)g.Count())), "", HudPalette.Categorical[1]);
+            _findingChart.SetData(snapshot.Findings.GroupBy(f => f.Severity, StringComparer.OrdinalIgnoreCase).Select(g => (g.Key, (double)g.Count())));
             ApplyFilter();
 
             var legacyRules = snapshot.Rules.Count(rule => rule.IsDownpourRule && !rule.Name.StartsWith("DownpourNext_", StringComparison.OrdinalIgnoreCase));

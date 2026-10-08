@@ -16,9 +16,13 @@ public sealed partial class HardeningPage : Page
 
     public LiveCollection<PostureRow> Checks { get; } = [];
 
+    private readonly BreakdownChart _stateChart = new() { Title = "Hardening checks", Subtitle = "Passed, needs attention, or not readable without administrator rights" };
+    private readonly BreakdownChart _severityChart = new() { Title = "Findings by severity", Subtitle = "Checks that need attention" };
+
     public HardeningPage()
     {
         InitializeComponent();
+        Charts.Row(ChartRow, _stateChart, _severityChart);
         LiveRefresh.Attach(this, () => RefreshAsync(quiet: true));
     }
 
@@ -67,6 +71,9 @@ public sealed partial class HardeningPage : Page
             StatusHeadline.Text = findings == 0
                 ? $"No posture findings · {passed} passed · {unknown} unknown"
                 : $"{findings} posture finding{(findings == 1 ? "" : "s")} · {passed} passed · {unknown} unknown";
+            _stateChart.SetData([("Passed", passed), ("Needs attention", findings), ("Unknown", unknown)],
+                new Dictionary<string, Windows.UI.Color> { ["Passed"] = HudPalette.Good, ["Needs attention"] = HudPalette.Serious, ["Unknown"] = HudPalette.Other });
+            _severityChart.SetData(snapshot.Checks.Where(c => c.State == PostureStates.Finding).GroupBy(c => c.Severity, StringComparer.OrdinalIgnoreCase).Select(g => (g.Key, (double)g.Count())));
             var captured = snapshot.CapturedAtUtc.ToLocalTime();
             var elevation = snapshot.IsElevated ? "Sensor is elevated." : "Sensor is not elevated, so BitLocker and TPM readiness may be Unknown.";
             var warnings = snapshot.Warnings.Count == 0 ? "" : $" {string.Join(" ", snapshot.Warnings)}";

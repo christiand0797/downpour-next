@@ -19,9 +19,14 @@ public sealed partial class PersistencePage : Page
     public LiveCollection<PersistenceFindingRow> Findings { get; } = [];
     public LiveCollection<PersistenceEntryRow> Entries { get; } = [];
 
+    private readonly BreakdownChart _categoryChart = new() { Title = "Autostart items by type", Subtitle = "Everything that starts automatically" };
+    private readonly BreakdownChart _changeChart = new() { Title = "Changes this week", Subtitle = "Compared with the first baseline" };
+    private readonly BreakdownChart _findingChart = new() { Title = "Findings by severity", Subtitle = "Signer-aware; signed vendor items rank low" };
+
     public PersistencePage()
     {
         InitializeComponent();
+        Charts.Row(ChartRow, _categoryChart, _changeChart, _findingChart);
         LiveRefresh.Attach(this, () => RefreshAsync(quiet: true));
         CategoryFilter.Items.Add(AllCategories);
         foreach (var category in new[]
@@ -78,6 +83,11 @@ public sealed partial class PersistencePage : Page
                 : "No persistence findings.";
             NoFindings.Visibility = Findings.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
             _entries = snapshot.Entries;
+            _categoryChart.SetData(snapshot.Entries.Where(e => e.Category != PersistenceCategories.DriverFile || e.Change != PersistenceChanges.Baseline)
+                .GroupBy(e => e.Category).Select(g => (g.Key, (double)g.Count())));
+            _changeChart.SetData(snapshot.Entries.GroupBy(e => e.Change).Select(g => (g.Key, (double)g.Count())),
+                new Dictionary<string, Windows.UI.Color> { [PersistenceChanges.New] = HudPalette.Warning, [PersistenceChanges.Modified] = HudPalette.Serious, [PersistenceChanges.Baseline] = HudPalette.Other });
+            _findingChart.SetData(snapshot.Findings.GroupBy(f => f.Severity, StringComparer.OrdinalIgnoreCase).Select(g => (g.Key, (double)g.Count())));
             ApplyFilter();
 
             var recent = snapshot.Entries.Count(entry => entry.Change != PersistenceChanges.Baseline);

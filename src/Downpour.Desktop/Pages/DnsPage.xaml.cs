@@ -50,9 +50,27 @@ public sealed partial class DnsPage : Page, INotifyPropertyChanged
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
+    private readonly BreakdownChart _riskChart = new() { Title = "Cached domain risk", Subtitle = "Every name in the Windows DNS cache, scored" };
+    private readonly TopBarsChart _typeChart = new() { Title = "Record types", Subtitle = "What kind of lookups are cached" };
+    private readonly TopBarsChart _domainChart = new() { Title = "Busiest domains", Subtitle = "Cached names per registered domain" };
+
+    private static string RecordTypeName(int type) => type switch
+    {
+        1 => "A (IPv4)", 2 => "NS", 5 => "CNAME (alias)", 6 => "SOA", 12 => "PTR (reverse)", 15 => "MX (mail)", 16 => "TXT",
+        28 => "AAAA (IPv6)", 33 => "SRV", 64 => "SVCB", 65 => "HTTPS", _ => $"Type {type}",
+    };
+
+    /// <summary>Last two labels ("cdn.example.com" → "example.com"); good enough to group a cache view.</summary>
+    private static string RegisteredDomain(string domain)
+    {
+        var labels = domain.TrimEnd('.').Split('.', StringSplitOptions.RemoveEmptyEntries);
+        return labels.Length <= 2 ? domain : string.Join('.', labels[^2..]);
+    }
+
     public DnsPage()
     {
         InitializeComponent();
+        Charts.Row(ChartRow, _riskChart, _typeChart, _domainChart);
         LiveRefresh.Attach(this, () => RefreshAsync(quiet: true));
     }
 
@@ -119,6 +137,14 @@ public sealed partial class DnsPage : Page, INotifyPropertyChanged
 
             EmptyFindingsState.Visibility = Findings.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
 
+            _riskChart.SetData(
+            [
+                ("High risk", snapshot.HighRiskCount),
+                ("Medium risk", snapshot.MediumRiskCount),
+                ("Low risk", Math.Max(0, snapshot.TotalEntries - snapshot.HighRiskCount - snapshot.MediumRiskCount)),
+            ], new Dictionary<string, Windows.UI.Color> { ["High risk"] = HudPalette.Critical, ["Medium risk"] = HudPalette.Warning, ["Low risk"] = HudPalette.Good });
+            _typeChart.SetData(snapshot.Entries.GroupBy(e => RecordTypeName(e.RecordType)).Select(g => (g.Key, (double)g.Count())), "", HudPalette.Categorical[1]);
+            _domainChart.SetData(snapshot.Entries.GroupBy(e => RegisteredDomain(e.Domain), StringComparer.OrdinalIgnoreCase).Select(g => (g.Key, (double)g.Count())), "", HudPalette.Categorical[3]);
             var findingCount = snapshot.Findings.Count;
             var totalCount = snapshot.TotalEntries;
             var highCount = snapshot.HighRiskCount;

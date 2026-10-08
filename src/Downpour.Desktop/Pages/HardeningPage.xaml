@@ -6,7 +6,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       mc:Ignorable="d">
     <Grid Padding="24,20,24,30" RowSpacing="14">
-        <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+        <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
         <Grid ColumnSpacing="16">
             <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
             <StackPanel Spacing="4">
@@ -28,7 +28,8 @@
             </Grid>
         </Border>
 
-        <ListView Grid.Row="2" ItemsSource="{x:Bind Checks}" SelectionMode="None" IsItemClickEnabled="False" Background="{StaticResource DownpourSurfaceBrush}">
+        <Grid x:Name="ChartRow" Grid.Row="2" />
+        <ListView Grid.Row="3" ItemsSource="{x:Bind Checks}" SelectionMode="None" IsItemClickEnabled="False" Background="{StaticResource DownpourSurfaceBrush}">
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <Grid Padding="12,10" ColumnSpacing="14">
@@ -49,6 +50,6 @@
             </ListView.Footer>
         </ListView>
 
-        <TextBlock Grid.Row="3" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Posture only. Fix actions (v29 &quot;FIX ALL&quot;), NSA/STIG checks, compliance scoring, and zero-day scanning are not ported yet; system changes require the audited action broker." TextWrapping="Wrap" />
+        <TextBlock Grid.Row="4" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Posture only. Fix actions (v29 &quot;FIX ALL&quot;), NSA/STIG checks, compliance scoring, and zero-day scanning are not ported yet; system changes require the audited action broker." TextWrapping="Wrap" />
     </Grid>
 </Page>
