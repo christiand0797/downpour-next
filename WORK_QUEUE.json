@@ -681,7 +681,7 @@
         "Offline IP origin (country/network)",
         "Page with status, matches, lookup, browse"
       ],
-      "notes": "claude-parity-audit 2026-10-07: implemented and tested. Remaining: ship in v0.1.18, evaluate Microsoft vulnerable-driver blocklist (zip/XML) and Authentihash matching."
+      "notes": "claude-parity-audit 2026-10-07: implemented and tested. Remaining: ship in v0.1.18, evaluate Microsoft vulnerable-driver blocklist (zip/XML) and Authentihash matching. Shipped in v0.1.18 (74ae152)."
     },
     {
       "id": "DN-032",
@@ -707,7 +707,7 @@
         "Heavy collectors keep their own cadence",
         "No UI-thread blocking"
       ],
-      "notes": "claude-parity-audit 2026-10-08: SnapshotCache in all inventory pipe workers, LiveCollection/LiveList/LiveRefresh on desktop, 1 s ticks on 22 pages. Remaining: per-page polish if any flicker is reported; release in v0.1.18."
+      "notes": "claude-parity-audit 2026-10-08: SnapshotCache in all inventory pipe workers, LiveCollection/LiveList/LiveRefresh on desktop, 1 s ticks on 22 pages. Remaining: per-page polish if any flicker is reported; release in v0.1.18. Shipped in v0.1.18 (74ae152)."
     },
     {
       "id": "DN-034",

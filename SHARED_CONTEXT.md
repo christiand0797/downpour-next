@@ -1,5 +1,13 @@
 # Downpour Next shared context
 
+## 2026-10-08 checkpoint: v0.1.18 published (claude-parity-audit)
+
+[v0.1.18](https://github.com/christiand0797/downpour-next/releases/tag/v0.1.18) is published and marked Latest, built from `74ae1523180f0bd800f22106337e533241f127ed`.
+- Release worktree `C:\Users\purpl\Desktop\dp_release_0.1.18` moved to 74ae152, `git clean -xdf -e .cache`, restore, `dotnet build Downpour.slnx -c Release --no-restore -m:1` (0 warnings, 0 errors), `dotnet test -c Release --no-build` (1018 passed), four BUILD_WINDOWS publishes into `artifacts/DownpourNext-win-x64-0.1.18`, then `artifacts/v0.1.18-package.ps1` (commit and notes updated). The older a959889 staging was kept as `artifacts/DownpourNext-win-x64-0.1.18-stale-a959889`.
+- Package: `DownpourNext-win-x64-0.1.18.zip` 260,492,633 bytes, SHA-256 `118e33682074e24fee403357b7ab57f99577834d0e4e7e2031c614dde6b67b87`, 1,062 entries hash-matched (661,805,645 expanded bytes); SBOM `DownpourNext-0.1.18-sbom.cdx.json` SHA-256 `ab9317134a458be4570a08bc91882ee5dc9dce32ea57d9556804cda6d2fb8a59` (52 runtime components). GitHub asset digests match.
+- Smoke: extracted the zip to a fresh folder, launched the desktop; it started its bundled service, `Downpour.Audio.v1` and `Downpour.AntiStalker.v1` answered, closing the window stopped the owned service, no new crash-log entries.
+- Not in this release: native ARM64 build (x64 runs under emulation; YARA-X DLL is x64-only), code signing.
+
 ## 2026-10-08 checkpoint: Audio Shield tab, signer-aware persistence, scene crash fixes (claude-parity-audit, DN-035/DN-034)
 
 Done (1018/1018 tests; Audio Shield checked live on this PC through the pipe and on screen in a self-contained build):

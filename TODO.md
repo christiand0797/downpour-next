@@ -24,7 +24,8 @@
 - [ ] HUD visuals kit: segmented glowing meters, sparklines, radar sweep, hex status tiles on every feature page.
 - [ ] Invented features: Threat Pulse (per-PC baseline spikes), watch timeline ribbon (camera/mic/screen), tripwire canary files.
 - [ ] Security hardening roadmap: signed builds and updates, hash-chained audit log, parser fuzzing, least-privilege review.
-- [ ] Publish v0.1.18 (x64 + arm64) with release manifest and record evidence.
+- [x] Publish v0.1.18 (x64) with release manifest, SBOM and evidence (74ae152).
+- [ ] Native ARM64 package (needs an arm64 YARA-X build or a scanner fallback).
 - [ ] Anti-Stalker: origin for remote sessions/remote-control connections and an evidence export.
 - [ ] List rows announce type names to screen readers; Parental header crowding at narrow widths.
 - [ ] Compare v29 source behavior and update source inventory/acceptance gaps; web research for further features.
