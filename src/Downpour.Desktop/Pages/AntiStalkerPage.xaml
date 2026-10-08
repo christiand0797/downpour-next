@@ -30,6 +30,20 @@
                 <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
             </Grid>
 
+            <TextBlock Text="Last 24 hours" Style="{StaticResource SubtitleTextBlockStyle}" />
+            <TextBlock Text="When each sensor was in use, from Downpour's watch log and Windows' own usage records. A short tick means a start was seen without a matching stop. Hover a bar for the app and times." FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+            <Border Padding="14,12" CornerRadius="10" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
+                <StackPanel Spacing="6">
+                    <Grid x:Name="TimelineGrid" RowSpacing="8" ColumnSpacing="12" SizeChanged="TimelineGrid_SizeChanged">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="130" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                    </Grid>
+                    <Grid Margin="142,0,0,0">
+                        <TextBlock x:Name="TimelineStart" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                        <TextBlock Text="now" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" HorizontalAlignment="Right" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+
             <TextBlock Text="Watch log" Style="{StaticResource SubtitleTextBlockStyle}" />
             <TextBlock Text="Every time something started or stopped watching or controlling this PC while Downpour was running, newest first. Saved locally in the protected Downpour folder." FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
             <TextBlock x:Name="LogEmpty" Text="Nothing has been logged yet." Foreground="{ThemeResource TextFillColorTertiaryBrush}" Visibility="Collapsed" />

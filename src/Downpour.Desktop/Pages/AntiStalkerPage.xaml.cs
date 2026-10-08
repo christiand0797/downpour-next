@@ -71,8 +71,83 @@ public sealed partial class AntiStalkerPage : Page
         }
     }
 
+    private static readonly TimeSpan TimelineWindow = TimeSpan.FromHours(24);
+    private AntiStalkerSnapshot? _lastSnapshot;
+
+    private void TimelineGrid_SizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        if (_lastSnapshot is not null) RenderTimeline(_lastSnapshot);
+    }
+
+    /// <summary>One row per sensor with a bar for every stretch of use in the last 24 hours (see <see cref="WatchTimeline"/>).</summary>
+    private void RenderTimeline(AntiStalkerSnapshot s)
+    {
+        var now = DateTimeOffset.UtcNow;
+        var from = now - TimelineWindow;
+        var intervals = WatchTimeline.Build(s, now, TimelineWindow);
+        var trackWidth = Math.Max(0, TimelineGrid.ActualWidth - 142);
+        TimelineStart.Text = $"{from.ToLocalTime():t} yesterday";
+        TimelineGrid.Children.Clear();
+        TimelineGrid.RowDefinitions.Clear();
+        for (var row = 0; row < WatchLanes.All.Count; row++)
+        {
+            var lane = WatchLanes.All[row];
+            var laneIntervals = intervals.Where(i => i.Lane == lane).ToArray();
+            TimelineGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            var label = new TextBlock
+            {
+                Text = laneIntervals.Any(i => i.Ongoing) ? $"{lane} ●" : lane,
+                FontSize = 12,
+                Foreground = laneIntervals.Any(i => i.Ongoing) ? LaneBrush(lane) : (Brush)Application.Current.Resources["HudTextDimBrush"],
+                VerticalAlignment = VerticalAlignment.Center,
+            };
+            Grid.SetRow(label, row);
+            TimelineGrid.Children.Add(label);
+
+            var track = new Canvas { Height = 16, Background = (Brush)Application.Current.Resources["HudPanelElevatedBrush"] };
+            Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(track, laneIntervals.Length == 0
+                ? $"{lane}: not used in the last 24 hours"
+                : $"{lane}: used {laneIntervals.Length} time(s) in the last 24 hours");
+            if (trackWidth > 20)
+            {
+                foreach (var interval in laneIntervals)
+                {
+                    var left = (interval.StartUtc - from).TotalSeconds / TimelineWindow.TotalSeconds * trackWidth;
+                    var width = Math.Max(3, (interval.EndUtc - interval.StartUtc).TotalSeconds / TimelineWindow.TotalSeconds * trackWidth);
+                    var bar = new Border
+                    {
+                        Width = Math.Min(width, Math.Max(3, trackWidth - left)),
+                        Height = 16,
+                        CornerRadius = new CornerRadius(3),
+                        Background = LaneBrush(lane),
+                        Opacity = interval.Ongoing ? 1 : 0.7,
+                    };
+                    var text = $"{interval.Subject}: {interval.StartUtc.ToLocalTime():t} – {(interval.Ongoing ? "now (still in use)" : interval.EndUtc.ToLocalTime().ToString("t", CultureInfo.CurrentCulture))}";
+                    ToolTipService.SetToolTip(bar, text);
+                    Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(bar, $"{lane}, {text}");
+                    Canvas.SetLeft(bar, left);
+                    track.Children.Add(bar);
+                }
+            }
+            Grid.SetRow(track, row);
+            Grid.SetColumn(track, 1);
+            TimelineGrid.Children.Add(track);
+        }
+    }
+
+    private static Brush LaneBrush(string lane) => (Brush)Application.Current.Resources[lane switch
+    {
+        WatchLanes.Camera => "HudMagentaBrush",
+        WatchLanes.Microphone => "HudOrangeBrush",
+        WatchLanes.Screen => "HudRedBrush",
+        WatchLanes.Location => "HudBlueBrush",
+        _ => "HudVioletBrush",
+    }];
+
     private void Render(AntiStalkerSnapshot s)
     {
+        _lastSnapshot = s;
+        RenderTimeline(s);
         var inUse = s.SensorUsage.Where(u => u.InUse).ToArray();
         var cameraNow = inUse.Where(u => u.Capability == WatchCapabilities.Camera).ToArray();
         var micNow = inUse.Where(u => u.Capability == WatchCapabilities.Microphone).ToArray();
