@@ -17,6 +17,29 @@ public sealed class SecurityEventProvider(FileSignatureChecker? signatures = nul
     private const int BruteForceWindowSeconds = 300;
     private static readonly TimeSpan Lookback = TimeSpan.FromHours(24);
 
+    /// <summary>
+    /// Shown when the signed-in account may not read a protected log. The desktop recognises <see cref="EventLogReadersMarker"/>
+    /// and offers the least-privilege fix (Event Log Readers membership) instead of running Downpour as administrator.
+    /// </summary>
+    public const string EventLogReadersMarker = "Event Log Readers";
+
+    public static string AccessDeniedWarning(string logName) =>
+        $"Windows only lets administrators and the {EventLogReadersMarker} group read the {logName} log, so its events are not being watched. " +
+        "Use \u201cEnable protected logs\u201d on Security Events to turn it on without running Downpour as administrator.";
+
+    /// <summary>True when this account can open the log; false only for an explicit access denial.</summary>
+    public static bool CanRead(string logName)
+    {
+        try
+        {
+            using var reader = new EventLogReader(new EventLogQuery(logName, PathType.LogName, "*[System[(EventID=0)]]"));
+            using var _ = reader.ReadEvent(TimeSpan.FromSeconds(2));
+            return true;
+        }
+        catch (UnauthorizedAccessException) { return false; }
+        catch (Exception exception) when (exception is EventLogException or InvalidOperationException) { return true; }
+    }
+
     private static readonly EventSource[] Sources =
     [
         new("System", [7045, 104]),
@@ -53,7 +76,7 @@ public sealed class SecurityEventProvider(FileSignatureChecker? signatures = nul
             }
             catch (UnauthorizedAccessException)
             {
-                warnings.Add($"Permission denied reading {source.LogName}; run with an account permitted to read this log.");
+                warnings.Add(AccessDeniedWarning(source.LogName));
             }
             catch (EventLogException)
             {
@@ -85,8 +108,12 @@ public sealed class SecurityEventProvider(FileSignatureChecker? signatures = nul
         foreach (var source in Sources)
         {
             EventLogWatcher? watcher = null;
+            // A watcher on a log this account cannot read is created anyway and then fails on every event; skip it.
+            // The periodic capture reports the access warning with its fix.
+            if (!CanRead(source.LogName)) continue;
             try
             {
+                var reportedError = 0;
                 var ids = string.Join(" or ", source.EventIds.Select(id => $"EventID={id}"));
                 var query = new EventLogQuery(source.LogName, PathType.LogName, $"*[System[({ids})]]")
                 {
@@ -98,7 +125,10 @@ public sealed class SecurityEventProvider(FileSignatureChecker? signatures = nul
                 {
                     if (args.EventException is not null)
                     {
-                        onWarning($"Live event subscription encountered a read error for {capturedSource.LogName}; periodic polling remains active.");
+                        if (Interlocked.Exchange(ref reportedError, 1) == 0)
+                            onWarning(args.EventException is UnauthorizedAccessException
+                                ? AccessDeniedWarning(capturedSource.LogName)
+                                : $"Live event subscription encountered a read error for {capturedSource.LogName}; periodic polling remains active.");
                         return;
                     }
 

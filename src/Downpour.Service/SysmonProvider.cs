@@ -38,7 +38,7 @@ public sealed class SysmonProvider
             }
             catch (UnauthorizedAccessException)
             {
-                warnings.Add($"Permission denied reading {source.LogName}; run with an account permitted to read this log.");
+                warnings.Add(SecurityEventProvider.AccessDeniedWarning(source.LogName));
             }
             catch (EventLogException)
             {
@@ -92,8 +92,14 @@ public sealed class SysmonProvider
         foreach (var source in Sources)
         {
             EventLogWatcher? watcher = null;
+            if (!SecurityEventProvider.CanRead(source.LogName))
+            {
+                onWarning(SecurityEventProvider.AccessDeniedWarning(source.LogName));
+                continue;
+            }
             try
             {
+                var reportedError = 0;
                 var ids = string.Join(" or ", source.EventIds.Select(id => $"EventID={id}"));
                 var query = new EventLogQuery(source.LogName, PathType.LogName, $"*[System[({ids})]]")
                 {
@@ -105,7 +111,8 @@ public sealed class SysmonProvider
                 {
                     if (args.EventException is not null)
                     {
-                        onWarning($"Live Sysmon event subscription encountered a read error for {capturedSource.LogName}; periodic polling remains active.");
+                        if (Interlocked.Exchange(ref reportedError, 1) == 0)
+                            onWarning($"Live Sysmon event subscription encountered a read error for {capturedSource.LogName}; periodic polling remains active.");
                         return;
                     }
 

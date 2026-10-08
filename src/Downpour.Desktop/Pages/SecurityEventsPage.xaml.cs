@@ -88,6 +88,8 @@ public sealed partial class SecurityEventsPage : Page
             StatusDetail.Text = snapshot.SourcesQueried == 7
                 ? $"Captured {snapshot.CapturedAtUtc.ToLocalTime():MMM d · HH:mm:ss}. Fixed local channels only; event message bodies are not collected."
                 : $"Captured {snapshot.CapturedAtUtc.ToLocalTime():MMM d · HH:mm:ss}. {snapshot.SourcesQueried} of 7 event sources were readable.";
+            EnableLogsButton.Visibility = snapshot.Warnings.Any(w => w.Contains("Event Log Readers", StringComparison.Ordinal))
+                ? Microsoft.UI.Xaml.Visibility.Visible : Microsoft.UI.Xaml.Visibility.Collapsed;
             SourceWarnings.Text = snapshot.Warnings.Count == 0
                 ? "Updates live every second while this page is open. Event observations are not yet correlated into incidents or response actions."
                 : string.Join("  •  ", snapshot.Warnings);
@@ -98,6 +100,8 @@ public sealed partial class SecurityEventsPage : Page
             _requestInFlight = false;
         }
     }
+
+    private async void EnableLogs_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e) => await ProtectedLogAccess.ShowAsync(XamlRoot);
 
     private void SearchBox_TextChanged(object sender, TextChangedEventArgs e) => ApplyFilters();
 

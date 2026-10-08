@@ -71,6 +71,11 @@
             </ListView>
         </Grid>
 
-        <TextBlock Grid.Row="4" x:Name="SourceWarnings" FontSize="11" Foreground="#FFFFC577" TextWrapping="Wrap" />
+        <Grid Grid.Row="4" ColumnSpacing="12">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+            <TextBlock x:Name="SourceWarnings" FontSize="11" Foreground="#FFFFC577" TextWrapping="Wrap" VerticalAlignment="Center" />
+            <Button x:Name="EnableLogsButton" Grid.Column="1" Content="Enable protected logs" Visibility="Collapsed" VerticalAlignment="Center" Click="EnableLogs_Click"
+                    Style="{StaticResource AccentButtonStyle}" ToolTipService.ToolTip="How to let Downpour read the Security and Sysmon logs without running as administrator" />
+        </Grid>
     </Grid>
 </Page>
