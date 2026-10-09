@@ -1,10 +1,21 @@
 # Downpour Next TODO
 
+## Latest release continuation (DN-010, 2026-10-08)
+
+- [x] Reconcile commits through 6fbaf37 and review the elevated fixer.
+- [x] Persist recovery intent before changes; preserve failed rollback; gate privileged error/watchdog writes on storage validation; four new regression tests.
+- [ ] Build/test and publish v0.1.20 including Desktop, Service, Scanner, UpdateHelper and Fixer.
+- [ ] DN-040: explainable local adaptive engine; no API/LLM.
+- [ ] DN-041: additional licensed threat feeds with freshness and provenance.
+- [ ] DN-042: precise hardware-ID driver discovery and missing-device rescan.
+- [ ] DN-043: realistic tree trunk/branches and matching sidebar/charts.
+
+
 ## 2026-10-08 reanalysis and recovery milestone (codex-primary, DN-036)
 
 - [x] Reconcile current agent work, inventory all 530 tracked files, parse tracked JSON/XML, run current Debug suite (1,065 passed).
 - [x] Repair host-isolation failed cleanup/rollback/state-write handling and actual IPC state; 18 focused tests pass.
-- [ ] Clean committed Release build/tests, native route smoke, verified v0.1.19 archive and GitHub publication.
+- [x] Clean Release, native route/YARA smoke and verified v0.1.19 publication completed by claude-parity-audit at a672449.
 - [ ] Installed elevation/signing boundary, parental measurement/enforcement, clean-machine/reboot recovery, full route accessibility and v29 acceptance remain open.
 
 ## Active owner continuation (2026-10-07, claude-parity-audit)

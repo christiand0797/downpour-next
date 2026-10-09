@@ -1,5 +1,9 @@
 # Downpour Next changelog
 
+## 0.1.20 — 2026-10-08
+
+45 threat sources; 43 hardening checks/35 fixes; CVE dashboard; storage/cache controls; UAC fixer for hardening, Undo and Windows Update software/drivers. Release review adds pre-mutation durable recovery journals, partial-failure rollback retention, safe storage-validation failure handling, and scoped no-update wording. Complete five-executable portable packaging. See RELEASE_0.1.20.md for validation and limits.
+
 ## Unreleased
 
 - **Downpour now fixes things itself.** A new administrator helper (Downpour.Fixer) applies hardening fixes, Defender settings, attack surface reduction rules and firewall changes, and downloads and installs Windows security updates and Microsoft-signed driver updates, after a single Windows permission prompt. Hardening has a **Fix** button on every fixable finding and **Fix all recommended** (fixes without side effects); fixes with side effects explain them first. Every changed setting is backed up, a fix that fails part-way is rolled back, every run is written to a tamper-evident log in an administrator-only folder, and **Undo last fixes** restores everything. **Install updates now** on the CVE Dashboard and Hardening, and **Install driver updates** / **Find and install driver** on Devices & Drivers, replace the links to Windows Settings and vendor download pages. Downpour never restarts the PC itself and never runs vendor installers downloaded from websites.

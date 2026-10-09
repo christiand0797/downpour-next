@@ -14,21 +14,24 @@ var verb = args[0];
 var requestId = args[1];
 var argument = args[2];
 
-// No job may run forever: updates get three hours, setting changes five minutes.
-var limit = verb == FixerProtocol.Updates ? TimeSpan.FromHours(3) : TimeSpan.FromMinutes(5);
-_ = Task.Delay(limit).ContinueWith(_ =>
-{
-    try
-    {
-        FixerStore.Write(FixerProtocol.ResultPath(requestId), new FixRunResult(verb, null, [new("timeout", false, "Stopped: the job took too long.")], false, DateTimeOffset.UtcNow));
-        FixerStore.Audit(verb, requestId, "timed out");
-    }
-    finally { Environment.Exit(Failed); }
-});
-
+var storeReady = false;
 try
 {
     FixerStore.Prepare();
+    storeReady = true;
+    // No privileged writer, including the watchdog, may use storage until validation succeeds.
+    // No job may run forever: updates get three hours, setting changes five minutes.
+    var limit = verb == FixerProtocol.Updates ? TimeSpan.FromHours(3) : TimeSpan.FromMinutes(5);
+    _ = Task.Delay(limit).ContinueWith(_ =>
+    {
+        try
+        {
+            FixerStore.Write(FixerProtocol.ResultPath(requestId), new FixRunResult(verb, null, [new("timeout", false, "Stopped: the job took too long.")], false, DateTimeOffset.UtcNow));
+            FixerStore.Audit(verb, requestId, "timed out");
+        }
+        finally { Environment.Exit(Failed); }
+    });
+
     FixerStore.Audit(verb, requestId, $"start {argument}");
     FixRunResult result;
     switch (verb)
@@ -36,9 +39,11 @@ try
         case FixerProtocol.Apply:
         {
             var backupId = Guid.NewGuid().ToString("N");
-            result = HardeningFixes.Apply(new FixHost(), argument.Split(','), backupId, DateTimeOffset.UtcNow, out var backup);
-            if (backup.Entries.Count > 0) FixerStore.Write(FixerProtocol.BackupPath(backupId), backup);
-            else result = result with { BackupId = null };
+            result = HardeningFixes.Apply(new FixHost(), argument.Split(','), backupId, DateTimeOffset.UtcNow, out var backup,
+                pending => FixerStore.Write(FixerProtocol.BackupPath(backupId), pending));
+            // Finalize the journal even when every operation was successfully rolled back.
+            FixerStore.Write(FixerProtocol.BackupPath(backupId), backup);
+            if (backup.Entries.Count == 0) result = result with { BackupId = null };
             break;
         }
         case FixerProtocol.Undo:
@@ -64,6 +69,7 @@ try
 }
 catch (Exception ex)
 {
+    if (!storeReady) return Refused;
     try
     {
         FixerStore.Write(FixerProtocol.ResultPath(requestId), new FixRunResult(verb, null, [new("error", false, ex.Message.Length > 300 ? ex.Message[..300] : ex.Message)], false, DateTimeOffset.UtcNow));

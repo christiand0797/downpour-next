@@ -155,7 +155,8 @@ public static class HardeningFixes
 
     public static bool IsValidId(string id) => id.Length is > 0 and <= 32 && id.All(c => c is (>= 'a' and <= 'z') or (>= '0' and <= '9') or '-') && Find(id) is not null;
 
-    public static FixRunResult Apply(IFixHost host, IReadOnlyList<string> ids, string backupId, DateTimeOffset now, out FixBackup backup)
+    public static FixRunResult Apply(IFixHost host, IReadOnlyList<string> ids, string backupId, DateTimeOffset now, out FixBackup backup,
+        Action<FixBackup>? persistBeforeChange = null)
     {
         var outcomes = new List<FixOutcome>();
         var entries = new List<FixBackupEntry>();
@@ -170,7 +171,13 @@ public static class HardeningFixes
                 if (fix.Ops.Any(o => o.Kind == FixOpKind.DisableAccount && host.CurrentUserIs((int)o.Number)))
                     throw new InvalidOperationException("You are signed in as this account, so it was not disabled.");
                 foreach (var op in Expand(host, fix))
-                    done.Add(ApplyOne(host, fix.Id, op));
+                    ApplyOne(host, fix.Id, op, entry =>
+                    {
+                        // Persist intent before touching the host, including operations that may throw after mutation.
+                        var pending = entries.Concat(done).Append(entry).ToArray();
+                        persistBeforeChange?.Invoke(new(backupId, now, pending.Select(e => e.FixId).Distinct().ToArray(), pending));
+                        done.Add(entry);
+                    });
                 entries.AddRange(done);
                 reboot |= fix.RebootRequired;
                 outcomes.Add(new(id, true, fix.RebootRequired ? $"{fix.Title}: done; takes full effect after a restart." : $"{fix.Title}: done."));
@@ -179,15 +186,19 @@ public static class HardeningFixes
             {
                 // Put back whatever this fix had already changed, newest first.
                 var rollbackFailed = 0;
+                var retained = new List<FixBackupEntry>();
                 foreach (var entry in Enumerable.Reverse(done))
                 {
+                    if (!entry.Restorable) { rollbackFailed++; retained.Add(entry); continue; }
                     try { Restore(host, entry); }
-                    catch (Exception) { rollbackFailed++; }
+                    catch (Exception) { rollbackFailed++; retained.Add(entry); }
                 }
+                entries.AddRange(Enumerable.Reverse(retained));
+                reboot |= retained.Count > 0 && fix.RebootRequired;
                 outcomes.Add(new(id, false, $"{fix.Title}: failed ({Short(ex)})" + (rollbackFailed == 0 ? "; nothing was left half-changed." : $"; {rollbackFailed} change(s) could not be put back.")));
             }
         }
-        backup = new FixBackup(backupId, now, outcomes.Where(o => o.Applied).Select(o => o.FixId).ToArray(), entries);
+        backup = new FixBackup(backupId, now, entries.Select(e => e.FixId).Distinct().ToArray(), entries.ToArray());
         return new FixRunResult("apply", backupId, outcomes, reboot, now);
     }
 
@@ -206,7 +217,7 @@ public static class HardeningFixes
             }
             var title = Find(group.Key)?.Title ?? group.Key;
             outcomes.Add(new(group.Key, failures == 0,
-                failures == 0 ? $"{title}: undone{(notRestorable > 0 ? " (the deleted password cannot be restored)" : "")}." : $"{title}: {failures} change(s) could not be undone."));
+                failures == 0 ? $"{title}: reversible changes undone{(notRestorable > 0 ? $" ({notRestorable} irreversible operation(s) cannot be undone)" : "")}." : $"{title}: {failures} change(s) could not be undone."));
         }
         return new FixRunResult("undo", backup.BackupId, outcomes, backup.FixIds.Any(id => Find(id)?.RebootRequired == true), now);
     }
@@ -222,7 +233,7 @@ public static class HardeningFixes
         }
     }
 
-    private static FixBackupEntry ApplyOne(IFixHost host, string fixId, FixOp op)
+    private static void ApplyOne(IFixHost host, string fixId, FixOp op, Action<FixBackupEntry> beforeMutation)
     {
         switch (op.Kind)
         {
@@ -235,38 +246,44 @@ public static class HardeningFixes
                     throw new InvalidOperationException($"{op.Name} has an unexpected value type, so it was left alone.");
                 var entry = new FixBackupEntry(fixId, op.Kind, op.Path, op.Name, before is not null, before?.Kind, before?.Number ?? 0,
                     op.Sensitive ? null : before?.Text, Restorable: !op.Sensitive);
+                beforeMutation(entry);
                 if (op.Kind == FixOpKind.SetDword) host.WriteDword(op.Path, op.Name, op.Number);
                 else if (op.Kind == FixOpKind.SetString) host.WriteString(op.Path, op.Name, op.Text);
                 else if (before is not null) host.Delete(op.Path, op.Name);
-                return entry;
+                return;
             }
             case FixOpKind.DisableAccount:
             {
                 var before = host.AccountDisabled((int)op.Number) ?? throw new InvalidOperationException("The account was not found.");
+                beforeMutation(new(fixId, op.Kind, "", op.Number.ToString(), true, "bool", before ? 1 : 0, null));
                 host.SetAccountDisabled((int)op.Number, true);
-                return new(fixId, op.Kind, "", op.Number.ToString(), true, "bool", before ? 1 : 0, null);
+                return;
             }
             case FixOpKind.FirewallOn:
             {
                 var before = host.FirewallEnabled((int)op.Number) ?? throw new InvalidOperationException("The firewall profile could not be read.");
+                beforeMutation(new(fixId, op.Kind, "", op.Number.ToString(), true, "bool", before ? 1 : 0, null));
                 host.SetFirewallEnabled((int)op.Number, true);
-                return new(fixId, op.Kind, "", op.Number.ToString(), true, "bool", before ? 1 : 0, null);
+                return;
             }
             case FixOpKind.DefenderPreference:
             {
                 var before = host.DefenderPreference(op.Name) ?? throw new InvalidOperationException("Microsoft Defender is not available or not the active antivirus.");
+                beforeMutation(new(fixId, op.Kind, "", op.Name, true, "number", before, null));
                 host.SetDefenderPreference(op.Name, op.Number);
-                return new(fixId, op.Kind, "", op.Name, true, "number", before, null);
+                return;
             }
             case FixOpKind.DefenderAsrRule:
             {
                 var before = host.AsrRuleAction(op.Name);
+                beforeMutation(new(fixId, op.Kind, "", op.Name, before is not null, "number", before ?? 0, null));
                 host.SetAsrRule(op.Name, (int)op.Number);
-                return new(fixId, op.Kind, "", op.Name, before is not null, "number", before ?? 0, null);
+                return;
             }
             case FixOpKind.DefenderSignatureUpdate:
+                beforeMutation(new(fixId, op.Kind, "", "signatures", false, null, 0, null, Restorable: false));
                 host.UpdateDefenderSignatures();
-                return new(fixId, op.Kind, "", "signatures", false, null, 0, null, Restorable: false);
+                return;
             default:
                 throw new InvalidOperationException("Unsupported operation.");
         }

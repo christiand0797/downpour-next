@@ -5,10 +5,10 @@
     {
       "id": "codex-primary",
       "role": "primary",
-      "taskId": "DN-036",
+      "taskId": "DN-010",
       "status": "active",
-      "heartbeatUtc": "2026-10-08T06:00:32.921271+00:00",
-      "notes": "Re-analyzing current e933f0b+ repository and v29 inventory; own DN-036 audit/release verification. Do not edit active threat DB client/index/service/Program, WatchTimeline, asset-copy or associated UI drafts. Parent crash fix now committed by claude; continuing from latest real state. [2026-10-08T21:15Z claude-parity-audit: v0.1.19 publication taken over because the local 49a4a44 package had a release blocker; see SHARED_CONTEXT.]"
+      "heartbeatUtc": "2026-10-09T03:38:38.926373+00:00",
+      "notes": "Owner explicitly handed over from exhausted agent at 6fbaf37. Review fixer release boundary, include new fixer executable, build/push v0.1.20. v0.1.19 already published by claude; do not reuse stale 49a4a44 package. Future engine/feeds/drivers/visual requests recorded DN-040..043."
     },
     {
       "id": "v29_action_map",
@@ -56,7 +56,7 @@
       "taskId": "DN-010",
       "status": "idle",
       "heartbeatUtc": "2026-10-05T23:30:00Z",
-      "notes": "DN-010 progress: verified update flow code and tests (ReleaseUpdateClientTests 10/10, UpdatePathPolicyTests 2/2). Update button click-through path: HomePage.xaml.cs UpdateButton_Click → PortableUpdateInstaller.CheckAndStageAsync → ReleaseUpdateClient.CheckAsync/DownloadVerifiedPackageAsync → UpdateArchive.ExtractToStage → helper copied to %LOCALAPPDATA%\\DownpourNext\\update-helper → launch UpdateHelper with installRoot/parentPID/version → helper waits for parent & bundled service, validates manifest/hashes, backs up files, applies atomically, restarts app. Build clean (0 warnings/errors, 144 tests). Self-contained publish requires Windows App Runtime framework. MSIX packaging enabled (EnableMsixTooling=true). Next: code signing research (Authenticode cert for EXE, MSIX package signing), test on clean Windows install, locked-file failure injection."
+      "notes": "DN-010 progress: verified update flow code and tests (ReleaseUpdateClientTests 10/10, UpdatePathPolicyTests 2/2). Update button click-through path: HomePage.xaml.cs UpdateButton_Click \u2192 PortableUpdateInstaller.CheckAndStageAsync \u2192 ReleaseUpdateClient.CheckAsync/DownloadVerifiedPackageAsync \u2192 UpdateArchive.ExtractToStage \u2192 helper copied to %LOCALAPPDATA%\\DownpourNext\\update-helper \u2192 launch UpdateHelper with installRoot/parentPID/version \u2192 helper waits for parent & bundled service, validates manifest/hashes, backs up files, applies atomically, restarts app. Build clean (0 warnings/errors, 144 tests). Self-contained publish requires Windows App Runtime framework. MSIX packaging enabled (EnableMsixTooling=true). Next: code signing research (Authenticode cert for EXE, MSIX package signing), test on clean Windows install, locked-file failure injection."
     },
     {
       "id": "opencode-scanner-agent",
@@ -102,9 +102,9 @@
       "id": "claude-parity-audit",
       "role": "agent",
       "taskId": "DN-038 per-tab charts / devices",
-      "status": "active",
+      "status": "idle",
       "heartbeatUtc": "2026-10-08T21:25:00Z",
-      "notes": "v0.1.19 published from a672449. Continuing per-tab charts on remaining tabs and DN-038 follow-ups."
+      "notes": "v0.1.19 published from a672449. Continuing per-tab charts on remaining tabs and DN-038 follow-ups. | Owner reports usage exhausted; handed over latest committed work 6fbaf37 to codex-primary."
     }
   ]
 }

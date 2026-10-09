@@ -14,6 +14,7 @@ dotnet publish src/Downpour.Desktop/Downpour.Desktop.csproj -c Release -r win-x6
 dotnet publish src/Downpour.Service/Downpour.Service.csproj -c Release -r win-x64 --self-contained true -o artifacts/DownpourNext-win-x64/service
 dotnet publish src/Downpour.Scanner/Downpour.Scanner.csproj -c Release -r win-x64 --self-contained true -o artifacts/DownpourNext-win-x64/service/scanner
 dotnet publish src/Downpour.UpdateHelper/Downpour.UpdateHelper.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o artifacts/DownpourNext-win-x64/update-helper
+dotnet publish src/Downpour.Fixer/Downpour.Fixer.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o artifacts/DownpourNext-win-x64/fixer
 Copy-Item Start-Downpour-Next.cmd artifacts/DownpourNext-win-x64/
 Copy-Item Start-Downpour-Next.bat artifacts/DownpourNext-win-x64/
 ```

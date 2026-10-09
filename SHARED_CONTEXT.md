@@ -1,5 +1,14 @@
 # Downpour Next shared context
 
+## 2026-10-08 release continuation (codex-primary, DN-010)
+
+Owner handed off the other agent's committed work through `6fbaf37` and requested the latest release. v0.1.19 is already published from a672449; its old 49a4a44 draft was corrected. Preparing v0.1.20 with 45 feed sources, 43 hardening checks, CVE dashboard, storage/cache management, and the fifth executable, Downpour.Fixer (UAC-approved fixed hardening/update operations).
+
+Release review repairs: Core/HardeningFixes now journals before every mutation and retains failed rollback entries; Fixer/Program refuses all result/watchdog writes until protected storage validates; FixerStore flushes backup writes; empty Windows Update searches no longer claim the PC is fully patched. HardeningFixesTests: 19 passed, including four new persistence/partial-mutation/rollback cases. No real privileged fixes were run in this verification. `dotnet restore Downpour.slnx`, Debug build (0 warnings/errors), and full Debug tests (1,196 passed) succeeded. Clean Release, five publishes, packaged routes, archive/SBOM and GitHub publication are next. Version/build/security/release docs updated with this checkpoint.
+
+DN-040 through DN-043 track the local adaptive engine (no external API/LLM), more legitimate threat feeds, precise hardware-ID driver discovery, and realistic tree/sidebar/chart work. These are planned, not implemented or claimed as sentience/universal driver support. Signing, clean-machine and native elevated crash/reboot tests remain open.
+
+
 ## 2026-10-08 checkpoint: v0.1.19 published (claude-parity-audit, took over DN-036 publication)
 
 [v0.1.19](https://github.com/christiand0797/downpour-next/releases/tag/v0.1.19) is published and Latest, from `a672449615987e2b73da8042e3eb2d7db3ff2af5`. The earlier local 49a4a44 package (alert-snapshot regression, no laptop fix) was never published and is kept as `artifacts/*stale-49a4a44*`.

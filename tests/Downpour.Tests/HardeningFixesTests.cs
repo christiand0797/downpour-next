@@ -13,12 +13,22 @@ public sealed class HardeningFixesTests
         public readonly Dictionary<string, int> Asr = new();
         public int CurrentRid = 1001;
         public string? FailOnWrite;
+        public string? FailAfterWriteOnce;
+        public string? FailOnDelete;
         public int SignatureUpdates;
 
         public RegistryReading? Read(string path, string name) => Values.GetValueOrDefault((path, name));
-        public void WriteDword(string path, string name, long value) { Fail(name); Values[(path, name)] = new("dword", value, ""); }
+        public void WriteDword(string path, string name, long value)
+        {
+            Fail(name); Values[(path, name)] = new("dword", value, "");
+            if (name == FailAfterWriteOnce) { FailAfterWriteOnce = null; throw new IOException("failure after mutation"); }
+        }
         public void WriteString(string path, string name, string value) { Fail(name); Values[(path, name)] = new("string", 0, value); }
-        public void Delete(string path, string name) => Values.Remove((path, name));
+        public void Delete(string path, string name)
+        {
+            if (name == FailOnDelete) throw new IOException("rollback failed");
+            Values.Remove((path, name));
+        }
         public IReadOnlyList<string> SubKeys(string path) => ["Tcpip_{A}", "Tcpip_{B}", "Other"];
         public bool? AccountDisabled(int rid) => Accounts.TryGetValue(rid, out var v) ? v : null;
         public void SetAccountDisabled(int rid, bool disabled) => Accounts[rid] = disabled;
@@ -35,6 +45,63 @@ public sealed class HardeningFixesTests
 
     private static readonly DateTimeOffset Now = new(2026, 10, 8, 0, 0, 0, TimeSpan.Zero);
     private const string Lsa = @"SYSTEM\CurrentControlSet\Control\Lsa";
+
+    [Fact]
+    public void BackupWriteFailurePreventsTheSystemChange()
+    {
+        var host = new FakeHost();
+        var result = HardeningFixes.Apply(host, ["ntlmv1"], "b1", Now, out var backup,
+            _ => throw new IOException("disk full"));
+        Assert.False(Assert.Single(result.Outcomes).Applied);
+        Assert.Empty(host.Values);
+        Assert.Empty(backup.Entries);
+    }
+
+    [Fact]
+    public void EachOperationHasAnIndependentCumulativeBackupBeforeMutation()
+    {
+        var host = new FakeHost();
+        var snapshots = new List<FixBackup>();
+        HardeningFixes.Apply(host, ["ntlmv1", "lm-hash"], "b1", Now, out var backup, pending =>
+        {
+            var next = pending.Entries.Last();
+            Assert.Null(host.Read(next.Path, next.Name));
+            snapshots.Add(pending);
+        });
+        Assert.Equal(2, snapshots.Count);
+        Assert.Single(snapshots[0].Entries);
+        Assert.Equal(2, snapshots[1].Entries.Count);
+        Assert.Equal(backup.Entries, snapshots[1].Entries);
+        // The latest durable snapshot remains usable if the process exits before finalization.
+        var undo = HardeningFixes.Undo(host, snapshots[1], Now);
+        Assert.All(undo.Outcomes, o => Assert.True(o.Applied));
+        Assert.Empty(host.Values);
+    }
+
+    [Fact]
+    public void AnOperationThatThrowsAfterMutationIsStillRolledBack()
+    {
+        var host = new FakeHost { FailAfterWriteOnce = "LmCompatibilityLevel" };
+        host.Values[(Lsa, "LmCompatibilityLevel")] = new("dword", 1, "");
+        var result = HardeningFixes.Apply(host, ["ntlmv1"], "b1", Now, out var backup);
+        Assert.False(Assert.Single(result.Outcomes).Applied);
+        Assert.Equal(1, host.Values[(Lsa, "LmCompatibilityLevel")].Number);
+        Assert.Empty(backup.Entries);
+    }
+
+    [Fact]
+    public void FailedRollbackRetainsBackupForAnotherUndoAttempt()
+    {
+        var host = new FakeHost { FailAfterWriteOnce = "LmCompatibilityLevel", FailOnDelete = "LmCompatibilityLevel" };
+        var result = HardeningFixes.Apply(host, ["ntlmv1"], "b1", Now, out var backup);
+        Assert.False(Assert.Single(result.Outcomes).Applied);
+        Assert.Single(backup.Entries);
+        Assert.Equal("ntlmv1", Assert.Single(backup.FixIds));
+        Assert.Equal(5, host.Values[(Lsa, "LmCompatibilityLevel")].Number);
+        host.FailOnDelete = null;
+        Assert.True(Assert.Single(HardeningFixes.Undo(host, backup, Now).Outcomes).Applied);
+        Assert.Empty(host.Values);
+    }
 
     [Fact]
     public void UnknownFixesAreRefusedWithoutAnyChange()

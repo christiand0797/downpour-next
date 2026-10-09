@@ -49,7 +49,11 @@ internal static class FixerStore
     public static void Write<T>(string path, T value)
     {
         var temp = path + ".tmp";
-        File.WriteAllText(temp, JsonSerializer.Serialize(value, HardeningFixes.Json), new UTF8Encoding(false));
+        using (var stream = new FileStream(temp, FileMode.Create, FileAccess.Write, FileShare.None, 4096, FileOptions.WriteThrough))
+        {
+            JsonSerializer.Serialize(stream, value, HardeningFixes.Json);
+            stream.Flush(flushToDisk: true);
+        }
         File.Move(temp, path, overwrite: true);
     }
 

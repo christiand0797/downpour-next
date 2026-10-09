@@ -53,7 +53,7 @@ internal static class WindowsUpdateInstaller
         if (pending.Count == 0)
         {
             report(new("done", 100, "No updates are waiting.", true, DateTimeOffset.UtcNow));
-            return new FixRunResult(FixerProtocol.Updates, null, outcomes.Count == 0 ? [new("windows-update", true, "This PC is up to date.")] : outcomes, false, DateTimeOffset.UtcNow);
+            return new FixRunResult(FixerProtocol.Updates, null, outcomes.Count == 0 ? [new("windows-update", true, "Windows Update offered no applicable updates for this search. This does not confirm support or patch completeness.")] : outcomes, false, DateTimeOffset.UtcNow);
         }
 
         var reboot = false;
