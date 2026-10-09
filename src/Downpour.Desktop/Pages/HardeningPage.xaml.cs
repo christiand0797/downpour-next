@@ -25,6 +25,7 @@ public sealed partial class HardeningPage : Page
     {
         InitializeComponent();
         Charts.Row(ChartRow, _stateChart, _severityChart, _categoryChart);
+        UpdateUndo();
         EntityDetails.Attach(CheckList, item => item is PostureRow p ? new DetailEntity(p.Title, $"{p.Category} · {p.StateLabel}",
         [
             new("State", p.StateLabel), new("Area", p.Category), new("Reading", p.Detail), new("How to fix", p.Check.Fix ?? "Nothing to do."),
@@ -99,6 +100,82 @@ public sealed partial class HardeningPage : Page
 
     private void ViewFilter_SelectionChanged(object sender, SelectionChangedEventArgs e) => ApplyFilter();
 
+    private bool _fixing;
+
+    private async void FixOne_Click(object sender, RoutedEventArgs e)
+    {
+        if ((sender as FrameworkElement)?.Tag is not string id || HardeningFixes.Find(id) is not { } fix) return;
+        if (fix.Caution is { } caution && !await ActionFlows.ConfirmAsync(XamlRoot, fix.Title, $"{fix.WhatChanges}{Environment.NewLine}{Environment.NewLine}Heads up: {caution}{Environment.NewLine}{Environment.NewLine}The previous setting is backed up and Undo restores it.", "Apply fix"))
+            return;
+        await RunFixesAsync([id]);
+    }
+
+    private async void FixAll_Click(object sender, RoutedEventArgs e)
+    {
+        var fixes = _all.Where(c => c.State == PostureStates.Finding).Select(c => HardeningFixes.Find(c.Id)).OfType<HardeningFix>().Where(f => f.Caution is null).ToArray();
+        if (fixes.Length == 0)
+        {
+            ShowFixResult("Nothing to fix automatically: the remaining findings have side effects, so apply them one at a time with their Fix button.");
+            return;
+        }
+        if (!await ActionFlows.ConfirmAsync(XamlRoot, $"Apply {fixes.Length} fix{(fixes.Length == 1 ? "" : "es")}?",
+                string.Join(Environment.NewLine, fixes.Select(f => "• " + f.Title)) + $"{Environment.NewLine}{Environment.NewLine}Windows will ask for permission once. Every setting is backed up first and Undo puts it back.", "Fix all"))
+            return;
+        await RunFixesAsync(fixes.Select(f => f.Id).ToArray());
+    }
+
+    private async Task RunFixesAsync(IReadOnlyList<string> ids)
+    {
+        if (_fixing) return;
+        _fixing = true;
+        FixAllButton.IsEnabled = false;
+        ShowFixResult($"Applying {ids.Count} fix{(ids.Count == 1 ? "" : "es")}… approve the Windows permission prompt.");
+        try
+        {
+            var result = await FixerClient.ApplyAsync(ids);
+            ShowFixResult(FixerClient.Describe(result));
+            await RefreshAsync();
+        }
+        finally
+        {
+            _fixing = false;
+            FixAllButton.IsEnabled = true;
+            UpdateUndo();
+        }
+    }
+
+    private async void Undo_Click(object sender, RoutedEventArgs e)
+    {
+        if (FixerProtocol.RecentBackups(1).FirstOrDefault() is not { } backup) return;
+        var titles = backup.FixIds.Select(id => HardeningFixes.Find(id)?.Title ?? id);
+        if (!await ActionFlows.ConfirmAsync(XamlRoot, "Undo the last fixes?", $"From {backup.CreatedUtc.ToLocalTime():MMM d HH:mm}:{Environment.NewLine}{string.Join(Environment.NewLine, titles.Select(t => "• " + t))}", "Undo"))
+            return;
+        ShowFixResult("Undoing… approve the Windows permission prompt.");
+        var result = await FixerClient.UndoAsync(backup.BackupId);
+        ShowFixResult(FixerClient.Describe(result));
+        UpdateUndo();
+        await RefreshAsync();
+    }
+
+    private async void InstallUpdates_Click(object sender, RoutedEventArgs e)
+    {
+        var result = await UpdateRunner.RunAsync(XamlRoot, "software", ShowFixResult);
+        if (result is not null) await RefreshAsync();
+    }
+
+    private void UpdateUndo()
+    {
+        var last = FixerProtocol.RecentBackups(1).FirstOrDefault();
+        UndoButton.IsEnabled = last is not null;
+        ToolTipService.SetToolTip(UndoButton, last is null ? "No fixes to undo" : $"Undo {last.FixIds.Count} fix(es) from {last.CreatedUtc.ToLocalTime():MMM d HH:mm}");
+    }
+
+    private void ShowFixResult(string text)
+    {
+        FixResultText.Text = text;
+        FixResultPanel.Visibility = Visibility.Visible;
+    }
+
     private void ApplyFilter()
     {
         if (CheckList is null) return;
@@ -142,7 +219,14 @@ public sealed class PostureRow(PostureCheck check)
     public string FixText => check.Fix is null ? "" : $"How to fix: {check.Fix}";
     public Visibility FixVisibility => check.Fix is null ? Visibility.Collapsed : Visibility.Visible;
     public string? SettingsUri => check.SettingsUri;
-    public Visibility OpenVisibility => check.SettingsUri is null ? Visibility.Collapsed : Visibility.Visible;
+    private HardeningFix? AutoFix => check.State == PostureStates.Pass ? null : HardeningFixes.Find(check.Id);
+    public Visibility AutoFixVisibility => AutoFix is null ? Visibility.Collapsed : Visibility.Visible;
+    public string AutoFixLabel => AutoFix?.Caution is null ? "Fix" : "Fix…";
+    public string AutoFixTip => AutoFix is { } f ? f.WhatChanges + (f.RebootRequired ? " Needs a restart." : "") + (f.Caution is { } c ? $" Note: {c}" : "") : "";
+    /// <summary>Windows' own page only when Downpour cannot apply the fix itself (firmware, BitLocker, tamper protection).</summary>
+    private bool IsUpdates => check.State != PostureStates.Pass && check.Id is "update-age" or "os-support";
+    public Visibility UpdatesVisibility => IsUpdates ? Visibility.Visible : Visibility.Collapsed;
+    public Visibility OpenVisibility => check.SettingsUri is null || AutoFix is not null || IsUpdates ? Visibility.Collapsed : Visibility.Visible;
     public string Title => check.Title;
     public string Detail => check.Detail;
     public string Technique => check.Technique;

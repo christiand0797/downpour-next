@@ -18,9 +18,9 @@
                            Text="Every vulnerability CISA has confirmed is being exploited in the wild, related to this PC: Windows flaws published after your last update, and apps you have installed." />
             </StackPanel>
             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                <Button Content="Windows Update" Click="WindowsUpdate_Click" ToolTipService.ToolTip="Install the security updates that close Windows flaws" />
+                <Button x:Name="InstallUpdatesButton" Content="Install updates now" Click="WindowsUpdate_Click" Style="{StaticResource AccentButtonStyle}" ToolTipService.ToolTip="Downpour downloads and installs every pending Windows security and quality update itself" />
                 <Button Content="Hardening" Click="Hardening_Click" ToolTipService.ToolTip="Platform settings that block whole classes of exploits" />
-                <Button x:Name="RefreshButton" Content="Refresh catalog" Click="Refresh_Click" Style="{StaticResource AccentButtonStyle}" />
+                <Button x:Name="RefreshButton" Content="Refresh catalog" Click="Refresh_Click" />
             </StackPanel>
         </Grid>
 

@@ -16,9 +16,9 @@
                     <TextBlock Text="Every device Windows knows about, whether its driver works, how old and who signed it, which devices are missing a driver, and which driver updates Windows Update has for this PC." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Top">
-                    <Button x:Name="SearchButton" Content="Search for driver updates" Click="Search_Click" Style="{StaticResource AccentButtonStyle}" ToolTipService.ToolTip="Ask Windows Update which driver updates exist for this PC. Read-only: nothing is downloaded or installed." />
+                    <Button x:Name="SearchButton" Content="Check for driver updates" Click="Search_Click" ToolTipService.ToolTip="Ask Windows Update which driver updates exist for this PC. Read-only: nothing is downloaded or installed." />
                     <Button Content="Device Manager" Click="DeviceManager_Click" ToolTipService.ToolTip="Open Windows Device Manager to update, roll back, uninstall or reinstall a driver." />
-                    <Button Content="Optional updates" Click="OptionalUpdates_Click" ToolTipService.ToolTip="Open Windows Update's optional driver updates to install them." />
+                    <Button x:Name="InstallDriversButton" Content="Install driver updates" Click="InstallDrivers_Click" Style="{StaticResource AccentButtonStyle}" ToolTipService.ToolTip="Downpour finds every Microsoft-signed driver Windows Update has for this PC's exact hardware, then downloads and installs them itself." />
                     <Button Content="Refresh" Click="Refresh_Click" />
                 </StackPanel>
             </Grid>

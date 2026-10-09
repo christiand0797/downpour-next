@@ -3,6 +3,7 @@
     <Project Path="src/Downpour.Contracts/Downpour.Contracts.csproj" />
     <Project Path="src/Downpour.Core/Downpour.Core.csproj" />
     <Project Path="src/Downpour.Desktop/Downpour.Desktop.csproj" />
+    <Project Path="src/Downpour.Fixer/Downpour.Fixer.csproj" />
     <Project Path="src/Downpour.Scanner/Downpour.Scanner.csproj" />
     <Project Path="src/Downpour.Service/Downpour.Service.csproj" />
     <Project Path="src/Downpour.UpdateHelper/Downpour.UpdateHelper.csproj" />

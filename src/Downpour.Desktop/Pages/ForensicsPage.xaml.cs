@@ -208,7 +208,7 @@ public sealed partial class ForensicsPage
         var (file, address, domain) = DetailDescriptions.Guess(r.Artifact.RawEvidenceReference);
         return new DetailEntity(r.Title, $"{r.Category} · {r.Severity}",
         [
-            new("Severity", r.Severity), new("Category", r.Category), new("Detail", r.Detail), new("MITRE technique", r.Artifact.Technique),
+            new("Severity", r.Severity), new("Category", r.Category), new("Detail", r.Detail), new("MITRE technique", r.Artifact.Technique ?? ""),
             new("Evidence reference", r.Artifact.RawEvidenceReference ?? ""), new("Time", r.TimestampDisplay),
         ], FilePath: file, Address: address, Domain: domain, Kind: "evidence");
     }

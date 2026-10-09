@@ -52,7 +52,19 @@ public sealed partial class CvePage : Page
 
     private void Hardening_Click(object sender, RoutedEventArgs e) => App.NavigateToRoute("hardening");
 
-    private async void WindowsUpdate_Click(object sender, RoutedEventArgs e) => await Open("ms-settings:windowsupdate");
+    private async void WindowsUpdate_Click(object sender, RoutedEventArgs e) => await InstallUpdatesAsync();
+
+    private async Task InstallUpdatesAsync()
+    {
+        InstallUpdatesButton.IsEnabled = false;
+        try
+        {
+            var result = await UpdateRunner.RunAsync(XamlRoot, "software", text => WindowsDetail.Text = text);
+            if (result is not null) await LoadAsync(refresh: false);
+            if (result is not null) WindowsDetail.Text = FixerClient.Describe(result);
+        }
+        finally { InstallUpdatesButton.IsEnabled = true; }
+    }
 
     private async Task LoadAsync(bool refresh)
     {
@@ -219,7 +231,7 @@ public sealed partial class CvePage : Page
         }
         Add("Open NVD", () => Open(CveExposure.NvdUrl(entry.CveId)));
         if (CveExposure.MicrosoftUrl(entry) is { } msrc) Add("Microsoft advisory", () => Open(msrc));
-        if (a.IsWindows) Add("Windows Update", () => Open("ms-settings:windowsupdate"));
+        if (a.IsWindows) Add("Install updates now", InstallUpdatesAsync);
         Button? epssButton = null;
         epssButton = Add("Check EPSS", async () =>
         {

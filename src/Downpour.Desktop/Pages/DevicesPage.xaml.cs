@@ -64,7 +64,23 @@ public sealed partial class DevicesPage : Page
         catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException) { }
     }
 
-    private async void OptionalUpdates_Click(object sender, RoutedEventArgs e) => await OpenSettings("ms-settings:windowsupdate-optionalupdates");
+    private async void InstallDrivers_Click(object sender, RoutedEventArgs e) => await InstallDriversAsync();
+
+    private async Task InstallDriversAsync()
+    {
+        InstallDriversButton.IsEnabled = false;
+        try
+        {
+            var result = await UpdateRunner.RunAsync(XamlRoot, "drivers", text => UpdatesStatus.Text = text);
+            if (result is not null)
+            {
+                await _client.SearchUpdatesAsync();
+                await RefreshAsync();
+                UpdatesStatus.Text = FixerClient.Describe(result);
+            }
+        }
+        finally { InstallDriversButton.IsEnabled = true; }
+    }
 
     private static async Task OpenSettings(string uri) => await Windows.System.Launcher.LaunchUriAsync(new Uri(uri));
 
@@ -157,11 +173,8 @@ public sealed partial class DevicesPage : Page
             });
             var actions = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Margin = new Thickness(0, 4, 0, 0) };
             if (p.MissingDriver || p.Device.ProblemCode is 1 or 10 or 18 or 31 or 37 or 39 or 43 or 48 or 52)
-                actions.Children.Add(Action("Search Windows Update", async () => { await _client.SearchUpdatesAsync(); await RefreshAsync(); }));
-            foreach (var source in DriverSourceAdvisor.SourcesFor(p.Device, _snapshot?.SystemManufacturer, _snapshot?.BoardManufacturer).Take(2))
-                actions.Children.Add(Action($"Get from {source.Name}", () => OpenOfficial(source)));
-            actions.Children.Add(Action("Open Device Manager", () => { OpenDeviceManager(); return Task.CompletedTask; }));
-            actions.Children.Add(Action("Hardware troubleshooter", () => OpenSettings("ms-settings:troubleshoot")));
+                actions.Children.Add(Action("Find and install driver", InstallDriversAsync));
+            actions.Children.Add(Action("Details", () => EntityDetails.ShowAsync(XamlRoot, DescribeDevice(p.Device))));
             body.Children.Add(actions);
             var tone = HudPalette.Severity(p.Severity) is { } c ? new SolidColorBrush(c) : HudPalette.Resource("HudAmberBrush");
             ProblemsPanel.Children.Add(Card(p.MissingDriver ? "NO DRIVER" : p.Severity, tone, body));
@@ -232,8 +245,8 @@ public sealed partial class DevicesPage : Page
             UpdateSearchStates.Searching => "Searching Windows Update for driver updates…",
             UpdateSearchStates.Failed => s.UpdateSearchError ?? "The search failed.",
             UpdateSearchStates.Done when s.Updates.Count == 0 => $"Windows Update has no driver updates for this PC (checked {s.UpdatesCheckedAtUtc?.ToLocalTime():t}).",
-            UpdateSearchStates.Done => $"{s.Updates.Count} driver update{(s.Updates.Count == 1 ? "" : "s")} available (checked {s.UpdatesCheckedAtUtc?.ToLocalTime():t}). Install them from Optional updates.",
-            _ => "Not searched yet. Use “Search for driver updates” to ask Windows Update (read-only).",
+            UpdateSearchStates.Done => $"{s.Updates.Count} driver update{(s.Updates.Count == 1 ? "" : "s")} available (checked {s.UpdatesCheckedAtUtc?.ToLocalTime():t}). Select Install driver updates and Downpour installs them.",
+            _ => "Not checked yet. Check for driver updates, or Install driver updates to find and install them in one step.",
         };
         SearchButton.IsEnabled = s.UpdateSearchState != UpdateSearchStates.Searching;
         foreach (var offer in s.Updates)
@@ -253,7 +266,7 @@ public sealed partial class DevicesPage : Page
                 FontSize = 11, Foreground = HudPalette.Resource("HudTextFaintBrush"), TextWrapping = TextWrapping.Wrap,
             });
             var actions = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Margin = new Thickness(0, 4, 0, 0) };
-            actions.Children.Add(Action("Install in Windows Update", () => OpenSettings("ms-settings:windowsupdate-optionalupdates")));
+            actions.Children.Add(Action("Install", InstallDriversAsync));
             body.Children.Add(actions);
             UpdatesPanel.Children.Add(Card("UPDATE", HudPalette.Resource("HudCyanBrush"), body));
         }

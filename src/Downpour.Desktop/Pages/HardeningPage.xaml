@@ -20,8 +20,9 @@
                     <ComboBoxItem Content="Needs attention" />
                     <ComboBoxItem Content="Passed" />
                 </ComboBox>
-                <Button Content="Copy fix list" Click="CopyFixes_Click" ToolTipService.ToolTip="Copies every finding with its fix steps, to work through or send to whoever manages this PC" />
-                <Button x:Name="RefreshButton" Content="Re-check" Click="Refresh_Click" Style="{StaticResource AccentButtonStyle}" />
+                <Button x:Name="UndoButton" Content="Undo last fixes" Click="Undo_Click" IsEnabled="False" ToolTipService.ToolTip="Puts back every setting the last fix run changed" />
+                <Button x:Name="RefreshButton" Content="Re-check" Click="Refresh_Click" />
+                <Button x:Name="FixAllButton" Content="Fix all recommended" Click="FixAll_Click" Style="{StaticResource AccentButtonStyle}" ToolTipService.ToolTip="Applies every fix that has no side effects in one go; Windows asks for permission once" />
             </StackPanel>
         </Grid>
 
@@ -36,7 +37,12 @@
             </Grid>
         </Border>
 
-        <Grid x:Name="ChartRow" Grid.Row="2" />
+        <StackPanel Grid.Row="2" Spacing="12">
+            <Border x:Name="FixResultPanel" Visibility="Collapsed" Padding="14,11" CornerRadius="10" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
+                <TextBlock x:Name="FixResultText" TextWrapping="Wrap" IsTextSelectionEnabled="True" />
+            </Border>
+            <Grid x:Name="ChartRow" />
+        </StackPanel>
         <ListView x:Name="CheckList" Grid.Row="3" ItemsSource="{x:Bind Checks}" SelectionMode="None" IsItemClickEnabled="False" Background="{StaticResource DownpourSurfaceBrush}">
             <ListView.ItemTemplate>
                 <DataTemplate>
@@ -53,7 +59,9 @@
                         </StackPanel>
                         <StackPanel Grid.Column="2" Spacing="6" HorizontalAlignment="Right">
                             <TextBlock Text="{Binding Technique}" FontFamily="Consolas" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" HorizontalAlignment="Right" />
-                            <Button Content="Open setting" Tag="{Binding SettingsUri}" Visibility="{Binding OpenVisibility}" Click="OpenSetting_Click" FontSize="12" />
+                            <Button Content="{Binding AutoFixLabel}" Tag="{Binding Check.Id}" Visibility="{Binding AutoFixVisibility}" Click="FixOne_Click" FontSize="12" Style="{StaticResource AccentButtonStyle}" ToolTipService.ToolTip="{Binding AutoFixTip}" />
+                            <Button Content="Install updates" Visibility="{Binding UpdatesVisibility}" Click="InstallUpdates_Click" FontSize="12" Style="{StaticResource AccentButtonStyle}" />
+                            <Button Content="Open in Windows" Tag="{Binding SettingsUri}" Visibility="{Binding OpenVisibility}" Click="OpenSetting_Click" FontSize="12" />
                         </StackPanel>
                     </Grid>
                 </DataTemplate>
@@ -63,6 +71,6 @@
             </ListView.Footer>
         </ListView>
 
-        <TextBlock Grid.Row="4" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Downpour reads these settings and never changes them: each fix opens Windows&#x2019; own page, which asks for administrator rights itself. One-click &#x201C;fix all&#x201D; waits for the audited elevated action broker. The score weighs findings by severity; Unknown checks (need administrator rights) are not counted." TextWrapping="Wrap" />
+        <TextBlock Grid.Row="4" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Fixes are applied by Downpour&#x2019;s administrator helper after Windows asks for your permission. Every changed setting is backed up first, a fix that fails part-way is rolled back, every run is logged, and Undo puts everything back. Fix all only applies fixes without side effects; the others show what they affect before you apply them. The score weighs findings by severity." TextWrapping="Wrap" />
     </Grid>
 </Page>
