@@ -1,5 +1,9 @@
 # Downpour Next changelog
 
+## 0.1.21 — 2026-10-09
+
+Starts maximized with normal restore/resize/minimize controls. Adds a service-owned local learning engine (no API/LLM) with bounded seven-day aggregate history, median/MAD baselines, explicit missing/learning states, CIS investigation recommendations and a Settings pause control. Fixes empty Threat Pulse history incorrectly looking like learned quiet time. See RELEASE_0.1.21.md for verification and limits.
+
 ## 0.1.20 — 2026-10-08
 
 45 threat sources; 43 hardening checks/35 fixes; CVE dashboard; storage/cache controls; UAC fixer for hardening, Undo and Windows Update software/drivers. Release review adds pre-mutation durable recovery journals, partial-failure rollback retention, safe storage-validation failure handling, and scoped no-update wording. Complete five-executable portable packaging. See RELEASE_0.1.20.md for validation and limits.

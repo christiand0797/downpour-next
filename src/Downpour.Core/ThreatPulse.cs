@@ -69,9 +69,7 @@ public static class ThreatPulse
             .ToArray();
 
         // Baseline: every hour from the oldest observation up to the start of today's window (quiet hours count as zero).
-        var baselineFrom = oldest is { } first && first > baselineStart
-            ? new DateTimeOffset(first.Year, first.Month, first.Day, first.Hour, 0, 0, TimeSpan.Zero)
-            : baselineStart;
+        var baselineFrom = oldest is { } first ? (first > baselineStart ? Floor(first) : baselineStart) : windowStart;
         var baseline = new List<double>();
         for (var hour = baselineFrom; hour < windowStart; hour = hour.AddHours(1))
             baseline.Add(counts.TryGetValue(hour, out var b) ? b.Count : 0);

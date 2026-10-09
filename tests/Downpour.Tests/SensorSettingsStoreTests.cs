@@ -35,6 +35,27 @@ public sealed class SensorSettingsStoreTests : IDisposable
         Assert.Equal(1, current.SchemaVersion);
         Assert.True(current.ScriptBlockAnalysis);
         Assert.True(current.IntelLookups);
+        Assert.True(current.LocalLearning);
+    }
+
+    [Fact]
+    public void LocalLearningPausePersistsAndDoesNotChangeOtherSensors()
+    {
+        var store = new SensorSettingsStore(_settingsFile);
+        var response = store.Apply(new(1, Guid.NewGuid(), SensorSettingKeys.LocalLearning, false));
+        Assert.True(response.Accepted);
+        Assert.False(response.Settings!.LocalLearning);
+        Assert.True(response.Settings.ThreatDatabases);
+        Assert.False(new SensorSettingsStore(_settingsFile).Current.LocalLearning);
+    }
+
+    [Fact]
+    public void OlderSettingsAdoptTheExplicitLocalLearningDefault()
+    {
+        File.WriteAllText(_settingsFile, "{\"schemaVersion\":1,\"scriptBlockAnalysis\":false,\"intelLookups\":false}");
+        var current = new SensorSettingsStore(_settingsFile).Current;
+        Assert.True(current.LocalLearning);
+        Assert.False(current.ScriptBlockAnalysis);
     }
 
     [Fact]

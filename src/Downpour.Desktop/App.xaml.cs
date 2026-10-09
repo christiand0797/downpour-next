@@ -133,6 +133,14 @@ public partial class App : Application
         // AppWindow.Changed does not fire for a plain minimize, so watch WM_SIZE / SIZE_MINIMIZED instead.
         _minimizeWatcher = new MinimizeWatcher(MainWindowHandle, () => dispatcher.TryEnqueue(HideToTrayIfMinimized));
         _window.Closed += (_, _) => _minimizeWatcher?.Dispose();
+        // Start at the monitor's usable size while retaining the ordinary Windows restore/resize behavior.
+        if (_window.AppWindow.Presenter is Microsoft.UI.Windowing.OverlappedPresenter presenter)
+        {
+            presenter.IsResizable = true;
+            presenter.IsMaximizable = true;
+            presenter.IsMinimizable = true;
+            presenter.Maximize();
+        }
         _window.Activate();
         _ = _sensorService.EnsureRunningAsync();
         // A shortcut may open a registered route. ShowRoute resolves only catalogued pages;

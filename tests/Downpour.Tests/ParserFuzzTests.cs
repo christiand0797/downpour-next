@@ -148,6 +148,8 @@ public sealed class ParserFuzzTests
             OnlyDocumented(() => { if (BoundedJson.Deserialize<SecurityEventSnapshot>(input) is { } s) _ = SecurityEventClient.IsValidSnapshot(s); }, reader);
             OnlyDocumented(() => BoundedJson.Deserialize<SecurityAlertSnapshot>(input), reader);
             OnlyDocumented(() => BoundedJson.Deserialize<ThreatDatabaseResponse>(input), reader);
+            OnlyDocumented(() => LocalLearningClient.IsValid(BoundedJson.Deserialize<LocalLearningSnapshot>(input), DateTimeOffset.UtcNow), reader);
+            OnlyDocumented(() => LocalLearningEngine.IsValidHistory(BoundedJson.Deserialize<LocalLearningHistory>(input), DateTimeOffset.UtcNow), reader);
         }
     }
 

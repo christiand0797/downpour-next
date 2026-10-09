@@ -35,6 +35,7 @@ public sealed partial class SettingsPage : Page
         UsbActionsToggle.Toggled += async (_, _) => await SetSensorSettingAsync(Downpour.Contracts.SensorSettingKeys.UsbActions, UsbActionsToggle.IsOn);
         HostIsolationToggle.Toggled += async (_, _) => await SetSensorSettingAsync(Downpour.Contracts.SensorSettingKeys.HostIsolationActions, HostIsolationToggle.IsOn);
         ThreatDatabasesToggle.Toggled += async (_, _) => await SetSensorSettingAsync(Downpour.Contracts.SensorSettingKeys.ThreatDatabases, ThreatDatabasesToggle.IsOn);
+        LocalLearningToggle.Toggled += async (_, _) => await SetSensorSettingAsync(Downpour.Contracts.SensorSettingKeys.LocalLearning, LocalLearningToggle.IsOn);
     }
 
     private async Task LoadSensorSettingsAsync()
@@ -66,6 +67,8 @@ public sealed partial class SettingsPage : Page
                 HostIsolationToggle.IsEnabled = true;
                 ThreatDatabasesToggle.IsOn = settings.ThreatDatabases;
                 ThreatDatabasesToggle.IsEnabled = true;
+                LocalLearningToggle.IsOn = settings.LocalLearning;
+                LocalLearningToggle.IsEnabled = true;
                 ShowConfiguredKeys(settings.IntelServicesConfigured ?? []);
                 SensorSettingsState.Text = "";
             }
@@ -79,6 +82,7 @@ public sealed partial class SettingsPage : Page
                 UsbActionsToggle.IsEnabled = false;
                 HostIsolationToggle.IsEnabled = false;
                 ThreatDatabasesToggle.IsEnabled = false;
+                LocalLearningToggle.IsEnabled = false;
                 SensorSettingsState.Text = "The sensor service is not reachable, so its settings cannot be shown or changed.";
             }
         }

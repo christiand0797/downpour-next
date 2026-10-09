@@ -1,5 +1,12 @@
 # Downpour Next shared context
 
+## 2026-10-09 active checkpoint: DN-044 startup and DN-040 local learning (codex-primary)
+
+Owner requests maximized startup with resize/restore, then sustained development. App.xaml.cs now maximizes once at launch using the normal OverlappedPresenter. DN-040 implemented for verification: LocalLearning contracts, Core engine/client, service worker/store, Settings pause and CIS recommendations. Uses existing aggregate CPU/memory/TCP/process counts, one observation per minute, seven-day five-minute summaries, median/MAD thresholds, 24 completed observed buckets per metric. No filled gaps, API/LLM, additional process/content collection or autonomous remediation. Persistence capped at 1 MiB, protected state folder; writes every five minutes and on graceful shutdown. Threat Pulse empty-history bug fixed (previously invented six days of zeroes).
+
+Focused learning/Pulse tests: 28 passed. Full Debug restore/build/test: zero warnings/errors and 1,218 tests passed, including settings pause/compatibility and updated parser fuzz targets. Native window maximized/restore/resize, background learning/pause/restart and packaged CIS smoke pending. Preparing v0.1.21 after acceptance. Main remains 727e7ac until the new milestone is verified and committed. New files: Contracts/LocalLearning.cs, Core/LocalLearningEngine.cs and LocalLearningClient.cs, Service/LocalLearningStore.cs and LocalLearningWorker.cs, Tests/LocalLearningTests.cs. Existing modified paths: App.xaml.cs, SensorSettings contracts/store, Service Program, CIS and Settings XAML/code-behind, ThreatPulse + tests, version and coordination/docs. No other agent changes present at resume.
+
+
 ## 2026-10-08 checkpoint: v0.1.20 published and verified (codex-primary, DN-010)
 
 Published Latest: https://github.com/christiand0797/downpour-next/releases/tag/v0.1.20 from `7af332e3ae35f224b30f016c3831386f1e5b1593`. GitHub tag/target, all three uploaded asset sizes and SHA-256 digests match the local release. This includes every prior committed change through 6fbaf37 plus the release-review repairs. All five applications (Desktop, Service, Scanner, UpdateHelper, Fixer) have matching version/source metadata.

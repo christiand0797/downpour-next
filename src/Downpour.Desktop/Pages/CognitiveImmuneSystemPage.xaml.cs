@@ -11,6 +11,7 @@ public sealed partial class CognitiveImmuneSystemPage : Page
     private readonly SecurityAlertClient _alerts = new();
     private readonly SystemSnapshotClient _system = new();
     private readonly SensorSettingsClient _settings = new();
+    private readonly LocalLearningClient _learning = new();
     private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromSeconds(1) };
     private CancellationTokenSource _lifetime = new();
     private CancellationTokenSource? _integrityCancellation;
@@ -59,12 +60,14 @@ public sealed partial class CognitiveImmuneSystemPage : Page
             var alerts = _alerts.TryGetSnapshotAsync(token);
             var system = _system.TryGetSnapshotAsync(token);
             var settings = _settings.GetAsync(token);
-            await Task.WhenAll(alerts, system, settings);
+            var learning = _learning.TryGetSnapshotAsync(token);
+            await Task.WhenAll(alerts, system, settings, learning);
             var response = await settings;
             var assessment = await Task.Run(() => CognitiveImmuneSystemCoordinator.Assess(alerts.Result, system.Result,
                 response is { Accepted: true } ? response.Settings : null), token);
             if (generation != _generation || token.IsCancellationRequested) return;
             _assessment = assessment;
+            RenderLearning(learning.Result);
             AssessmentStatus.Text = $"{assessment.Status} · checked {assessment.CapturedAtUtc:u} · live, updates every second";
             WindowScope.Text = $"Returned {Count(assessment.ReviewedAlerts)} of {Count(assessment.StoredAlerts)} stored alerts. Alert snapshot: {assessment.AlertCapturedAtUtc?.ToString("u") ?? "unavailable"}.";
             MeasuredCounts.Text = $"Open: {Count(assessment.OpenAlerts)} · Urgent open: {Count(assessment.UrgentOpenAlerts)} · User-verified active: {Count(assessment.VerifiedActiveAlerts)}";
@@ -83,6 +86,7 @@ public sealed partial class CognitiveImmuneSystemPage : Page
             if (generation == _generation)
             {
                 _assessment = null;
+                RenderLearning(null);
                 CopyReportButton.IsEnabled = false;
                 AssessmentStatus.Text = "Measurements unavailable";
                 WindowScope.Text = "Refresh failed. Previously rendered rows are historical; current counts are unknown.";
@@ -96,6 +100,28 @@ public sealed partial class CognitiveImmuneSystemPage : Page
             }
         }
         finally { _refreshing = false; }
+    }
+
+    private void RenderLearning(LocalLearningSnapshot? snapshot)
+    {
+        if (snapshot is null)
+        {
+            LearningStatus.Text = "Local learning unavailable · no current assessment";
+            LiveList.Set(LearningMetrics, null);
+            LearningRecommendations.ItemsSource = null;
+            LearningWarnings.Text = "The service did not return a fresh validated reading. Earlier observations are not a current health verdict.";
+            return;
+        }
+        LearningStatus.Text = $"{snapshot.State.ToUpperInvariant()} · {snapshot.HistoryBuckets:N0} completed buckets · last observation {snapshot.LastObservationUtc?.ToLocalTime().ToString("g") ?? "none"}";
+        LiveList.Set(LearningMetrics, snapshot.Metrics.Select(m =>
+        {
+            var percent = m.Id is "cpu" or "memory" ? "%" : "";
+            string Value(double? value) => value is { } n ? $"{n:N1}{percent}" : "unknown";
+            return $"{m.Id.ToUpperInvariant()} · {m.State} · now {Value(m.Current)} · normal {Value(m.Normal)} · unusual above {Value(m.Threshold)} · {m.BaselineBuckets} observed buckets";
+        }).ToArray());
+        LiveList.Set(LearningRecommendations, snapshot.Recommendations);
+        LearningWarnings.Text = string.Join(Environment.NewLine, snapshot.Warnings.Concat(snapshot.Recommendations.Count == 0
+            ? new[] { snapshot.State == "paused" ? "Learning is paused in Settings." : "No investigation recommended by this limited model right now; this is not a protection guarantee." } : []));
     }
 
     private async void Integrity_Click(object sender, RoutedEventArgs e)

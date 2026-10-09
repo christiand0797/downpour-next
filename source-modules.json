@@ -135,7 +135,7 @@
   {
     "family": "Core Engines & Detection Modules",
     "module": "pe_analyzer.py",
-    "description": "Static PE analysis: sections, entropy, packer ID, import clustering, 0–100 risk score.",
+    "description": "Static PE analysis: sections, entropy, packer ID, import clustering, 0\u2013100 risk score.",
     "sourceStatus": "Active",
     "migrationStatus": "planned"
   },
@@ -541,7 +541,7 @@
   {
     "family": "Detection Monitors",
     "module": "code_integrity.py",
-    "description": "CODE INTEGRITY — v29.43f (audit §8.4)",
+    "description": "CODE INTEGRITY \u2014 v29.43f (audit \u00a78.4)",
     "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
     "migrationStatus": "planned"
   },
@@ -681,14 +681,14 @@
   {
     "family": "Core Engines & Detection Modules",
     "module": "advanced_defense_suite.py",
-    "description": "ADVANCED DEFENSE SUITE — v29.62",
+    "description": "ADVANCED DEFENSE SUITE \u2014 v29.62",
     "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
     "migrationStatus": "in-progress"
   },
   {
     "family": "Core Engines & Detection Modules",
     "module": "cognitive_immune_system.py",
-    "description": "CIS partial migration: measured alert/system/source/policy review, cautious temporal correlations, bounded explicit package-file consistency check and report. Scripted protection models removed. Operational adaptive learning/deception/continuous semantic baselines remain unfinished; see docs/CIS.md.",
+    "description": "CIS partial migration: measured alert/source/policy review, explicit package integrity, bounded persistent aggregate baselines and explainable read-only local recommendations. Operational deception, semantic/process/memory models and full parity remain unfinished; see docs/CIS.md.",
     "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
     "migrationStatus": "in-progress"
   },
@@ -702,7 +702,7 @@
   {
     "family": "Core Engines & Detection Modules",
     "module": "native_probes.py",
-    "description": "NATIVE PROBES — v29.60 \"de-PowerShell\" layer",
+    "description": "NATIVE PROBES \u2014 v29.60 \"de-PowerShell\" layer",
     "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
     "migrationStatus": "planned"
   },
@@ -716,7 +716,7 @@
   {
     "family": "Core Engines & Detection Modules",
     "module": "fp_suppression.py",
-    "description": "FP Suppression Module — Shared false-positive auto-suppression logic.",
+    "description": "FP Suppression Module \u2014 Shared false-positive auto-suppression logic.",
     "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
     "migrationStatus": "planned"
   },
@@ -730,21 +730,21 @@
   {
     "family": "Core Engines & Detection Modules",
     "module": "process_mitigation.py",
-    "description": "PROCESS MITIGATION — v29.44 (audit §8.4, improvement catalog P0 #3)",
+    "description": "PROCESS MITIGATION \u2014 v29.44 (audit \u00a78.4, improvement catalog P0 #3)",
     "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
     "migrationStatus": "planned"
   },
   {
     "family": "Threat Intelligence & Remediation",
     "module": "cisa_kev.py",
-    "description": "CISA KEV CLIENT — fallback module for the guarded import chain (v29.60)",
+    "description": "CISA KEV CLIENT \u2014 fallback module for the guarded import chain (v29.60)",
     "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
     "migrationStatus": "planned"
   },
   {
     "family": "Threat Intelligence & Remediation",
     "module": "kev_checker.py",
-    "description": "KEV CHECKER — CISA Known Exploited Vulnerabilities integration (v29.60)",
+    "description": "KEV CHECKER \u2014 CISA Known Exploited Vulnerabilities integration (v29.60)",
     "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
     "migrationStatus": "planned"
   },
@@ -772,7 +772,7 @@
   {
     "family": "Threat Intelligence & Remediation",
     "module": "forensic_report.py",
-    "description": "FORENSIC EVIDENCE COLLECTOR + LEGAL REPORT GENERATOR — v29.59",
+    "description": "FORENSIC EVIDENCE COLLECTOR + LEGAL REPORT GENERATOR \u2014 v29.59",
     "sourceStatus": "Active (wired; added by 2026-10-06 parity audit)",
     "migrationStatus": "in-progress"
   },

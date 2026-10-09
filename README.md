@@ -8,7 +8,7 @@ Downpour Next is the native Windows rebuild of Downpour. The target is complete 
 
 ## Current state
 
-- Native WinUI 3 desktop shell with a dark, rain-and-crescent identity.
+- Native WinUI 3 desktop shell with a dark, rain-and-crescent identity; launches maximized with normal restore/resize controls.
 - One registry preserves all 33 Downpour destinations and adds a dedicated Drivers route; every route has an honest migration state.
 - The app uses a clear moonless night landscape, a separate realistic crescent overlay, twinkling stars, animated rain, aurora, and occasional upper-sky lightning. The Dashboard cycles drizzle, storm, thunderstorm, and hurricane modes; every mode keeps rain active, scales its speed/visibility, and changes wind/lightning behavior.
 - Dashboard, Processes, Drivers, and Network consume live read-only system/process, loaded-kernel-driver, adapter-throughput, and TCP endpoint data from the service. Network history shows gaps when samples are unavailable.
@@ -18,6 +18,7 @@ Downpour Next is the native Windows rebuild of Downpour. The target is complete 
 - Sigma/AMSI analyze bounded PowerShell content under an explicit sensor setting; Sysmon metadata-only review events reach persisted alerts with visible source failures. Selected-file YARA-X scans run in an isolated helper; posture/investigation routes provide partial v29 coverage.
 - Separate typed action brokers support confirmed quarantine/restore, process termination, temporary IP firewall rules and reversible USB controls, with policy, caller/consent checks and audit records. Windows permissions still apply. Host-isolation recovery is journaled with scheduled cleanup; elevated hardening and Windows Update use the separate UAC-approved fixer. Signing, installed service isolation and native crash/reboot acceptance remain unfinished.
 - 45 catalogued threat sources support local matching; Hardening has 43 checks and 35 catalogued fixes with backup/Undo. CVE Dashboard connects CISA KEV entries to local evidence. Settings exposes storage/cache cleanup. See [`docs/RELEASE_0.1.20.md`](docs/RELEASE_0.1.20.md).
+- Local learning runs with the service, retaining bounded aggregate history on this PC and explaining unusual readings in CIS. No API/LLM or autonomous actions; pause it in Settings.
 - CIS now shows measured alert/source review and an explicit bounded package-file consistency check, replacing scripted protection models. Its unsigned local manifest is not publisher authentication. See [`docs/CIS.md`](docs/CIS.md).
 - All 38 committed routes remain partial. Full operational AEGIS/CIS, universal hardware-ID driver discovery, broader response, installer/signing and complete native acceptance remain unfinished; see [`docs/CONTINUATION_AUDIT.md`](docs/CONTINUATION_AUDIT.md).
 

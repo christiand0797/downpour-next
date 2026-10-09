@@ -13,6 +13,16 @@
                 <TextBlock Text="A single place for Downpour preferences. Choices are stored locally for this Windows user." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
             </StackPanel>
             <Border Padding="18" CornerRadius="12" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource DownpourStrokeBrush}" BorderThickness="1">
+                <Grid ColumnSpacing="16">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Local learning" FontSize="18" FontWeight="SemiBold" />
+                        <TextBlock Text="Learn CPU, memory, connection and process-count baselines while Downpour's service runs. Stores at most seven days of five-minute aggregate readings on this PC; no names, addresses or content. CIS explains unusual readings and connections to existing findings. No API, LLM or automatic fixes. Turning this off pauses collection and recommendations; saved history ages out after seven days." TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    </StackPanel>
+                    <ToggleSwitch x:Name="LocalLearningToggle" Grid.Column="1" IsOn="True" IsEnabled="False" OnContent="Learning enabled" OffContent="Paused" />
+                </Grid>
+            </Border>
+            <Border Padding="18" CornerRadius="12" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource DownpourStrokeBrush}" BorderThickness="1">
                 <StackPanel Spacing="14">
                     <StackPanel Spacing="4">
                         <TextBlock Text="Appearance &amp; motion" FontSize="18" FontWeight="SemiBold" />

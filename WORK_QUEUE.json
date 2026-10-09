@@ -829,9 +829,9 @@
     {
       "id": "DN-040",
       "title": "Local adaptive engine without external API or LLM: baseline learning, cross-sensor correlation and explainable recommendations",
-      "status": "planned",
+      "status": "in_progress",
       "priority": "high",
-      "notes": "Owner handoff 2026-10-08. Preserve user-controlled action approval; no claims of sentience, universal driver availability or detection based solely on source count. Implement after latest verified release."
+      "notes": "Owner handoff 2026-10-08. Preserve user-controlled action approval; no claims of sentience, universal driver availability or detection based solely on source count. Implement after latest verified release. | codex-primary 2026-10-09: implementing service-owned local aggregate baseline history, robust outlier readings and cross-sensor recommendations with explicit unavailable/learning states, settings pause and bounded storage. DN-044 implemented; native window verification will run in this milestone."
     },
     {
       "id": "DN-041",
@@ -853,6 +853,13 @@
       "status": "planned",
       "priority": "high",
       "notes": "Owner handoff 2026-10-08. Preserve user-controlled action approval; no claims of sentience, universal driver availability or detection based solely on source count. Implement after latest verified release."
+    },
+    {
+      "id": "DN-044",
+      "title": "Start maximized with normal restore, resize and minimize controls",
+      "status": "in_progress",
+      "priority": "high",
+      "notes": "Owner request. codex-primary claims startup presentation change; verify native window state without locking subsequent resize/restore."
     }
   ]
 }

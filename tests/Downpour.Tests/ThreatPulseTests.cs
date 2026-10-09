@@ -32,6 +32,14 @@ public sealed class ThreatPulseTests
     }
 
     [Fact]
+    public void EmptyHistoryDoesNotInventSixDaysOfLearning()
+    {
+        var reading = ThreatPulse.Compute(Array.Empty<AlertHourCount>(), Now);
+        Assert.Equal(ThreatPulseStates.Learning, reading.State);
+        Assert.Equal(0, reading.BaselineHours);
+    }
+
+    [Fact]
     public void NormalActivityIsCalm()
     {
         var alerts = SteadyHistory();

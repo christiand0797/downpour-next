@@ -5,10 +5,10 @@
     {
       "id": "codex-primary",
       "role": "primary",
-      "taskId": "DN-010",
-      "status": "idle",
-      "heartbeatUtc": "2026-10-09T03:55:59.220996+00:00",
-      "notes": "Handoff: v0.1.20 published Latest at 7af332e; 1196 Debug/Release tests, five executables, nine native routes, scanner and manifest checks passed; GitHub digests verified. All source pushed; final docs checkpoint follows. CI account billing blocked remote job. Next safe feature DN-040; signing/native elevated recovery acceptance still open. See SHARED_CONTEXT and RELEASE_0.1.20."
+      "taskId": "DN-040",
+      "status": "active",
+      "heartbeatUtc": "2026-10-09T11:30:14.336755+00:00",
+      "notes": "Implement bounded local learning on existing aggregate telemetry, IPC/CIS/Settings integration and tests; startup maximization implemented pending packaged native verification."
     },
     {
       "id": "v29_action_map",

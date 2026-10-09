@@ -1,5 +1,13 @@
 # Downpour Next TODO
 
+## 2026-10-09 active milestone
+
+- [ ] DN-044: verify maximized launch, native restore and resizing; implementation complete.
+- [ ] DN-040: local aggregate learning, bounded persistence, read-only recommendations and Settings pause implemented; full/native acceptance pending.
+- [x] Fix empty Threat Pulse history being mistaken for learned quiet time.
+- [ ] Build, verify and publish v0.1.21, then continue remaining engine, driver and visual work.
+
+
 ## Latest release continuation (DN-010, 2026-10-08)
 
 - [x] Reconcile commits through 6fbaf37 and review the elevated fixer.
