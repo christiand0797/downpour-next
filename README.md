@@ -16,9 +16,10 @@ Downpour Next is the native Windows rebuild of Downpour. The target is complete 
 - Vulnerabilities reads local uninstall-key display metadata and compares software names conservatively with CISA KEV. Rows are candidate leads only; the feature does not confirm affected versions or vulnerability status. See [`docs/THREAT_INTELLIGENCE.md`](docs/THREAT_INTELLIGENCE.md).
 - File Inspector selects one local EXE/DLL/SYS, computes SHA-256, and reads bounded PE header metadata without executing or uploading the file. It does not detect malware or verify Authenticode trust. See [`docs/FILE_INSPECTOR.md`](docs/FILE_INSPECTOR.md).
 - Sigma/AMSI analyze bounded PowerShell content under an explicit sensor setting; Sysmon metadata-only review events reach persisted alerts with visible source failures. Selected-file YARA-X scans run in an isolated helper; posture/investigation routes provide partial v29 coverage.
-- Separate typed action brokers support confirmed quarantine/restore, process termination, temporary IP firewall rules and reversible USB controls, with policy, caller/consent checks and audit records. Windows permissions still apply; automatic admin elevation and host isolation remain unfinished.
+- Separate typed action brokers support confirmed quarantine/restore, process termination, temporary IP firewall rules and reversible USB controls, with policy, caller/consent checks and audit records. Windows permissions still apply. Host-isolation recovery is journaled with scheduled cleanup; elevated hardening and Windows Update use the separate UAC-approved fixer. Signing, installed service isolation and native crash/reboot acceptance remain unfinished.
+- 45 catalogued threat sources support local matching; Hardening has 43 checks and 35 catalogued fixes with backup/Undo. CVE Dashboard connects CISA KEV entries to local evidence. Settings exposes storage/cache cleanup. See [`docs/RELEASE_0.1.20.md`](docs/RELEASE_0.1.20.md).
 - CIS now shows measured alert/source review and an explicit bounded package-file consistency check, replacing scripted protection models. Its unsigned local manifest is not publisher authentication. See [`docs/CIS.md`](docs/CIS.md).
-- All 38 committed routes remain partial. Full operational AEGIS/CIS, driver lifecycle execution, broader response, installer/signing and complete native acceptance remain unfinished; see [`docs/CONTINUATION_AUDIT.md`](docs/CONTINUATION_AUDIT.md).
+- All 38 committed routes remain partial. Full operational AEGIS/CIS, universal hardware-ID driver discovery, broader response, installer/signing and complete native acceptance remain unfinished; see [`docs/CONTINUATION_AUDIT.md`](docs/CONTINUATION_AUDIT.md).
 
 ## Build
 
@@ -36,6 +37,7 @@ dotnet run --project src/Downpour.Desktop/Downpour.Desktop.csproj
 
 - `src/Downpour.Desktop`: WinUI 3 presentation, navigation, and dashboard.
 - `src/Downpour.Service`: Windows API adapters, bounded sensors, persisted alerts/settings and typed consent/audit response brokers. Portable mode runs as the current user; no Windows service is installed.
+- `src/Downpour.Fixer`: UAC-elevated fixed hardening operations and Windows Update Agent software/driver installation, with protected recovery journals and audit records.
 - `src/Downpour.Core`: shared application logic and capability registry validation.
 - `src/Downpour.Contracts`: typed records shared across process boundaries.
 - `capabilities.json`: feature parity inventory mapped to the original source methods.

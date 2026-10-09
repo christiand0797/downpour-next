@@ -6,9 +6,9 @@
       "id": "codex-primary",
       "role": "primary",
       "taskId": "DN-010",
-      "status": "active",
-      "heartbeatUtc": "2026-10-09T03:38:38.926373+00:00",
-      "notes": "Owner explicitly handed over from exhausted agent at 6fbaf37. Review fixer release boundary, include new fixer executable, build/push v0.1.20. v0.1.19 already published by claude; do not reuse stale 49a4a44 package. Future engine/feeds/drivers/visual requests recorded DN-040..043."
+      "status": "idle",
+      "heartbeatUtc": "2026-10-09T03:55:59.220996+00:00",
+      "notes": "Handoff: v0.1.20 published Latest at 7af332e; 1196 Debug/Release tests, five executables, nine native routes, scanner and manifest checks passed; GitHub digests verified. All source pushed; final docs checkpoint follows. CI account billing blocked remote job. Next safe feature DN-040; signing/native elevated recovery acceptance still open. See SHARED_CONTEXT and RELEASE_0.1.20."
     },
     {
       "id": "v29_action_map",

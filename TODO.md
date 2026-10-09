@@ -4,7 +4,7 @@
 
 - [x] Reconcile commits through 6fbaf37 and review the elevated fixer.
 - [x] Persist recovery intent before changes; preserve failed rollback; gate privileged error/watchdog writes on storage validation; four new regression tests.
-- [ ] Build/test and publish v0.1.20 including Desktop, Service, Scanner, UpdateHelper and Fixer.
+- [x] Build/test/publish v0.1.20 at 7af332e: five executables, 1,196 Debug and Release tests, nine native routes, YARA and integrity smoke, ZIP/SBOM/GitHub digests verified.
 - [ ] DN-040: explainable local adaptive engine; no API/LLM.
 - [ ] DN-041: additional licensed threat feeds with freshness and provenance.
 - [ ] DN-042: precise hardware-ID driver discovery and missing-device rescan.
