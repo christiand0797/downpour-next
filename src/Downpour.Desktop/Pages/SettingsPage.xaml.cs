@@ -164,6 +164,7 @@ public sealed partial class SettingsPage : Page
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
         base.OnNavigatedTo(e);
+        _ = RefreshCacheAsync();
         _loading = true;
         try
         {

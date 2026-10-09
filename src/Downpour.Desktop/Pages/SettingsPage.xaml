@@ -166,6 +166,20 @@
                 </StackPanel>
             </Border>
             <Border Padding="18" CornerRadius="12" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource DownpourStrokeBrush}" BorderThickness="1">
+                <StackPanel Spacing="10">
+                    <Grid ColumnSpacing="8">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                        <TextBlock Text="Storage &amp; cache" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center" />
+                        <Button Grid.Column="1" Content="Open data folder" Click="OpenDataFolder_Click" />
+                        <Button Grid.Column="2" Content="Re-measure" Click="RefreshCache_Click" />
+                        <Button Grid.Column="3" x:Name="CleanCacheButton" Content="Clean selected" Click="CleanCache_Click" Style="{StaticResource AccentButtonStyle}" IsEnabled="False" />
+                    </Grid>
+                    <TextBlock x:Name="CacheSummary" Text="Measuring…" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                    <StackPanel x:Name="CacheList" Spacing="8" />
+                    <TextBlock x:Name="CacheResult" FontWeight="SemiBold" Foreground="{StaticResource HudCyanBrush}" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+            <Border Padding="18" CornerRadius="12" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource DownpourStrokeBrush}" BorderThickness="1">
                 <StackPanel Spacing="8">
                     <TextBlock Text="Privacy &amp; data" FontSize="18" FontWeight="SemiBold" />
                     <TextBlock Text="Preferences, sensor settings, alert metadata, action records, and configured threat-intelligence keys are stored locally for your Windows account. Saved API keys are encrypted. User-selected scans read file contents; quarantine retains the selected file locally. PowerShell script text is analyzed in memory only when its setting is on and is never stored. Clipboard contents, browser secrets, and usage analytics are not collected." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
