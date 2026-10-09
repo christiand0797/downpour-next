@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page x:Class="Downpour_Desktop.Pages.CvePage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      mc:Ignorable="d">
+    <Grid Padding="24,20,24,30" RowSpacing="14">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid ColumnSpacing="16">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+            <StackPanel Spacing="4">
+                <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Foreground="{StaticResource HudCyanBrush}" Text="DOWNPOUR  /  ANALYSIS  /  CVE DASHBOARD" />
+                <TextBlock Style="{StaticResource TitleTextBlockStyle}" FontSize="30" Text="CVE Dashboard" />
+                <TextBlock x:Name="CatalogStatus" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"
+                           Text="Every vulnerability CISA has confirmed is being exploited in the wild, related to this PC: Windows flaws published after your last update, and apps you have installed." />
+            </StackPanel>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                <Button Content="Windows Update" Click="WindowsUpdate_Click" ToolTipService.ToolTip="Install the security updates that close Windows flaws" />
+                <Button Content="Hardening" Click="Hardening_Click" ToolTipService.ToolTip="Platform settings that block whole classes of exploits" />
+                <Button x:Name="RefreshButton" Content="Refresh catalog" Click="Refresh_Click" Style="{StaticResource AccentButtonStyle}" />
+            </StackPanel>
+        </Grid>
+
+        <Grid Grid.Row="1" ColumnSpacing="14">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+            <Border x:Name="WindowsCard" Padding="14,12" CornerRadius="10" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
+                <StackPanel Spacing="4">
+                    <TextBlock Text="WINDOWS ON THIS PC" FontSize="11" CharacterSpacing="70" Foreground="{StaticResource HudCyanBrush}" />
+                    <TextBlock x:Name="WindowsHeadline" FontSize="22" FontWeight="SemiBold" Text="—" />
+                    <TextBlock x:Name="WindowsDetail" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" Text="Reading the update history…" />
+                </StackPanel>
+            </Border>
+            <Border Grid.Column="1" Padding="14,12" CornerRadius="10" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
+                <StackPanel Spacing="4">
+                    <TextBlock Text="INSTALLED APPS" FontSize="11" CharacterSpacing="70" Foreground="{StaticResource HudCyanBrush}" />
+                    <TextBlock x:Name="AppsHeadline" FontSize="22" FontWeight="SemiBold" Text="—" />
+                    <TextBlock x:Name="AppsDetail" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" Text="Reading installed software…" />
+                </StackPanel>
+            </Border>
+            <Border Grid.Column="2" Padding="14,12" CornerRadius="10" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
+                <StackPanel Spacing="4">
+                    <TextBlock Text="RANSOMWARE" FontSize="11" CharacterSpacing="70" Foreground="{StaticResource HudCyanBrush}" />
+                    <TextBlock x:Name="RansomwareHeadline" FontSize="22" FontWeight="SemiBold" Text="—" />
+                    <TextBlock x:Name="RansomwareDetail" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" Text="Flaws ransomware gangs are known to use." />
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <Grid x:Name="ChartRow" Grid.Row="2" />
+
+        <Grid Grid.Row="3" ColumnSpacing="10">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+            <TextBox x:Name="SearchBox" PlaceholderText="Search CVE, vendor, product or description" TextChanged="Filter_Changed" />
+            <ComboBox Grid.Column="1" x:Name="ScopeFilter" SelectedIndex="0" SelectionChanged="Filter_Changed" MinWidth="220">
+                <ComboBoxItem Content="Everything in the catalog" />
+                <ComboBoxItem Content="Likely missing on this PC" />
+                <ComboBoxItem Content="Installed apps (name match)" />
+                <ComboBoxItem Content="Windows" />
+                <ComboBoxItem Content="Microsoft (all products)" />
+                <ComboBoxItem Content="Used by ransomware" />
+            </ComboBox>
+            <ComboBox Grid.Column="2" x:Name="YearFilter" SelectedIndex="0" SelectionChanged="Filter_Changed" MinWidth="140" />
+            <TextBlock Grid.Column="3" x:Name="ResultCount" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+        </Grid>
+
+        <ListView x:Name="CveList" Grid.Row="4" SelectionMode="None" IsItemClickEnabled="True" ItemClick="CveList_ItemClick" Background="{StaticResource DownpourSurfaceBrush}">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <Grid Padding="10,8" ColumnSpacing="14">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="128" /><ColumnDefinition Width="150" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                        <Border CornerRadius="6" Padding="6,3" Background="{Binding BadgeBackground}" VerticalAlignment="Top" HorizontalAlignment="Left">
+                            <TextBlock Text="{Binding Badge}" FontSize="10" FontWeight="SemiBold" Foreground="{Binding BadgeForeground}" />
+                        </Border>
+                        <StackPanel Grid.Column="1" Spacing="2">
+                            <TextBlock Text="{Binding CveId}" FontFamily="Consolas" FontWeight="SemiBold" />
+                            <TextBlock Text="{Binding Added}" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="2" Spacing="2">
+                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                            <TextBlock Text="{Binding Product}" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
+                        </StackPanel>
+                        <TextBlock Grid.Column="3" Text="{Binding Extra}" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+            <ListView.Footer>
+                <TextBlock x:Name="FooterText" Padding="12" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" TextWrapping="Wrap"
+                           Text="&#x201C;Likely missing&#x201D; means a Windows flaw was added to the catalog after the newest update on this PC; it is an estimate, not proof. Installed-app matches compare product names only. Click any entry for CISA&#x2019;s required action, deadline, exploit probability (EPSS) and advisories. Downpour does not install patches itself." />
+            </ListView.Footer>
+        </ListView>
+    </Grid>
+</Page>

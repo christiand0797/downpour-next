@@ -42,6 +42,8 @@ public sealed class HardeningPostureClient(string pipeName = HardeningPostureCli
         && snapshot.Warnings is not null
         && snapshot.Checks.Count <= MaximumChecks
         && snapshot.Warnings.Count <= MaximumChecks
+        && (snapshot.LastUpdateUtc is null || snapshot.LastUpdateUtc <= DateTimeOffset.UtcNow.AddDays(2))
+        && snapshot.OsBuild is null or (> 0 and < 100_000)
         && snapshot.Warnings.All(warning => warning is not null && warning.Length <= MaximumText)
         && snapshot.Checks.All(check => check is not null
             && Text(check.Id, 64) && check.Id.Length > 0 && Text(check.Title, 128) && Text(check.Technique, 32) && Text(check.Detail, MaximumText)

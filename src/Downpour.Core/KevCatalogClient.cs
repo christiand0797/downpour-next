@@ -107,7 +107,11 @@ public sealed class KevCatalogClient
             var name = RequiredString(record, "vulnerabilityName", 512);
             var dateAdded = RequiredDate(record, "dateAdded");
             var description = OptionalString(record, "shortDescription", 2_000);
-            rows.Add(new KevEntry(cveId, vendor, product, name, dateAdded, description));
+            var action = Lenient(record, "requiredAction", 1_000);
+            var due = OptionalDate(record, "dueDate");
+            var ransomware = Lenient(record, "knownRansomwareCampaignUse", 32).Equals("Known", StringComparison.OrdinalIgnoreCase);
+            var notes = Lenient(record, "notes", 2_000);
+            rows.Add(new KevEntry(cveId, vendor, product, name, dateAdded, description, action, due, ransomware, notes));
         }
 
         return new KevCatalogSnapshot(version, released, DateTimeOffset.MinValue, rows);
@@ -141,6 +145,18 @@ public sealed class KevCatalogClient
         return result;
     }
 
+    /// <summary>Optional display text that is cut to length and stripped of control characters instead of failing the catalog.</summary>
+    private static string Lenient(JObject obj, string property, int maxLength)
+    {
+        if (obj.GetValue(property, StringComparison.OrdinalIgnoreCase) is not JValue { Type: JTokenType.String } value) return "";
+        var text = new string((value.Value<string>() ?? "").Where(ch => !char.IsControl(ch)).Take(maxLength).ToArray());
+        return text.Trim();
+    }
+
+    private static DateOnly? OptionalDate(JObject obj, string property) =>
+        obj.GetValue(property, StringComparison.OrdinalIgnoreCase) is JValue { Type: JTokenType.String } value &&
+        DateOnly.TryParseExact(value.Value<string>(), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date) ? date : null;
+
     private static DateOnly RequiredDate(JObject obj, string property)
     {
         // CISA publishes plain dates ("2026-10-04") and, since late 2026, ISO 8601 UTC timestamps for dateReleased
@@ -156,5 +172,7 @@ public sealed class KevCatalogClient
 }
 
 public sealed record KevCatalogSnapshot(string CatalogVersion, DateOnly ReleasedOn, DateTimeOffset RetrievedAtUtc, IReadOnlyList<KevEntry> Entries);
-public sealed record KevEntry(string CveId, string Vendor, string Product, string VulnerabilityName, DateOnly DateAdded, string Description);
+/// <summary>One CISA KEV record. RequiredAction and DueDate are CISA's remediation instruction and federal deadline.</summary>
+public sealed record KevEntry(string CveId, string Vendor, string Product, string VulnerabilityName, DateOnly DateAdded, string Description,
+    string RequiredAction = "", DateOnly? DueDate = null, bool RansomwareUse = false, string Notes = "");
 public sealed record KevCatalogDownload(KevCatalogSnapshot Snapshot, byte[] Payload);

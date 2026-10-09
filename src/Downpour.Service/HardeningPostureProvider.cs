@@ -52,7 +52,7 @@ public sealed partial class HardeningPostureProvider
         var now = DateTimeOffset.UtcNow;
         var checks = HardeningPostureEvaluator.Evaluate(readings).Concat(HardeningPostureEvaluator.EvaluateExtended(readings, now))
             .Select(HardeningGuidance.Apply).ToArray();
-        return new HardeningPostureSnapshot(1, now, elevated, checks, warnings);
+        return new HardeningPostureSnapshot(1, now, elevated, checks, warnings, readings.LastUpdateInstalled, readings.OsBuild);
     }
 
     private static int? ReadDword(string path, string name)

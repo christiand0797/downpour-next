@@ -15,12 +15,15 @@ public sealed record PostureCheck(
     string? Fix = null,
     string? SettingsUri = null);
 
+/// <summary>LastUpdateUtc and OsBuild let the CVE dashboard estimate which actively exploited Windows flaws arrived after the last update.</summary>
 public sealed record HardeningPostureSnapshot(
     int SchemaVersion,
     DateTimeOffset CapturedAtUtc,
     bool IsElevated,
     IReadOnlyList<PostureCheck> Checks,
-    IReadOnlyList<string> Warnings);
+    IReadOnlyList<string> Warnings,
+    DateTimeOffset? LastUpdateUtc = null,
+    int? OsBuild = null);
 
 public static class PostureStates
 {
