@@ -45,6 +45,8 @@ public sealed partial record PostureReadings
     public int? OsRevision { get; init; }
     public string? OsDisplayVersion { get; init; }
     public string? OsEdition { get; init; }
+    /// <summary>Windows Insider channel (WindowsSelfHost\Applicability BranchName); empty when an Insider build is no longer enrolled.</summary>
+    public string? InsiderBranch { get; init; }
 }
 
 public sealed record DefenderReading(
@@ -320,7 +322,10 @@ public static partial class HardeningPostureEvaluator
         const string title = "Windows version support";
         if (r.OsBuild is not { } build) return Unknown("os-support", title, "T1190", "The Windows build could not be read.");
         var label = $"{r.OsEdition} {r.OsDisplayVersion} (build {build}.{r.OsRevision})".Trim();
-        if (build > Releases[^1].Build) return Pass("os-support", title, "T1190", $"{label} is a newer or Insider build that receives updates through Windows Update or the Insider programme.");
+        if (build > Releases[^1].Build)
+            return string.IsNullOrWhiteSpace(r.InsiderBranch)
+                ? Finding("os-support", title, "HIGH", "T1190", $"{label} is a Windows Insider preview build, but this PC is no longer enrolled in the Insider Program, so Windows Update offers it nothing. Re-join the Insider Program (Settings > Windows Update > Windows Insider Program) or reinstall a released Windows 11; preview builds also expire.")
+                : Pass("os-support", title, "T1190", $"{label} is an Insider build on the {r.InsiderBranch} channel; it updates through the Insider Program.");
         var release = Releases.FirstOrDefault(x => x.Build == build);
         if (release.Name is null)
             return build < 19045

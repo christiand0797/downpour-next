@@ -90,7 +90,7 @@ public sealed class HardeningExtendedTests
     [InlineData(22631, "CRITICAL")]   // Windows 11 23H2 ended 2025-11-11
     [InlineData(26100, "MEDIUM")]     // Windows 11 24H2 ends 2026-10-13, five days after Now
     [InlineData(26200, "INFO")]       // Windows 11 25H2 supported
-    [InlineData(27975, "INFO")]       // Insider build
+    [InlineData(27975, "HIGH")]       // Insider build no longer enrolled
     [InlineData(17763, "CRITICAL")]   // old Windows 10
     public void OsSupportFollowsTheLifecycle(int build, string severity) =>
         Assert.Equal(severity, Check(new PostureReadings { OsBuild = build }, "os-support").Severity);
@@ -101,6 +101,10 @@ public sealed class HardeningExtendedTests
     [InlineData(90, "HIGH")]
     public void UpdateAgeGrades(int days, string severity) =>
         Assert.Equal(severity, Check(new PostureReadings { LastUpdateInstalled = Now.AddDays(-days) }, "update-age").Severity);
+
+    [Fact]
+    public void EnrolledInsiderBuildPasses() =>
+        Assert.Equal(PostureStates.Pass, Check(new PostureReadings { OsBuild = 27975, InsiderBranch = "CanaryChannel" }, "os-support").State);
 
     [Fact]
     public void PointAndPrintWithoutElevationIsPrintNightmare()

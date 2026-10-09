@@ -58,6 +58,7 @@ public sealed partial class HardeningPostureProvider
             OsRevision = ReadDword(version, "UBR"),
             OsDisplayVersion = Bounded(ReadString(version, "DisplayVersion"), 16),
             OsEdition = Bounded(ReadString(version, "EditionID"), 32),
+            InsiderBranch = Bounded(ReadString(@"SOFTWARE\Microsoft\WindowsSelfHost\Applicability", "BranchName"), 32),
         };
     }
 
