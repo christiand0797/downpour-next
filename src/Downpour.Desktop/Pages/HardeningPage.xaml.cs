@@ -18,11 +18,18 @@ public sealed partial class HardeningPage : Page
 
     private readonly BreakdownChart _stateChart = new() { Title = "Hardening checks", Subtitle = "Passed, needs attention, or not readable without administrator rights" };
     private readonly BreakdownChart _severityChart = new() { Title = "Findings by severity", Subtitle = "Checks that need attention" };
+    private readonly TopBarsChart _categoryChart = new() { Title = "Findings by area", Subtitle = "Where the hardening gaps are" };
+    private IReadOnlyList<PostureCheck> _all = [];
 
     public HardeningPage()
     {
         InitializeComponent();
-        Charts.Row(ChartRow, _stateChart, _severityChart);
+        Charts.Row(ChartRow, _stateChart, _severityChart, _categoryChart);
+        EntityDetails.Attach(CheckList, item => item is PostureRow p ? new DetailEntity(p.Title, $"{p.Category} · {p.StateLabel}",
+        [
+            new("State", p.StateLabel), new("Area", p.Category), new("Reading", p.Detail), new("How to fix", p.Check.Fix ?? "Nothing to do."),
+            new("MITRE technique", p.Technique), new("Check ID", p.Check.Id),
+        ], Kind: "hardening check") : null);
         LiveRefresh.Attach(this, () => RefreshAsync(quiet: true));
     }
 
@@ -49,28 +56,28 @@ public sealed partial class HardeningPage : Page
                 snapshot = await _client.TryGetSnapshotAsync();
             }
 
-            Checks.Clear();
             if (snapshot is null)
             {
                 StatusHeadline.Text = "Downpour is running · hardening sensor offline";
                 StatusDetail.Text = $"{App.SensorServiceStatusHint} No cached or substituted posture is shown.";
+                Checks.Clear();
                 EmptyState.Visibility = Visibility.Visible;
                 return;
             }
 
             App.MarkSensorServiceConnected();
-            foreach (var check in snapshot.Checks
-                .OrderBy(check => check.State switch { PostureStates.Finding => 0, PostureStates.Unknown => 1, _ => 2 })
-                .ThenBy(check => SeverityRank(check.Severity)))
-                Checks.Add(new PostureRow(check));
-            EmptyState.Visibility = Checks.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+            _all = snapshot.Checks;
+            ApplyFilter();
 
             var findings = snapshot.Checks.Count(check => check.State == PostureStates.Finding);
             var unknown = snapshot.Checks.Count(check => check.State == PostureStates.Unknown);
             var passed = snapshot.Checks.Count - findings - unknown;
-            StatusHeadline.Text = findings == 0
-                ? $"No posture findings · {passed} passed · {unknown} unknown"
-                : $"{findings} posture finding{(findings == 1 ? "" : "s")} · {passed} passed · {unknown} unknown";
+            var score = Score(snapshot.Checks);
+            StatusHeadline.Text = (findings == 0
+                ? $"Hardening score {score}/100 · no findings · {passed} passed · {unknown} unknown"
+                : $"Hardening score {score}/100 · {findings} finding{(findings == 1 ? "" : "s")} · {passed} passed · {unknown} unknown");
+            _categoryChart.SetData(snapshot.Checks.Where(c => c.State == PostureStates.Finding)
+                .GroupBy(c => c.Category ?? "Other").Select(g => (g.Key, (double)g.Count())), "", HudPalette.Categorical[2]);
             _stateChart.SetData([("Passed", passed), ("Needs attention", findings), ("Unknown", unknown)],
                 new Dictionary<string, Windows.UI.Color> { ["Passed"] = HudPalette.Good, ["Needs attention"] = HudPalette.Serious, ["Unknown"] = HudPalette.Other });
             _severityChart.SetData(snapshot.Checks.Where(c => c.State == PostureStates.Finding).GroupBy(c => c.Severity, StringComparer.OrdinalIgnoreCase).Select(g => (g.Key, (double)g.Count())));
@@ -86,6 +93,42 @@ public sealed partial class HardeningPage : Page
         }
     }
 
+    /// <summary>100 minus a severity-weighted penalty per finding; Unknown checks are not counted either way.</summary>
+    public static int Score(IReadOnlyList<PostureCheck> checks) => Math.Clamp(100 - checks.Where(c => c.State == PostureStates.Finding)
+        .Sum(c => c.Severity switch { "CRITICAL" => 25, "HIGH" => 12, "MEDIUM" => 6, "LOW" => 2, _ => 0 }), 0, 100);
+
+    private void ViewFilter_SelectionChanged(object sender, SelectionChangedEventArgs e) => ApplyFilter();
+
+    private void ApplyFilter()
+    {
+        if (CheckList is null) return;
+        var view = ViewFilter?.SelectedIndex ?? 0;
+        Checks.Clear();
+        foreach (var check in _all
+            .Where(c => view switch { 1 => c.State != PostureStates.Pass, 2 => c.State == PostureStates.Pass, _ => true })
+            .OrderBy(check => check.State switch { PostureStates.Finding => 0, PostureStates.Unknown => 1, _ => 2 })
+            .ThenBy(check => SeverityRank(check.Severity)).ThenBy(check => check.Category))
+            Checks.Add(new PostureRow(check));
+        EmptyState.Visibility = Checks.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private async void OpenSetting_Click(object sender, RoutedEventArgs e)
+    {
+        // Only the fixed Windows Security and Settings links from HardeningGuidance are ever opened.
+        if ((sender as FrameworkElement)?.Tag is not string uri || !HardeningGuidance.AllowedUris.Contains(uri)) return;
+        try { await Windows.System.Launcher.LaunchUriAsync(new Uri(uri)); }
+        catch (Exception ex) when (ex is UriFormatException or InvalidOperationException or System.Runtime.InteropServices.COMException) { }
+    }
+
+    private void CopyFixes_Click(object sender, RoutedEventArgs e)
+    {
+        var text = new System.Text.StringBuilder($"Downpour hardening fix list · score {Score(_all)}/100 · {DateTime.Now:yyyy-MM-dd HH:mm}{Environment.NewLine}");
+        foreach (var check in _all.Where(c => c.State != PostureStates.Pass).OrderBy(c => SeverityRank(c.Severity)))
+            text.AppendLine().AppendLine($"[{(check.State == PostureStates.Finding ? check.Severity : "UNKNOWN")}] {check.Title} ({check.Category})")
+                .AppendLine($"  {check.Detail}").AppendLine($"  Fix: {check.Fix ?? "-"}");
+        EntityDetails.Copy(text.ToString());
+    }
+
     private static int SeverityRank(string severity) => severity switch
     {
         "CRITICAL" => 0, "HIGH" => 1, "MEDIUM" => 2, "LOW" => 3, _ => 4
@@ -94,6 +137,12 @@ public sealed partial class HardeningPage : Page
 
 public sealed class PostureRow(PostureCheck check)
 {
+    public PostureCheck Check => check;
+    public string Category => (check.Category ?? "").ToUpperInvariant();
+    public string FixText => check.Fix is null ? "" : $"How to fix: {check.Fix}";
+    public Visibility FixVisibility => check.Fix is null ? Visibility.Collapsed : Visibility.Visible;
+    public string? SettingsUri => check.SettingsUri;
+    public Visibility OpenVisibility => check.SettingsUri is null ? Visibility.Collapsed : Visibility.Visible;
     public string Title => check.Title;
     public string Detail => check.Detail;
     public string Technique => check.Technique;

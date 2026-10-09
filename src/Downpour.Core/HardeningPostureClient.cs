@@ -45,7 +45,9 @@ public sealed class HardeningPostureClient(string pipeName = HardeningPostureCli
         && snapshot.Warnings.All(warning => warning is not null && warning.Length <= MaximumText)
         && snapshot.Checks.All(check => check is not null
             && Text(check.Id, 64) && check.Id.Length > 0 && Text(check.Title, 128) && Text(check.Technique, 32) && Text(check.Detail, MaximumText)
-            && PostureStates.All.Contains(check.State) && Severities.Contains(check.Severity));
+            && PostureStates.All.Contains(check.State) && Severities.Contains(check.Severity)
+            && (check.Category is null || Text(check.Category, 64)) && (check.Fix is null || Text(check.Fix, MaximumText))
+            && (check.SettingsUri is null || HardeningGuidance.AllowedUris.Contains(check.SettingsUri)));
 
     private static bool Text(string? value, int max) => value is not null && value.Length <= max;
 }

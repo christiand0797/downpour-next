@@ -3,7 +3,7 @@ using Downpour.Contracts;
 namespace Downpour.Core;
 
 /// <summary>Raw, unevaluated platform readings. Null means the value could not be read.</summary>
-public sealed record PostureReadings
+public sealed partial record PostureReadings
 {
     /// <summary>Win32_EncryptableVolume.ProtectionStatus for the OS volume: 0 off, 1 on, 2 unknown.</summary>
     public int? BitLockerProtectionStatus { get; init; }
@@ -37,7 +37,7 @@ public sealed record AntivirusProductReading(string Name, int ProductState);
 /// Credential Guard and HVCI prefer the running state from Win32_DeviceGuard over registry configuration, and
 /// TPM presence comes from TBS instead of treating "not owned" as "absent". Unreadable values are Unknown, never Finding.
 /// </summary>
-public static class HardeningPostureEvaluator
+public static partial class HardeningPostureEvaluator
 {
     public static IReadOnlyList<PostureCheck> Evaluate(PostureReadings r) =>
     [

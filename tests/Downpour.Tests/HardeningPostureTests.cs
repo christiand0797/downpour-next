@@ -142,7 +142,9 @@ public sealed class HardeningPostureTests
     {
         var snapshot = new HardeningPostureProvider().Capture();
         Assert.True(HardeningPostureClient.IsValid(snapshot));
-        Assert.Equal(9, snapshot.Checks.Count);
+        Assert.Equal(9 + HardeningPostureEvaluator.EvaluateExtended(new PostureReadings(), DateTimeOffset.UtcNow).Count, snapshot.Checks.Count);
+        Assert.Equal(snapshot.Checks.Count, snapshot.Checks.Select(c => c.Id).Distinct().Count());
+        foreach (var check in snapshot.Checks) Console.WriteLine($"{check.State,-8} {check.Severity,-8} {check.Id,-20} {check.Detail}");
         // The patch-service and SMB1 checks read world-readable registry values and should never be unknown.
         Assert.NotEqual(PostureStates.Unknown, snapshot.Checks.Single(check => check.Id == "smb1").State);
         Assert.NotEqual(PostureStates.Unknown, snapshot.Checks.Single(check => check.Id == "patch-service").State);

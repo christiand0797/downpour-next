@@ -1,13 +1,19 @@
 namespace Downpour.Contracts;
 
-/// <summary>One read-only platform posture check. <see cref="State"/> is one of <see cref="PostureStates"/>.</summary>
+/// <summary>
+/// One read-only platform posture check. <see cref="State"/> is one of <see cref="PostureStates"/>. Fix and SettingsUri say
+/// how the person can correct a finding in Windows' own UI (Downpour does not change the setting itself).
+/// </summary>
 public sealed record PostureCheck(
     string Id,
     string Title,
     string State,
     string Severity,
     string Technique,
-    string Detail);
+    string Detail,
+    string? Category = null,
+    string? Fix = null,
+    string? SettingsUri = null);
 
 public sealed record HardeningPostureSnapshot(
     int SchemaVersion,

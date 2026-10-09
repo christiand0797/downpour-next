@@ -28,7 +28,7 @@ public sealed partial class HardeningPostureProvider
         var (tpmEnabled, tpmActivated) = elevated && tpmPresent == true ? ReadTpmReadiness() : (null, null);
         var (servicesRunning, vbsStatus) = ReadDeviceGuard(warnings);
 
-        var readings = new PostureReadings
+        PostureReadings readings = new PostureReadings
         {
             BitLockerProtectionStatus = bitLocker.Status,
             BitLockerAccessDenied = bitLocker.AccessDenied,
@@ -48,7 +48,11 @@ public sealed partial class HardeningPostureProvider
             AntivirusProducts = ReadAntivirusProducts(warnings)
         };
 
-        return new HardeningPostureSnapshot(1, DateTimeOffset.UtcNow, elevated, HardeningPostureEvaluator.Evaluate(readings), warnings);
+        readings = ReadExtended(readings, warnings);
+        var now = DateTimeOffset.UtcNow;
+        var checks = HardeningPostureEvaluator.Evaluate(readings).Concat(HardeningPostureEvaluator.EvaluateExtended(readings, now))
+            .Select(HardeningGuidance.Apply).ToArray();
+        return new HardeningPostureSnapshot(1, now, elevated, checks, warnings);
     }
 
     private static int? ReadDword(string path, string name)

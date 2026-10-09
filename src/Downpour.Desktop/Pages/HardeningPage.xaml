@@ -12,9 +12,17 @@
             <StackPanel Spacing="4">
                 <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Foreground="{StaticResource HudCyanBrush}" Text="DOWNPOUR  /  PROTECTION  /  HARDENING" />
                 <TextBlock Style="{StaticResource TitleTextBlockStyle}" FontSize="30" Text="Hardening" />
-                <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Firmware and platform trust posture: BitLocker, Secure Boot, TPM, LSA protection, Credential Guard, memory integrity, SMBv1, and Windows Update. Read-only." TextWrapping="Wrap" />
+                <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="43 checks across antivirus and Defender, device security, network and sharing, accounts, credential protection, scripting and patch level: the v29 system hardening and firmware checks plus NSA and CIS recommendations. Each finding says how to fix it and opens the right Windows page." TextWrapping="Wrap" />
             </StackPanel>
-            <Button Grid.Column="1" x:Name="RefreshButton" Content="Re-check" Click="Refresh_Click" VerticalAlignment="Center" />
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                <ComboBox x:Name="ViewFilter" SelectedIndex="0" SelectionChanged="ViewFilter_SelectionChanged" MinWidth="180">
+                    <ComboBoxItem Content="All checks" />
+                    <ComboBoxItem Content="Needs attention" />
+                    <ComboBoxItem Content="Passed" />
+                </ComboBox>
+                <Button Content="Copy fix list" Click="CopyFixes_Click" ToolTipService.ToolTip="Copies every finding with its fix steps, to work through or send to whoever manages this PC" />
+                <Button x:Name="RefreshButton" Content="Re-check" Click="Refresh_Click" Style="{StaticResource AccentButtonStyle}" />
+            </StackPanel>
         </Grid>
 
         <Border Grid.Row="1" Padding="14,11" CornerRadius="10" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
@@ -29,7 +37,7 @@
         </Border>
 
         <Grid x:Name="ChartRow" Grid.Row="2" />
-        <ListView Grid.Row="3" ItemsSource="{x:Bind Checks}" SelectionMode="None" IsItemClickEnabled="False" Background="{StaticResource DownpourSurfaceBrush}">
+        <ListView x:Name="CheckList" Grid.Row="3" ItemsSource="{x:Bind Checks}" SelectionMode="None" IsItemClickEnabled="False" Background="{StaticResource DownpourSurfaceBrush}">
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <Grid Padding="12,10" ColumnSpacing="14">
@@ -38,10 +46,15 @@
                             <TextBlock Text="{Binding StateLabel}" FontSize="11" FontWeight="SemiBold" Foreground="{Binding StateForeground}" HorizontalAlignment="Center" />
                         </Border>
                         <StackPanel Grid.Column="1" Spacing="3">
+                            <TextBlock Text="{Binding Category}" FontSize="10" CharacterSpacing="60" Foreground="{StaticResource HudCyanBrush}" />
                             <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextWrapping="Wrap" />
                             <TextBlock Text="{Binding Detail}" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding FixText}" Visibility="{Binding FixVisibility}" FontSize="12" TextWrapping="Wrap" IsTextSelectionEnabled="True" />
                         </StackPanel>
-                        <TextBlock Grid.Column="2" Text="{Binding Technique}" FontFamily="Consolas" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" VerticalAlignment="Top" />
+                        <StackPanel Grid.Column="2" Spacing="6" HorizontalAlignment="Right">
+                            <TextBlock Text="{Binding Technique}" FontFamily="Consolas" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" HorizontalAlignment="Right" />
+                            <Button Content="Open setting" Tag="{Binding SettingsUri}" Visibility="{Binding OpenVisibility}" Click="OpenSetting_Click" FontSize="12" />
+                        </StackPanel>
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>
@@ -50,6 +63,6 @@
             </ListView.Footer>
         </ListView>
 
-        <TextBlock Grid.Row="4" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Posture only. Fix actions (v29 &quot;FIX ALL&quot;), NSA/STIG checks, compliance scoring, and zero-day scanning are not ported yet; system changes require the audited action broker." TextWrapping="Wrap" />
+        <TextBlock Grid.Row="4" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Downpour reads these settings and never changes them: each fix opens Windows&#x2019; own page, which asks for administrator rights itself. One-click &#x201C;fix all&#x201D; waits for the audited elevated action broker. The score weighs findings by severity; Unknown checks (need administrator rights) are not counted." TextWrapping="Wrap" />
     </Grid>
 </Page>
