@@ -40,6 +40,10 @@
 - [x] Drivers tab verifies each loaded driver's signature and gives a verdict (malicious, vulnerable, user-writable, unsigned, OK).
 - [x] Clickable details and right-click actions on the first nine list tabs.
 - [x] Clickable details on Alerts, Triage, Threat Databases, Threat Intel, Memory, Vulnerabilities, USB, Wi-Fi, IoT, Emergency, Forensics, Timeline.
+- [x] 45 threat databases (C2, APT hashes, spyware, scam, cryptojacking, LOLRMM remote-access tools).
+- [x] Hardening: 43 checks with fix steps, Open setting links and a score.
+- [x] CVE Dashboard: KEV related to this PC (likely missing Windows fixes, installed apps, ransomware).
+- [ ] Release v0.1.20 with the above.
 - [ ] Clickable cards on Audio Shield and Anti-Stalker (code-built cards).
 - [ ] Elevated driver broker (DN-012): one-click update/roll back/uninstall/reinstall with automatic driver backup, signature check, audit and rollback tests.
 - [x] Hash-chained, DPAPI-keyed action audit log with anchor, integrity monitor and CRITICAL finding on tampering.

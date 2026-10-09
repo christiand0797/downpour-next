@@ -824,7 +824,7 @@
         "Right-click actions route through the existing previewed, confirmed, audited brokers",
         "Every loaded driver shows its verified signer and a verdict (malicious, vulnerable, user-writable, unsigned, OK)"
       ],
-      "notes": "claude-parity-audit 2026-10-08: b1d249f clickable on 9 tabs; 9603973 driver signatures + verdicts (1128 tests pass). Next: clickable batch 2 (Alerts, Triage, Threat Databases, Threat Intel, Memory, Vulnerabilities, USB, Wi-Fi, IoT, Emergency, Forensics, Timeline, Audio, Anti-Stalker)."
+      "notes": "claude-parity-audit 2026-10-08: b1d249f clickable on 9 tabs; 9603973 driver signatures + verdicts (1128 tests pass). Next: clickable batch 2 (Alerts, Triage, Threat Databases, Threat Intel, Memory, Vulnerabilities, USB, Wi-Fi, IoT, Emergency, Forensics, Timeline, Audio, Anti-Stalker). | 2026-10-08 later: 4a35351 Security log access fix; daee34e clickable batch 2 (12 tabs); 59bd0dd 45 threat databases incl. LOLRMM; 4faef76 hardening 43 checks + fix guidance + score; 244a03e CVE Dashboard (route cve). 1171 tests pass. Owner PC: no Windows update since 2025-10-25 (16 likely-missing KEV Windows flaws). Next: clickable Audio/Anti-Stalker cards, charts on remaining tabs, elevated broker DN-012, release v0.1.20."
     }
   ]
 }
