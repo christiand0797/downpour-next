@@ -11,8 +11,8 @@ namespace Downpour_Desktop.Pages;
 
 /// <summary>
 /// Devices &amp; Drivers: device health with explained problem codes, missing drivers, driver age and signers, a
-/// read-only Windows Update driver search, and hand-offs to Windows' own Optional updates and Device Manager for
-/// changes (which elevate themselves). Charts come from this page's own data.
+/// read-only Windows Update driver search, a separately confirmed driver batch install and Device Manager.
+/// Charts come from this page's own data.
 /// </summary>
 public sealed partial class DevicesPage : Page
 {
@@ -42,7 +42,9 @@ public sealed partial class DevicesPage : Page
 
     private async void Refresh_Click(object sender, RoutedEventArgs e) => await RefreshAsync(ensureService: true);
 
-    private async void Search_Click(object sender, RoutedEventArgs e)
+    private async void Search_Click(object sender, RoutedEventArgs e) => await SearchUpdatesAsync();
+
+    private async Task SearchUpdatesAsync()
     {
         SearchButton.IsEnabled = false;
         var response = await _client.SearchUpdatesAsync();
@@ -106,8 +108,9 @@ public sealed partial class DevicesPage : Page
                 SummaryDetail.Text = _client.LastFailure ?? "The local sensor service did not answer.";
                 return;
             }
+            var fingerprint = await Task.Run(() => DeviceAnalyzer.ContentFingerprint(snapshot));
             _snapshot = snapshot;
-            Render(snapshot);
+            Render(snapshot, fingerprint);
         }
         finally
         {
@@ -115,19 +118,18 @@ public sealed partial class DevicesPage : Page
         }
     }
 
-    private void Render(DeviceInventorySnapshot s)
+    private void Render(DeviceInventorySnapshot s, string structure)
     {
         var connected = s.Devices.Where(d => d.Present).ToArray();
         var problems = DeviceAnalyzer.Problems(s.Devices);
         var missing = problems.Count(p => p.MissingDriver);
         var serious = problems.Count(p => p.Severity != "LOW");
 
-        SummaryHeadline.Text = serious == 0
-            ? $"All {connected.Length:N0} connected devices are working"
-            : $"{serious} device{(serious == 1 ? "" : "s")} need{(serious == 1 ? "s" : "")} attention{(missing > 0 ? $", {missing} missing a driver" : "")}";
+        SummaryHeadline.Text = DeviceAnalyzer.HealthSummary(s);
         SummaryDetail.Text = $"{s.Devices.Count:N0} devices known to Windows, {connected.Length:N0} connected. Updated {s.CapturedAtUtc.ToLocalTime():T}."
             + (s.Warnings.Count > 0 ? " " + string.Join(" ", s.Warnings) : "");
-        SummaryIcon.Foreground = HudPalette.Resource(serious == 0 ? "HudGreenBrush" : missing > 0 ? "HudOrangeBrush" : "HudAmberBrush");
+        SummaryIcon.Foreground = HudPalette.Resource(s.Devices.Count == 0 || s.Warnings.Count > 0 ? "HudAmberBrush"
+            : serious == 0 ? "HudGreenBrush" : missing > 0 ? "HudOrangeBrush" : "HudAmberBrush");
 
         _healthChart.SetData(
         [
@@ -145,11 +147,13 @@ public sealed partial class DevicesPage : Page
                 .Select(d => (d.Name, (double)(DeviceAnalyzer.AgeYears(d, now) ?? 0))), " yr",
             colorFor: years => years >= 5 ? HudPalette.Serious : years >= 3 ? HudPalette.Warning : HudPalette.Categorical[0]);
 
-        var structure = string.Join("|", problems.Select(p => p.Device.InstanceId + p.Device.ProblemCode)) + "#" + s.UpdateSearchState + s.Updates.Count + s.UpdatesCheckedAtUtc + "#" + s.Devices.Count
-            + "#" + s.SystemManufacturer + s.BoardManufacturer + string.Join(",", s.VendorTools ?? []);
         if (structure == _structure) return;
         _structure = structure;
         RenderProblems(problems.Where(p => p.Device.Present || p.MissingDriver).ToArray());
+        ProblemsEmpty.Text = s.Devices.Count == 0 || s.Warnings.Count > 0
+            ? "Device inventory is incomplete; absence of findings does not confirm device health."
+            : "No problems reported for the devices shown.";
+        ProblemsEmpty.Foreground = HudPalette.Resource(s.Devices.Count == 0 || s.Warnings.Count > 0 ? "HudAmberBrush" : "HudGreenBrush");
         RenderSources(s);
         RenderChecks(s);
         RenderUpdates(s);
@@ -173,7 +177,7 @@ public sealed partial class DevicesPage : Page
             });
             var actions = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Margin = new Thickness(0, 4, 0, 0) };
             if (p.MissingDriver || p.Device.ProblemCode is 1 or 10 or 18 or 31 or 37 or 39 or 43 or 48 or 52)
-                actions.Children.Add(Action("Find and install driver", InstallDriversAsync));
+                actions.Children.Add(Action("Check Windows Update (all devices)", SearchUpdatesAsync));
             actions.Children.Add(Action("Details", () => EntityDetails.ShowAsync(XamlRoot, DescribeDevice(p.Device))));
             body.Children.Add(actions);
             var tone = HudPalette.Severity(p.Severity) is { } c ? new SolidColorBrush(c) : HudPalette.Resource("HudAmberBrush");
@@ -221,7 +225,7 @@ public sealed partial class DevicesPage : Page
         ChecksPanel.Children.Clear();
         var checks = DriverSourceAdvisor.Checks(s.Devices, s.SystemManufacturer, s.BoardManufacturer, DateTimeOffset.UtcNow);
         ChecksStatus.Text = checks.Count == 0
-            ? "No third-party drivers look out of date (graphics older than six months or other drivers older than three years)."
+            ? "No age-based review candidates in the available inventory. Driver age alone does not establish whether a newer compatible driver exists."
             : $"{checks.Count} driver{(checks.Count == 1 ? "" : "s")} may have a newer version from the maker. Windows Update often does not carry these.";
         foreach (var c in checks)
         {
@@ -244,14 +248,15 @@ public sealed partial class DevicesPage : Page
         {
             UpdateSearchStates.Searching => "Searching Windows Update for driver updates…",
             UpdateSearchStates.Failed => s.UpdateSearchError ?? "The search failed.",
-            UpdateSearchStates.Done when s.Updates.Count == 0 => $"Windows Update has no driver updates for this PC (checked {s.UpdatesCheckedAtUtc?.ToLocalTime():t}).",
-            UpdateSearchStates.Done => $"{s.Updates.Count} driver update{(s.Updates.Count == 1 ? "" : "s")} available (checked {s.UpdatesCheckedAtUtc?.ToLocalTime():t}). Select Install driver updates and Downpour installs them.",
-            _ => "Not checked yet. Check for driver updates, or Install driver updates to find and install them in one step.",
+            UpdateSearchStates.Partial => $"{s.Updates.Count} driver offers displayed. {s.UpdateSearchError}",
+            UpdateSearchStates.Done when s.Updates.Count == 0 => $"Windows Update offered no applicable drivers in this search (checked {s.UpdatesCheckedAtUtc?.ToLocalTime():t}). Other drivers may exist from the manufacturer.",
+            UpdateSearchStates.Done => $"{s.Updates.Count} driver update{(s.Updates.Count == 1 ? "" : "s")} offered (checked {s.UpdatesCheckedAtUtc?.ToLocalTime():t}). Install offered drivers starts a fresh search and installs the applicable batch across this PC.",
+            _ => "Not checked yet. Check for driver updates, or Install offered drivers to search again and install the applicable batch across this PC.",
         };
         SearchButton.IsEnabled = s.UpdateSearchState != UpdateSearchStates.Searching;
         foreach (var offer in s.Updates)
         {
-            var targets = DeviceAnalyzer.Targets(offer, s.Devices);
+            var matches = DeviceAnalyzer.Matches(offer, s.Devices);
             var body = new StackPanel { Spacing = 3 };
             body.Children.Add(new TextBlock { Text = offer.Title, FontWeight = Microsoft.UI.Text.FontWeights.SemiBold, TextWrapping = TextWrapping.Wrap });
             body.Children.Add(new TextBlock
@@ -262,12 +267,11 @@ public sealed partial class DevicesPage : Page
             });
             body.Children.Add(new TextBlock
             {
-                Text = targets.Count == 0 ? "Applies to hardware Windows Update detected on this PC." : "For: " + string.Join(", ", targets.Select(t => $"{t.Name} (now {t.DriverVersion ?? "no driver"})")),
+                Text = matches.Count == 0
+                    ? "Offered by Windows Update for this PC; an exact hardware or compatible ID match was not found in the available inventory. No device assignment is inferred from names or ID prefixes."
+                    : string.Join("; ", matches.Select(m => $"{m.Device.Name} (now {m.Device.DriverVersion ?? "no driver"}) — {m.Explanation}")),
                 FontSize = 11, Foreground = HudPalette.Resource("HudTextFaintBrush"), TextWrapping = TextWrapping.Wrap,
             });
-            var actions = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Margin = new Thickness(0, 4, 0, 0) };
-            actions.Children.Add(Action("Install", InstallDriversAsync));
-            body.Children.Add(actions);
             UpdatesPanel.Children.Add(Card("UPDATE", HudPalette.Resource("HudCyanBrush"), body));
         }
     }
@@ -309,7 +313,9 @@ public sealed partial class DevicesPage : Page
             new("Class", d.Class), new("Manufacturer", d.Manufacturer), new("Chip maker (from hardware ID)", chip?.Maker ?? "Not recognised"),
             new("Driver", d.DriverProvider is null ? "No driver information" : $"{d.DriverProvider} {d.DriverVersion}"),
             new("Driver date", d.DriverDate?.ToString("yyyy-MM-dd") ?? ""), new("INF", d.InfName ?? ""),
-            new("Signed by", d.DriverSigned == false ? "NOT signed" : d.DriverSigner ?? ""), new("Hardware ID", d.HardwareId ?? ""), new("Instance ID", d.InstanceId),
+            new("Signed by", d.DriverSigned == false ? "NOT signed" : d.DriverSigner ?? ""),
+            new("Hardware IDs", string.Join("; ", d.HardwareIds ?? (d.HardwareId is { } id ? new[] { id } : []))),
+            new("Compatible IDs", string.Join("; ", d.CompatibleIds ?? [])), new("Instance ID", d.InstanceId),
             new("Where to get drivers", sources.Count == 0 ? "Windows Update and Device Manager" : string.Join("; ", sources.Select(s => $"{s.Name} ({s.Url})"))),
         ], FilePath: d.InfName is { Length: > 0 } inf ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "INF", inf) : null, Kind: "device");
     }

@@ -56,15 +56,25 @@ public sealed class DeviceClient(string pipeName = DeviceClient.PipeName)
 
     public static bool IsValid(DeviceInventorySnapshot s) =>
         s is { SchemaVersion: 1 } && s.Devices is { Count: <= 1200 } && s.Updates is { Count: <= 200 } && s.Warnings is { Count: <= 16 }
-        && Text(s.UpdateSearchState, 16) && (s.UpdateSearchError is null || Text(s.UpdateSearchError, 300))
+        && s.UpdateSearchState is UpdateSearchStates.NotSearched or UpdateSearchStates.Searching or UpdateSearchStates.Done or UpdateSearchStates.Partial or UpdateSearchStates.Failed
+        && (s.UpdateSearchError is null || Text(s.UpdateSearchError, 300))
+        && (s.UpdateSearchState is not (UpdateSearchStates.Partial or UpdateSearchStates.Failed) || s.UpdateSearchError is { Length: > 0 })
         && s.Devices.All(d => d is not null && Text(d.InstanceId, 400) && Text(d.Name, 200) && Text(d.Class, 64) && Text(d.Manufacturer, 128, allowEmpty: true)
             && Text(d.Status, 32) && d.ProblemCode is >= 0 and <= 999 && Optional(d.DriverProvider, 128) && Optional(d.DriverVersion, 64)
-            && Optional(d.InfName, 128) && Optional(d.DriverSigner, 200) && Optional(d.HardwareId, 256))
+            && Optional(d.InfName, 128) && Optional(d.DriverSigner, 200) && Optional(d.HardwareId, 256)
+            && Identifiers(d.HardwareIds) && Identifiers(d.CompatibleIds)
+            && (d.HardwareIds?.Sum(id => id.Length) ?? 0) + (d.CompatibleIds?.Sum(id => id.Length) ?? 0) <= DeviceInventoryLimits.MaximumIdentifierCharacters
+            && (d.HardwareIds is not { Count: > 0 } || string.Equals(d.HardwareId, d.HardwareIds[0], StringComparison.OrdinalIgnoreCase)))
         && s.Updates.All(u => u is not null && Text(u.Title, 300) && Optional(u.DriverClass, 64) && Optional(u.DriverModel, 200)
             && Optional(u.DriverProvider, 128) && Optional(u.DriverManufacturer, 128) && Optional(u.DriverHardwareId, 256) && u.MaximumDownloadBytes is null or >= 0)
         && s.Warnings.All(w => Text(w, 300))
         && Optional(s.SystemManufacturer, 128) && Optional(s.SystemModel, 128) && Optional(s.BoardManufacturer, 128) && Optional(s.BoardProduct, 128)
         && (s.VendorTools is null || s.VendorTools.Count <= 32 && s.VendorTools.All(t => Text(t, 64)));
+
+    private static bool Identifiers(IReadOnlyList<string>? values) => values is null
+        || values.Count <= DeviceInventoryLimits.MaximumIdentifiersPerKind
+            && values.All(id => Text(id, DeviceInventoryLimits.MaximumIdentifierLength))
+            && values.Distinct(StringComparer.OrdinalIgnoreCase).Count() == values.Count;
 
     private static bool Optional(string? value, int max) => value is null || Text(value, max);
 

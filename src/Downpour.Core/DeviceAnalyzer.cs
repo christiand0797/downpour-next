@@ -5,9 +5,14 @@ namespace Downpour.Core;
 /// <summary>A device that needs attention, with what is wrong and what to do about it.</summary>
 public sealed record DeviceProblem(DeviceEntry Device, string Severity, string Title, string Explanation, string Fix, bool MissingDriver);
 
+public sealed record DriverDeviceMatch(DeviceEntry Device, string Identifier, string Kind)
+{
+    public string Explanation => $"Exact {Kind} ID match: {Identifier}";
+}
+
 /// <summary>
 /// Explains Device Manager problem codes (CM_PROB_*) in plain words with a concrete fix, finds devices without a
-/// working driver, and matches Windows Update driver offers to devices by hardware ID or model.
+/// working driver, and matches Windows Update offers by exact hardware or compatible ID membership.
 /// </summary>
 public static class DeviceAnalyzer
 {
@@ -63,18 +68,39 @@ public static class DeviceAnalyzer
             .ThenBy(p => p.Device.Name, StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
-    /// <summary>The installed devices a Windows Update driver offer applies to (by hardware ID, then by model name).</summary>
-    public static IReadOnlyList<DeviceEntry> Targets(DriverUpdateOffer offer, IEnumerable<DeviceEntry> devices)
+    /// <summary>Exact, case-insensitive ID membership. Names and ID prefixes never establish compatibility.</summary>
+    public static IReadOnlyList<DriverDeviceMatch> Matches(DriverUpdateOffer offer, IEnumerable<DeviceEntry> devices)
     {
-        var all = devices.ToArray();
-        if (offer.DriverHardwareId is { Length: > 0 } id)
+        if (offer.DriverHardwareId is not { Length: > 0 } id) return [];
+        var matches = new List<DriverDeviceMatch>();
+        foreach (var device in devices)
         {
-            var byId = all.Where(d => d.HardwareId is { } hw && hw.StartsWith(id, StringComparison.OrdinalIgnoreCase)).ToArray();
-            if (byId.Length > 0) return byId;
+            if ((device.HardwareIds ?? []).Contains(id, StringComparer.OrdinalIgnoreCase)
+                || string.Equals(device.HardwareId, id, StringComparison.OrdinalIgnoreCase))
+                matches.Add(new DriverDeviceMatch(device, id, "hardware"));
+            else if ((device.CompatibleIds ?? []).Contains(id, StringComparer.OrdinalIgnoreCase))
+                matches.Add(new DriverDeviceMatch(device, id, "compatible"));
         }
-        return offer.DriverModel is { Length: > 2 } model
-            ? all.Where(d => d.Name.Equals(model, StringComparison.OrdinalIgnoreCase)).ToArray()
-            : [];
+        return matches;
+    }
+
+    public static IReadOnlyList<DeviceEntry> Targets(DriverUpdateOffer offer, IEnumerable<DeviceEntry> devices) =>
+        Matches(offer, devices).Select(m => m.Device).ToArray();
+
+    /// <summary>Includes all displayed inventory metadata; capture time alone must not rebuild the page.</summary>
+    public static string ContentFingerprint(DeviceInventorySnapshot snapshot) =>
+        Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(BoundedJson.Serialize(snapshot with { CapturedAtUtc = default })));
+
+    public static string HealthSummary(DeviceInventorySnapshot snapshot)
+    {
+        var connected = snapshot.Devices.Count(d => d.Present);
+        var problems = Problems(snapshot.Devices);
+        var serious = problems.Count(p => p.Severity != "LOW");
+        var missing = problems.Count(p => p.MissingDriver);
+        if (snapshot.Devices.Count == 0) return "Device health is unavailable";
+        if (serious > 0) return $"{serious} device{(serious == 1 ? "" : "s")} need{(serious == 1 ? "s" : "")} attention{(missing > 0 ? $", {missing} missing a driver" : "")}";
+        if (snapshot.Warnings.Count > 0) return "No major problems in the available device data; inventory is incomplete";
+        return $"No major problems reported for {connected:N0} connected devices";
     }
 
     /// <summary>Driver age in whole years (for the age chart); null when the date is unknown.</summary>

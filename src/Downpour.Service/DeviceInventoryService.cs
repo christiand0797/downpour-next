@@ -11,20 +11,20 @@ namespace Downpour.Service;
 /// <summary>
 /// Devices &amp; Drivers (owner request): every Plug and Play device with its status, problem code and driver
 /// (Win32_PnPEntity joined to Win32_PnPSignedDriver), plus an on-demand search for driver updates through the Windows
-/// Update Agent API ("IsInstalled=0 and Type='Driver'"). Read-only: the search downloads and installs nothing; installing,
-/// rolling back or uninstalling is handed to Windows' own Optional updates page and Device Manager, which elevate
-/// themselves. Served on Downpour.Devices.v1 (length-prefixed JSON, current-user ACL).
+/// Update Agent API ("IsInstalled=0 and Type='Driver'"). Read-only: the search downloads and installs nothing.
+/// The desktop has a separate consent/elevation flow for installing the applicable WUA driver batch.
+/// Served on Downpour.Devices.v1 (length-prefixed JSON, current-user ACL).
 /// </summary>
 public sealed class DeviceInventoryService(ILogger<DeviceInventoryService> logger, string pipeName = DeviceClient.PipeName,
     InstalledSoftwareInventoryProvider? installed = null) : BackgroundService
 {
     private sealed record SystemIdentity(string? Manufacturer, string? Model, string? BoardManufacturer, string? BoardProduct, IReadOnlyList<string> Tools);
+    private sealed record DeviceCollection(IReadOnlyList<DeviceEntry> Devices, IReadOnlyList<string> Warnings);
 
     public const int MaximumDevices = 1200;
     public const int MaximumUpdates = 200;
-    private static readonly TimeSpan SearchTimeout = TimeSpan.FromMinutes(5);
     private readonly object _gate = new();
-    private readonly SnapshotCache<IReadOnlyList<DeviceEntry>> _devices = new(ReadDevices, TimeSpan.FromSeconds(20));
+    private readonly SnapshotCache<DeviceCollection> _devices = new(ReadDeviceCollection, TimeSpan.FromSeconds(20));
     private SnapshotCache<SystemIdentity>? _identity;
     private IReadOnlyList<DriverUpdateOffer> _updates = [];
     private string _searchState = UpdateSearchStates.NotSearched;
@@ -51,6 +51,8 @@ public sealed class DeviceInventoryService(ILogger<DeviceInventoryService> logge
                     if (_searchState == UpdateSearchStates.Searching) return new DeviceResponse(1, false, "already-searching", null);
                     _searchState = UpdateSearchStates.Searching;
                     _searchError = null;
+                    _updates = [];
+                    _searchedAt = null;
                 }
                 var thread = new Thread(SearchUpdates) { IsBackground = true, Name = "Downpour driver update search" };
                 thread.SetApartmentState(ApartmentState.STA);
@@ -65,7 +67,12 @@ public sealed class DeviceInventoryService(ILogger<DeviceInventoryService> logge
     {
         var warnings = new List<string>();
         IReadOnlyList<DeviceEntry> devices;
-        try { devices = await _devices.GetAsync(token); }
+        try
+        {
+            var collection = await _devices.GetAsync(token);
+            devices = collection.Devices;
+            warnings.AddRange(collection.Warnings);
+        }
         catch (Exception ex) when (ex is ManagementException or COMException or UnauthorizedAccessException)
         {
             devices = [];
@@ -89,21 +96,33 @@ public sealed class DeviceInventoryService(ILogger<DeviceInventoryService> logge
             dynamic session = Activator.CreateInstance(type)!;
             session.ClientApplicationID = "Downpour Next";
             dynamic searcher = session.CreateUpdateSearcher();
-            var started = DateTime.UtcNow;
             dynamic result = searcher.Search("IsInstalled=0 and Type='Driver' and IsHidden=0");
+            var resultCode = (int)result.ResultCode;
+            var total = (int)result.Updates.Count;
+            var outcome = SearchOutcome(resultCode, (int)result.Warnings.Count > 0, total);
+            var payloadBytes = 2;
+            if (outcome.State != UpdateSearchStates.Failed)
             foreach (dynamic update in result.Updates)
             {
-                if (found.Count >= MaximumUpdates || DateTime.UtcNow - started > SearchTimeout) break;
+                if (found.Count >= MaximumUpdates) break;
                 DateTimeOffset? date = Try(() => (object?)update.DriverVerDate) is DateTime d ? new DateTimeOffset(DateTime.SpecifyKind(d, DateTimeKind.Utc)) : null;
                 long? size = Try(() => (object?)update.MaxDownloadSize) is { } raw ? Convert.ToInt64(raw, CultureInfo.InvariantCulture) : null;
-                found.Add(new DriverUpdateOffer(Clean((string?)update.Title, 300) ?? "Driver update", Clean(Try(() => (string?)update.DriverClass), 64),
+                var offer = new DriverUpdateOffer(Clean((string?)update.Title, 300) ?? "Driver update", Clean(Try(() => (string?)update.DriverClass), 64),
                     Clean(Try(() => (string?)update.DriverModel), 200), Clean(Try(() => (string?)update.DriverProvider), 128),
-                    Clean(Try(() => (string?)update.DriverManufacturer), 128), Clean(Try(() => (string?)update.DriverHardwareID), 256), date, size));
+                    Clean(Try(() => (string?)update.DriverManufacturer), 128), Identifier(Try(() => (string?)update.DriverHardwareID)), date, size is >= 0 ? size : null);
+                payloadBytes += BoundedJson.Serialize(offer).Length + 1;
+                if (payloadBytes > DeviceInventoryLimits.MaximumUpdatePayloadBytes)
+                {
+                    outcome = (UpdateSearchStates.Partial, "The driver offer list reached its payload limit. Only the displayed offers were retained; this is not a complete result.");
+                    break;
+                }
+                found.Add(offer);
             }
             lock (_gate)
             {
                 _updates = found;
-                _searchState = UpdateSearchStates.Done;
+                _searchState = outcome.State;
+                _searchError = outcome.Warning;
                 _searchedAt = DateTimeOffset.UtcNow;
             }
         }
@@ -113,6 +132,7 @@ public sealed class DeviceInventoryService(ILogger<DeviceInventoryService> logge
             lock (_gate)
             {
                 _searchState = UpdateSearchStates.Failed;
+                _updates = [];
                 _searchedAt = DateTimeOffset.UtcNow;
                 _searchError = ex is COMException com
                     ? $"Windows Update returned 0x{com.HResult:X8}. Check that the Windows Update service is running and the PC is online."
@@ -120,6 +140,17 @@ public sealed class DeviceInventoryService(ILogger<DeviceInventoryService> logge
             }
         }
     }
+
+    internal static (string State, string? Warning) SearchOutcome(int resultCode, bool warnings, int totalOffers) =>
+        resultCode switch
+        {
+            2 when totalOffers > MaximumUpdates => (UpdateSearchStates.Partial, $"Windows Update returned {totalOffers} offers; only the first {MaximumUpdates} are displayed. This is not a complete list."),
+            2 when warnings => (UpdateSearchStates.Partial, "Windows Update completed with search warnings. The displayed offers may be incomplete."),
+            2 => (UpdateSearchStates.Done, null),
+            3 => (UpdateSearchStates.Partial, "Windows Update succeeded with errors. The displayed offers may be incomplete and are limited to 200."),
+            5 => (UpdateSearchStates.Failed, "Windows Update aborted the driver search; no complete result is available."),
+            _ => (UpdateSearchStates.Failed, $"Windows Update did not complete the driver search (result {resultCode}). No complete result is available.")
+        };
 
     private static T? Try<T>(Func<T?> read)
     {
@@ -145,7 +176,9 @@ public sealed class DeviceInventoryService(ILogger<DeviceInventoryService> logge
         return new SystemIdentity(maker, model, board, product, tools);
     }
 
-    internal static IReadOnlyList<DeviceEntry> ReadDevices()
+    internal static IReadOnlyList<DeviceEntry> ReadDevices() => ReadDeviceCollection().Devices;
+
+    private static DeviceCollection ReadDeviceCollection()
     {
         var drivers = new Dictionary<string, (string? Provider, string? Version, DateTimeOffset? Date, string? Inf, bool? Signed, string? Signer)>(StringComparer.OrdinalIgnoreCase);
         using (var searcher = new ManagementObjectSearcher("SELECT DeviceID, DriverProviderName, DriverVersion, DriverDate, InfName, IsSigned, Signer FROM Win32_PnPSignedDriver"))
@@ -163,22 +196,76 @@ public sealed class DeviceInventoryService(ILogger<DeviceInventoryService> logge
         }
 
         var devices = new List<DeviceEntry>();
-        using var entities = new ManagementObjectSearcher("SELECT DeviceID, Name, PNPClass, Manufacturer, Status, ConfigManagerErrorCode, Present, HardwareID FROM Win32_PnPEntity");
+        var warnings = new List<string>();
+        var payloadBytes = 2;
+        using var entities = new ManagementObjectSearcher("SELECT DeviceID, Name, PNPClass, Manufacturer, Status, ConfigManagerErrorCode, Present, HardwareID, CompatibleID FROM Win32_PnPEntity");
         entities.Options.Timeout = TimeSpan.FromSeconds(30);
         foreach (ManagementObject item in entities.Get())
         {
             using (item)
             {
-                if (item["DeviceID"] is not string id || devices.Count >= MaximumDevices) continue;
+                if (item["DeviceID"] is not string id) continue;
+                if (devices.Count >= MaximumDevices)
+                {
+                    warnings.Add($"The device list reached its {MaximumDevices}-device limit; inventory is incomplete.");
+                    break;
+                }
                 drivers.TryGetValue(id, out var driver);
-                var hardware = item["HardwareID"] is string[] { Length: > 0 } ids ? Clean(ids[0], 256) : null;
-                devices.Add(new DeviceEntry(Clean(id, 400) ?? "", Clean(item["Name"] as string, 200) ?? "Unknown device", Clean(item["PNPClass"] as string, 64) ?? "Other",
+                var identifiers = Identifiers(item["HardwareID"] as string[], item["CompatibleID"] as string[]);
+                if (identifiers.Truncated && !warnings.Any(w => w.StartsWith("Some device identifiers", StringComparison.Ordinal)))
+                    warnings.Add("Some device identifiers exceeded collection limits or were invalid; exact driver matching may be incomplete.");
+                var device = new DeviceEntry(Clean(id, 400) ?? "Unknown", Clean(item["Name"] as string, 200) ?? "Unknown device", Clean(item["PNPClass"] as string, 64) ?? "Other",
                     Clean(item["Manufacturer"] as string, 128) ?? "", Clean(item["Status"] as string, 32) ?? "Unknown",
                     item["ConfigManagerErrorCode"] is uint code ? (int)Math.Min(code, 999) : 0, item["Present"] as bool? ?? true,
-                    driver.Provider, driver.Version, driver.Date, driver.Inf, driver.Signed, driver.Signer, hardware));
+                    driver.Provider, driver.Version, driver.Date, driver.Inf, driver.Signed, driver.Signer,
+                    identifiers.Hardware.FirstOrDefault(), identifiers.Hardware, identifiers.Compatible);
+                if (!TryAddDevice(devices, device, ref payloadBytes))
+                {
+                    warnings.Add("The device list reached its payload limit; inventory and exact driver matching are incomplete.");
+                    break;
+                }
             }
         }
-        return devices.OrderBy(d => d.Class, StringComparer.OrdinalIgnoreCase).ThenBy(d => d.Name, StringComparer.OrdinalIgnoreCase).ToArray();
+        if (devices.Count == 0) warnings.Add("Windows returned no devices; device health cannot be determined.");
+        return new DeviceCollection(devices.OrderBy(d => d.Class, StringComparer.OrdinalIgnoreCase).ThenBy(d => d.Name, StringComparer.OrdinalIgnoreCase).ToArray(), warnings);
+    }
+
+    internal static bool TryAddDevice(List<DeviceEntry> devices, DeviceEntry device, ref int payloadBytes)
+    {
+        var bytes = BoundedJson.Serialize(device).Length + 1;
+        if (devices.Count >= MaximumDevices || payloadBytes + bytes > DeviceInventoryLimits.MaximumDevicePayloadBytes) return false;
+        payloadBytes += bytes;
+        devices.Add(device);
+        return true;
+    }
+
+    // Never shorten/clean IDs into a different identifier that could falsely match another device.
+    private static string? Identifier(string? value) => value is { Length: > 0 and <= DeviceInventoryLimits.MaximumIdentifierLength }
+        && !string.IsNullOrWhiteSpace(value) && !value.Any(char.IsControl) ? value : null;
+
+    internal static (IReadOnlyList<string> Hardware, IReadOnlyList<string> Compatible, bool Truncated) Identifiers(
+        IEnumerable<string>? hardware, IEnumerable<string>? compatible)
+    {
+        var characters = 0;
+        var truncated = false;
+        IReadOnlyList<string> Read(IEnumerable<string>? source)
+        {
+            var values = new List<string>();
+            foreach (var value in source ?? [])
+            {
+                var id = Identifier(value);
+                if (id is null) { truncated = true; continue; }
+                if (values.Contains(id, StringComparer.OrdinalIgnoreCase)) continue;
+                if (values.Count >= DeviceInventoryLimits.MaximumIdentifiersPerKind
+                    || characters + id.Length > DeviceInventoryLimits.MaximumIdentifierCharacters) { truncated = true; continue; }
+                values.Add(id);
+                characters += id.Length;
+            }
+            return values;
+        }
+        var hardwareIds = Read(hardware);
+        var compatibleIds = Read(compatible);
+        return (hardwareIds, compatibleIds, truncated);
     }
 
     /// <summary>WMI CIM_DATETIME ("20230115000000.000000-000") to a date.</summary>
@@ -215,6 +302,7 @@ public sealed class DeviceInventoryService(ILogger<DeviceInventoryService> logge
                 catch (Exception ex) when (ex is Newtonsoft.Json.JsonException or InvalidDataException) { request = null; }
                 var response = await HandleAsync(request, timeout.Token);
                 var payload = BoundedJson.Serialize(response);
+                if (payload.Length > BoundedJson.MaximumPayloadBytes) throw new InvalidDataException("The device response exceeded its payload limit.");
                 BinaryPrimitives.WriteInt32LittleEndian(lengthBytes, payload.Length);
                 await pipe.WriteAsync(lengthBytes, timeout.Token);
                 await pipe.WriteAsync(payload, timeout.Token);

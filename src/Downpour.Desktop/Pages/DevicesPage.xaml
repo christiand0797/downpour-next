@@ -18,7 +18,7 @@
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Top">
                     <Button x:Name="SearchButton" Content="Check for driver updates" Click="Search_Click" ToolTipService.ToolTip="Ask Windows Update which driver updates exist for this PC. Read-only: nothing is downloaded or installed." />
                     <Button Content="Device Manager" Click="DeviceManager_Click" ToolTipService.ToolTip="Open Windows Device Manager to update, roll back, uninstall or reinstall a driver." />
-                    <Button x:Name="InstallDriversButton" Content="Install driver updates" Click="InstallDrivers_Click" Style="{StaticResource AccentButtonStyle}" ToolTipService.ToolTip="Downpour finds every Microsoft-signed driver Windows Update has for this PC's exact hardware, then downloads and installs them itself." />
+                    <Button x:Name="InstallDriversButton" Content="Install offered drivers" Click="InstallDrivers_Click" Style="{StaticResource AccentButtonStyle}" ToolTipService.ToolTip="Starts a fresh Windows Update search and installs the applicable driver batch across all devices after confirmation and Windows elevation. This does not select a single offer." />
                     <Button Content="Refresh" Click="Refresh_Click" />
                 </StackPanel>
             </Grid>
@@ -44,7 +44,7 @@
             </Border>
 
             <TextBlock Text="Needs attention" Style="{StaticResource HudSectionTitleStyle}" />
-            <TextBlock x:Name="ProblemsEmpty" Text="Every connected device has a working driver." Foreground="{StaticResource HudGreenBrush}" Visibility="Collapsed" />
+            <TextBlock x:Name="ProblemsEmpty" Text="No problems reported for the devices shown." Foreground="{StaticResource HudGreenBrush}" Visibility="Collapsed" />
             <StackPanel x:Name="ProblemsPanel" Spacing="8" />
 
             <TextBlock Text="Driver updates from Windows Update" Style="{StaticResource HudSectionTitleStyle}" />
@@ -84,7 +84,7 @@
                 <StackPanel Spacing="6">
                     <TextBlock Text="Updating, reinstalling and removing drivers" FontWeight="SemiBold" Foreground="{StaticResource HudAmberBrush}" />
                     <TextBlock FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"
-                               Text="Driver changes need administrator rights and can leave a PC without a working network or display if they go wrong, so they run in Windows' own tools: Optional updates installs Windows Update drivers; Device Manager can update, roll back, uninstall and reinstall a driver. One-click changes inside Downpour will come with the elevated driver broker, which backs up the current driver and can roll it back automatically." />
+                               Text="Install offered drivers performs a fresh Windows Update search and installs the applicable driver batch across this PC, including offers beyond a capped display list. It requires confirmation and Windows administrator permission and never restarts automatically. Per-device selection and automatic driver rollback are not provided. Device Manager can update, roll back, uninstall or reinstall individual drivers." />
                 </StackPanel>
             </Border>
         </StackPanel>

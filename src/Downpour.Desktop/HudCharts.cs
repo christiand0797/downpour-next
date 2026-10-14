@@ -61,10 +61,36 @@ public abstract partial class HudChart : UserControl
         _title.Foreground = HudPalette.Resource("HudTextDimBrush");
         _subtitle.Foreground = HudPalette.Resource("HudTextFaintBrush");
         var stack = new StackPanel { Spacing = 8 };
-        stack.Children.Add(_title);
+        var header = new Grid { ColumnSpacing = 8 };
+        header.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        header.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        header.Children.Add(new Border
+        {
+            Width = 3, Height = 12, CornerRadius = new CornerRadius(1),
+            Background = new SolidColorBrush(HudPalette.Categorical[0]), IsHitTestVisible = false,
+        });
+        Grid.SetColumn(_title, 1);
+        _title.TextTrimming = TextTrimming.CharacterEllipsis;
+        header.Children.Add(_title);
+        stack.Children.Add(header);
+        stack.Children.Add(new Border
+        {
+            Height = 1, IsHitTestVisible = false,
+            Background = new LinearGradientBrush
+            {
+                StartPoint = new Windows.Foundation.Point(0, 0), EndPoint = new Windows.Foundation.Point(1, 0),
+                GradientStops =
+                {
+                    new GradientStop { Color = Color.FromArgb(100, 21, 164, 183), Offset = 0 },
+                    new GradientStop { Color = Color.FromArgb(75, 161, 111, 253), Offset = .55 },
+                    new GradientStop { Color = Color.FromArgb(0, 161, 111, 253), Offset = 1 },
+                },
+            },
+        });
         stack.Children.Add(body);
         stack.Children.Add(_subtitle);
-        Content = new Border
+        var frame = new Grid();
+        frame.Children.Add(new Border
         {
             Padding = new Thickness(16, 12, 16, 12),
             CornerRadius = new CornerRadius(12),
@@ -72,7 +98,23 @@ public abstract partial class HudChart : UserControl
             Background = HudPalette.Resource("HudPanelBrush"),
             BorderBrush = HudPalette.Resource("HudEdgeBrush"),
             Child = stack,
-        };
+        });
+        // Static corner brackets decorate the frame, never the data plot or its hit targets.
+        frame.Children.Add(new Border
+        {
+            Width = 26, Height = 15, HorizontalAlignment = HorizontalAlignment.Left,
+            VerticalAlignment = VerticalAlignment.Top, Margin = new Thickness(4),
+            BorderThickness = new Thickness(1, 1, 0, 0), CornerRadius = new CornerRadius(8, 0, 0, 0),
+            BorderBrush = new SolidColorBrush(Color.FromArgb(130, 21, 164, 183)), IsHitTestVisible = false,
+        });
+        frame.Children.Add(new Border
+        {
+            Width = 26, Height = 15, HorizontalAlignment = HorizontalAlignment.Right,
+            VerticalAlignment = VerticalAlignment.Bottom, Margin = new Thickness(4),
+            BorderThickness = new Thickness(0, 0, 1, 1), CornerRadius = new CornerRadius(0, 0, 8, 0),
+            BorderBrush = new SolidColorBrush(Color.FromArgb(130, 161, 111, 253)), IsHitTestVisible = false,
+        });
+        Content = frame;
     }
 
     public string Title { get => _title.Text; set => _title.Text = value.ToUpperInvariant(); }

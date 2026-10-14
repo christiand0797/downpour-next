@@ -29,6 +29,30 @@
                         IsPaneToggleButtonVisible="False" IsSettingsVisible="False"
                         PaneDisplayMode="Left" OpenPaneLength="252" SelectionChanged="NavView_SelectionChanged"
                         SizeChanged="NavView_SizeChanged" Background="Transparent">
+            <NavigationView.PaneHeader>
+                <Border x:Name="NavigationIdentity" Margin="12,6,12,16" Padding="14,13" CornerRadius="12"
+                        BorderThickness="1" BorderBrush="#504BCADB" HorizontalAlignment="Stretch">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                            <GradientStop Color="#D0122937" Offset="0" />
+                            <GradientStop Color="#E016112C" Offset="1" />
+                        </LinearGradientBrush>
+                    </Border.Background>
+                    <StackPanel Spacing="7">
+                        <TextBlock Text="DOWNPOUR" FontSize="17" FontWeight="SemiBold" CharacterSpacing="180" Foreground="{ThemeResource HudTextBrush}" />
+                        <TextBlock Text="SECURITY OPERATIONS" FontSize="10" CharacterSpacing="100" Foreground="{ThemeResource HudTextDimBrush}" />
+                        <Border Height="2" Margin="0,3,0,0" CornerRadius="1" IsHitTestVisible="False">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                    <GradientStop Color="#B000E5FF" Offset="0" />
+                                    <GradientStop Color="#909F77FD" Offset="0.6" />
+                                    <GradientStop Color="#10FF2BD6" Offset="1" />
+                                </LinearGradientBrush>
+                            </Border.Background>
+                        </Border>
+                    </StackPanel>
+                </Border>
+            </NavigationView.PaneHeader>
             <NavigationView.MenuItems />
             <Frame x:Name="NavFrame" Background="Transparent" />
         </NavigationView>

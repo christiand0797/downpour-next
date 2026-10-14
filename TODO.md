@@ -2,10 +2,11 @@
 
 ## 2026-10-09 active milestone
 
-- [ ] DN-044: verify maximized launch, native restore and resizing; implementation complete.
-- [ ] DN-040: local aggregate learning, bounded persistence, read-only recommendations and Settings pause implemented; full/native acceptance pending.
+- [x] DN-044: native packaged maximized startup, restore, resize and owned-service shutdown verified at 80004fa.
+- [x] DN-040: initial local aggregate learning, bounded persistence, read-only recommendations and Settings pause; full/native acceptance passed in v0.1.21.
 - [x] Fix empty Threat Pulse history being mistaken for learned quiet time.
-- [ ] Build, verify and publish v0.1.21, then continue remaining engine, driver and visual work.
+- [x] Build, verify and publish v0.1.21; Latest, tag and all uploaded digests verified.
+- [ ] DN-043 in progress (2026-10-13): tapered tree/bark, coordinated sidebar and chart frames; build and publish v0.1.22 after verification.
 
 
 ## Latest release continuation (DN-010, 2026-10-08)
@@ -13,7 +14,7 @@
 - [x] Reconcile commits through 6fbaf37 and review the elevated fixer.
 - [x] Persist recovery intent before changes; preserve failed rollback; gate privileged error/watchdog writes on storage validation; four new regression tests.
 - [x] Build/test/publish v0.1.20 at 7af332e: five executables, 1,196 Debug and Release tests, nine native routes, YARA and integrity smoke, ZIP/SBOM/GitHub digests verified.
-- [ ] DN-040: explainable local adaptive engine; no API/LLM.
+- [x] DN-040 initial slice: explainable local aggregate learning; no API/LLM. Broader reasoning and feedback remain future work.
 - [ ] DN-041: additional licensed threat feeds with freshness and provenance.
 - [ ] DN-042: precise hardware-ID driver discovery and missing-device rescan.
 - [ ] DN-043: realistic tree trunk/branches and matching sidebar/charts.

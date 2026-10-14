@@ -15,7 +15,18 @@ public sealed record DeviceEntry(
     string? InfName,
     bool? DriverSigned,
     string? DriverSigner,
-    string? HardwareId);
+    string? HardwareId,
+    IReadOnlyList<string>? HardwareIds = null,
+    IReadOnlyList<string>? CompatibleIds = null);
+
+public static class DeviceInventoryLimits
+{
+    public const int MaximumIdentifiersPerKind = 16;
+    public const int MaximumIdentifierLength = 256;
+    public const int MaximumIdentifierCharacters = 4096;
+    public const int MaximumDevicePayloadBytes = 768 * 1024;
+    public const int MaximumUpdatePayloadBytes = 192 * 1024;
+}
 
 /// <summary>A driver update Windows Update offers for this PC (found by a read-only search).</summary>
 public sealed record DriverUpdateOffer(
@@ -39,6 +50,7 @@ public static class UpdateSearchStates
     public const string NotSearched = "not-searched";
     public const string Searching = "searching";
     public const string Done = "done";
+    public const string Partial = "partial";
     public const string Failed = "failed";
 }
 

@@ -16,6 +16,7 @@ public sealed partial class CognitiveImmuneSystemPage : Page
     private CancellationTokenSource _lifetime = new();
     private CancellationTokenSource? _integrityCancellation;
     private CisAssessment? _assessment;
+    private LocalLearningSnapshot? _learningAssessment;
     private PackageIntegrityAssessment? _integrity;
     private bool _refreshing;
     private bool _checking;
@@ -67,7 +68,8 @@ public sealed partial class CognitiveImmuneSystemPage : Page
                 response is { Accepted: true } ? response.Settings : null), token);
             if (generation != _generation || token.IsCancellationRequested) return;
             _assessment = assessment;
-            RenderLearning(learning.Result);
+            _learningAssessment = learning.Result;
+            RenderLearning(_learningAssessment);
             AssessmentStatus.Text = $"{assessment.Status} · checked {assessment.CapturedAtUtc:u} · live, updates every second";
             WindowScope.Text = $"Returned {Count(assessment.ReviewedAlerts)} of {Count(assessment.StoredAlerts)} stored alerts. Alert snapshot: {assessment.AlertCapturedAtUtc?.ToString("u") ?? "unavailable"}.";
             MeasuredCounts.Text = $"Open: {Count(assessment.OpenAlerts)} · Urgent open: {Count(assessment.UrgentOpenAlerts)} · User-verified active: {Count(assessment.VerifiedActiveAlerts)}";
@@ -86,6 +88,7 @@ public sealed partial class CognitiveImmuneSystemPage : Page
             if (generation == _generation)
             {
                 _assessment = null;
+                _learningAssessment = null;
                 RenderLearning(null);
                 CopyReportButton.IsEnabled = false;
                 AssessmentStatus.Text = "Measurements unavailable";
@@ -176,12 +179,12 @@ public sealed partial class CognitiveImmuneSystemPage : Page
         if (_assessment is null) return;
         try
         {
-            var report = CognitiveImmuneSystemCoordinator.CreateReport(_assessment, _integrity);
+            var report = CognitiveImmuneSystemCoordinator.CreateReport(_assessment, _integrity, _learningAssessment);
             if (System.Text.Encoding.UTF8.GetByteCount(report) > 1024 * 1024) throw new InvalidDataException("Report exceeds its size limit.");
             var data = new DataPackage();
             data.SetText(report);
             Clipboard.SetContent(data);
-            Notify(InfoBarSeverity.Success, "Review report copied", "Contains measured metadata, collection limits and any completed integrity findings. No file contents are included.");
+            Notify(InfoBarSeverity.Success, "Review report copied", "Contains measured metadata, local learning from the same review, collection limits and any completed integrity findings. No file contents are included.");
         }
         catch (Exception ex) { Notify(InfoBarSeverity.Error, "Report copy failed", ex.GetType().Name); }
     }

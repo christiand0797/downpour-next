@@ -101,8 +101,16 @@
             <SolidColorBrush x:Key="NavigationViewItemBackgroundSelectedPointerOver" Color="#3600E5FF" />
             <SolidColorBrush x:Key="NavigationViewItemBackgroundPointerOver" Color="#1A00E5FF" />
             <SolidColorBrush x:Key="NavigationViewItemHeaderForeground" Color="#FFFF2BD6" />
-            <SolidColorBrush x:Key="NavigationViewDefaultPaneBackground" Color="#B8030A16" />
-            <SolidColorBrush x:Key="NavigationViewExpandedPaneBackground" Color="#E0030A16" />
+            <LinearGradientBrush x:Key="NavigationViewDefaultPaneBackground" StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="#EB071522" Offset="0" />
+                <GradientStop Color="#DF100E20" Offset="0.65" />
+                <GradientStop Color="#EB061321" Offset="1" />
+            </LinearGradientBrush>
+            <LinearGradientBrush x:Key="NavigationViewExpandedPaneBackground" StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="#F5071522" Offset="0" />
+                <GradientStop Color="#EF100E20" Offset="0.65" />
+                <GradientStop Color="#F5061321" Offset="1" />
+            </LinearGradientBrush>
             <SolidColorBrush x:Key="NavigationViewContentBackground" Color="Transparent" />
             <SolidColorBrush x:Key="NavigationViewContentGridBorderBrush" Color="#4020C8FF" />
 

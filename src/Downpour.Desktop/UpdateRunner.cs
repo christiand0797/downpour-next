@@ -15,7 +15,8 @@ internal static class UpdateRunner
         var what = scope switch { "drivers" => "driver updates", "software" => "Windows security and quality updates", _ => "all Windows and driver updates" };
         if (!await ActionFlows.ConfirmAsync(root, $"Install {what}?",
                 $"Downpour asks Windows Update for every pending {what.Replace("all ", "")}, then downloads and installs them one by one. " +
-                "Only Microsoft-signed updates offered for this PC's exact hardware and Windows version are installed. " +
+                (scope == "drivers" ? "This is a batch for all applicable devices, not a single device or selected offer. A fresh search can differ from the displayed list. " : "") +
+                "Updates come from Windows Update's applicable offers for this PC. Updates requiring interactive installation are skipped. " +
                 "Windows asks for permission once. Downpour never restarts the PC on its own; it tells you when a restart is needed.", "Install"))
             return null;
         Running = true;

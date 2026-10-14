@@ -539,6 +539,8 @@ public sealed partial class MainWindow : Window
 
     private void UpdateNavigationContentWidth()
     {
+        if (NavigationIdentity is not null)
+            NavigationIdentity.Visibility = NavView.IsPaneOpen ? Visibility.Visible : Visibility.Collapsed;
         var paneWidth = NavView.IsPaneOpen ? NavView.OpenPaneLength : NavView.CompactPaneLength;
         var contentWidth = Math.Max(0, NavView.ActualWidth - paneWidth);
         if (contentWidth > 0 && Math.Abs(NavFrame.Width - contentWidth) > 0.5) NavFrame.Width = contentWidth;

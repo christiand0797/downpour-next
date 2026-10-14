@@ -328,9 +328,8 @@ public sealed partial class BlossomScene : UserControl
 
     private void DrawTree()
     {
-        var bark = new SolidColorBrush(Color.FromArgb(255, 98, 54, 100));
-        var barkLight = new SolidColorBrush(Color.FromArgb(255, 176, 116, 178));
-        Branch(new Point(26, TreeSceneHeight + 12), -70, 150, 40, 0, bark, barkLight);
+        // Surface detail uses its own seed, so changing bark never changes the canopy or falling petals.
+        Branch(new Point(26, TreeSceneHeight + 12), -70, 150, 40, 0, new Random(739));
         // A dense canopy band across the upper left, like blossoms hanging over the page.
         for (var x = 0.0; x < 760; x += 16)
         {
@@ -354,30 +353,122 @@ public sealed partial class BlossomScene : UserControl
         }
     }
 
-    private void Branch(Point start, double angleDegrees, double length, double thickness, int depth, Brush bark, Brush barkLight)
+    private void Branch(Point start, double angleDegrees, double length, double thickness, int depth, Random barkRandom)
     {
         var angle = angleDegrees * Math.PI / 180;
         var bend = (_random.NextDouble() - 0.5) * 0.6;
         var end = new Point(start.X + Math.Cos(angle) * length, start.Y + Math.Sin(angle) * length);
         var control = new Point(start.X + Math.Cos(angle + bend) * length * 0.55, start.Y + Math.Sin(angle + bend) * length * 0.55);
-        foreach (var (brush, width, offset) in new[] { (bark, thickness, 0.0), (barkLight, Math.Max(1, thickness * 0.28), -thickness * 0.18) })
+        var centerline = Bezier(start, Lerp(start, control, 2.0 / 3), Lerp(end, control, 2.0 / 3), end, depth < 2 ? 24 : 16);
+        // A broad base narrows into each fork; the small child overlap hides a cut-off joint.
+        var startWidth = thickness * (depth == 0 ? 1.35 : 1.04);
+        var endWidth = thickness * 0.65;
+        var bark = new LinearGradientBrush
         {
-            var figure = new PathFigure { StartPoint = new Point(start.X + offset, start.Y) };
-            figure.Segments.Add(new QuadraticBezierSegment { Point1 = new Point(control.X + offset, control.Y), Point2 = new Point(end.X + offset, end.Y) });
-            var geometry = new PathGeometry();
-            geometry.Figures.Add(figure);
-            _treeScene.Children.Add(new Microsoft.UI.Xaml.Shapes.Path
+            StartPoint = new Point(0.5 + Math.Sin(angle) * 0.5, 0.5 - Math.Cos(angle) * 0.5),
+            EndPoint = new Point(0.5 - Math.Sin(angle) * 0.5, 0.5 + Math.Cos(angle) * 0.5),
+            GradientStops =
             {
-                Data = geometry, Stroke = brush, StrokeThickness = width, StrokeStartLineCap = PenLineCap.Round, StrokeEndLineCap = PenLineCap.Round,
-            });
-        }
+                new GradientStop { Color = Color.FromArgb(255, 31, 27, 35), Offset = 0 },
+                new GradientStop { Color = Color.FromArgb(255, 94, 73, 76), Offset = 0.28 },
+                new GradientStop { Color = Color.FromArgb(255, 126, 96, 96), Offset = 0.42 },
+                new GradientStop { Color = Color.FromArgb(255, 66, 48, 53), Offset = 0.68 },
+                new GradientStop { Color = Color.FromArgb(255, 33, 28, 38), Offset = 1 },
+            },
+        };
+        _treeScene.Children.Add(Tapered(centerline, startWidth, endWidth, bark, null, 0));
+        // Texture is bounded to the trunk and major limbs and is constructed only once, never per frame.
+        if (depth <= 2) DrawBarkTexture(centerline, startWidth, endWidth, depth, barkRandom);
         if (depth >= 2) _blossomSpots.Add(end);
         if (depth >= 5 || thickness < 1.4) { _blossomSpots.Add(end); return; }
         var children = depth == 0 ? 3 : _random.NextDouble() < 0.45 ? 3 : 2;
         for (var i = 0; i < children; i++)
         {
             var spread = depth == 0 ? new[] { -26.0, 12.0, 44.0 }[i] : (_random.NextDouble() - 0.35) * 70;
-            Branch(end, angleDegrees + spread + (depth == 0 ? 0 : 6), length * (0.62 + _random.NextDouble() * 0.2), thickness * 0.62, depth + 1, bark, barkLight);
+            Branch(end, angleDegrees + spread + (depth == 0 ? 0 : 6), length * (0.62 + _random.NextDouble() * 0.2), thickness * 0.62, depth + 1, barkRandom);
+        }
+    }
+
+    private void DrawBarkTexture(Point[] line, double startWidth, double endWidth, int depth, Random random)
+    {
+        // Positions follow the local tangent, so grain and cherry-bark lenticels wrap around curved limbs.
+        Point Surface(double t, double across)
+        {
+            var sample = Math.Clamp(t, 0, 1) * (line.Length - 1);
+            var index = Math.Min(line.Length - 2, (int)sample);
+            var center = Lerp(line[index], line[index + 1], sample - index);
+            var dx = line[index + 1].X - line[index].X;
+            var dy = line[index + 1].Y - line[index].Y;
+            var span = Math.Max(0.001, Math.Sqrt(dx * dx + dy * dy));
+            var distance = across * (startWidth + (endWidth - startWidth) * t) / 2;
+            return Offset(center, -dy / span * distance, dx / span * distance);
+        }
+
+        var grooves = new PathGeometry();
+        var highlights = new PathGeometry();
+        var lenticels = new PathGeometry();
+        var knots = new PathGeometry();
+        var ridges = depth == 0 ? 7 : 4;
+        for (var ridge = 0; ridge < ridges; ridge++)
+        {
+            var across = -0.76 + ridge * 1.5 / (ridges - 1);
+            var phase = random.NextDouble() * Math.PI * 2;
+            var begin = 0.03 + random.NextDouble() * 0.12;
+            var finish = 0.8 + random.NextDouble() * 0.15;
+            foreach (var (geometry, shift) in new[] { (grooves, 0.0), (highlights, 0.045) })
+            {
+                var figure = new PathFigure { StartPoint = Surface(begin, across + shift) };
+                for (var step = 1; step <= 12; step++)
+                {
+                    var t = begin + (finish - begin) * step / 12;
+                    figure.Segments.Add(new LineSegment { Point = Surface(t, across + shift + Math.Sin(t * 9 + phase) * 0.045) });
+                }
+                geometry.Figures.Add(figure);
+            }
+        }
+
+        // Short, irregular horizontal marks are characteristic of cherry bark; leave space between them.
+        for (var mark = 0; mark < (depth == 0 ? 11 : 5); mark++)
+        {
+            var t = 0.12 + random.NextDouble() * 0.72;
+            var across = -0.6 + random.NextDouble() * 0.9;
+            var width = 0.12 + random.NextDouble() * 0.22;
+            var figure = new PathFigure { StartPoint = Surface(t, across) };
+            figure.Segments.Add(new QuadraticBezierSegment
+            {
+                Point1 = Surface(t + 0.009, across + width / 2), Point2 = Surface(t, across + width),
+            });
+            lenticels.Figures.Add(figure);
+        }
+
+        if (depth <= 1)
+        {
+            // An elongated old bud scar nestles within the grain, with a smaller dark inner seam.
+            var t = 0.48 + random.NextDouble() * 0.15;
+            var across = -0.25 + random.NextDouble() * 0.4;
+            var scar = new PathFigure { StartPoint = Surface(t - 0.06, across), IsClosed = true };
+            scar.Segments.Add(new QuadraticBezierSegment { Point1 = Surface(t, across - 0.23), Point2 = Surface(t + 0.06, across) });
+            scar.Segments.Add(new QuadraticBezierSegment { Point1 = Surface(t, across + 0.23), Point2 = Surface(t - 0.06, across) });
+            knots.Figures.Add(scar);
+            var seam = new PathFigure { StartPoint = Surface(t - 0.026, across) };
+            seam.Segments.Add(new QuadraticBezierSegment { Point1 = Surface(t, across - 0.07), Point2 = Surface(t + 0.026, across) });
+            knots.Figures.Add(seam);
+        }
+
+        foreach (var (geometry, color, width) in new[]
+        {
+            (grooves, Color.FromArgb(115, 23, 19, 25), depth == 0 ? 1.1 : 0.7),
+            (highlights, Color.FromArgb(65, 195, 163, 161), 0.55),
+            (lenticels, Color.FromArgb(130, 191, 163, 153), depth == 0 ? 0.85 : 0.6),
+            (knots, Color.FromArgb(150, 35, 26, 31), 0.9),
+        })
+        {
+            if (geometry.Figures.Count == 0) continue;
+            _treeScene.Children.Add(new Microsoft.UI.Xaml.Shapes.Path
+            {
+                Data = geometry, Stroke = new SolidColorBrush(color), StrokeThickness = width,
+                StrokeStartLineCap = PenLineCap.Round, StrokeEndLineCap = PenLineCap.Round, StrokeLineJoin = PenLineJoin.Round,
+            });
         }
     }
 

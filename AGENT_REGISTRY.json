@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-08",
+  "updatedAt": "2026-10-09",
   "agents": [
     {
       "id": "codex-primary",
       "role": "primary",
-      "taskId": "DN-040",
+      "taskId": "DN-010",
       "status": "active",
-      "heartbeatUtc": "2026-10-09T11:30:14.336755+00:00",
-      "notes": "Implement bounded local learning on existing aggregate telemetry, IPC/CIS/Settings integration and tests; startup maximization implemented pending packaged native verification."
+      "heartbeatUtc": "2026-10-14T19:41:31.7107979Z",
+      "notes": "2026-10-14 v0.1.22 candidate integrated: DN043 visuals, DN042 matching and truthful scope, DN040 report, DN041 evidence correction; 1250 Debug tests passed, zero warnings/errors. Preparing clean committed Release and 43-route native checks."
     },
     {
       "id": "v29_action_map",
@@ -56,7 +56,7 @@
       "taskId": "DN-010",
       "status": "idle",
       "heartbeatUtc": "2026-10-05T23:30:00Z",
-      "notes": "DN-010 progress: verified update flow code and tests (ReleaseUpdateClientTests 10/10, UpdatePathPolicyTests 2/2). Update button click-through path: HomePage.xaml.cs UpdateButton_Click \u2192 PortableUpdateInstaller.CheckAndStageAsync \u2192 ReleaseUpdateClient.CheckAsync/DownloadVerifiedPackageAsync \u2192 UpdateArchive.ExtractToStage \u2192 helper copied to %LOCALAPPDATA%\\DownpourNext\\update-helper \u2192 launch UpdateHelper with installRoot/parentPID/version \u2192 helper waits for parent & bundled service, validates manifest/hashes, backs up files, applies atomically, restarts app. Build clean (0 warnings/errors, 144 tests). Self-contained publish requires Windows App Runtime framework. MSIX packaging enabled (EnableMsixTooling=true). Next: code signing research (Authenticode cert for EXE, MSIX package signing), test on clean Windows install, locked-file failure injection."
+      "notes": "DN-010 progress: verified update flow code and tests (ReleaseUpdateClientTests 10/10, UpdatePathPolicyTests 2/2). Update button click-through path: HomePage.xaml.cs UpdateButton_Click → PortableUpdateInstaller.CheckAndStageAsync → ReleaseUpdateClient.CheckAsync/DownloadVerifiedPackageAsync → UpdateArchive.ExtractToStage → helper copied to %LOCALAPPDATA%\\DownpourNext\\update-helper → launch UpdateHelper with installRoot/parentPID/version → helper waits for parent & bundled service, validates manifest/hashes, backs up files, applies atomically, restarts app. Build clean (0 warnings/errors, 144 tests). Self-contained publish requires Windows App Runtime framework. MSIX packaging enabled (EnableMsixTooling=true). Next: code signing research (Authenticode cert for EXE, MSIX package signing), test on clean Windows install, locked-file failure injection."
     },
     {
       "id": "opencode-scanner-agent",
@@ -105,6 +105,22 @@
       "status": "idle",
       "heartbeatUtc": "2026-10-08T21:25:00Z",
       "notes": "v0.1.19 published from a672449. Continuing per-tab charts on remaining tabs and DN-038 follow-ups. | Owner reports usage exhausted; handed over latest committed work 6fbaf37 to codex-primary."
+    },
+    {
+      "id": "codex-driver-plan",
+      "role": "agent",
+      "taskId": "DN-042",
+      "status": "idle",
+      "heartbeatUtc": "2026-10-14T09:01:10.8984181Z",
+      "notes": "2026-10-14 resumed as driver_correctness after usage-limit interruption; no earlier driver draft existed. Exact matching and truthful update scope in progress. Usage limit interrupted agent; root reviewed and completed drafts; 1250 combined Debug tests passed."
+    },
+    {
+      "id": "codex-report",
+      "role": "agent",
+      "taskId": "DN-040",
+      "status": "idle",
+      "heartbeatUtc": "2026-10-14T09:01:10.8984275Z",
+      "notes": "2026-10-14 report_finish reviewing interrupted report draft and adding regression tests. Usage limit interrupted agent; root reviewed and completed drafts; 1250 combined Debug tests passed."
     }
   ]
 }
