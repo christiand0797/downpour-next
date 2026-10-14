@@ -8,6 +8,45 @@ public sealed class ThreatVerdictEngineTests
     private static (ThreatFeedDefinition, string) Hit(string id, string label = "x") => (ThreatFeedCatalog.Find(id)!, label);
 
     [Fact]
+    public void OverlappingReputationListsDoNotManufactureConfidence()
+    {
+        var single = new ThreatEvidence(ThreatMatchPlaces.Dns, "example.test", [Hit("ipsum")], ConnectionObserved: true);
+        var original = ThreatVerdictEngine.Assess(single);
+        var combined = ThreatVerdictEngine.Assess(single with { Hits = [Hit("ipsum"), Hit("ipsum-5"), Hit("firehol-level1"), Hit("firehol-level2")] });
+        Assert.Equal(original.Confidence, combined.Confidence);
+        Assert.Equal(original.Verdict, combined.Verdict);
+        Assert.Equal(ThreatVerdicts.Review, combined.Verdict);
+        Assert.Contains(combined.Reasons, r => r.Contains("Independence is not established"));
+        Assert.DoesNotContain(combined.Reasons, r => r.Contains("independent databases"));
+    }
+
+    [Fact]
+    public void DuplicateListingIdsDoNotIncreaseConfidence()
+    {
+        var evidence = new ThreatEvidence(ThreatMatchPlaces.Connection, "203.0.113.1", [Hit("threatfox")]);
+        Assert.Equal(ThreatVerdictEngine.Assess(evidence).Confidence,
+            ThreatVerdictEngine.Assess(evidence with { Hits = [Hit("threatfox"), Hit("threatfox")] }).Confidence);
+    }
+
+    [Fact]
+    public void ExactProgramHashKeepsItsValueWithoutAMultipleFeedBonus()
+    {
+        var evidence = new ThreatEvidence(ThreatMatchPlaces.Program, "hash", [Hit("malwarebazaar")], Signed: false);
+        var original = ThreatVerdictEngine.Assess(evidence);
+        var combined = ThreatVerdictEngine.Assess(evidence with { Hits = [Hit("malwarebazaar"), Hit("sigbase-hashes")] });
+        Assert.Equal(ThreatVerdicts.Confirmed, combined.Verdict);
+        Assert.Equal(original.Confidence, combined.Confidence);
+    }
+
+    [Fact]
+    public void ObservedConnectionStillAddsEvidenceBeyondALookup()
+    {
+        var evidence = new ThreatEvidence(ThreatMatchPlaces.Dns, "example.test", [Hit("threatfox")], ConnectionObserved: false);
+        Assert.True(ThreatVerdictEngine.Assess(evidence with { ConnectionObserved = true }).Confidence
+            > ThreatVerdictEngine.Assess(evidence).Confidence);
+    }
+
+    [Fact]
     public void DnsLookupOnASinglePhishingListWithoutAConnectionIsOnlyLowPriorityReview()
     {
         var result = ThreatVerdictEngine.Assess(new ThreatEvidence(ThreatMatchPlaces.Dns, "squarehigher.pgslot888x.com", [Hit("phishing-army")], ConnectionObserved: false));

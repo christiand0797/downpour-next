@@ -45,7 +45,7 @@ public static class ThreatVerdicts
 
 /// <summary>
 /// Corroborates database matches before anything is called a threat. A single weak signal (one reputation list, a DNS name
-/// that was only looked up) is never presented as a confirmed threat; independent agreement, exact file hashes, an
+/// that was only looked up) is never presented as a confirmed threat; exact file hashes, an
 /// observed connection, unsigned code in user-writable folders and malware-specific feeds raise confidence. The result
 /// always carries the reasons so a person or a third-party reviewer can check the reasoning. Nothing here acts on the PC.
 /// </summary>
@@ -74,7 +74,9 @@ public static class ThreatVerdictEngine
         var reasons = new List<string>();
         var feeds = e.Hits.Select(h => h.Feed).DistinctBy(f => f.Id).ToArray();
         var names = string.Join(", ", feeds.Select(f => f.Name));
-        reasons.Add(feeds.Length == 1 ? $"Listed by 1 database: {names}." : $"Listed by {feeds.Length} independent databases: {names}.");
+        reasons.Add(feeds.Length == 1 ? $"Listed by 1 database: {names}." : $"Listed by {feeds.Length} databases: {names}.");
+        if (feeds.Length > 1)
+            reasons.Add("These sources may copy or aggregate the same indicators. Independence is not established; additional listings do not increase confidence.");
 
         if (e.Place is ThreatMatchPlaces.Driver) return Driver(e, feeds, reasons);
         if (e.Sinkholed)
@@ -91,13 +93,6 @@ public static class ThreatVerdictEngine
         else if (feeds.Any(f => ReputationFeeds.Contains(f.Id))) { score = 30; reasons.Add("Reputation lists record attacking or scanning addresses, which are often shared or recycled."); }
         else { score = 15; reasons.Add("Only an informational list matches (for example a Tor exit relay)."); }
 
-        var independent = feeds.Count(f => f.Kind != ThreatFeedKinds.Lolbin && f.Id != "tor-exit");
-        if (independent > 1)
-        {
-            var bonus = Math.Min(30, (independent - 1) * 12);
-            score += bonus;
-            reasons.Add($"{independent} independent databases agree (+{bonus}).");
-        }
         if (e.ParentDomainOnly) { score -= 10; reasons.Add("Only a parent domain is listed, not this exact name (-10)."); }
 
         if (e.Place == ThreatMatchPlaces.Dns)
@@ -163,7 +158,6 @@ public static class ThreatVerdictEngine
     {
         reasons.Add("Exact SHA-256/SHA-1/MD5 match on the running program's file.");
         var score = 90;
-        if (feeds.Length > 1) { score = 97; reasons.Add("More than one malware database has this exact file."); }
         if (e.Signed == true)
         {
             score -= 15;
