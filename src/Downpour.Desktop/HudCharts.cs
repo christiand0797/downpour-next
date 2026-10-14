@@ -223,7 +223,9 @@ public sealed partial class TopBarsChart : HudChart
     private readonly StackPanel _rows;
     private string _signature = "";
 
-    public TopBarsChart() : base(new StackPanel { Spacing = 6 }) => _rows = (StackPanel)((StackPanel)((Border)Content).Child).Children[1];
+    public TopBarsChart() : this(new StackPanel { Spacing = 6 }) { }
+
+    private TopBarsChart(StackPanel rows) : base(rows) => _rows = rows;
 
     public int Limit { get; set; } = 6;
 
