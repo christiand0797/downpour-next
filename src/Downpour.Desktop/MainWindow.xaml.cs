@@ -22,6 +22,7 @@ public sealed partial class MainWindow : Window
     private readonly Random _random = new();
     private Microsoft.UI.Dispatching.DispatcherQueueTimer? _rainTimer;
     private Microsoft.UI.Dispatching.DispatcherQueueTimer? _starTimer;
+    private bool _closed;
     private string? _currentRouteId;
     private int _stormPhaseIndex = 1;
     private int _stormPhaseTarget = 1;
@@ -45,12 +46,13 @@ public sealed partial class MainWindow : Window
     {
         _capabilities = CapabilityRegistry.Load(System.IO.Path.Combine(AppContext.BaseDirectory, "capabilities.json"));
         InitializeComponent();
+        Closed += Window_Closed;
         ExtendsContentIntoTitleBar = true;
         SetTitleBar(AppTitleBar);
         AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
         AppWindow.SetIcon("Assets/AppIcon.ico");
         FitToWorkArea();
-        AppWindow.Changed += (_, args) => { if (args.DidPresenterChange || args.DidSizeChange) UpdateMaximizedInset(); };
+        AppWindow.Changed += AppWindow_Changed;
         UpdateMaximizedInset();
         InitializeStorm();
         StormModeController.ModeChanged += ApplyStormMode;
@@ -68,17 +70,49 @@ public sealed partial class MainWindow : Window
         _rainTimer = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread().CreateTimer();
         _rainTimer.Interval = TimeSpan.FromMilliseconds(33);
         _rainTimer.IsRepeating = true;
-        _rainTimer.Tick += (_, _) => AnimateRain();
+        _rainTimer.Tick += RainTimer_Tick;
 
         _starTimer = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread().CreateTimer();
         _starTimer.Interval = TimeSpan.FromMilliseconds(720);
         _starTimer.IsRepeating = true;
-        _starTimer.Tick += (_, _) => TwinkleStars();
+        _starTimer.Tick += StarTimer_Tick;
+    }
+
+    private void RainTimer_Tick(Microsoft.UI.Dispatching.DispatcherQueueTimer sender, object args) => AnimateRain();
+
+    private void StarTimer_Tick(Microsoft.UI.Dispatching.DispatcherQueueTimer sender, object args) => TwinkleStars();
+
+    private void AppWindow_Changed(AppWindow sender, AppWindowChangedEventArgs args)
+    {
+        if (!_closed && (args.DidPresenterChange || args.DidSizeChange)) UpdateMaximizedInset();
+    }
+
+    private void Window_Closed(object sender, WindowEventArgs args)
+    {
+        if (_closed) return;
+        _closed = true;
+        // Dispatcher shutdown drains queued callbacks after the XAML window closes.
+        // Stop and detach timers before that drain, and prevent queued callbacks restarting them.
+        if (_rainTimer is not null)
+        {
+            _rainTimer.Stop();
+            _rainTimer.Tick -= RainTimer_Tick;
+        }
+        if (_starTimer is not null)
+        {
+            _starTimer.Stop();
+            _starTimer.Tick -= StarTimer_Tick;
+        }
+        StormModeController.ModeChanged -= ApplyStormMode;
+        AppPreferences.Changed -= ApplyVisualPreferences;
+        Activated -= Window_Activated;
+        AppWindow.Changed -= AppWindow_Changed;
+        NavFrame.Navigated -= NavFrame_Navigated;
     }
 
     private void ShellRoot_SizeChanged(object sender, SizeChangedEventArgs e)
     {
-        if (e.NewSize.Width <= 0 || e.NewSize.Height <= 0 || _rainDrops.Count > 0) return;
+        if (_closed || e.NewSize.Width <= 0 || e.NewSize.Height <= 0 || _rainDrops.Count > 0) return;
 
         CreateAurora(e.NewSize.Width, e.NewSize.Height);
 
@@ -125,6 +159,7 @@ public sealed partial class MainWindow : Window
 
     private void AnimateRain()
     {
+        if (_closed) return;
         var width = ShellRoot.ActualWidth;
         var height = ShellRoot.ActualHeight;
         if (width <= 0 || height <= 0) return;
@@ -300,6 +335,7 @@ public sealed partial class MainWindow : Window
 
     private void ApplyStormMode(int mode)
     {
+        if (_closed) return;
         _stormPhaseTarget = Math.Clamp(mode, 0, StormPhases.Length - 1);
         _stormPhaseAge = 0;
         _phaseTransitionTicks = 0;
@@ -307,6 +343,7 @@ public sealed partial class MainWindow : Window
 
     private void TwinkleStars()
     {
+        if (_closed) return;
         foreach (var star in _stars)
         {
             var target = _random.NextDouble() * 0.72 + 0.12;
@@ -316,6 +353,7 @@ public sealed partial class MainWindow : Window
 
     private void Window_Activated(object sender, WindowActivatedEventArgs args)
     {
+        if (_closed) return;
         if (args.WindowActivationState == WindowActivationState.Deactivated)
         {
             _rainTimer?.Stop();
@@ -329,6 +367,7 @@ public sealed partial class MainWindow : Window
 
     private void ApplyVisualPreferences()
     {
+        if (_closed) return;
         if (!DispatcherQueue.HasThreadAccess)
         {
             _ = DispatcherQueue.TryEnqueue(ApplyVisualPreferences);
@@ -416,6 +455,7 @@ public sealed partial class MainWindow : Window
     /// </summary>
     private void UpdateMaximizedInset()
     {
+        if (_closed) return;
         var maximized = AppWindow.Presenter is Microsoft.UI.Windowing.OverlappedPresenter { State: Microsoft.UI.Windowing.OverlappedPresenterState.Maximized };
         var scale = ShellRoot.XamlRoot?.RasterizationScale ?? 1.0;
         var border = maximized ? (GetSystemMetrics(SmCySizeFrame) + GetSystemMetrics(SmCxPaddedBorder)) / Math.Max(1.0, scale) : 0;
@@ -430,12 +470,14 @@ public sealed partial class MainWindow : Window
 
     internal void ShowRoute(string routeId)
     {
+        if (_closed) return;
         var capability = _capabilities.FirstOrDefault(candidate => candidate.RouteId.Equals(routeId, StringComparison.OrdinalIgnoreCase));
         if (capability is not null) Navigate(capability);
     }
 
     private void Navigate(CapabilityDefinition capability)
     {
+        if (_closed) return;
         if (string.Equals(_currentRouteId, capability.RouteId, StringComparison.OrdinalIgnoreCase)) return;
         _currentRouteId = capability.RouteId;
         NavView.SelectedItem = _routeItems[capability.RouteId];
@@ -531,6 +573,7 @@ public sealed partial class MainWindow : Window
 
     private void TitleBar_PaneToggleRequested(TitleBar sender, object args)
     {
+        if (_closed) return;
         NavView.IsPaneOpen = !NavView.IsPaneOpen;
         UpdateNavigationContentWidth();
     }
@@ -539,6 +582,7 @@ public sealed partial class MainWindow : Window
 
     private void UpdateNavigationContentWidth()
     {
+        if (_closed) return;
         if (NavigationIdentity is not null)
             NavigationIdentity.Visibility = NavView.IsPaneOpen ? Visibility.Visible : Visibility.Collapsed;
         var paneWidth = NavView.IsPaneOpen ? NavView.OpenPaneLength : NavView.CompactPaneLength;
@@ -548,11 +592,13 @@ public sealed partial class MainWindow : Window
 
     private void TitleBar_BackRequested(TitleBar sender, object args)
     {
+        if (_closed) return;
         if (NavFrame.CanGoBack) NavFrame.GoBack();
     }
 
     private void NavView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
     {
+        if (_closed) return;
         if (args.SelectedItem is not NavigationViewItem item || item.Tag is not string routeId) return;
         var capability = _capabilities.FirstOrDefault(candidate => candidate.RouteId.Equals(routeId, StringComparison.OrdinalIgnoreCase));
         if (capability is not null) Navigate(capability);
@@ -560,6 +606,7 @@ public sealed partial class MainWindow : Window
 
     private void NavFrame_Navigated(object sender, Microsoft.UI.Xaml.Navigation.NavigationEventArgs args)
     {
+        if (_closed) return;
         var routeId = args.Content is CapabilityPage && args.Parameter is CapabilityDefinition capability
             ? capability.RouteId
             : args.Content is HomePage ? "dashboard"
