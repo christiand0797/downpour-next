@@ -1,8 +1,8 @@
 # Downpour Next changelog
 
-## 0.1.22 — 2026-10-14
+## 0.1.22 — 2026-10-16
 
-Natural tapered tree branches and static bark details, coordinated cyan/violet navigation header and panel, shared chart header rules and corner frames. Keeps measured data, severity colors, rain, petals, Kuro and reduced-motion controls. Adds exact hardware/compatible ID matching, truthful batch driver installation scope and partial search states. CIS reports include the same-review learning context. Removes unproven confidence boosts from overlapping feed listings. See RELEASE_0.1.22.md for verification.
+Natural tapered tree branches and static bark details, coordinated cyan/violet navigation header and panel, shared chart header rules and corner frames. Keeps measured data, severity colors, rain, petals, Kuro and reduced-motion controls. Adds exact hardware/compatible ID matching, truthful batch driver installation scope and partial search states. CIS reports include the same-review learning context. Removes unproven confidence boosts from overlapping feed listings. Adds ten locally matched feeds (55 catalog sources), streaming and typed parsing, larger per-source budgets and corrected signed-driver hash explanations. Fixes the native dispatcher shutdown crash by stopping shell timers on close. See RELEASE_0.1.22.md for verification.
 
 ## 0.1.21 — 2026-10-09
 

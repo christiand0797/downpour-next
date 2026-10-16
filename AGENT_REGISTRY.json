@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-09",
+  "updatedAt": "2026-10-16",
   "agents": [
     {
       "id": "codex-primary",
       "role": "primary",
       "taskId": "DN-010",
       "status": "active",
-      "heartbeatUtc": "2026-10-14T19:41:31.7107979Z",
-      "notes": "2026-10-14 v0.1.22 candidate integrated: DN043 visuals, DN042 matching and truthful scope, DN040 report, DN041 evidence correction; 1250 Debug tests passed, zero warnings/errors. Preparing clean committed Release and 43-route native checks."
+      "heartbeatUtc": "2026-10-15T01:05:32.4560735Z",
+      "notes": "Final v22 integration: Debug1308pass,10newfeeds/liveindex passed, native43-route timer-fix proof passed. Commit then clean release rebuild."
     },
     {
       "id": "v29_action_map",
@@ -121,6 +121,30 @@
       "status": "idle",
       "heartbeatUtc": "2026-10-14T09:01:10.8984275Z",
       "notes": "2026-10-14 report_finish reviewing interrupted report draft and adding regression tests. Usage limit interrupted agent; root reviewed and completed drafts; 1250 combined Debug tests passed."
+    },
+    {
+      "id": "codex-shutdown-review",
+      "role": "agent",
+      "taskId": "DN-010",
+      "status": "idle",
+      "heartbeatUtc": "2026-10-15T01:17:52.1583155Z",
+      "notes": "Owns only MainWindow.xaml.cs timer/closed-event cleanup for confirmed native dispatcher shutdown failure. Root owns build/probes/docs. MainWindow cleanup delivered; f66619e pushed. Native dashboard/process/dashboard closes code0 (622/204/291ms), full43 routes now checking."
+    },
+    {
+      "id": "codex-feed-tests",
+      "role": "agent",
+      "taskId": "DN-041",
+      "status": "idle",
+      "heartbeatUtc": "2026-10-15T19:32:03.8934656Z",
+      "notes": "Focused new-source tests / independent review; root owns shared docs and source. Drafts integrated/reviewed by root; combined full Debug1308 pass; stopped before source freeze."
+    },
+    {
+      "id": "codex-feed-review",
+      "role": "agent",
+      "taskId": "DN-041",
+      "status": "idle",
+      "heartbeatUtc": "2026-10-15T19:32:03.899338Z",
+      "notes": "Focused new-source tests / independent review; root owns shared docs and source. Drafts integrated/reviewed by root; combined full Debug1308 pass; stopped before source freeze."
     }
   ]
 }

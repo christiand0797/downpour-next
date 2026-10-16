@@ -1,5 +1,15 @@
 # Downpour Next TODO
 
+## 2026-10-16 active milestone
+
+- [x] Fix shell timer callbacks during dispatcher shutdown; 43 native routes now close with exit code 0.
+- [x] Add ten useful source data paths and verify real downloads against the production parser/local index.
+- [ ] Complete feed type/budget/verdict regressions, full Debug/Release and final five-app package acceptance.
+- [ ] Publish v0.1.22 after final package checks; preserve failed candidate evidence.
+- [ ] DN-041 next: published timestamps/expiry, dependency-aware source provenance, multi-million-record storage and measured incremental coverage; no arbitrary source-count ceiling.
+- [ ] DN-042 remaining: targeted driver install, cancellable WUA search, privileged rescan and recovery acceptance.
+
+
 ## 2026-10-09 active milestone
 
 - [x] DN-044: native packaged maximized startup, restore, resize and owned-service shutdown verified at 80004fa.

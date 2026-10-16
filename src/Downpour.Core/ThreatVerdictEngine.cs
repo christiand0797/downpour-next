@@ -60,9 +60,13 @@ public static class ThreatVerdictEngine
     {
         "spamhaus-drop", "spamhaus-drop-v6", "et-compromised", "firehol-level1", "ipsum", "cins", "greensnow", "blocklist-de",
         "et-block", "firehol-level2", "firehol-level3", "firehol-abusers", "dshield", "bruteforceblocker", "ipsum-5",
+        "threatview-ip", "threatview-domain", "phishing-db-ip",
     };
     private static readonly HashSet<string> PhishingFeeds = new(StringComparer.Ordinal)
-        { "phishing-army", "openphish", "hagezi-tif", "cert-pl", "blp-scam", "scamblocklist", "spam404", "nocoin", "blp-crypto" };
+        { "phishing-army", "openphish", "hagezi-tif", "cert-pl", "blp-scam", "scamblocklist", "spam404", "nocoin", "blp-crypto",
+          "blp-phishing", "blp-fraud", "phishing-db-domain" };
+    // This source reports full URLs, while our local DNS/connection observation identifies only their hosts.
+    private static readonly HashSet<string> UrlHostFeeds = new(StringComparer.Ordinal) { "threatview-url" };
     /// <summary>Mercenary-spyware and stalkerware infrastructure: specific to spying, so weighted like stalkerware.</summary>
     private static readonly HashSet<string> SpywareFeeds = new(StringComparer.Ordinal) { "stalkerware", "amnesty-pegasus", "amnesty-predator" };
     private static readonly HashSet<string> Browsers = new(StringComparer.OrdinalIgnoreCase)
@@ -89,8 +93,9 @@ public static class ThreatVerdictEngine
         int score;
         if (feeds.Any(f => SpywareFeeds.Contains(f.Id))) { score = 60; reasons.Add("Stalkerware and mercenary-spyware server lists are specific to spying tools."); }
         else if (feeds.Any(f => MalwareFeeds.Contains(f.Id))) { score = feeds.Any(f => f.Id == "feodo") ? 70 : 55; reasons.Add("A malware-specific database lists it (stronger than a general reputation list)."); }
-        else if (feeds.Any(f => PhishingFeeds.Contains(f.Id))) { score = 35; reasons.Add("Phishing lists are broad and also catch ad and gambling domains."); }
-        else if (feeds.Any(f => ReputationFeeds.Contains(f.Id))) { score = 30; reasons.Add("Reputation lists record attacking or scanning addresses, which are often shared or recycled."); }
+        else if (feeds.Any(f => UrlHostFeeds.Contains(f.Id))) { score = 40; reasons.Add("A malware URL report lists this host. The URL path was not observed; a host match alone does not prove malware was served."); }
+        else if (feeds.Any(f => PhishingFeeds.Contains(f.Id))) { score = 35; reasons.Add("A phishing or fraud list matches. These broad reports can include stale or misclassified domains; check the observed activity."); }
+        else if (feeds.Any(f => ReputationFeeds.Contains(f.Id))) { score = 30; reasons.Add("Reputation lists record suspicious addresses or domains, which can be shared, recycled or misclassified."); }
         else { score = 15; reasons.Add("Only an informational list matches (for example a Tor exit relay)."); }
 
         if (e.ParentDomainOnly) { score -= 10; reasons.Add("Only a parent domain is listed, not this exact name (-10)."); }
@@ -138,17 +143,27 @@ public static class ThreatVerdictEngine
 
     private static ThreatAssessment Driver(ThreatEvidence e, ThreatFeedDefinition[] feeds, List<string> reasons)
     {
-        var malicious = e.Hits.Any(h => h.Label.StartsWith("Malicious", StringComparison.Ordinal));
+        var malicious = e.Hits.Any(h => h.Feed.Id == "loldrivers" && h.Label.StartsWith("Malicious driver:", StringComparison.Ordinal));
+        var vulnerable = e.Hits.Any(h => h.Feed.Id == "loldrivers" && h.Label.StartsWith("Vulnerable driver:", StringComparison.Ordinal));
+        var otherHashEvidence = feeds.Any(f => f.Id != "loldrivers");
         reasons.Add("Exact file-hash match on the loaded driver.");
         if (malicious)
         {
             reasons.Add("LOLDrivers classifies this driver as malicious.");
             return new(ThreatVerdicts.Confirmed, 95, "CRITICAL", reasons);
         }
-        if (e.Signed == true)
+        if (vulnerable && !otherHashEvidence && e.Signed == true)
         {
             reasons.Add($"Validly signed{(e.Signer is { Length: > 0 } signer ? $" by {signer}" : "")}: a genuine vendor driver with a known flaw, not malware. Risk: attackers can load it to switch off security software. Update or uninstall the software that installed it.");
             return new(ThreatVerdicts.VulnerableLegitimate, 60, "MEDIUM", reasons);
+        }
+        if (vulnerable) reasons.Add("LOLDrivers lists this driver as vulnerable; that classification does not dismiss evidence from other hash databases.");
+        if (otherHashEvidence) reasons.Add("A public hash database lists this driver's file fingerprint. This is evidence to investigate, not a verified classification of the driver as malicious or vulnerable.");
+        if (feeds.Any(f => f.Id == "digitalside-hash")) reasons.Add("DigitalSide supplies historical sample hashes; this archive match is not a new sighting.");
+        if (e.Signed == true)
+        {
+            reasons.Add($"The file is validly signed{(e.Signer is { Length: > 0 } signer ? $" by {signer}" : "")}; signed malware exists. Verify the hash report and publisher before acting.");
+            return new(ThreatVerdicts.Likely, 75, "HIGH", reasons);
         }
         reasons.Add(e.Signed == false ? "The driver file is not validly signed." : "The signature could not be checked.");
         return new(ThreatVerdicts.Likely, 80, "HIGH", reasons);

@@ -219,9 +219,9 @@
   {
     "family": "Threat Intelligence & Remediation",
     "module": "threat_feed_aggregator.py",
-    "description": "Consolidates various OSINT feeds (URLhaus, AbuseCH, etc).",
+    "description": "Partial parity: 55 catalogued public feeds with strict parsers, local matching, provenance, cache integrity and visible health; large-scale storage and source-published expiry remain open.",
     "sourceStatus": "Active",
-    "migrationStatus": "planned"
+    "migrationStatus": "in-progress"
   },
   {
     "family": "Threat Intelligence & Remediation",

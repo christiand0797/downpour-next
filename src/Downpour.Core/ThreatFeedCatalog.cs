@@ -25,6 +25,8 @@ public enum ThreatFeedFormat
     Delimited,
     /// <summary>LOLRMM: remote monitoring/management and remote-access tools (program names as context, service domains).</summary>
     LolRmmJson,
+    /// <summary>DigitalSide lookup object; only typed file hashes are indexed, never historical network locations.</summary>
+    DigitalSideHashesJson,
 }
 
 /// <summary>
@@ -48,7 +50,8 @@ public sealed record ThreatFeedDefinition(
     string Homepage,
     char Separator = ',',
     int Column = 0,
-    int LabelColumn = -1)
+    int LabelColumn = -1,
+    int IndicatorLimit = 400_000)
 {
     public string Host => new Uri(Url).Host;
 }
@@ -91,7 +94,7 @@ public static class ThreatFeedCatalog
             "A low-false-positive blend of DShield, Feodo and Spamhaus lists. Private and reserved ranges are skipped.", "Per source (aggregated)", "https://iplists.firehol.org/"),
         new("ipsum", "IPsum (3+ lists)", "Miroslav Stampar", ThreatFeedKinds.Ip, ThreatFeedFormat.Lines,
             "https://raw.githubusercontent.com/stamparm/ipsum/master/levels/3.txt", 8 * MiB, TimeSpan.FromHours(24), "LOW", "T1071", "Address on 3 or more blocklists",
-            "Addresses that at least three independent blocklists agree on.", "Unlicense", "https://github.com/stamparm/ipsum"),
+            "Addresses listed by at least three blocklists. Upstream lists can overlap; listing count does not prove independent evidence.", "Unlicense", "https://github.com/stamparm/ipsum"),
         new("cins", "CINS Army", "Collective Intelligence Network Security", ThreatFeedKinds.Ip, ThreatFeedFormat.Lines,
             "https://cinsscore.com/list/ci-badguys.txt", 8 * MiB, TimeSpan.FromHours(24), "LOW", "T1071", "Poor-reputation address",
             "Addresses with consistently bad behaviour seen by Sentinel IPS sensors.", "Free use", "https://cinsscore.com/"),
@@ -193,7 +196,38 @@ public static class ThreatFeedCatalog
             "Addresses caught guessing SSH and FTP passwords.", "Free use", "https://danger.rulez.sk/index.php/bruteforceblocker/"),
         new("ipsum-5", "IPsum (5+ lists)", "Miroslav Stampar", ThreatFeedKinds.Ip, ThreatFeedFormat.Lines,
             "https://raw.githubusercontent.com/stamparm/ipsum/master/levels/5.txt", 4 * MiB, TimeSpan.FromHours(24), "MEDIUM", "T1071", "Address on 5 or more blocklists",
-            "Addresses that at least five independent blocklists agree on: very likely malicious.", "Unlicense", "https://github.com/stamparm/ipsum"),
+            "Addresses listed by at least five blocklists. Upstream lists can overlap; investigate the observed activity before acting.", "Unlicense", "https://github.com/stamparm/ipsum"),
+        // Additional public datasets are matched locally. Reputation is evidence to review, not permission to block.
+        new("blp-phishing", "Block List Project phishing", "The Block List Project", ThreatFeedKinds.Domain, ThreatFeedFormat.Lines,
+            "https://blocklistproject.github.io/Lists/alt-version/phishing-nl.txt", 16 * MiB, TimeSpan.FromDays(1), "MEDIUM", "T1566", "Listed phishing domain",
+            "Community-maintained phishing domains; overlaps with other phishing lists are not independent confirmation.", "MIT (feed header); repository Unlicense", "https://github.com/blocklistproject/Lists"),
+        new("blp-fraud", "Block List Project fraud", "The Block List Project", ThreatFeedKinds.Domain, ThreatFeedFormat.Lines,
+            "https://blocklistproject.github.io/Lists/alt-version/fraud-nl.txt", 16 * MiB, TimeSpan.FromDays(1), "LOW", "T1566", "Listed fraud domain",
+            "Domains reported for online fraud. A historical listing needs current local evidence before a response.", "MIT (feed header); repository Unlicense", "https://github.com/blocklistproject/Lists"),
+        new("threatview-ip", "Threatview IP reputation", "Threatview.io", ThreatFeedKinds.Ip, ThreatFeedFormat.Lines,
+            "https://threatview.io/Downloads/IP-High-Confidence-Feed.txt", 4 * MiB, TimeSpan.FromDays(1), "MEDIUM", "T1071", "Threatview-listed address",
+            "Public IP reputation feed for correlation with actual connections; network addresses can change owners.", "Free community use (Threatview terms)", "https://threatview.io/"),
+        new("threatview-domain", "Threatview domain reputation", "Threatview.io", ThreatFeedKinds.Domain, ThreatFeedFormat.Lines,
+            "https://threatview.io/Downloads/DOMAIN-High-Confidence-Feed.txt", 32 * MiB, TimeSpan.FromDays(1), "LOW", "T1071", "Threatview-listed domain",
+            "Threatview's domain dataset for local DNS correlation. Shared-service exclusions and contextual verdicts remain applied.", "Free community use (Threatview terms)", "https://threatview.io/", IndicatorLimit: 1_000_000),
+        new("threatview-md5", "Threatview malware MD5", "Threatview.io", ThreatFeedKinds.Hash, ThreatFeedFormat.Lines,
+            "https://threatview.io/Downloads/MD5-HASH-ALL.txt", 8 * MiB, TimeSpan.FromDays(1), "HIGH", "T1204", "Listed malware MD5 fingerprint",
+            "MD5 sample fingerprints matched to locally hashed files; MD5 is a legacy reputation identifier, not a signature or authenticity proof.", "Free community use (Threatview terms)", "https://threatview.io/"),
+        new("threatview-sha", "Threatview malware SHA hashes", "Threatview.io", ThreatFeedKinds.Hash, ThreatFeedFormat.Lines,
+            "https://threatview.io/Downloads/SHA-HASH-FEED.txt", 8 * MiB, TimeSpan.FromDays(1), "HIGH", "T1204", "Listed malware SHA fingerprint",
+            "SHA-1 and SHA-256 sample fingerprints matched to locally hashed files. The hash type is retained in the index.", "Free community use (Threatview terms)", "https://threatview.io/"),
+        new("threatview-url", "Threatview malware URL hosts", "Threatview.io", ThreatFeedKinds.Mixed, ThreatFeedFormat.UrlLines,
+            "https://threatview.io/Downloads/URL-High-Confidence-Feed.txt", 8 * MiB, TimeSpan.FromDays(1), "MEDIUM", "T1189", "Listed malware delivery host",
+            "Hosts extracted from public HTTP, HTTPS and FTP malware-location reports. URLs are data only; no payload is visited or downloaded.", "Free community use (Threatview terms)", "https://threatview.io/"),
+        new("phishing-db-domain", "Phishing.Database active domains", "Phishing.Database contributors", ThreatFeedKinds.Domain, ThreatFeedFormat.Lines,
+            "https://raw.githubusercontent.com/Phishing-Database/Phishing.Database/master/phishing-domains-ACTIVE.txt", 32 * MiB, TimeSpan.FromHours(12), "MEDIUM", "T1566", "Phishing.Database-listed domain",
+            "Domains the provider's validation lists as active. Reachability does not itself confirm malicious behavior on this PC.", "MIT", "https://github.com/Phishing-Database/Phishing.Database", IndicatorLimit: 1_000_000),
+        new("phishing-db-ip", "Phishing.Database active IPs", "Phishing.Database contributors", ThreatFeedKinds.Ip, ThreatFeedFormat.Lines,
+            "https://raw.githubusercontent.com/Phishing-Database/Phishing.Database/master/phishing-IPs-ACTIVE.txt", 4 * MiB, TimeSpan.FromHours(12), "LOW", "T1566", "Address hosting reported phishing",
+            "Addresses associated with reported phishing infrastructure. Shared hosting can contain unrelated legitimate sites; never blocked automatically.", "MIT", "https://github.com/Phishing-Database/Phishing.Database"),
+        new("digitalside-hash", "DigitalSide historical malware hashes", "DigitalSide / Davide Baglieri", ThreatFeedKinds.Hash, ThreatFeedFormat.DigitalSideHashesJson,
+            "https://raw.githubusercontent.com/davidonzo/Threat-Intel/master/lists/latesthashes.json", 8 * MiB, TimeSpan.FromDays(7), "HIGH", "T1204", "Historical malware sample fingerprint",
+            "Historical sample hashes from the provider's 2024-10-18 archive. Only file hashes are used; old IPs, domains and URLs are excluded.", "MIT (repository license)", "https://github.com/davidonzo/Threat-Intel"),
         // Remote access tools (anti-RAT context).
         new("lolrmm", "LOLRMM remote access tools", "LOLRMM Project", ThreatFeedKinds.Lolbin, ThreatFeedFormat.LolRmmJson,
             "https://lolrmm.io/api/rmm_tools.json", 16 * MiB, TimeSpan.FromDays(3), "LOW", "T1219", "Remote access tool",

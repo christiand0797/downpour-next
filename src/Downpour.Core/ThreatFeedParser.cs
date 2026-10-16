@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using Downpour.Contracts;
 
 namespace Downpour.Core;
 
@@ -34,6 +35,7 @@ public static partial class ThreatFeedParser
     {
         if (payload.Length == 0) throw new InvalidDataException("The feed is empty.");
         if (payload.Length > feed.MaximumBytes) throw new InvalidDataException("The feed exceeds its size limit.");
+        if (feed.IndicatorLimit is < 1 or > 1_000_000) throw new InvalidDataException("Invalid feed indicator budget.");
         if (feed.Format == ThreatFeedFormat.Ip2AsnGzip) return new ParsedThreatFeed([], 0, [], IpOriginDatabase.Parse(payload));
         var result = feed.Format switch
         {
@@ -44,11 +46,13 @@ public static partial class ThreatFeedParser
             ThreatFeedFormat.SpamhausJsonLines => ParseSpamhaus(feed, Text(payload)),
             ThreatFeedFormat.ThreatFoxJson => ParseThreatFox(feed, payload),
             ThreatFeedFormat.LolDriversJson => ParseLolDrivers(feed, payload),
-            ThreatFeedFormat.LolbasJson => ParseLolbas(payload),
+            ThreatFeedFormat.LolbasJson => ParseLolbas(feed, payload),
             ThreatFeedFormat.Delimited => ParseDelimited(feed, Text(payload)),
             ThreatFeedFormat.LolRmmJson => ParseLolRmm(feed, payload),
+            ThreatFeedFormat.DigitalSideHashesJson => ParseDigitalSideHashes(feed, payload),
             _ => throw new InvalidDataException("Unsupported feed format."),
         };
+        if (result.Indicators.Count + result.Lolbins.Count > feed.IndicatorLimit) throw new InvalidDataException("The feed exceeds its entry budget.");
         var total = result.Indicators.Count + result.Lolbins.Count + result.RejectedLines;
         if (result.Indicators.Count + result.Lolbins.Count == 0) throw new InvalidDataException("The feed contained no valid entries.");
         if (total > 20 && result.RejectedLines > total * MaximumRejectedRatio)
@@ -62,31 +66,33 @@ public static partial class ThreatFeedParser
         catch (DecoderFallbackException ex) { throw new InvalidDataException("The feed is not valid UTF-8.", ex); }
     }
 
-    private static List<string> DataLines(string text)
+    private static IEnumerable<string> DataLines(string text, int limit)
     {
-        var lines = new List<string>();
-        foreach (var raw in text.AsSpan().EnumerateLines())
+        // Iterate instead of materializing another copy of large domain lists.
+        using var reader = new StringReader(text);
+        var count = 0;
+        while (reader.ReadLine() is { } raw)
         {
             var line = raw.Trim();
-            if (line.IsEmpty || line[0] is '#' or ';') continue;
-            if (lines.Count >= MaximumIndicators * 2) throw new InvalidDataException("The feed has too many lines.");
-            lines.Add(line.ToString());
+            if (line.Length == 0 || line[0] is '#' or ';') continue;
+            if (++count > limit * 2) throw new InvalidDataException("The feed has too many lines.");
+            yield return line;
         }
-        return lines;
     }
 
     private static ParsedThreatFeed ParseLines(ThreatFeedDefinition feed, string text, bool hostsFile)
     {
         var indicators = new List<ThreatIndicator>();
         var rejected = 0;
-        foreach (var line in DataLines(text))
+        foreach (var line in DataLines(text, feed.IndicatorLimit))
         {
             var tokens = line.Split((char[]?)null, 3, StringSplitOptions.RemoveEmptyEntries);
             var value = hostsFile ? (tokens.Length >= 2 && tokens[0] is "127.0.0.1" or "0.0.0.0" ? tokens[1] : null) : tokens[0];
             if (value is not null && TryClassify(value, out var indicator, feed.DefaultLabel))
             {
+                if (!MatchesKind(feed.Kind, indicator.Type)) { rejected++; continue; }
                 if (indicator.Type == IndicatorType.Domain && SharedPlatforms.IsSharedPlatform(indicator.Value)) continue;
-                if (indicator.Type != IndicatorType.Network || !IsReservedNetwork(indicator.Value)) Add(indicators, indicator);
+                if (indicator.Type != IndicatorType.Network || !IsReservedNetwork(indicator.Value)) Add(indicators, indicator, feed.IndicatorLimit);
             }
             else if (value is not "localhost") rejected++;
         }
@@ -98,16 +104,17 @@ public static partial class ThreatFeedParser
         var indicators = new List<ThreatIndicator>();
         var seen = new HashSet<string>(StringComparer.Ordinal);
         var rejected = 0;
-        foreach (var line in DataLines(text))
+        foreach (var line in DataLines(text, feed.IndicatorLimit))
         {
             var fields = line.Split(feed.Separator).Select(f => f.Trim().Trim('"').Trim()).ToArray();
             var value = feed.Column < fields.Length ? fields[feed.Column] : "";
             var label = feed.LabelColumn >= 0 && feed.LabelColumn < fields.Length && fields[feed.LabelColumn].Length > 0
                 ? Label(Clean(fields[feed.LabelColumn])) : feed.DefaultLabel;
             if (!TryClassify(value, out var indicator, label)) { rejected++; continue; }
+            if (!MatchesKind(feed.Kind, indicator.Type)) { rejected++; continue; }
             if (indicator.Type == IndicatorType.Domain && SharedPlatforms.IsSharedPlatform(indicator.Value)) continue;
             if (indicator.Type == IndicatorType.Network && IsReservedNetwork(indicator.Value)) continue;
-            if (seen.Add(indicator.Value)) Add(indicators, indicator);
+            if (seen.Add(indicator.Value)) Add(indicators, indicator, feed.IndicatorLimit);
         }
         return new(indicators, rejected, []);
     }
@@ -148,7 +155,10 @@ public static partial class ThreatFeedParser
             }
             foreach (var program in programs.Where(p => LolbinName().IsMatch(p) && p.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) &&
                          p.Length > 6 && !GenericProgramNames.Contains(p)))
+            {
                 lolbins.TryAdd(program.ToLowerInvariant(), new ThreatLolbin(program.ToLowerInvariant(), display, "T1219"));
+                if (lolbins.Count + indicators.Count > feed.IndicatorLimit) throw new InvalidDataException("The feed exceeds its entry budget.");
+            }
             if (tool.TryGetProperty("Artifacts", out var artifacts) && artifacts.ValueKind == JsonValueKind.Object &&
                 artifacts.TryGetProperty("Network", out var network) && network.ValueKind == JsonValueKind.Array)
             {
@@ -162,7 +172,7 @@ public static partial class ThreatFeedParser
                         if (host.Contains('*') || host.Contains('/')) continue;
                         if (!TryClassify(host, out var indicator, display) || indicator.Type != IndicatorType.Domain) continue;
                         if (SharedPlatforms.IsSharedPlatform(indicator.Value)) continue;
-                        if (seenDomains.Add(indicator.Value)) Add(indicators, indicator);
+                        if (seenDomains.Add(indicator.Value)) Add(indicators, indicator, feed.IndicatorLimit);
                     }
                 }
             }
@@ -185,17 +195,17 @@ public static partial class ThreatFeedParser
         var indicators = new List<ThreatIndicator>();
         var seen = new HashSet<string>(StringComparer.Ordinal);
         var rejected = 0;
-        foreach (var line in DataLines(text))
+        foreach (var line in DataLines(text, feed.IndicatorLimit))
         {
-            if (!Uri.TryCreate(line, UriKind.Absolute, out var uri) || uri.Scheme is not ("http" or "https") ||
-                !TryClassify(uri.IdnHost, out var indicator, feed.DefaultLabel) || indicator.Type is not (IndicatorType.Domain or IndicatorType.Ip))
+            if (UrlHost(line) is not { } host ||
+                !TryClassify(host, out var indicator, feed.DefaultLabel) || indicator.Type is not (IndicatorType.Domain or IndicatorType.Ip))
             {
                 rejected++;
                 continue;
             }
             // The malicious part of a URL on a shared platform is its path, not the platform; never index the platform itself.
             if (indicator.Type == IndicatorType.Domain && SharedPlatforms.IsSharedPlatform(indicator.Value)) continue;
-            if (seen.Add(indicator.Value)) Add(indicators, indicator);
+            if (seen.Add(indicator.Value)) Add(indicators, indicator, feed.IndicatorLimit);
         }
         return new(indicators, rejected, []);
     }
@@ -204,11 +214,11 @@ public static partial class ThreatFeedParser
     {
         var indicators = new List<ThreatIndicator>();
         var rejected = 0;
-        foreach (var line in DataLines(text))
+        foreach (var line in DataLines(text, feed.IndicatorLimit))
         {
             var fields = line.Split(',').Select(f => f.Trim().Trim('"')).ToArray();
             if (fields.Length < 6 || fields[1] == "dst_ip") { if (fields.Length < 6) rejected++; continue; }
-            if (TryClassify(fields[1], out var indicator, Label($"Botnet C2 ({Clean(fields[5])})")) && indicator.Type == IndicatorType.Ip) Add(indicators, indicator);
+            if (TryClassify(fields[1], out var indicator, Label($"Botnet C2 ({Clean(fields[5])})")) && indicator.Type == IndicatorType.Ip) Add(indicators, indicator, feed.IndicatorLimit);
             else rejected++;
         }
         return new(indicators, rejected, []);
@@ -218,7 +228,7 @@ public static partial class ThreatFeedParser
     {
         var indicators = new List<ThreatIndicator>();
         var rejected = 0;
-        foreach (var line in DataLines(text))
+        foreach (var line in DataLines(text, feed.IndicatorLimit))
         {
             try
             {
@@ -229,7 +239,7 @@ public static partial class ThreatFeedParser
                 if (root.TryGetProperty("cidr", out var cidr) && cidr.ValueKind == JsonValueKind.String &&
                     TryClassify(cidr.GetString()!, out var indicator, feed.DefaultLabel) && indicator.Type is IndicatorType.Network or IndicatorType.Ip)
                 {
-                    if (indicator.Type != IndicatorType.Network || !IsReservedNetwork(indicator.Value)) Add(indicators, indicator);
+                    if (indicator.Type != IndicatorType.Network || !IsReservedNetwork(indicator.Value)) Add(indicators, indicator, feed.IndicatorLimit);
                 }
                 else rejected++;
             }
@@ -266,12 +276,12 @@ public static partial class ThreatFeedParser
                 var candidate = type switch
                 {
                     "ip:port" => StripPort(value),
-                    "url" => Uri.TryCreate(value, UriKind.Absolute, out var uri) ? uri.IdnHost : null,
+                    "url" => UrlHost(value),
                     _ => value,
                 };
                 if (candidate is not null && TryClassify(candidate, out var indicator, label) && Matches(type, indicator.Type) &&
                     !(indicator.Type == IndicatorType.Domain && SharedPlatforms.IsSharedPlatform(indicator.Value)))
-                    Add(indicators, indicator);
+                    Add(indicators, indicator, feed.IndicatorLimit);
                 else rejected++;
             }
         }
@@ -314,7 +324,7 @@ public static partial class ThreatFeedParser
                     if (String(sample, key) is { Length: > 0 } hash && TryClassify(hash, out var indicator, label) &&
                         indicator.Type is IndicatorType.Sha256 or IndicatorType.Sha1 or IndicatorType.Md5)
                     {
-                        Add(indicators, indicator);
+                        Add(indicators, indicator, feed.IndicatorLimit);
                         any = true;
                     }
                 }
@@ -324,7 +334,7 @@ public static partial class ThreatFeedParser
         return new(indicators, rejected, []);
     }
 
-    private static ParsedThreatFeed ParseLolbas(ReadOnlySpan<byte> payload)
+    private static ParsedThreatFeed ParseLolbas(ThreatFeedDefinition feed, ReadOnlySpan<byte> payload)
     {
         using var document = ParseJson(payload);
         if (document.RootElement.ValueKind != JsonValueKind.Array) throw new InvalidDataException("LOLBAS data is not an array.");
@@ -344,6 +354,7 @@ public static partial class ThreatFeedParser
                     if (String(command, "MitreID") is { } mitre && Technique().IsMatch(mitre)) techniques.Add(mitre);
                 }
             }
+            if (lolbins.Count >= feed.IndicatorLimit) throw new InvalidDataException("The feed exceeds its entry budget.");
             lolbins.Add(new ThreatLolbin(name.ToLowerInvariant(), Label(string.Join(", ", categories.Take(6))), Label(string.Join(", ", techniques.Take(6)))));
         }
         return new([], rejected, lolbins);
@@ -358,9 +369,41 @@ public static partial class ThreatFeedParser
     private static string? String(JsonElement element, string property) =>
         element.ValueKind == JsonValueKind.Object && element.TryGetProperty(property, out var value) && value.ValueKind == JsonValueKind.String ? value.GetString() : null;
 
-    private static void Add(List<ThreatIndicator> indicators, ThreatIndicator indicator)
+    private static ParsedThreatFeed ParseDigitalSideHashes(ThreatFeedDefinition feed, ReadOnlySpan<byte> payload)
     {
-        if (indicators.Count >= MaximumIndicators) throw new InvalidDataException($"The feed has more than {MaximumIndicators:N0} indicators.");
+        using var document = ParseJson(payload);
+        if (document.RootElement.ValueKind != JsonValueKind.Object ||
+            !document.RootElement.TryGetProperty("lookup", out var lookup) || lookup.ValueKind != JsonValueKind.Object)
+            throw new InvalidDataException("DigitalSide hash data has no lookup object.");
+        var indicators = new List<ThreatIndicator>();
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        var rejected = 0;
+        foreach (var sample in lookup.EnumerateObject())
+        {
+            if (sample.Value.ValueKind != JsonValueKind.Object) { rejected++; continue; }
+            foreach (var (field, type) in new[] { ("md5", IndicatorType.Md5), ("sha1", IndicatorType.Sha1), ("sha256", IndicatorType.Sha256) })
+            {
+                if (!sample.Value.TryGetProperty(field, out var value)) continue;
+                if (value.ValueKind != JsonValueKind.String || !TryClassify(value.GetString()!, out var indicator, feed.DefaultLabel) || indicator.Type != type)
+                { rejected++; continue; }
+                if (seen.Add(indicator.Value)) Add(indicators, indicator, feed.IndicatorLimit);
+            }
+        }
+        return new(indicators, rejected, []);
+    }
+
+    private static bool MatchesKind(string kind, IndicatorType type) => kind switch
+    {
+        ThreatFeedKinds.Domain => type == IndicatorType.Domain,
+        ThreatFeedKinds.Ip => type is IndicatorType.Ip or IndicatorType.Network,
+        ThreatFeedKinds.Hash => type is IndicatorType.Md5 or IndicatorType.Sha1 or IndicatorType.Sha256,
+        ThreatFeedKinds.Mixed => true,
+        _ => false,
+    };
+
+    private static void Add(List<ThreatIndicator> indicators, ThreatIndicator indicator, int limit)
+    {
+        if (indicators.Count >= limit) throw new InvalidDataException($"The feed has more than {limit:N0} indicators.");
         indicators.Add(indicator);
     }
 
@@ -369,6 +412,14 @@ public static partial class ThreatFeedParser
         if (value.StartsWith('[')) return value.IndexOf(']') is var end and > 1 ? value[1..end] : null;
         var colon = value.LastIndexOf(':');
         return colon > 0 && value.IndexOf(':') == colon ? value[..colon] : value;
+    }
+
+    private static string? UrlHost(string value)
+    {
+        if (!Uri.TryCreate(value, UriKind.Absolute, out var uri) || uri.Scheme is not ("http" or "https" or "ftp")) return null;
+        // TryCreate can succeed even when deferred IDN normalization rejects the hostname.
+        try { return uri.IdnHost; }
+        catch (UriFormatException) { return null; }
     }
 
     /// <summary>Classifies and normalizes one indicator, or returns false. Used for feeds and for user lookups alike.</summary>
