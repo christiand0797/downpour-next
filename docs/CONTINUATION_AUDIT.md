@@ -1,5 +1,8 @@
 # v2 continuation audit — 2026-10-07
 
+Current reconciliation (2026-10-16): source 8fc67d3 contains 595 tracked files, 411 C# files, 46 XAML files, 129 source-module entries and 43 routes (42 in progress, one prototype). v0.1.22's source expansion, verdict/parser repairs, exact driver matching, report context and native lifetime/UI work are detailed in RELEASE_0.1.22.md and SHARED_CONTEXT.md. Debug and clean Release pass 1,308 tests; all 55 catalog feeds pass live parsing. This is build and focused review evidence, not an assertion of complete security auditing or full feature parity. Historical findings below preserve their original dates.
+
+
 The owner requested full functional v29 parity, no placeholder or simulated protection, explicit elevation for admin operations, a new GitHub release, and durable progress records. v29 remains read-only. This document records the repository-wide inventory and targeted source review; it is not a claim that every line received a complete security audit.
 
 ## Current inventory and evidence

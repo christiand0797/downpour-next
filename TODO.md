@@ -4,8 +4,8 @@
 
 - [x] Fix shell timer callbacks during dispatcher shutdown; 43 native routes now close with exit code 0.
 - [x] Add ten useful source data paths and verify real downloads against the production parser/local index.
-- [ ] Complete feed type/budget/verdict regressions, full Debug/Release and final five-app package acceptance.
-- [ ] Publish v0.1.22 after final package checks; preserve failed candidate evidence.
+- [x] Complete feed type/budget/verdict regressions; 1,308 Debug and clean Release tests; final five-app package, 43 native routes, YARA and integrity acceptance.
+- [x] Publish v0.1.22 at 8fc67d3 as Latest; remote tag and all three asset digests verified; failed candidate evidence preserved.
 - [ ] DN-041 next: published timestamps/expiry, dependency-aware source provenance, multi-million-record storage and measured incremental coverage; no arbitrary source-count ceiling.
 - [ ] DN-042 remaining: targeted driver install, cancellable WUA search, privileged rescan and recovery acceptance.
 
@@ -16,7 +16,7 @@
 - [x] DN-040: initial local aggregate learning, bounded persistence, read-only recommendations and Settings pause; full/native acceptance passed in v0.1.21.
 - [x] Fix empty Threat Pulse history being mistaken for learned quiet time.
 - [x] Build, verify and publish v0.1.21; Latest, tag and all uploaded digests verified.
-- [ ] DN-043 in progress (2026-10-13): tapered tree/bark, coordinated sidebar and chart frames; build and publish v0.1.22 after verification.
+- [x] DN-043 initial visual slice: tapered tree/bark, coordinated sidebar and chart frames shipped in v0.1.22; populated native captures reviewed. Further polish/accessibility remains open.
 
 
 ## Latest release continuation (DN-010, 2026-10-08)

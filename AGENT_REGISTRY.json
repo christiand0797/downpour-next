@@ -6,9 +6,9 @@
       "id": "codex-primary",
       "role": "primary",
       "taskId": "DN-010",
-      "status": "active",
-      "heartbeatUtc": "2026-10-15T01:05:32.4560735Z",
-      "notes": "Final v22 integration: Debug1308pass,10newfeeds/liveindex passed, native43-route timer-fix proof passed. Commit then clean release rebuild."
+      "status": "idle",
+      "heartbeatUtc": "2026-10-17T02:10:17.6980004Z",
+      "notes": "v0.1.22 published Latest from8fc67d3; all source pushed,1308Debug/Release tests,55livefeeds,43native routes,window/integrity/YARA andremote digests pass. Final docs pushed on handoff. Next DN-041 published timestamps/expiry and large feed storage; DN-042 targeted driver/WUA cancellation/rescan."
     },
     {
       "id": "v29_action_map",

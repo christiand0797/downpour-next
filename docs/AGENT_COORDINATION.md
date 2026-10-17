@@ -1,9 +1,9 @@
 # Active agent coordination
 
-Current checkpoint 2026-10-16: codex-primary owns DN-010 release integration and DN-041 feed expansion; feed_tests owns only ThreatFeedBreadthTests.cs, feed_review owns only ThreatVerdictEngine.cs/ThreatVerdictBreadthTests.cs. See AGENT_REGISTRY.json and SHARED_CONTEXT.md for current activity. The older ownership table below is historical; do not infer live activity from its 2026-10-06 timestamp.
+Current checkpoint 2026-10-16: codex-primary owns DN-010 release integration and DN-041 feed expansion; feed_tests and feed_review have handed off their focused tests/verdict changes and are idle; root integrated and tested them. See AGENT_REGISTRY.json and SHARED_CONTEXT.md for current activity. The older ownership table below is historical; do not infer live activity from its 2026-10-06 timestamp.
 
 
-**Read this before claiming a task.** Two agents are working at the same time. Edit shared JSON files surgically (re-read the file immediately before writing) so neither agent overwrites the other.
+**Read this before claiming a task.** The following section records the older parallel work arrangement. Edit shared JSON files surgically (re-read the file immediately before writing) so neither agent overwrites the other.
 
 Last updated: 2026-10-06 by `claude-parity-audit`.
 
