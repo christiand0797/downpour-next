@@ -39,21 +39,33 @@ internal static class WindowsUpdateInstaller
             "software" => new[] { "IsInstalled=0 and IsHidden=0 and Type='Software'" },
             _ => new[] { "IsInstalled=0 and IsHidden=0 and Type='Software'", "IsInstalled=0 and IsHidden=0 and Type='Driver'" },
         };
-        var pending = new List<dynamic>();
+        var searches = new WindowsUpdateSearchBatch<object>();
         foreach (var query in criteria)
         {
             dynamic found = searcher.Search(query);
-            foreach (dynamic update in found.Updates)
+            // A partial or failed search must not turn an empty list into "up to date", or install
+            // only the successful half of a combined software/driver search.
+            if (!searches.AddResult((int)found.ResultCode, (int)found.Warnings.Count, () => ReadUpdates(found)))
             {
-                // Skip updates that would stop to ask the person something (installers with their own UI).
-                if ((bool)update.InstallationBehavior.CanRequestUserInput) { outcomes.Add(new(Title(update), false, "Skipped: needs to be installed interactively from Windows Update.")); continue; }
-                pending.Add(update);
+                var message = searches.Failure + " No updates were downloaded or installed.";
+                report(new("done", 100, message, true, DateTimeOffset.UtcNow));
+                return new FixRunResult(FixerProtocol.Updates, null, [new("windows-update-search", false, message)], false, DateTimeOffset.UtcNow);
             }
+        }
+        var pending = new List<dynamic>();
+        foreach (dynamic update in searches.Updates)
+        {
+            // Skip updates that would stop to ask the person something (installers with their own UI).
+            if ((bool)update.InstallationBehavior.CanRequestUserInput) { outcomes.Add(new(Title(update), false, "Skipped: needs to be installed interactively from Windows Update.")); continue; }
+            pending.Add(update);
         }
         if (pending.Count == 0)
         {
-            report(new("done", 100, "No updates are waiting.", true, DateTimeOffset.UtcNow));
-            return new FixRunResult(FixerProtocol.Updates, null, outcomes.Count == 0 ? [new("windows-update", true, "Windows Update offered no applicable updates for this search. This does not confirm support or patch completeness.")] : outcomes, false, DateTimeOffset.UtcNow);
+            var message = outcomes.Count == 0
+                ? "Windows Update offered no applicable updates for this completed search. This does not confirm support or patch completeness."
+                : "No updates were installed: all offered updates require interactive installation in Windows Update.";
+            report(new("done", 100, message, true, DateTimeOffset.UtcNow));
+            return new FixRunResult(FixerProtocol.Updates, null, outcomes.Count == 0 ? [new("windows-update", true, message)] : outcomes, false, DateTimeOffset.UtcNow);
         }
 
         var reboot = false;
@@ -96,6 +108,11 @@ internal static class WindowsUpdateInstaller
         var ok = outcomes.Count(o => o.Applied);
         report(new("done", 100, $"Installed {ok} of {pending.Count} update(s).{(reboot ? " Restart to finish." : "")}", true, DateTimeOffset.UtcNow));
         return new FixRunResult(FixerProtocol.Updates, null, outcomes, reboot, DateTimeOffset.UtcNow);
+    }
+
+    private static IEnumerable<object> ReadUpdates(dynamic searchResult)
+    {
+        foreach (object update in searchResult.Updates) yield return update;
     }
 
     private static string Title(dynamic update)
