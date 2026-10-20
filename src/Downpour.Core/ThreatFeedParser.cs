@@ -13,7 +13,8 @@ public enum IndicatorType { Ip, Network, Domain, Sha256, Sha1, Md5, Lolbin }
 /// <summary>One validated indicator. Value is normalized (lower-case hashes/domains, canonical IP text).</summary>
 public readonly record struct ThreatIndicator(IndicatorType Type, string Value, string Label);
 
-public sealed record ParsedThreatFeed(IReadOnlyList<ThreatIndicator> Indicators, int RejectedLines, IReadOnlyList<ThreatLolbin> Lolbins, IpOriginDatabase? Origins = null)
+public sealed record ParsedThreatFeed(IReadOnlyList<ThreatIndicator> Indicators, int RejectedLines, IReadOnlyList<ThreatLolbin> Lolbins, IpOriginDatabase? Origins = null,
+    DateTimeOffset? SourcePublishedAtUtc = null, string? PublicationError = null)
 {
     public int Entries => Indicators.Count + Lolbins.Count + (Origins?.Ranges ?? 0);
 }
@@ -35,7 +36,7 @@ public static partial class ThreatFeedParser
     {
         if (payload.Length == 0) throw new InvalidDataException("The feed is empty.");
         if (payload.Length > feed.MaximumBytes) throw new InvalidDataException("The feed exceeds its size limit.");
-        if (feed.IndicatorLimit is < 1 or > 1_000_000) throw new InvalidDataException("Invalid feed indicator budget.");
+        if (feed.IndicatorLimit is < 1 or > 3_000_000) throw new InvalidDataException("Invalid feed indicator budget.");
         if (feed.Format == ThreatFeedFormat.Ip2AsnGzip) return new ParsedThreatFeed([], 0, [], IpOriginDatabase.Parse(payload));
         var result = feed.Format switch
         {
@@ -57,7 +58,9 @@ public static partial class ThreatFeedParser
         if (result.Indicators.Count + result.Lolbins.Count == 0) throw new InvalidDataException("The feed contained no valid entries.");
         if (total > 20 && result.RejectedLines > total * MaximumRejectedRatio)
             throw new InvalidDataException($"The feed format looks wrong: {result.RejectedLines:N0} of {total:N0} entries failed validation.");
-        return result;
+        var publication = ThreatFeedFreshness.ReadHeader(feed, payload);
+        return result with { SourcePublishedAtUtc = result.SourcePublishedAtUtc ?? publication.Published,
+            PublicationError = result.PublicationError ?? publication.Error };
     }
 
     private static string Text(ReadOnlySpan<byte> payload)
@@ -228,6 +231,9 @@ public static partial class ThreatFeedParser
     {
         var indicators = new List<ThreatIndicator>();
         var rejected = 0;
+        DateTimeOffset? published = null;
+        string? publicationError = null;
+        var metadataSeen = false;
         foreach (var line in DataLines(text, feed.IndicatorLimit))
         {
             try
@@ -235,7 +241,18 @@ public static partial class ThreatFeedParser
                 using var document = JsonDocument.Parse(line, new JsonDocumentOptions { MaxDepth = 4 });
                 var root = document.RootElement;
                 if (root.ValueKind != JsonValueKind.Object) { rejected++; continue; }
-                if (root.TryGetProperty("type", out var type) && type.ValueKind == JsonValueKind.String && type.GetString() == "metadata") continue;
+                if (root.TryGetProperty("type", out var type) && type.ValueKind == JsonValueKind.String && type.GetString() == "metadata")
+                {
+                    if (metadataSeen || !root.TryGetProperty("timestamp", out var timestamp) || timestamp.ValueKind != JsonValueKind.Number || !timestamp.TryGetInt64(out var seconds))
+                        publicationError = "Invalid or duplicate publication metadata.";
+                    else
+                    {
+                        try { published = DateTimeOffset.FromUnixTimeSeconds(seconds); }
+                        catch (ArgumentOutOfRangeException) { publicationError = "Publication timestamp is out of range."; }
+                    }
+                    metadataSeen = true;
+                    continue;
+                }
                 if (root.TryGetProperty("cidr", out var cidr) && cidr.ValueKind == JsonValueKind.String &&
                     TryClassify(cidr.GetString()!, out var indicator, feed.DefaultLabel) && indicator.Type is IndicatorType.Network or IndicatorType.Ip)
                 {
@@ -245,7 +262,8 @@ public static partial class ThreatFeedParser
             }
             catch (JsonException) { rejected++; }
         }
-        return new(indicators, rejected, []);
+        return new(indicators, rejected, [], SourcePublishedAtUtc: published,
+            PublicationError: publicationError ?? (metadataSeen ? null : "Expected publication metadata is missing."));
     }
 
     private static ParsedThreatFeed ParseThreatFox(ThreatFeedDefinition feed, ReadOnlySpan<byte> payload)
@@ -389,7 +407,10 @@ public static partial class ThreatFeedParser
                 if (seen.Add(indicator.Value)) Add(indicators, indicator, feed.IndicatorLimit);
             }
         }
-        return new(indicators, rejected, []);
+        var generated = document.RootElement.TryGetProperty("generatedAt", out var generatedAt) && generatedAt.ValueKind == JsonValueKind.String
+            ? ThreatFeedFreshness.ParseUtc(generatedAt.GetString()) : null;
+        return new(indicators, rejected, [], SourcePublishedAtUtc: generated,
+            PublicationError: generated is null ? "Expected publication metadata is missing or invalid." : null);
     }
 
     private static bool MatchesKind(string kind, IndicatorType type) => kind switch
@@ -414,7 +435,7 @@ public static partial class ThreatFeedParser
         return colon > 0 && value.IndexOf(':') == colon ? value[..colon] : value;
     }
 
-    private static string? UrlHost(string value)
+    public static string? UrlHost(string value)
     {
         if (!Uri.TryCreate(value, UriKind.Absolute, out var uri) || uri.Scheme is not ("http" or "https" or "ftp")) return null;
         // TryCreate can succeed even when deferred IDN normalization rejects the hostname.

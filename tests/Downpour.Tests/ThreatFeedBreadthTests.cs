@@ -36,7 +36,7 @@ public sealed class ThreatFeedBreadthTests
     [Theory]
     [InlineData(-1)]
     [InlineData(0)]
-    [InlineData(1_000_001)]
+    [InlineData(3_000_001)]
     [InlineData(int.MaxValue)]
     public void InvalidSourceBudgetsAreRejectedBeforeParsing(int budget)
     {

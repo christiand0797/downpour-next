@@ -26,7 +26,8 @@ public sealed class ThreatDatabaseService(
     ThreatFeedCache? cache = null,
     ThreatFeedDownloader? downloader = null,
     string pipeName = ThreatDatabaseClient.PipeName,
-    IAuthenticodeVerifier? signatures = null) : BackgroundService
+    IAuthenticodeVerifier? signatures = null,
+    TimeProvider? timeProvider = null) : BackgroundService
 {
     public static readonly TimeSpan SweepInterval = TimeSpan.FromMinutes(5);
     private static readonly TimeSpan RetryAfterFailure = TimeSpan.FromMinutes(30);
@@ -39,10 +40,14 @@ public sealed class ThreatDatabaseService(
     private readonly ThreatFeedCache _cache = cache ?? ThreatFeedCache.CreateForCurrentUser();
     private readonly ThreatFeedDownloader _downloader = downloader ?? new ThreatFeedDownloader();
     private readonly object _gate = new();
+    private readonly object _indexBuildGate = new();
+    private readonly TimeProvider _time = timeProvider ?? TimeProvider.System;
+    private Dictionary<string, ParsedThreatFeed> _indexedFeeds = new(StringComparer.Ordinal);
     private readonly Dictionary<string, FeedState> _feeds = ThreatFeedCatalog.All.ToDictionary(f => f.Id, f => new FeedState(f));
     private readonly Dictionary<string, FileHashes> _hashes = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, ThreatMatch> _matches = new(StringComparer.Ordinal);
     private readonly SemaphoreSlim _refreshLock = new(1, 1);
+    private readonly SemaphoreSlim _publicationLock = new(1, 1);
     private readonly SemaphoreSlim _sweepSignal = new(0, 1);
     private ThreatIndex _index = ThreatIndex.Empty;
     private IpOriginDatabase? _origins;
@@ -98,7 +103,7 @@ public sealed class ThreatDatabaseService(
 
     internal void LoadCaches()
     {
-        var now = DateTimeOffset.UtcNow;
+        var now = _time.GetUtcNow();
         foreach (var state in _feeds.Values)
         {
             try
@@ -130,7 +135,7 @@ public sealed class ThreatDatabaseService(
         {
             foreach (var state in _feeds.Values)
             {
-                var now = DateTimeOffset.UtcNow;
+                var now = _time.GetUtcNow();
                 lock (_gate)
                 {
                     if (!(force ? !state.Updating && (state.Error is not null || state.RetrievedAtUtc is null || now - state.RetrievedAtUtc >= TimeSpan.FromMinutes(30)) : state.IsDue(now))) continue;
@@ -141,7 +146,7 @@ public sealed class ThreatDatabaseService(
                 {
                     var payload = await _downloader.FetchAsync(state.Definition, token);
                     var parsed = await Task.Run(() => ThreatFeedParser.Parse(state.Definition, payload), token);
-                    var retrieved = DateTimeOffset.UtcNow;
+                    var retrieved = _time.GetUtcNow();
                     try { _cache.Write(state.Definition, payload, retrieved); }
                     catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
                     {
@@ -169,7 +174,7 @@ public sealed class ThreatDatabaseService(
                     lock (_gate) state.Updating = false;
                 }
             }
-            if (updated > 0) await Task.Run(Rebuild, token);
+            if (updated > 0) await ReevaluateFreshnessAsync(token);
         }
         finally
         {
@@ -180,23 +185,60 @@ public sealed class ThreatDatabaseService(
 
     private void Rebuild()
     {
-        List<(ThreatFeedDefinition, ParsedThreatFeed)> loaded;
-        IpOriginDatabase? origins;
-        lock (_gate)
+        // Manual refresh and the periodic sweep can race. Publish only a complete index built from one eligibility set.
+        lock (_indexBuildGate)
         {
-            loaded = _feeds.Values.Where(s => s.Parsed is not null).Select(s => (s.Definition, s.Parsed!)).ToList();
-            origins = _feeds["ip-origin"].Parsed?.Origins;
+            List<(ThreatFeedDefinition, ParsedThreatFeed)> loaded;
+            Dictionary<string, ParsedThreatFeed> included;
+            lock (_gate)
+            {
+                var now = _time.GetUtcNow();
+                var states = _feeds.Values.Where(s => ThreatFeedFreshness.Evaluate(s.Definition, s.Parsed, s.RetrievedAtUtc, now).MatchingEnabled).ToArray();
+                included = states.ToDictionary(s => s.Definition.Id, s => s.Parsed!, StringComparer.Ordinal);
+                if (included.Count == _indexedFeeds.Count && included.All(pair => _indexedFeeds.TryGetValue(pair.Key, out var previous) && ReferenceEquals(pair.Value, previous))) return;
+                loaded = states.Select(s => (s.Definition, s.Parsed!)).ToList();
+            }
+            var index = ThreatIndex.Build(loaded);
+            lock (_gate)
+            {
+                _indexedFeeds = included;
+                Volatile.Write(ref _index, index);
+                Volatile.Write(ref _origins, included.GetValueOrDefault("ip-origin")?.Origins);
+                foreach (var (key, match) in _matches.ToArray())
+                {
+                    var sourceIds = match.FeedId.Split(',');
+                    if (sourceIds.All(included.ContainsKey)) continue;
+                    _matches.Remove(key);
+                    // Central alerts remain dated historical observations; source expiry never changes operator triage.
+                }
+                _connections = _connections.Select(connection => connection with
+                {
+                    Listed = ThreatFeedParser.TryClassify(connection.RemoteAddress, out var indicator) && index.Lookup(indicator).Count > 0,
+                }).ToArray();
+            }
         }
-        Volatile.Write(ref _index, ThreatIndex.Build(loaded));
-        Volatile.Write(ref _origins, origins);
+    }
+
+    /// <summary>Age out in-memory sources even while downloads are disabled or every refresh fails.</summary>
+    internal async Task ReevaluateFreshnessAsync(CancellationToken token)
+    {
+        await _publicationLock.WaitAsync(token);
+        try { await ReevaluateFreshnessCoreAsync(token); }
+        finally { _publicationLock.Release(); }
+    }
+
+    private async Task ReevaluateFreshnessCoreAsync(CancellationToken token)
+    {
+        await Task.Run(Rebuild, token);
     }
 
     internal async Task SweepAsync(CancellationToken token)
     {
         var started = Stopwatch.StartNew();
+        await ReevaluateFreshnessAsync(token);
         var index = Index;
         var origins = Volatile.Read(ref _origins);
-        var now = DateTimeOffset.UtcNow;
+        var now = _time.GetUtcNow();
         var found = new List<ThreatMatch>();
         var cleared = new List<SecurityFindingObservation>();
         var warnings = new List<string>();
@@ -292,14 +334,64 @@ public sealed class ThreatDatabaseService(
             found.Add(Assess(now, new ThreatEvidence(ThreatMatchPlaces.Program, hashes.Sha256, hits, name, path, signed, signer), $"{name} (PID {pid}, {path})"));
         }
 
+        if (!await PublishMatchesAsync(found, now, index, token)) return;
+        lock (_gate)
+        {
+            index = Index;
+            _lolbins = lolbins.Select(l => index.Lolbin(l.Key) is { } info ? new LolbinObservation(Bound(l.Key, 64), info.Categories, info.Techniques, l.Value) : null)
+                .OfType<LolbinObservation>().OrderBy(l => l.Name).Take(64).ToArray();
+            _connections = origin.Select(c => c with { Listed = ThreatFeedParser.TryClassify(c.RemoteAddress, out var indicator) && index.Lookup(indicator).Count > 0 })
+                .OrderByDescending(c => c.Listed).ThenBy(c => c.Program).Take(MaximumConnections).ToArray();
+            _coverage = new ThreatDatabaseCoverage(origin.Count, domains, driverCount, programs, now, started.Elapsed);
+            _warnings.Clear();
+            _warnings.AddRange(warnings.Take(16));
+        }
+        // Matches the verification engine cleared (already blocked by this PC) and shared-service hosts are retired.
+        cleared.AddRange(found.Where(m => ThreatVerdicts.IsCleared(m.Verdict)).Select(m => SecurityFindingMapper.Create(SecurityFindingCatalog.ThreatDatabase,
+            m.Where, m.Severity, m.Technique, $"{ThreatVerdicts.Label(m.Verdict)}: {m.Label} — {m.Subject}", $"{m.FeedId.Split(',')[0]}:{m.Indicator}")));
+        await RetireAsync(cleared, token);
+    }
+
+    /// <summary>Serialize publication with expiry so a slower scan cannot reintroduce an already retired finding.</summary>
+    internal async Task<bool> PublishMatchesAsync(IReadOnlyList<ThreatMatch> found, DateTimeOffset observedAt, ThreatIndex expectedIndex, CancellationToken token)
+    {
+        await _publicationLock.WaitAsync(token);
+        try
+        {
+            await ReevaluateFreshnessCoreAsync(token);
+            lock (_gate)
+            {
+                if (!ReferenceEquals(expectedIndex, Index))
+                {
+                    SignalSweep();
+                    return false;
+                }
+            }
+            var newFindings = RecordMatches(found, observedAt);
+            if (newFindings.Count > 0)
+            {
+                foreach (var finding in newFindings.Where(f => f.Severity is "HIGH" or "CRITICAL")) logger.LogWarning("Threat database match: {Summary}", finding.Summary);
+                await alerts.IngestFindingsAsync(newFindings.Take(SecurityAlertRepository.MaximumFindingsPerIngest).ToArray(), observedAt, token);
+            }
+            // The age boundary can pass while the alert store is busy too.
+            await ReevaluateFreshnessCoreAsync(token);
+            return true;
+        }
+        finally { _publicationLock.Release(); }
+    }
+
+    internal IReadOnlyList<SecurityFindingObservation> RecordMatches(IReadOnlyList<ThreatMatch> found, DateTimeOffset now)
+    {
         var newFindings = new List<SecurityFindingObservation>();
         lock (_gate)
         {
             foreach (var match in found)
             {
+                if (match.FeedId.Split(',').Any(id => !_indexedFeeds.ContainsKey(id))) continue;
                 var key = $"{match.Where}\0{match.Indicator}";
-                // A finding is (re)reported when first seen or when its assessment changes, so severities stay current.
-                if (!_matches.TryGetValue(key, out var previous) || previous.Verdict != match.Verdict || previous.Severity != match.Severity)
+                // Re-report changed provenance too, so a current source never inherits an expired source's assessment.
+                if (!_matches.TryGetValue(key, out var previous) || previous.Verdict != match.Verdict || previous.Severity != match.Severity
+                    || previous.FeedId != match.FeedId || previous.Confidence != match.Confidence)
                     newFindings.Add(SecurityFindingMapper.Create(SecurityFindingCatalog.ThreatDatabase, match.Where, match.Severity, match.Technique,
                         $"{ThreatVerdicts.Label(match.Verdict)} ({match.Confidence}%): {match.Label} — {match.Subject}",
                         $"{match.FeedId.Split(',')[0]}:{match.Indicator}"));
@@ -308,22 +400,8 @@ public sealed class ThreatDatabaseService(
             foreach (var stale in _matches.Where(m => now - m.Value.SeenAtUtc > TimeSpan.FromDays(7)).Select(m => m.Key).ToList()) _matches.Remove(stale);
             if (_matches.Count > MaximumMatches)
                 foreach (var old in _matches.OrderBy(m => m.Value.SeenAtUtc).Take(_matches.Count - MaximumMatches).Select(m => m.Key).ToList()) _matches.Remove(old);
-            _lolbins = lolbins.Select(l => index.Lolbin(l.Key) is { } info ? new LolbinObservation(Bound(l.Key, 64), info.Categories, info.Techniques, l.Value) : null)
-                .OfType<LolbinObservation>().OrderBy(l => l.Name).Take(64).ToArray();
-            _connections = origin.OrderByDescending(c => c.Listed).ThenBy(c => c.Program).Take(MaximumConnections).ToArray();
-            _coverage = new ThreatDatabaseCoverage(origin.Count, domains, driverCount, programs, now, started.Elapsed);
-            _warnings.Clear();
-            _warnings.AddRange(warnings.Take(16));
         }
-        if (newFindings.Count > 0)
-        {
-            foreach (var finding in newFindings.Where(f => f.Severity is "HIGH" or "CRITICAL")) logger.LogWarning("Threat database match: {Summary}", finding.Summary);
-            await alerts.IngestFindingsAsync(newFindings.Take(SecurityAlertRepository.MaximumFindingsPerIngest).ToArray(), now, token);
-        }
-        // Matches the verification engine cleared (already blocked by this PC) and shared-service hosts are retired.
-        cleared.AddRange(found.Where(m => ThreatVerdicts.IsCleared(m.Verdict)).Select(m => SecurityFindingMapper.Create(SecurityFindingCatalog.ThreatDatabase,
-            m.Where, m.Severity, m.Technique, $"{ThreatVerdicts.Label(m.Verdict)}: {m.Label} — {m.Subject}", $"{m.FeedId.Split(',')[0]}:{m.Indicator}")));
-        await RetireAsync(cleared, token);
+        return newFindings;
     }
 
     /// <summary>Suppresses open threat-database alerts that verification has shown are not threats (state changes are audited).</summary>
@@ -348,14 +426,14 @@ public sealed class ThreatDatabaseService(
     private static bool ListsExactName(ThreatIndex index, string domain) =>
         index.LookupExact(domain).Count > 0;
 
-    private static ThreatMatch Assess(DateTimeOffset now, ThreatEvidence evidence, string subject)
+    internal static ThreatMatch Assess(DateTimeOffset now, ThreatEvidence evidence, string subject)
     {
         var assessment = ThreatVerdictEngine.Assess(evidence);
         var feeds = evidence.Hits.Select(h => h.Feed).DistinctBy(f => f.Id)
             .OrderBy(f => ThreatFeedCatalog.All.ToList().IndexOf(f)).ToArray();
         var label = evidence.Hits.Select(h => h.Label).OrderByDescending(l => l.Length).First();
         return new ThreatMatch(now, evidence.Place, Bound(evidence.Indicator, 128), Bound(subject, 300),
-            Bound(string.Join(",", feeds.Select(f => f.Id)), 128), Bound(string.Join(", ", feeds.Select(f => f.Name)), 200),
+            string.Join(",", feeds.Select(f => f.Id)), Bound(string.Join(", ", feeds.Select(f => f.Name)), 200),
             Bound(label, 96), assessment.Severity, feeds[0].Technique is { Length: > 0 } technique ? technique : "T1071",
             assessment.Verdict, assessment.Confidence, assessment.Reasons.Select(r => Bound(r, 300)).Take(12).ToArray());
     }
@@ -476,23 +554,28 @@ public sealed class ThreatDatabaseService(
 
     public ThreatDatabaseSnapshot Snapshot()
     {
-        var now = DateTimeOffset.UtcNow;
-        var index = Index;
+        var now = _time.GetUtcNow();
         lock (_gate)
         {
+            var index = Index;
             var enabled = settings.Current.ThreatDatabases;
             var feeds = _feeds.Values.Select(s =>
             {
                 var d = s.Definition;
+                var freshness = ThreatFeedFreshness.Evaluate(d, s.Parsed, s.RetrievedAtUtc, now);
                 var state = s.Updating ? ThreatFeedStates.Updating
                     : s.Parsed is null ? (s.Error is not null ? ThreatFeedStates.Failed : enabled ? ThreatFeedStates.NotLoaded : ThreatFeedStates.Disabled)
                     : s.RetrievedAtUtc is { } r && now - r > d.RefreshInterval * 2 ? ThreatFeedStates.Stale
                     : s.Error is not null ? ThreatFeedStates.Stale : ThreatFeedStates.Current;
                 return new ThreatFeedStatus(d.Id, d.Name, d.Provider, d.Kind, d.Purpose, d.License, d.Homepage, state, s.Parsed?.Entries ?? 0,
-                    s.RetrievedAtUtc, s.RetrievedAtUtc + d.RefreshInterval, s.Bytes, s.Error is null ? null : Bound(s.Error, 300));
+                    s.RetrievedAtUtc, s.RetrievedAtUtc + d.RefreshInterval, s.Bytes, s.Error is null ? null : Bound(s.Error, 300),
+                    freshness.PublishedAtUtc, freshness.State, freshness.SourceExpiresAtUtc, freshness.MatchingEnabled, freshness.Note);
             }).ToArray();
             var warnings = _warnings.Select(w => Bound(w, 500)).ToList();
             if (!enabled) warnings.Insert(0, "Database updates are switched off in Settings. Saved copies are still used until they expire.");
+            var excluded = feeds.Count(f => f.Entries > 0 && f.MatchingEnabled == false);
+            if (excluded > 0) warnings.Add($"{excluded} loaded source(s) are excluded from matching by publication or cache-age policy. See each source below; downloading again does not renew old threat data.");
+            warnings.Add("Publication dates describe source snapshots, not each indicator's last sighting. Earlier central alerts remain dated observations and may outlive their source evidence.");
             return new ThreatDatabaseSnapshot(1, now, enabled, index.IndicatorCount, feeds,
                 _matches.Values.OrderByDescending(m => SeverityRank(m.Severity)).ThenByDescending(m => m.SeenAtUtc).Take(200).ToArray(),
                 _lolbins, _coverage, _connections.Take(250).ToArray(), warnings);
@@ -503,25 +586,27 @@ public sealed class ThreatDatabaseService(
 
     internal async Task<ThreatDatabaseResponse> HandleAsync(ThreatDatabaseRequest? request, CancellationToken token)
     {
-        if (request is not { SchemaVersion: 1 } || request.Operation is null)
+        if (request is not { SchemaVersion: 1 } || request.Operation is null || request.Offset is < 0 or > 3_000_000 ||
+            request.Operation != ThreatDatabaseOperations.Browse && request.Offset != 0)
             return new(1, false, "invalid-request", null, null, null, null);
         switch (request.Operation)
         {
             case ThreatDatabaseOperations.Snapshot when request.Value is null:
+                await ReevaluateFreshnessAsync(token);
                 return new(1, true, "snapshot", Snapshot(), null, null, null);
             case ThreatDatabaseOperations.Refresh when request.Value is null:
                 if (!settings.Current.ThreatDatabases) return new(1, false, "disabled", Snapshot(), null, null, null);
                 lock (_gate)
                 {
-                    if (DateTimeOffset.UtcNow - _lastManualRefresh < ManualRefreshCooldown) return new(1, false, "cooldown", Snapshot(), null, null, null);
-                    _lastManualRefresh = DateTimeOffset.UtcNow;
+                    if (_time.GetUtcNow() - _lastManualRefresh < ManualRefreshCooldown) return new(1, false, "cooldown", Snapshot(), null, null, null);
+                    _lastManualRefresh = _time.GetUtcNow();
                 }
                 _ = Task.Run(async () =>
                 {
                     try
                     {
                         await RefreshDueAsync(force: true, token);
-                        if (_sweepSignal.CurrentCount == 0) _sweepSignal.Release();
+                        SignalSweep();
                     }
                     catch (Exception ex) when (ex is not OperationCanceledException) { logger.LogWarning(ex, "Manual threat database refresh failed."); }
                     catch (OperationCanceledException) { }
@@ -530,9 +615,10 @@ public sealed class ThreatDatabaseService(
             case ThreatDatabaseOperations.Lookup when request.Value is { Length: > 0 and <= 2048 } value && !value.Any(char.IsControl):
             {
                 var candidate = value.Trim();
-                if (Uri.TryCreate(candidate, UriKind.Absolute, out var uri) && uri.Scheme is "http" or "https") candidate = uri.IdnHost;
+                if (candidate.Contains("://", StringComparison.Ordinal)) candidate = ThreatFeedParser.UrlHost(candidate) ?? "";
                 if (!ThreatFeedParser.TryClassify(candidate, out var indicator) || indicator.Type is IndicatorType.Network)
                     return new(1, false, "unrecognized", null, null, null, null);
+                await ReevaluateFreshnessAsync(token);
                 var hits = Index.Lookup(indicator).Select(h => new ThreatLookupHit(h.Feed.Id, h.Feed.Name, h.Label)).Take(32).ToArray();
                 var originInfo = indicator.Type == IndicatorType.Ip && IPAddress.TryParse(indicator.Value, out var address) ? Volatile.Read(ref _origins)?.Lookup(address) : null;
                 return new(1, true, "lookup", null, indicator.Type.ToString().ToLowerInvariant(), indicator.Value, hits, originInfo);
@@ -543,31 +629,21 @@ public sealed class ThreatDatabaseService(
                 ParsedThreatFeed? parsed;
                 lock (_gate) parsed = state.Parsed;
                 if (parsed is null) return new(1, true, "browse", null, null, null, null, Browse: [], BrowseTotal: 0);
-                var query = request.Value?.Trim() ?? "";
-                var rows = parsed.Indicators.Select(i => new ThreatBrowseRow(i.Value, TypeName(i.Type), i.Label))
-                    .Concat(parsed.Lolbins.Select(l => new ThreatBrowseRow(l.Name, "built-in tool", $"{l.Categories} ({l.Techniques})")))
-                    .Where(r => query.Length == 0 || r.Value.Contains(query, StringComparison.OrdinalIgnoreCase) || r.Label.Contains(query, StringComparison.OrdinalIgnoreCase));
-                var total = 0;
-                var page = new List<ThreatBrowseRow>(MaximumBrowseRows);
-                foreach (var row in rows)
-                {
-                    total++;
-                    if (page.Count < MaximumBrowseRows) page.Add(row);
-                }
-                return new(1, true, "browse", null, null, null, null, Browse: page, BrowseTotal: total);
+                var page = await Task.Run(() => ThreatFeedBrowser.Read(parsed, request.Value?.Trim(), request.Offset, token), token);
+                return new(1, true, "browse", null, null, null, null, Browse: page.Rows, BrowseTotal: page.Total,
+                    BrowseOffset: page.Offset, BrowseNextOffset: page.NextOffset);
             }
             default:
                 return new(1, false, "invalid-request", null, null, null, null);
         }
     }
 
-    private const int MaximumBrowseRows = 500;
-
-    private static string TypeName(IndicatorType type) => type switch
+    internal void SignalSweep()
     {
-        IndicatorType.Ip => "IP address", IndicatorType.Network => "network", IndicatorType.Domain => "domain",
-        IndicatorType.Sha256 => "SHA-256", IndicatorType.Sha1 => "SHA-1", IndicatorType.Md5 => "MD5", _ => "entry",
-    };
+        // Refresh completion and an obsolete scan can both request the same bounded wake-up.
+        try { _sweepSignal.Release(); }
+        catch (SemaphoreFullException) { } // One pending sweep already covers both requests.
+    }
 
     private async Task ServePipeAsync(CancellationToken stoppingToken)
     {

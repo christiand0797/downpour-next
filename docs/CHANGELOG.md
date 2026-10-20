@@ -1,5 +1,9 @@
 # Downpour Next changelog
 
+## 0.1.23 — 2026-10-19
+
+Full HaGeZi domain coverage replaces the mini subset, with compact exact indexing and complete local feed pagination. Source publication age is distinct from download age; expired and historical network data remains browsable but is excluded from current matching. Preserves complete source IDs for overlapping matches and rejects results from obsolete index generations. Malformed manual URL lookups fail safely. The update installer requires complete successful searches before downloading/installing and no longer reports an incomplete search as no updates. See RELEASE_0.1.23.md for verification and limits.
+
 ## 0.1.22 — 2026-10-16
 
 Natural tapered tree branches and static bark details, coordinated cyan/violet navigation header and panel, shared chart header rules and corner frames. Keeps measured data, severity colors, rain, petals, Kuro and reduced-motion controls. Adds exact hardware/compatible ID matching, truthful batch driver installation scope and partial search states. CIS reports include the same-review learning context. Removes unproven confidence boosts from overlapping feed listings. Adds ten locally matched feeds (55 catalog sources), streaming and typed parsing, larger per-source budgets and corrected signed-driver hash explanations. Fixes the native dispatcher shutdown crash by stopping shell timers on close. See RELEASE_0.1.22.md for verification.

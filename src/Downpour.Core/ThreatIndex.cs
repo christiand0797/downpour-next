@@ -8,61 +8,134 @@ namespace Downpour.Core;
 
 /// <summary>
 /// Immutable in-memory index over every loaded feed. Built off the UI thread; lookups are lock-free reads.
-/// IPs, domains and hashes share one dictionary (their normalized forms cannot collide); networks are checked by range.
+/// Exact values use sorted rows with full ordinal string comparisons, not lossy fingerprints. Feed/label metadata
+/// is shared, and only values present in multiple feeds need provenance links. Networks are checked by range.
 /// </summary>
 public sealed class ThreatIndex
 {
-    private readonly Dictionary<string, int> _first;
-    private readonly List<Entry> _entries;
+    private readonly Entry[] _entries;
+    private readonly int _entryCount;
+    private readonly Source[] _sources;
+    private readonly Link[] _links;
     private readonly List<(IPNetwork Network, int Feed, string Label)> _networks;
     private readonly Dictionary<string, ThreatLolbin> _lolbins;
 
-    private readonly record struct Entry(int Feed, string Label, int Next);
+    // A row is 16 bytes on x64. Before compaction Source/Order identify the input feed/indicator, preserving
+    // the first label encountered. Afterwards Source is ~sourceIndex or a nonnegative provenance-link index.
+    private readonly record struct Entry(string Value, int Source, int Order);
+    private readonly record struct Source(int Feed, string Label);
+    private readonly record struct Link(int Source, int Next);
+    private sealed class EntryComparer : IComparer<Entry>
+    {
+        public static readonly EntryComparer Instance = new();
+        public int Compare(Entry x, Entry y)
+        {
+            var value = StringComparer.Ordinal.Compare(x.Value, y.Value);
+            if (value != 0) return value;
+            var source = x.Source.CompareTo(y.Source);
+            return source != 0 ? source : x.Order.CompareTo(y.Order);
+        }
+    }
 
     public static readonly ThreatIndex Empty = Build([]);
 
-    private ThreatIndex(Dictionary<string, int> first, List<Entry> entries, List<(IPNetwork, int, string)> networks, Dictionary<string, ThreatLolbin> lolbins)
+    private ThreatIndex(Entry[] entries, int entryCount, Source[] sources, Link[] links,
+        List<(IPNetwork, int, string)> networks, Dictionary<string, ThreatLolbin> lolbins)
     {
-        _first = first;
         _entries = entries;
+        _entryCount = entryCount;
+        _sources = sources;
+        _links = links;
         _networks = networks;
         _lolbins = lolbins;
     }
 
-    public int IndicatorCount => _first.Count + _networks.Count;
+    public int IndicatorCount => _entryCount + _networks.Count;
     public int LolbinCount => _lolbins.Count;
 
     public static ThreatIndex Build(IReadOnlyList<(ThreatFeedDefinition Feed, ParsedThreatFeed Parsed)> feeds)
     {
-        var first = new Dictionary<string, int>(StringComparer.Ordinal);
-        var entries = new List<Entry>();
+        var capacity = 0;
+        foreach (var (feed, parsed) in feeds)
+            if (IndexOf(feed.Id) >= 0)
+                foreach (var indicator in parsed.Indicators)
+                    if (indicator.Type != IndicatorType.Network) capacity = checked(capacity + 1);
+        var entries = new Entry[capacity];
+        var count = 0;
+        var feedIndexes = new int[feeds.Count];
         var networks = new List<(IPNetwork, int, string)>();
         var lolbins = new Dictionary<string, ThreatLolbin>(StringComparer.OrdinalIgnoreCase);
-        foreach (var (feed, parsed) in feeds)
+        for (var feedPosition = 0; feedPosition < feeds.Count; feedPosition++)
         {
+            var (feed, parsed) = feeds[feedPosition];
             var feedIndex = IndexOf(feed.Id);
+            feedIndexes[feedPosition] = feedIndex;
             if (feedIndex < 0) continue;
-            foreach (var indicator in parsed.Indicators)
+            for (var indicatorPosition = 0; indicatorPosition < parsed.Indicators.Count; indicatorPosition++)
             {
+                var indicator = parsed.Indicators[indicatorPosition];
                 if (indicator.Type == IndicatorType.Network)
                 {
                     if (IPNetwork.TryParse(indicator.Value, out var network)) networks.Add((network, feedIndex, indicator.Label));
                     continue;
                 }
                 if (indicator.Type == IndicatorType.Ip && IPAddress.TryParse(indicator.Value, out var address) && ThreatFeedParser.IsReserved(address)) continue;
-                var head = first.TryGetValue(indicator.Value, out var existing) ? existing : -1;
-                // One hit per feed per indicator is enough; feeds often repeat an IP for several ports.
-                var duplicate = false;
-                for (var i = head; i >= 0; i = entries[i].Next)
-                    if (entries[i].Feed == feedIndex) { duplicate = true; break; }
-                if (duplicate) continue;
-                entries.Add(new Entry(feedIndex, indicator.Label, head));
-                first[indicator.Value] = entries.Count - 1;
+                entries[count] = new Entry(indicator.Value, feedPosition, indicatorPosition);
+                count++;
             }
             // The first list to name a program wins, so LOLBAS keeps its built-in tool description over LOLRMM.
             foreach (var lolbin in parsed.Lolbins) lolbins.TryAdd(lolbin.Name, lolbin);
         }
-        return new ThreatIndex(first, entries, networks, lolbins);
+        // Sort and compact the same array, avoiding a second multi-million-key hash table or sorting buffer.
+        Array.Sort(entries, 0, count, EntryComparer.Instance);
+        var sourceIds = new Dictionary<Source, int>();
+        var sources = new List<Source>();
+        var links = new List<Link>();
+        var seenFeeds = new int[ThreatFeedCatalog.All.Count];
+        var distinct = 0;
+        for (var start = 0; start < count;)
+        {
+            var end = start + 1;
+            while (end < count && StringComparer.Ordinal.Equals(entries[start].Value, entries[end].Value)) end++;
+            var head = 0;
+            var matched = 0;
+            for (var i = start; i < end; i++)
+            {
+                var row = entries[i];
+                var feed = feedIndexes[row.Source];
+                // One hit per feed per indicator, retaining the first label even if later rows disagree.
+                if (seenFeeds[feed] == start + 1) continue;
+                seenFeeds[feed] = start + 1;
+                var source = new Source(feed, feeds[row.Source].Parsed.Indicators[row.Order].Label);
+                if (!sourceIds.TryGetValue(source, out var sourceId))
+                {
+                    sourceId = sources.Count;
+                    sources.Add(source);
+                    // Bound the temporary interning table even if every indicator supplies a different label.
+                    // Additional labels remain intact in the source array; they simply are not interned.
+                    if (sourceIds.Count < 65_536) sourceIds.Add(source, sourceId);
+                }
+                if (matched == 0) head = ~sourceId;
+                else
+                {
+                    if (matched == 1)
+                    {
+                        links.Add(new Link(~head, -1));
+                        head = links.Count - 1;
+                    }
+                    links.Add(new Link(sourceId, head));
+                    head = links.Count - 1;
+                }
+                matched++;
+            }
+            entries[distinct++] = new Entry(entries[start].Value, head, 0);
+            start = end;
+        }
+        // Heavy overlap warrants reclaiming the unused rows. Otherwise clear their references in place to
+        // avoid the peak allocation of a second similarly-sized array just to remove a little spare capacity.
+        if (distinct < entries.Length * 3L / 4) Array.Resize(ref entries, distinct);
+        else Array.Clear(entries, distinct, entries.Length - distinct);
+        return new ThreatIndex(entries, distinct, sources.ToArray(), links.ToArray(), networks, lolbins);
     }
 
     private static int IndexOf(string id)
@@ -115,9 +188,29 @@ public sealed class ThreatIndex
 
     private void Collect(string key, List<(ThreatFeedDefinition, string)> hits)
     {
-        if (!_first.TryGetValue(key, out var index)) return;
-        for (var i = index; i >= 0; i = _entries[i].Next)
-            hits.Add((ThreatFeedCatalog.All[_entries[i].Feed], _entries[i].Label));
+        var lower = 0;
+        var upper = _entryCount - 1;
+        while (lower <= upper)
+        {
+            var middle = lower + ((upper - lower) >> 1);
+            var comparison = StringComparer.Ordinal.Compare(_entries[middle].Value, key);
+            if (comparison < 0) lower = middle + 1;
+            else if (comparison > 0) upper = middle - 1;
+            else
+            {
+                var head = _entries[middle].Source;
+                if (head < 0) AddSource(~head, hits);
+                else
+                    for (var i = head; i >= 0; i = _links[i].Next) AddSource(_links[i].Source, hits);
+                return;
+            }
+        }
+    }
+
+    private void AddSource(int sourceIndex, List<(ThreatFeedDefinition, string)> hits)
+    {
+        var source = _sources[sourceIndex];
+        hits.Add((ThreatFeedCatalog.All[source.Feed], source.Label));
     }
 }
 
@@ -131,7 +224,14 @@ public sealed class ThreatFeedCache(string directory)
     public static ThreatFeedCache CreateForCurrentUser() => new(Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DownpourNext", "threat-db"));
 
-    public string PathFor(ThreatFeedDefinition feed) => Path.Combine(directory, feed.Id + ".v1.cache");
+    public string PathFor(ThreatFeedDefinition feed)
+    {
+        if (feed.CacheGeneration is < 1 or > 1000) throw new InvalidDataException("Invalid feed cache generation.");
+        // A changed dataset under the same source ID must not reuse the previous subset's payload.
+        // Generation is independent of the cache file format; unchanged feeds retain their existing files.
+        var generation = feed.CacheGeneration == 1 ? "" : $".g{feed.CacheGeneration}";
+        return Path.Combine(directory, feed.Id + generation + ".v1.cache");
+    }
 
     public (byte[] Payload, DateTimeOffset RetrievedAtUtc)? TryRead(ThreatFeedDefinition feed, DateTimeOffset nowUtc)
     {

@@ -219,7 +219,7 @@
   {
     "family": "Threat Intelligence & Remediation",
     "module": "threat_feed_aggregator.py",
-    "description": "Partial parity: 55 catalogued public feeds with strict parsers, local matching, provenance, cache integrity and visible health; large-scale storage and source-published expiry remain open.",
+    "description": "Partial parity: 55 public feeds, full HaGeZi coverage, compact exact indexing, source-published expiry and paged local browsing. Strict parsers, provenance and cache integrity; disk-backed scale and durable historical-alert provenance remain open.",
     "sourceStatus": "Active",
     "migrationStatus": "in-progress"
   },

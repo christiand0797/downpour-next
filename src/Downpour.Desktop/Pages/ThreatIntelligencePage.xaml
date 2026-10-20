@@ -74,9 +74,23 @@
         </Border>
 
         <Border Grid.Row="3" Style="{StaticResource HudCardStyle}" Padding="16,8">
-            <Grid>
+            <Grid RowSpacing="8">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
                 <ListView x:Name="EntryList" ItemTemplate="{StaticResource EntryTemplate}" SelectionMode="None" />
                 <TextBlock x:Name="EmptyText" Foreground="{StaticResource HudTextFaintBrush}" TextWrapping="Wrap" VerticalAlignment="Top" Margin="0,8" />
+                <Grid Grid.Row="1" Padding="0,8,0,2" ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock x:Name="PageStatusText" Text="Choose a downloaded database" Foreground="{StaticResource HudTextDimBrush}" VerticalAlignment="Center" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite" />
+                    <Button x:Name="PreviousButton" Grid.Column="1" Content="Previous 500" IsEnabled="False" Click="Previous_Click" AutomationProperties.Name="Previous page of threat feed entries" />
+                    <Button x:Name="NextButton" Grid.Column="2" Content="Next 500" IsEnabled="False" Click="Next_Click" AutomationProperties.Name="Next page of threat feed entries" />
+                </Grid>
             </Grid>
         </Border>
     </Grid>

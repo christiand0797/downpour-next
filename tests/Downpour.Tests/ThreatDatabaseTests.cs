@@ -344,7 +344,8 @@ public sealed class ThreatDatabaseTests : IDisposable
     public async Task PipeServesSnapshotAndLookups()
     {
         var pipe = "Downpour.Test.ThreatDb." + Guid.NewGuid().ToString("N");
-        new ThreatFeedCache(Path.Combine(_folder, "cache")).Write(Feed("feodo"), Utf8("# x\n\"a\",\"50.16.16.211\",\"443\",\"online\",\"b\",\"QakBot\"\n"), DateTimeOffset.UtcNow);
+        new ThreatFeedCache(Path.Combine(_folder, "cache")).Write(Feed("feodo"),
+            Utf8($"# Last updated: {DateTimeOffset.UtcNow:yyyy-MM-dd HH:mm:ss} UTC\n\"a\",\"50.16.16.211\",\"443\",\"online\",\"b\",\"QakBot\"\n"), DateTimeOffset.UtcNow);
         using var service = CreateService(pipe);
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
         await service.StartAsync(cts.Token);

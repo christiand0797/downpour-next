@@ -49,7 +49,7 @@ public sealed partial class ThreatDatabasesPage : Page
 {
     private readonly ThreatDatabaseClient _client = new();
     private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromSeconds(1) };
-    private readonly CircularGauge _coverage = new("ONLINE", Color.FromArgb(255, 0, 229, 255));
+    private readonly CircularGauge _coverage = new("ACTIVE", Color.FromArgb(255, 0, 229, 255));
     private CancellationTokenSource _lifetime = new();
     private ThreatDatabaseSnapshot? _snapshot;
     private bool _refreshing;
@@ -103,16 +103,17 @@ public sealed partial class ThreatDatabasesPage : Page
     private void Render(ThreatDatabaseSnapshot s)
     {
         var scoring = s.Feeds.Where(f => f.Kind != ThreatFeedKinds.Geo).ToArray();
-        var online = scoring.Count(f => f.State is ThreatFeedStates.Current or ThreatFeedStates.Stale or ThreatFeedStates.Updating && f.Entries > 0);
+        var online = scoring.Count(f => f.MatchingEnabled ?? (f.State is ThreatFeedStates.Current or ThreatFeedStates.Stale or ThreatFeedStates.Updating && f.Entries > 0));
         _coverage.SetMetric(scoring.Length == 0 ? null : 100d * online / scoring.Length, $"{online}/{scoring.Length}");
         IndicatorsText.Text = s.TotalIndicators.ToString("N0");
         var origin = s.Feeds.FirstOrDefault(f => f.Kind == ThreatFeedKinds.Geo);
-        OriginsText.Text = origin is { Entries: > 0 } ? $"+ {origin.Entries:N0} origin ranges" : "Origin database not loaded yet";
+        OriginsText.Text = origin is { Entries: > 0, MatchingEnabled: false } ? "Origin database excluded by age policy" :
+            origin is { Entries: > 0 } ? $"+ {origin.Entries:N0} origin ranges" : "Origin database not loaded yet";
 
         var serious = s.Matches.Count(m => m.Severity is "CRITICAL" or "HIGH");
         MatchesText.Text = s.Matches.Count.ToString("N0");
         MatchesText.Foreground = s.Matches.Count == 0 ? Brush("HudGreenBrush") : serious > 0 ? Brush("HudRedBrush") : Brush("HudAmberBrush");
-        MatchesDetail.Text = s.Matches.Count == 0 ? "Clean against every loaded list" : $"{serious} high or critical";
+        MatchesDetail.Text = s.Matches.Count == 0 ? "No matches in eligible sources" : $"{serious} high or critical";
         MatchesCard.Style = (Style)Application.Current.Resources[serious > 0 ? "HudAlertCardStyle" : "HudCardStyle"];
 
         ConnectionsText.Text = s.Coverage.ConnectionsChecked.ToString("N0");
@@ -152,13 +153,12 @@ public sealed partial class ThreatDatabasesPage : Page
         {
             Name = f.Name,
             Provider = $"{f.Provider} · {f.License}".ToUpperInvariant(),
-            State = f.State.Replace('-', ' ').ToUpperInvariant(),
-            Entries = f.Entries > 0 ? $"{f.Entries:N0} {(f.Kind == ThreatFeedKinds.Geo ? "ranges" : "entries")}" : "—",
-            Purpose = f.Purpose,
-            Updated = f.Error is { } error ? $"Problem: {error}" :
-                f.RetrievedAtUtc is { } at ? $"Updated {Age(s.CapturedAtUtc - at)} ago · {f.Bytes / 1024d:N0} KB" : "Not downloaded yet",
-            StateBrush = StateBrush(f.State),
-            StateTint = StateTint(f.State),
+            State = PublicationLabel(f),
+            Entries = f.Entries > 0 ? $"{f.Entries:N0} {(f.Kind == ThreatFeedKinds.Geo ? "ranges" : "entries")}{(f.MatchingEnabled == false ? " · excluded from matching" : "")}" : "—",
+            Purpose = f.Purpose + (f.FreshnessNote is { } note ? Environment.NewLine + note : ""),
+            Updated = DownloadAndPublication(f, s.CapturedAtUtc),
+            StateBrush = StateBrush(PublicationColorState(f)),
+            StateTint = StateTint(PublicationColorState(f)),
         }).ToArray());
 
         LiveList.Set(LolbinList, s.Lolbins.Count == 0
@@ -242,7 +242,12 @@ public sealed partial class ThreatDatabasesPage : Page
         foreach (var c in s.Connections)
             report.AppendLine($"{c.Program} (PID {c.ProcessId}) -> {c.RemoteAddress}:{c.RemotePort}  {c.CountryCode ?? "??"}  {(c.Asn is { } a ? $"AS{a} {c.Network}" : "")}{(c.Listed ? "  [LISTED]" : "")}");
         report.AppendLine();
-        report.AppendLine("Sources: " + string.Join("; ", s.Feeds.Where(f => f.RetrievedAtUtc is not null).Select(f => $"{f.Name} ({f.Provider}, {f.RetrievedAtUtc:u})")));
+        report.AppendLine("SOURCES (download time is distinct from source publication time)");
+        foreach (var feed in s.Feeds.Where(f => f.RetrievedAtUtc is not null))
+        {
+            report.AppendLine($"{feed.Name} ({feed.Provider}) · downloaded {feed.RetrievedAtUtc:u} · published {feed.SourcePublishedAtUtc?.ToString("u") ?? "unknown"} · {feed.SourceFreshness ?? "publication age unknown"} · matching {(feed.MatchingEnabled == false ? "excluded" : feed.MatchingEnabled == true ? "enabled" : "not reported")}");
+            if (feed.FreshnessNote is { } note) report.AppendLine("    " + note);
+        }
         report.AppendLine("Origins show where an address block is registered and which network runs it. They do not identify or locate a person.");
         var data = new DataPackage();
         data.SetText(report.ToString());
@@ -260,6 +265,26 @@ public sealed partial class ThreatDatabasesPage : Page
 
     private static string Age(TimeSpan age) =>
         age.TotalMinutes < 1 ? "moments" : age.TotalHours < 1 ? $"{age.TotalMinutes:0} min" : age.TotalDays < 1 ? $"{age.TotalHours:0} h" : $"{age.TotalDays:0} d";
+
+    private static string PublicationLabel(ThreatFeedStatus feed) => feed.Entries == 0 ? feed.State.Replace('-', ' ').ToUpperInvariant()
+        : feed.MatchingEnabled == false ? feed.SourceFreshness == ThreatSourceFreshness.Historical ? "HISTORICAL" : "EXCLUDED"
+        : feed.SourceFreshness switch
+        {
+            ThreatSourceFreshness.Fresh => "FRESH SNAPSHOT",
+            ThreatSourceFreshness.Historical => "HISTORICAL HASHES",
+            _ => "SOURCE AGE UNKNOWN",
+        };
+
+    private static string PublicationColorState(ThreatFeedStatus feed) => feed.Entries == 0 ? feed.State
+        : feed.MatchingEnabled == false || feed.SourceFreshness != ThreatSourceFreshness.Fresh ? ThreatFeedStates.Stale : feed.State;
+
+    private static string DownloadAndPublication(ThreatFeedStatus feed, DateTimeOffset now)
+    {
+        var downloaded = feed.RetrievedAtUtc is { } at ? $"Downloaded {Age(now - at)} ago · {feed.Bytes / 1024d:N0} KB" : "Not downloaded yet";
+        var published = feed.SourcePublishedAtUtc is { } publication
+            ? $"Source published {publication:yyyy-MM-dd HH:mm} UTC ({Age(now - publication)} ago)" : "Source publication time unknown";
+        return downloaded + Environment.NewLine + published + (feed.Error is { } error ? Environment.NewLine + "Download problem: " + error : "");
+    }
 
     private static Brush Brush(string key) => (Brush)Application.Current.Resources[key];
 

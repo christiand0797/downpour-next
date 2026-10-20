@@ -1,5 +1,13 @@
 # Downpour Next TODO
 
+## 2026-10-18 active milestone
+
+- [ ] DN-041: finish publication-age policy, full HaGeZi coverage, compact index and complete paged local browsing; verify actual full payload, source attribution and resource use.
+- [ ] DN-042: reject incomplete WUA installer searches before claiming no updates or installing a partial set.
+- [ ] Validate and publish v0.1.23 from exact committed source; retain v0.1.22 as Latest until all release gates pass.
+- [ ] Add durable source provenance to persisted central alerts so expired evidence from earlier service sessions can be re-evaluated without guessing identities.
+- [ ] Direct-operation follow-ups: protected-log access through a typed UAC broker; exact-offer driver installation and cancellable WUA search; SMB1 optional-feature servicing with native DISM. Implement denial, audit, timeout and rollback behavior before enabling privileged operations.
+
 ## 2026-10-16 active milestone
 
 - [x] Fix shell timer callbacks during dispatcher shutdown; 43 native routes now close with exit code 0.

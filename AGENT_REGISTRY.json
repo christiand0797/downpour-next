@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-16",
+  "updatedAt": "2026-10-18",
   "agents": [
     {
       "id": "codex-primary",
       "role": "primary",
-      "taskId": "DN-010",
-      "status": "idle",
-      "heartbeatUtc": "2026-10-17T02:10:17.6980004Z",
-      "notes": "v0.1.22 published Latest from8fc67d3; all source pushed,1308Debug/Release tests,55livefeeds,43native routes,window/integrity/YARA andremote digests pass. Final docs pushed on handoff. Next DN-041 published timestamps/expiry and large feed storage; DN-042 targeted driver/WUA cancellation/rescan."
+      "taskId": "DN-041",
+      "status": "active",
+      "heartbeatUtc": "2026-10-18T21:38:18.9925607+00:00",
+      "notes": "DN-041 integration: full HaGeZi, compact index, source freshness, local paged browser; DN-042 incomplete installer search correction. Completing tests/review before v0.1.23 build/release. Handoff docs updated."
     },
     {
       "id": "v29_action_map",
@@ -145,6 +145,30 @@
       "status": "idle",
       "heartbeatUtc": "2026-10-15T19:32:03.899338Z",
       "notes": "Focused new-source tests / independent review; root owns shared docs and source. Drafts integrated/reviewed by root; combined full Debug1308 pass; stopped before source freeze."
+    },
+    {
+      "id": "freshness",
+      "role": "agent",
+      "taskId": "DN-041",
+      "status": "active",
+      "heartbeatUtc": "2026-10-17T11:26:02.6885282-06:00",
+      "notes": "Delegated DN-041 implementation/review; root manages registry."
+    },
+    {
+      "id": "compact_index",
+      "role": "agent",
+      "taskId": "DN-041",
+      "status": "active",
+      "heartbeatUtc": "2026-10-17T11:26:02.6989418-06:00",
+      "notes": "Delegated DN-041 implementation/review; root manages registry."
+    },
+    {
+      "id": "source_health",
+      "role": "agent",
+      "taskId": "DN-042",
+      "status": "active",
+      "heartbeatUtc": "2026-10-17T11:26:02.6991614-06:00",
+      "notes": "Direct-operation audit complete; implementing fail-closed WUA installer search outcome handling and tests. Then independent source/index review."
     }
   ]
 }

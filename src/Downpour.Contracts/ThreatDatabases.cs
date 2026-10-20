@@ -26,7 +26,21 @@ public sealed record ThreatFeedStatus(
     DateTimeOffset? RetrievedAtUtc,
     DateTimeOffset? NextRefreshUtc,
     long Bytes,
-    string? Error);
+    string? Error,
+    DateTimeOffset? SourcePublishedAtUtc = null,
+    string? SourceFreshness = null,
+    DateTimeOffset? SourceExpiresAtUtc = null,
+    bool? MatchingEnabled = null,
+    string? FreshnessNote = null);
+
+/// <summary>Publication age is distinct from when the local copy was downloaded.</summary>
+public static class ThreatSourceFreshness
+{
+    public const string Unknown = "unknown";
+    public const string Fresh = "fresh";
+    public const string Expired = "expired";
+    public const string Historical = "historical";
+}
 
 public static class ThreatFeedStates
 {
@@ -105,7 +119,7 @@ public sealed record RemoteConnectionOrigin(
 /// Operation = "snapshot", "refresh" (download due/failed feeds now), "lookup" (check one IP, domain, URL or hash locally),
 /// or "browse" (list entries of <see cref="FeedId"/>, optionally filtered by the text in Value).
 /// </summary>
-public sealed record ThreatDatabaseRequest(int SchemaVersion, string Operation, string? Value, string? FeedId = null);
+public sealed record ThreatDatabaseRequest(int SchemaVersion, string Operation, string? Value, string? FeedId = null, int Offset = 0);
 
 /// <summary>One entry of a downloaded database, for browsing.</summary>
 public sealed record ThreatBrowseRow(string Value, string Type, string Label);
@@ -122,7 +136,9 @@ public sealed record ThreatDatabaseResponse(
     IReadOnlyList<ThreatLookupHit>? LookupHits,
     IpOrigin? LookupOrigin = null,
     IReadOnlyList<ThreatBrowseRow>? Browse = null,
-    int BrowseTotal = 0);
+    int BrowseTotal = 0,
+    int BrowseOffset = 0,
+    int? BrowseNextOffset = null);
 
 public static class ThreatDatabaseOperations
 {
