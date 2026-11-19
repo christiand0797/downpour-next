@@ -49,6 +49,12 @@ public static class DgaDetector
         "ti", "es", "or", "te", "of", "ed", "is", "it", "al", "ar"
     };
 
+    private static readonly string[] NonRoutableSuffixes =
+    [
+        ".local", ".localdomain", ".lan", ".home", ".home.arpa", ".internal", ".intranet", ".corp",
+        ".arpa", ".test", ".invalid", ".example"
+    ];
+
     private static readonly string[] CommonWords =
     [
         "www", "mail", "ftp", "api", "cdn", "static", "assets", "media",
@@ -124,6 +130,22 @@ public static class DgaDetector
             return new DgaScoreResult(domain, 0, 0, 0, 0, 1.0, false, 0.0, ["known-good suffix"]);
         }
 
+        // Names that cannot reach a public resolver are not DGA candidates: mDNS/SSDP suffixes, Windows domain
+        // suffixes, reverse-lookup zones, reserved test names, DNS service labels (_dmarc, _ldap._tcp) and punycode
+        // labels, which are high-entropy by construction rather than by algorithm.
+        if (domain == "localhost" || NonRoutableSuffixes.Any(suffix => domain.EndsWith(suffix, StringComparison.OrdinalIgnoreCase)))
+        {
+            return Skip(domain, "non-routable or reserved name");
+        }
+        if (parts.Any(label => label.StartsWith('_')))
+        {
+            return Skip(domain, "DNS service record name");
+        }
+        if (parts.Any(label => label.StartsWith("xn--", StringComparison.OrdinalIgnoreCase)))
+        {
+            return Skip(domain, "internationalized name (punycode)");
+        }
+
         var labels = string.Join('.', parts[..^1]);
         var tld = parts[^1];
         var sldClean = Regex.Replace(labels, @"[^a-z0-9]", "");
@@ -195,7 +217,12 @@ public static class DgaDetector
             factors.Add($"{hyphens} hyphens");
         }
 
-        var foundWords = CommonWords.Where(w => labels.Contains(w)).Take(2).ToArray();
+        // Match whole dot/hyphen/underscore-delimited labels. Substring matching discounted random labels that merely
+        // contained a word (for example "...login..." inside a random string), which hid generated names.
+        var labelTokens = labels.Split(new[] { '.', '-', '_' }, StringSplitOptions.RemoveEmptyEntries);
+        var foundWords = CommonWords
+            .Where(word => labelTokens.Any(token => token.Equals(word, StringComparison.OrdinalIgnoreCase)))
+            .Take(2).ToArray();
         if (foundWords.Length > 0)
         {
             score = Math.Max(0, score - 25);
@@ -222,4 +249,7 @@ public static class DgaDetector
             confidence,
             factors);
     }
+
+    private static DgaScoreResult Skip(string domain, string reason) =>
+        new(domain, 0, 0, 0, 0, 1.0, false, 0.0, [reason]);
 }

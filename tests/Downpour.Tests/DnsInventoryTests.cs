@@ -67,6 +67,34 @@ public sealed class DnsInventoryTests
         Assert.True(result.Score >= 70);
     }
 
+    [Theory]
+    [InlineData("_dmarc.example.com")]
+    [InlineData("1.0.0.10.in-addr.arpa")]
+    [InlineData("xn--80ak6aa92e.com")]
+    [InlineData("printer.local")]
+    [InlineData("fileserver.corp")]
+    [InlineData("dns.localdomain")]
+    public void ScoreDomain_SkipsNonPublicAndServiceNames(string domain)
+    {
+        var result = DgaDetector.ScoreDomain(domain);
+        Assert.False(result.IsDga);
+        Assert.Equal(0, result.Score);
+        Assert.Contains(result.Factors, factor =>
+            factor.Contains("non-routable") || factor.Contains("service record") || factor.Contains("internationalized"));
+    }
+
+    [Fact]
+    public void ScoreDomain_OnlyDiscountsDictionaryWordsAsWholeLabels()
+    {
+        // "login" inside a random label must not earn the dictionary-word discount.
+        var embedded = DgaDetector.ScoreDomain("xkqzvbtr9alogin.top");
+        Assert.DoesNotContain(embedded.Factors, factor => factor.Contains("dictionary words"));
+
+        // A separate hyphen-delimited label is a genuine dictionary word.
+        var separate = DgaDetector.ScoreDomain("xkqzvbtr9a-login.top");
+        Assert.Contains(separate.Factors, factor => factor.Contains("dictionary words: login"));
+    }
+
     [Fact]
     public void ScoreDomain_ShortDomainsAreNotDga()
     {

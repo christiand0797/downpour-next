@@ -13,10 +13,25 @@ public static class AlertCorrelationEngine
     [
         new("service-install-cross-log", "Possible service-install activity across event logs", "HIGH", "T1543.003",
             "System", 7045, "Security", 4697, TimeSpan.FromMinutes(2),
-            "Time-proximate corroboration only. Service name, principal, process, and a shared operation identifier are unavailable; these records may describe different installations."),
+            "Time-proximate corroboration only. Service name, principal, process, and a shared operation identifier are unavailable; these records may describe different installations.",
+            Ordered: false),
         new("event-log-clear-cross-log", "Possible event-log clearing activity across event logs", "CRITICAL", "T1070.001",
             "Security", 1102, "System", 104, TimeSpan.FromMinutes(10),
-            "Time-proximate corroboration only. Actor, target-log identity, process, and a shared operation identifier are unavailable; these records may describe different actions.")
+            "Time-proximate corroboration only. Actor, target-log identity, process, and a shared operation identifier are unavailable; these records may describe different actions.",
+            Ordered: false),
+        new("account-creation-group-change", "Account creation followed by a group membership change", "HIGH", "T1098",
+            "Security", 4720, "Security", 4732, TimeSpan.FromMinutes(15),
+            "Time-proximate corroboration only. Account names, subjects, and group identities are unavailable; these records may describe different accounts or groups.",
+            Ordered: true),
+        new("defender-detection-service-install", "Malware detection followed by a service installation", "HIGH", "T1543.003",
+            "Microsoft-Windows-Windows Defender/Operational", 1116, "System", 7045, TimeSpan.FromMinutes(30),
+            "Time-proximate corroboration only. File, process, and service identities are unavailable; the detection and the installation may be unrelated.",
+            Ordered: true),
+        new("failed-logon-rdp-auth", "Failed-logon burst followed by a remote desktop authentication", "HIGH", "T1110",
+            "Security", 4625, "Microsoft-Windows-TerminalServices-RemoteConnectionManager/Operational", 1149,
+            TimeSpan.FromMinutes(15),
+            "Time-proximate corroboration only. The 4625 alert aggregates a five-minute burst, client addresses and account names are unavailable, and the successful logon may be unrelated.",
+            Ordered: true)
     ];
 
     public static IReadOnlyList<CorrelatedAlertFinding> Correlate(SecurityAlertSnapshot snapshot)
@@ -39,7 +54,7 @@ public static class AlertCorrelationEngine
             var pairs = (from first in left
                          from second in right
                          let distance = (first.EventTimeUtc - second.EventTimeUtc).Duration()
-                         where distance <= rule.Window
+                         where distance <= rule.Window && (!rule.Ordered || second.EventTimeUtc >= first.EventTimeUtc)
                          orderby distance, first.EventTimeUtc, first.AlertId, second.AlertId
                          select (First: first, Second: second, Distance: distance)).ToArray();
 
@@ -75,7 +90,7 @@ public static class AlertCorrelationEngine
     private sealed record CorrelationRule(
         string Id, string Title, string Severity, string Technique,
         string LeftLog, int LeftEventId, string RightLog, int RightEventId,
-        TimeSpan Window, string Limitation);
+        TimeSpan Window, string Limitation, bool Ordered);
 }
 
 public sealed record CorrelatedAlertFinding(

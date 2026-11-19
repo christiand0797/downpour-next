@@ -43,6 +43,7 @@ public static partial class IntelIndicatorExtractor
                 || (b[0] == 172 && b[1] >= 16 && b[1] <= 31)
                 || (b[0] == 192 && b[1] == 168)
                 || (b[0] == 192 && b[1] == 0 && b[2] is 0 or 2)   // IETF / TEST-NET-1
+                || (b[0] == 192 && b[1] == 88 && b[2] == 99)      // 6to4 relay anycast
                 || (b[0] == 198 && b[1] is 18 or 19)              // benchmarking
                 || (b[0] == 198 && b[1] == 51 && b[2] == 100)     // TEST-NET-2
                 || (b[0] == 203 && b[1] == 0 && b[2] == 113));    // TEST-NET-3
@@ -51,10 +52,37 @@ public static partial class IntelIndicatorExtractor
         {
             if (address.IsIPv4MappedToIPv6) return IsPublic(address.MapToIPv4());
             var b = address.GetAddressBytes();
-            // Only global unicast (2000::/3), excluding documentation 2001:db8::/32.
-            return (b[0] & 0xE0) == 0x20 && !(b[0] == 0x20 && b[1] == 0x01 && b[2] == 0x0D && b[3] == 0xB8);
+            // Only global unicast (2000::/3), excluding the special-purpose blocks inside it. An address that is
+            // not globally routable is never sent to an external intel service, even though it is syntactically valid.
+            if ((b[0] & 0xE0) != 0x20) return false;
+            foreach (var (network, bits) in ReservedIpv6Prefixes)
+                if (InPrefix(b, network, bits)) return false;
+            return true;
         }
         return false;
+    }
+
+    private static readonly (byte[] Network, int Bits)[] ReservedIpv6Prefixes =
+    [
+        (Ipv6Bytes("2001:0::"), 32),    // Teredo tunnelling
+        (Ipv6Bytes("2001:2::"), 48),    // Benchmarking
+        (Ipv6Bytes("2001:10::"), 28),   // ORCHID
+        (Ipv6Bytes("2001:20::"), 28),   // ORCHIDv2
+        (Ipv6Bytes("2001:db8::"), 32),  // Documentation
+        (Ipv6Bytes("3fff::"), 20)       // Documentation (RFC 9637)
+    ];
+
+    private static byte[] Ipv6Bytes(string address) => IPAddress.Parse(address).GetAddressBytes();
+
+    private static bool InPrefix(byte[] address, byte[] network, int bits)
+    {
+        var wholeBytes = bits / 8;
+        for (var index = 0; index < wholeBytes; index++)
+            if (address[index] != network[index]) return false;
+        var remaining = bits % 8;
+        if (remaining == 0) return true;
+        var mask = (byte)(0xFF << (8 - remaining));
+        return (address[wholeBytes] & mask) == (network[wholeBytes] & mask);
     }
 
     [GeneratedRegex(@"(?<![\d.])(?:\d{1,3}\.){3}\d{1,3}(?![\d.])")]

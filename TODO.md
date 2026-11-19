@@ -1,5 +1,13 @@
 # Downpour Next TODO
 
+## 2026-11-19 completed slice (DN-045)
+
+- [x] Parse NVD range fields and evaluate real affected versions (inclusive/exclusive bounds, exact versions, pre-release ordering).
+- [x] Extend the IPv4/IPv6 privacy filter for reserved and special-purpose space.
+- [x] Tighten DGA scoring for non-routable, service-record and punycode names; whole-label dictionary matching.
+- [x] Add ordered cross-source correlations (account creation->group change, Defender detection->service install, failed-logon burst->RDP auth).
+- [x] Release build clean; 1,397 tests passed.
+
 ## 2026-10-18 active milestone
 
 - [ ] DN-041: finish publication-age policy, full HaGeZi coverage, compact index and complete paged local browsing; verify actual full payload, source attribution and resource use.

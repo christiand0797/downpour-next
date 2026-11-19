@@ -1,5 +1,16 @@
 # Downpour Next shared context
 
+## 2026-11-19 affected-version, indicator, DGA and correlation slice (buffy, DN-045)
+
+Implemented and verified at the current tip: Release build 0 warnings/errors, full suite 1,397 passed, 0 failed.
+- `NvdClient` reads NVD's four range fields (`versionStartIncluding`, `versionStartExcluding`, `versionEndIncluding`, `versionEndExcluding`) into `NvdCpeMatch`; a malformed optional bound is treated as absent rather than dropping the CVE.
+- `VulnerabilityMatchEngine` evaluates real ranges (inclusive and exclusive), treats a concrete CPE version as exact rather than a minimum, and handles trailing-zero equality, `*` prefix components, `v` prefixes and pre-release ordering. Unknown or unparseable installed versions stay conservative (affected). The analysis text names the bound that decided the result.
+- `IntelIndicatorExtractor.IsPublic` excludes more special-purpose IPv6 space inside 2000::/3 (Teredo 2001::/32, 2001:2::/48, ORCHID 2001:10::/28 and 2001:20::/28, 3fff::/20 documentation) plus IPv4 192.88.99.0/24.
+- `DgaDetector` skips non-routable/reserved suffixes, reverse-lookup and DNS service labels, and punycode names, and only discounts dictionary words that occupy a whole label. Genuine DGA fixtures score as before.
+- `AlertCorrelationEngine` adds three ordered rules: 4720 then 4732 (15 min), Defender 1116 then 7045 (30 min), 4625 burst then RDP 1149 (15 min). Each states that temporal proximity does not establish a shared account, actor, or operation.
+Tests: new `NvdClientTests`; `VulnerabilityMatchEngineTests` rewritten to call the real internals; `IntelIndicatorTests`, `DnsInventoryTests` and `AlertCorrelationEngineTests` extended. No collection scope, privileged action or response behavior changed. `Build-Portable.ps1` is the one-command local build added earlier this session.
+
+
 ## 2026-10-18 active continuation (codex-primary, DN-041 / DN-042)
 
 October 19 verification checkpoint: installer correction committed/pushed as `0a213b3`; 15 focused tests and Fixer build passed. Feed/browser candidate passes full Debug restore/build (0 warnings/errors) and 1,376 tests (`artifacts/v023-debug-build2.log`, `v023-debug-test2.log`, `test-results/v023-debug2.trx`). Independent review found and fixed truncated provenance and obsolete sweep publication; expiry does not alter central operator triage. Root fixed concurrent sweep-signal coalescing and excluded-origin labeling. Full HaGeZi parse/index retains 2,101,965 usable domains; exact benchmark evidence in research doc. Next: commit this candidate, build Release and all five apps in a clean checkout, verify package/native workflows, then publish. No further feature work until release validation finishes.

@@ -71,6 +71,52 @@ public sealed class AlertCorrelationEngineTests
         Assert.Throws<InvalidDataException>(() => AlertCorrelationEngine.Correlate(snapshot with { TotalCount = -1 }));
     }
 
+    [Fact]
+    public void CorrelatesAccountCreationBeforeGroupChangeOnlyInOrder()
+    {
+        var now = DateTimeOffset.UtcNow.AddMinutes(-20);
+        var created = Alert("Security", 4720, now, 1);
+        var added = Alert("Security", 4732, now.AddMinutes(5), 2);
+
+        var finding = Assert.Single(AlertCorrelationEngine.Correlate(Snapshot(DateTimeOffset.UtcNow, created, added)));
+        Assert.Equal("account-creation-group-change", finding.RuleId);
+        Assert.Equal("T1098", finding.Technique);
+
+        // Group membership added before the account existed is not this sequence.
+        var earlyAdd = Alert("Security", 4732, now, 3);
+        var lateCreate = Alert("Security", 4720, now.AddMinutes(5), 4);
+        var reversed = AlertCorrelationEngine.Correlate(Snapshot(DateTimeOffset.UtcNow, earlyAdd, lateCreate));
+        Assert.DoesNotContain(reversed, item => item.RuleId == "account-creation-group-change");
+    }
+
+    [Fact]
+    public void CorrelatesDefenderDetectionBeforeServiceInstallationWithinThirtyMinutes()
+    {
+        var now = DateTimeOffset.UtcNow.AddMinutes(-45);
+        var detection = Alert("Microsoft-Windows-Windows Defender/Operational", 1116, now, 1);
+        var install = Alert("System", 7045, now.AddMinutes(10), 2);
+
+        var finding = Assert.Single(AlertCorrelationEngine.Correlate(Snapshot(DateTimeOffset.UtcNow, detection, install)));
+        Assert.Equal("defender-detection-service-install", finding.RuleId);
+        Assert.Contains("may be unrelated", finding.Limitation, StringComparison.Ordinal);
+
+        var far = Alert("System", 7045, now.AddMinutes(40), 3);
+        Assert.DoesNotContain(AlertCorrelationEngine.Correlate(Snapshot(DateTimeOffset.UtcNow, detection, far)),
+            item => item.RuleId == "defender-detection-service-install");
+    }
+
+    [Fact]
+    public void CorrelatesFailedLogonBurstBeforeRemoteDesktopAuthentication()
+    {
+        var now = DateTimeOffset.UtcNow.AddMinutes(-10);
+        var burst = Alert("Security", 4625, now, 1);
+        var rdp = Alert("Microsoft-Windows-TerminalServices-RemoteConnectionManager/Operational", 1149, now.AddMinutes(2), 2);
+
+        var finding = Assert.Single(AlertCorrelationEngine.Correlate(Snapshot(DateTimeOffset.UtcNow, burst, rdp)));
+        Assert.Equal("failed-logon-rdp-auth", finding.RuleId);
+        Assert.Contains("five-minute burst", finding.Limitation, StringComparison.Ordinal);
+    }
+
     private static SecurityAlertSnapshot Snapshot(DateTimeOffset capturedAt, params SecurityAlert[] alerts) =>
         new(1, capturedAt, alerts.Length, alerts, []);
 

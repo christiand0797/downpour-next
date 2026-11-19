@@ -26,9 +26,17 @@ public sealed class IntelIndicatorTests
     [InlineData("203.0.113.5", false)]
     [InlineData("224.0.0.1", false)]
     [InlineData("2606:4700:4700::1111", true)]
+    [InlineData("2001:4860:4860::8888", true)]
     [InlineData("fd00::1", false)]
     [InlineData("fe80::1", false)]
     [InlineData("2001:db8::1", false)]
+    [InlineData("3fff::1", false)]
+    [InlineData("2001:2::1", false)]
+    [InlineData("2001:10::1", false)]
+    [InlineData("2001:20::1", false)]
+    [InlineData("2001:0:abcd::1", false)]
+    [InlineData("192.88.99.1", false)]
+    [InlineData("192.0.0.1", false)]
     public void OnlyPublicAddressesQualify(string address, bool expected) =>
         Assert.Equal(expected, IntelIndicatorExtractor.IsPublic(IPAddress.Parse(address)));
 

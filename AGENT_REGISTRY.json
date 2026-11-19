@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-18",
+  "updatedAt": "2026-11-19",
   "agents": [
     {
       "id": "codex-primary",
@@ -169,6 +169,14 @@
       "status": "active",
       "heartbeatUtc": "2026-10-17T11:26:02.6991614-06:00",
       "notes": "Direct-operation audit complete; implementing fail-closed WUA installer search outcome handling and tests. Then independent source/index review."
+    },
+    {
+      "id": "buffy",
+      "role": "agent",
+      "taskId": "DN-006",
+      "status": "idle",
+      "heartbeatUtc": "2026-11-19T00:00:00Z",
+      "notes": "Delivered DN-045: NVD range parsing and real affected-version comparison, IPv4/IPv6 privacy filter, DGA precision, three ordered correlations. Release build clean; 1,397 tests passed. Idle after handoff."
     }
   ]
 }

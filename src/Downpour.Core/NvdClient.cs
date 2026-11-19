@@ -190,7 +190,13 @@ public sealed class NvdClient
                                         var cpe23Uri = matchObj.GetValue("criteria", StringComparison.OrdinalIgnoreCase)?.Value<string>();
                                         if (!string.IsNullOrWhiteSpace(cpe23Uri))
                                         {
-                                            cpeMatches.Add(ParseCpe23Uri(cpe23Uri));
+                                            cpeMatches.Add(ParseCpe23Uri(cpe23Uri) with
+                                            {
+                                                VersionStartIncluding = OptionalBoundedString(matchObj, "versionStartIncluding", 128),
+                                                VersionStartExcluding = OptionalBoundedString(matchObj, "versionStartExcluding", 128),
+                                                VersionEndIncluding = OptionalBoundedString(matchObj, "versionEndIncluding", 128),
+                                                VersionEndExcluding = OptionalBoundedString(matchObj, "versionEndExcluding", 128)
+                                            });
                                         }
                                     }
                                 }
@@ -283,6 +289,19 @@ public sealed class NvdClient
         return new NvdCpeMatch(cpe23Uri, vendor, product, version, isVulnerable);
     }
 
+    /// <summary>
+    /// Reads an optional NVD bound. NVD version bounds are untrusted digits, dots, letters and separators; a value that
+    /// is empty, over-long, or contains control characters is treated as absent instead of failing the whole CVE.
+    /// </summary>
+    private static string? OptionalBoundedString(JObject obj, string property, int maxLength)
+    {
+        var token = obj.GetValue(property, StringComparison.OrdinalIgnoreCase);
+        if (token is null || token.Type == JTokenType.Null) return null;
+        var value = token.Value<string>()?.Trim();
+        if (string.IsNullOrWhiteSpace(value) || value.Length > maxLength || value.Any(char.IsControl)) return null;
+        return value;
+    }
+
     private static string RequiredString(JObject obj, string property, int maxLength)
     {
         var value = obj.GetValue(property, StringComparison.OrdinalIgnoreCase);
@@ -329,4 +348,8 @@ public sealed record NvdCpeMatch(
     string Vendor,
     string Product,
     string Version,
-    bool IsVulnerable);
+    bool IsVulnerable,
+    string? VersionStartIncluding = null,
+    string? VersionStartExcluding = null,
+    string? VersionEndIncluding = null,
+    string? VersionEndExcluding = null);

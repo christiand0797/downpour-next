@@ -45,7 +45,7 @@ The route is advisory and read-only. It labels the source and catalog release/re
 
 After selecting a CVE row from the validated CISA catalog, the user can explicitly request its current score from FIRST's [EPSS API](https://api.first.org/epss/). The request sends only that CVE identifier to the fixed HTTPS host `api.first.org`; Downpour does not upload the catalog or perform bulk lookups. The lookup is bounded by a 10-second deadline and a 64 KiB response limit, rejects redirects, validates the final host/path, applies strict duplicate-property JSON parsing, requires an exact CVE match, constrains score and percentile to 0–1, and checks the score date. A recent result for the same selection is held in memory for up to 24 hours; no EPSS response is written to disk.
 
-FIRST defines EPSS as a population-level estimate of the probability that a published CVE will be exploited in the wild over the next 30 days; the score is not an asset-specific risk or proof that an installed product is vulnerable ([FIRST EPSS overview](https://www.first.org/epss/), [data access guidance](https://www.first.org/epss/data.html)). The page displays the score date, retrieval time, probability, and percentile with that limitation. NVD CVSS/CPE analysis is not implemented.
+FIRST defines EPSS as a population-level estimate of the probability that a published CVE will be exploited in the wild over the next 30 days; the score is not an asset-specific risk or proof that an installed product is vulnerable ([FIRST EPSS overview](https://www.first.org/epss/), [data access guidance](https://www.first.org/epss/data.html)). The page displays the score date, retrieval time, probability, and percentile with that limitation. NVD CVSS and CPE affected-version analysis is implemented for KEV-listed CVEs; see "Affected-version analysis" below.
 
 ## Local installed-software candidate review
 
@@ -64,8 +64,21 @@ An explicit local comparison checks normalized publisher/application names again
 - Cache reads repeat the size, digest, UTF-8, JSON, envelope, duplicate-CVE, and field checks. Data older than seven days or dated more than five minutes in the future is not used. Entries older than 24 hours are explicitly labeled stale. A cache digest detects accidental corruption; because it is stored beside the cache, it is not an authenticity signature against an attacker who can rewrite the entire user cache.
 - If a refresh fails, the page keeps a validated in-memory/cache catalog visible and says the source is unavailable; it does not present the cached data as current.
 
+## Affected-version analysis
+
+`NvdClient` parses each vulnerable CPE match and keeps NVD's four range fields (`versionStartIncluding`,
+`versionStartExcluding`, `versionEndIncluding`, `versionEndExcluding`). `VulnerabilityMatchEngine` then evaluates the
+installed display version against those bounds. A CPE with a concrete version and no bounds is an exact version, not a
+minimum; trailing zero components are equal, a pre-release suffix sorts before its release, and a `*` component matches
+the remaining prefix. When the installed version cannot be parsed, or a bound cannot be interpreted, the result stays
+conservative (treated as potentially affected) and the analysis text says so. A malformed optional bound is ignored for
+that match rather than rejecting the CVE.
+
+Ranges describe what NVD says is affected for a CPE identity. They do not prove that the installed product, edition or
+build corresponds to that CPE, so the row remains a lead to verify against the vendor advisory.
+
 ## Limitations and next steps
 
-This prototype does not verify a detached signature (the selected feed does not currently provide one through this integration), perform affected-version matching, ingest NVD/URLhaus/MISP/TAXII, or evaluate Sigma/YARA rules. EPSS currently enriches one user-selected KEV CVE at a time; bulk EPSS ingestion is not implemented. Add each additional feed as a separately allow-listed parser with its own provenance and failure state. Document Sigma and YARA compatibility before porting those rule formats.
+This prototype does not verify a detached signature (the selected feed does not currently provide one through this integration), ingest URLhaus/MISP/TAXII, or evaluate Sigma/YARA rules. EPSS currently enriches one user-selected KEV CVE at a time; bulk EPSS ingestion is not implemented. Add each additional feed as a separately allow-listed parser with its own provenance and failure state. Document Sigma and YARA compatibility before porting those rule formats.
 
 The endpoint is chosen from the official CISA catalog. CISA's web page was not directly fetchable in the research browser during implementation (HTTP 403), so the client also rejects redirects and shows a clear unavailable state if the JSON endpoint is blocked or changes.
