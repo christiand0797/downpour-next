@@ -12,7 +12,7 @@
 
 - [ ] DN-041: finish publication-age policy, full HaGeZi coverage, compact index and complete paged local browsing; verify actual full payload, source attribution and resource use.
 - [ ] DN-042: reject incomplete WUA installer searches before claiming no updates or installing a partial set.
-- [ ] Validate and publish v0.1.23 from exact committed source; retain v0.1.22 as Latest until all release gates pass.
+- [x] Validate and publish v0.1.23 from exact committed source (`4dc86b7`) as Latest; 1,397 tests, window and 43-route smoke passed, ZIP/SBOM/SHA256SUMS digests verified. ZIP SHA-256 `4327397a1d31772e9e6c19acd3800ce850f1388e5d12a2bf9538b4e51dbd2c33`.
 - [ ] Add durable source provenance to persisted central alerts so expired evidence from earlier service sessions can be re-evaluated without guessing identities.
 - [ ] Direct-operation follow-ups: protected-log access through a typed UAC broker; exact-offer driver installation and cancellable WUA search; SMB1 optional-feature servicing with native DISM. Implement denial, audit, timeout and rollback behavior before enabling privileged operations.
 

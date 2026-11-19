@@ -1,5 +1,12 @@
 # Downpour Next shared context
 
+## 2026-11-19 v0.1.23 published as Latest (buffy)
+
+Source `4dc86b7dcc4957db8c4ca17fe4b2b4a1b9073ffd` is tagged `v0.1.23` and published at https://github.com/christiand0797/downpour-next/releases/tag/v0.1.23 as Latest. Local rebuild from that exact commit: 0 warnings/errors, 1,397 tests passed, five self-contained publishes; every executable reports `0.1.23+4dc86b7dcc4957db8c4ca17fe4b2b4a1b9073ffd`.
+- Archive: 1,077 entries, 770,798,911 expanded bytes, ZIP 305,811,034 bytes, SHA-256 `4327397a1d31772e9e6c19acd3800ce850f1388e5d12a2bf9538b4e51dbd2c33`. CycloneDX SBOM (52 components) `df14f6ccb64ee7ef4db37dd6885e206bc6b36196622397bd4b47913cef0a8ce2`; SHA256SUMS `ff895df7ff0cb709a94bac749505ec5bd9570048e42e6997d59c071461dfcb89`. GitHub asset digests match the local files.
+- Native gates on the packaged folder: window smoke (maximized startup, restore/resize, owned-service shutdown) and the 43-route smoke (service pipe schema v1, YARA 179 rules on a benign fixture, graceful close, no new crash log) passed.
+- Packaging: `Build-Portable.ps1` builds and stages; `artifacts/v0.1.23-package.ps1` (candidate script adapted to this checkout, needs PowerShell 7 for `Convert.ToHexString`/`SHA256.HashData`) writes the release README, manifest, SBOM, ZIP and digests. `artifacts/v0.1.23-{window-,}smoke.ps1` are the candidate smoke scripts.
+
 ## 2026-11-19 affected-version, indicator, DGA and correlation slice (buffy, DN-045)
 
 Implemented and verified at the current tip: Release build 0 warnings/errors, full suite 1,397 passed, 0 failed.
