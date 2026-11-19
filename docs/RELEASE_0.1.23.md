@@ -9,9 +9,14 @@ This release expands locally searchable threat coverage and makes source age vis
 - Malformed URL host input cannot crash manual lookups. An updated cache generation keeps the old HaGeZi mini cache from being labeled full.
 - The existing Windows Update installer now requires complete successful searches before downloading or installing. Failed, aborted, partial and warning-bearing searches cannot silently become an all-clear or a partial installation batch. Interactive-only offers are distinguished from no available updates.
 
+- NVD affected-version analysis now uses NVD's real range fields (`versionStartIncluding`/`versionStartExcluding`, `versionEndIncluding`/`versionEndExcluding`). A concrete CPE version is exact rather than a minimum, pre-release suffixes sort below the release, and unknown installed versions remain conservative. This removes false "affected" rows for later patch builds; a row is still a lead, not proof that the installed build is vulnerable.
+- Indicators never leave the PC for reserved or special-purpose address space, now including Teredo, ORCHID, IPv6 benchmarking/documentation blocks and the IPv4 6to4 relay anycast range.
+- DGA scoring no longer flags non-routable suffixes, reverse-lookup zones, DNS service labels or punycode names, and dictionary-word discounts require a whole label instead of a substring.
+- Three ordered cross-source correlations were added: account creation followed by a local group change (15 minutes), Defender malware detection followed by a service installation (30 minutes), and a failed-logon burst followed by a Remote Desktop authentication (15 minutes). Each states that timing alone does not establish a shared actor.
+
 ## Verification
 
-Debug restore/build completed with zero warnings/errors; all 1,376 tests passed. Supported metadata formats, in-memory expiry, historical hash behavior, complete provenance, stale-scan publication, local pagination, query cancellation and update-search failures have regressions. Full-feed parsing and separate-process index measurements passed. Clean committed Release builds, package digests and native results will be recorded before publication; no release upload has been made for this candidate yet.
+Debug restore/build completed with zero warnings/errors; all 1,397 tests passed (21 new for NVD ranges, indicator filtering, DGA precision and correlation ordering). Supported metadata formats, in-memory expiry, historical hash behavior, complete provenance, stale-scan publication, local pagination, query cancellation and update-search failures have regressions. Full-feed parsing and separate-process index measurements passed. The clean committed Release build, packaged archive digests and native results accompany the uploaded assets; publication uses the exact tagged source commit.
 
 ## Remaining work
 
