@@ -140,6 +140,66 @@ public sealed class SecurityAlertRepositoryTests
     }
 
     [Fact]
+    public async Task SuppressionRecordsExpiryAndCountsTheMatchesItHides()
+    {
+        using var database = new TemporaryAlertDatabase();
+        var repository = new SecurityAlertRepository(database.Path);
+        await repository.InitializeAsync();
+        var now = DateTimeOffset.UtcNow.AddMinutes(-4);
+        var observation = SecurityEventProvider.CreateObservation("System", "Service Control Manager", 7045, 71, now)!;
+        await repository.IngestAsync(new SecurityEventSnapshot(1, now, [observation], 7, []));
+        var alert = Assert.Single((await repository.ReadSnapshotAsync()).Alerts);
+        for (var confirmation = 0; confirmation < SecurityAlertRepository.FalsePositiveConfirmationThreshold; confirmation++)
+            await repository.ChangeStateAsync(new AlertStateChangeRequest(1, Guid.NewGuid(), alert.AlertId, "Open", "FalsePositive"));
+
+        var blocked = SecurityEventProvider.CreateObservation("System", "Service Control Manager", 7045, 72, now.AddMinutes(1))!;
+        await repository.IngestAsync(new SecurityEventSnapshot(1, now.AddMinutes(1), [blocked], 7, []));
+        var snapshot = await repository.ReadSnapshotAsync();
+        Assert.Equal("Suppressed", snapshot.Alerts.Single(row => row.RecordId == 72).State);
+        Assert.Contains(snapshot.Warnings, warning => warning.Contains("active") && warning.Contains("expire"));
+
+        await using var connection = new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={database.Path};Pooling=False");
+        await connection.OpenAsync();
+        await using var query = connection.CreateCommand();
+        query.CommandText = "SELECT expires_at_utc,matches_since_grant,suppressed FROM alert_fp_rules;";
+        await using var reader = await query.ExecuteReaderAsync();
+        Assert.True(await reader.ReadAsync());
+        Assert.False(reader.IsDBNull(0));
+        Assert.True(DateTimeOffset.Parse(reader.GetString(0)) > DateTimeOffset.UtcNow.AddDays(80));
+        Assert.True(reader.GetInt32(1) >= 1, "The suppression must record the matches it hid.");
+        Assert.Equal(1, reader.GetInt32(2));
+    }
+
+    [Fact]
+    public async Task ExpiredSuppressionStopsHidingMatchesAndIsReported()
+    {
+        using var database = new TemporaryAlertDatabase();
+        var repository = new SecurityAlertRepository(database.Path);
+        await repository.InitializeAsync();
+        var now = DateTimeOffset.UtcNow.AddMinutes(-5);
+        var observation = SecurityEventProvider.CreateObservation("System", "Service Control Manager", 7045, 81, now)!;
+        await repository.IngestAsync(new SecurityEventSnapshot(1, now, [observation], 7, []));
+        var alert = Assert.Single((await repository.ReadSnapshotAsync()).Alerts);
+        for (var confirmation = 0; confirmation < SecurityAlertRepository.FalsePositiveConfirmationThreshold; confirmation++)
+            await repository.ChangeStateAsync(new AlertStateChangeRequest(1, Guid.NewGuid(), alert.AlertId, "Open", "FalsePositive"));
+
+        await using (var connection = new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={database.Path};Pooling=False"))
+        {
+            await connection.OpenAsync();
+            await using var expire = connection.CreateCommand();
+            expire.CommandText = "UPDATE alert_fp_rules SET expires_at_utc=$past;";
+            expire.Parameters.AddWithValue("$past", DateTimeOffset.UtcNow.AddDays(-1).ToString("O"));
+            await expire.ExecuteNonQueryAsync();
+        }
+
+        var afterExpiry = SecurityEventProvider.CreateObservation("System", "Service Control Manager", 7045, 82, now.AddMinutes(1))!;
+        await repository.IngestAsync(new SecurityEventSnapshot(1, now.AddMinutes(1), [afterExpiry], 7, []));
+        var snapshot = await repository.ReadSnapshotAsync();
+        Assert.Equal("Open", snapshot.Alerts.Single(row => row.RecordId == 82).State);
+        Assert.Contains(snapshot.Warnings, warning => warning.Contains("expired"));
+    }
+
+    [Fact]
     public async Task ExistingVersionOneAlertDatabaseMigratesToVersionTwo()
     {
         using var database = new TemporaryAlertDatabase();

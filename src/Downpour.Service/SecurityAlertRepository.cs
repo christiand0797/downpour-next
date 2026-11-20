@@ -11,6 +11,8 @@ public sealed class SecurityAlertRepository(string databasePath)
 {
     public const int CurrentSchemaVersion = 2;
     public const int FalsePositiveConfirmationThreshold = 3;
+    /// <summary>A fingerprint suppression lapses after this long instead of hiding matches forever.</summary>
+    public static readonly TimeSpan FalsePositiveSuppressionLifetime = SuppressionPolicy.DefaultLifetime;
     public const int MaximumAlertCount = 10_000;
     public const int MaximumSnapshotAlerts = 512;
     private static readonly TimeSpan Retention = TimeSpan.FromDays(30);
@@ -67,6 +69,9 @@ public sealed class SecurityAlertRepository(string databasePath)
                 "kind TEXT NOT NULL CHECK(kind IN ('file','ip','domain','hash')), value TEXT NOT NULL CHECK(length(value) BETWEEN 1 AND 512), " +
                 "FOREIGN KEY(alert_id) REFERENCES alerts(alert_id) ON DELETE CASCADE);",
                 cancellationToken);
+            // Additive (no schema bump): suppression expiry and how many matches a suppression has hidden.
+            await EnsureColumnAsync(connection, "alert_fp_rules", "expires_at_utc", "TEXT NULL", cancellationToken);
+            await EnsureColumnAsync(connection, "alert_fp_rules", "matches_since_grant", "INTEGER NOT NULL DEFAULT 0", cancellationToken);
             var version = Convert.ToInt32(await ScalarAsync(connection, "SELECT MAX(version) FROM alert_schema;", cancellationToken));
             if (version == 1)
             {
@@ -243,9 +248,32 @@ public sealed class SecurityAlertRepository(string databasePath)
                     ParseUtc(reader.GetString(8)), ParseUtc(reader.GetString(9)), ParseUtc(reader.GetString(10)), reader.GetInt32(11), reader.GetString(12),
                     reader.GetInt64(13) != 0, reader.IsDBNull(14) ? null : reader.GetString(14), reader.IsDBNull(15) ? null : reader.GetString(15)));
             }
-            return new SecurityAlertSnapshot(1, DateTimeOffset.UtcNow, total, alerts, [], await ReadHourlyAsync(connection, cancellationToken));
+            var suppressionWarnings = await ReadSuppressionWarningsAsync(connection, cancellationToken);
+            return new SecurityAlertSnapshot(1, DateTimeOffset.UtcNow, total, alerts, suppressionWarnings, await ReadHourlyAsync(connection, cancellationToken));
         }
         finally { _gate.Release(); }
+    }
+
+    /// <summary>Makes active and expired suppressions visible in the same place the alerts are reviewed.</summary>
+    private static async Task<IReadOnlyList<string>> ReadSuppressionWarningsAsync(SqliteConnection connection, CancellationToken token)
+    {
+        var warnings = new List<string>(2);
+        await using (var active = connection.CreateCommand())
+        {
+            active.CommandText = "SELECT COUNT(*) FROM alert_fp_rules WHERE suppressed=1 AND (expires_at_utc IS NULL OR expires_at_utc > $now);";
+            active.Parameters.AddWithValue("$now", DateTimeOffset.UtcNow.ToString("O"));
+            var count = Convert.ToInt32(await active.ExecuteScalarAsync(token));
+            if (count > 0) warnings.Add($"{count:N0} false-positive suppression(s) are active and hide new matches. They expire automatically; Re-arm clears one now.");
+        }
+        await using (var expired = connection.CreateCommand())
+        {
+            expired.CommandText = "SELECT COUNT(*),COALESCE(SUM(matches_since_grant),0) FROM alert_fp_rules WHERE suppressed=1 AND expires_at_utc IS NOT NULL AND expires_at_utc <= $now;";
+            expired.Parameters.AddWithValue("$now", DateTimeOffset.UtcNow.ToString("O"));
+            await using var reader = await expired.ExecuteReaderAsync(token);
+            if (await reader.ReadAsync(token) && reader.GetInt32(0) > 0)
+                warnings.Add($"{reader.GetInt32(0):N0} suppression(s) have expired after hiding {reader.GetInt64(1):N0} match(es); they no longer hide new alerts and should be re-armed or left to lapse.");
+        }
+        return warnings;
     }
 
     public const int MaximumHourlyBuckets = 7 * 24 + 2;
@@ -351,12 +379,13 @@ public sealed class SecurityAlertRepository(string databasePath)
                 {
                     await using var rule = connection.CreateCommand();
                     rule.Transaction = transaction;
-                    rule.CommandText = "INSERT INTO alert_fp_rules(fingerprint,confirmations,suppressed,title,log_name,event_id,first_seen_utc,last_seen_utc) VALUES($fp,1,0,$title,$log,$event,$now,$now) ON CONFLICT(fingerprint) DO UPDATE SET confirmations=MIN(alert_fp_rules.confirmations+1,1000000),suppressed=CASE WHEN alert_fp_rules.suppressed=1 OR alert_fp_rules.confirmations+1 >= $threshold THEN 1 ELSE 0 END,last_seen_utc=excluded.last_seen_utc;";
+                    rule.CommandText = "INSERT INTO alert_fp_rules(fingerprint,confirmations,suppressed,title,log_name,event_id,first_seen_utc,last_seen_utc,expires_at_utc,matches_since_grant) VALUES($fp,1,0,$title,$log,$event,$now,$now,NULL,0) ON CONFLICT(fingerprint) DO UPDATE SET confirmations=MIN(alert_fp_rules.confirmations+1,1000000),suppressed=CASE WHEN alert_fp_rules.suppressed=1 OR alert_fp_rules.confirmations+1 >= $threshold THEN 1 ELSE 0 END,last_seen_utc=excluded.last_seen_utc,expires_at_utc=CASE WHEN alert_fp_rules.suppressed=1 THEN alert_fp_rules.expires_at_utc WHEN alert_fp_rules.confirmations+1 >= $threshold THEN $expires ELSE NULL END;";
                     rule.Parameters.AddWithValue("$fp", fingerprint);
                     rule.Parameters.AddWithValue("$title", identity.Value.Title);
                     rule.Parameters.AddWithValue("$log", identity.Value.LogName);
                     rule.Parameters.AddWithValue("$event", identity.Value.EventId);
                     rule.Parameters.AddWithValue("$now", fpNow);
+                    rule.Parameters.AddWithValue("$expires", DateTimeOffset.UtcNow.Add(FalsePositiveSuppressionLifetime).ToString("O"));
                     rule.Parameters.AddWithValue("$threshold", FalsePositiveConfirmationThreshold);
                     await rule.ExecuteNonQueryAsync(cancellationToken);
                 }
@@ -364,7 +393,7 @@ public sealed class SecurityAlertRepository(string databasePath)
                 {
                     await using var rule = connection.CreateCommand();
                     rule.Transaction = transaction;
-                    rule.CommandText = "UPDATE alert_fp_rules SET suppressed=0 WHERE fingerprint=$fp;";
+                    rule.CommandText = "UPDATE alert_fp_rules SET suppressed=0,expires_at_utc=NULL,matches_since_grant=0 WHERE fingerprint=$fp;";
                     rule.Parameters.AddWithValue("$fp", fingerprint);
                     await rule.ExecuteNonQueryAsync(cancellationToken);
                     await using var reopen = connection.CreateCommand();
@@ -491,14 +520,21 @@ public sealed class SecurityAlertRepository(string databasePath)
     public static string BuildFalsePositiveFingerprint(string logName, string provider, int eventId) =>
         Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes($"downpour-alert-fp-v1\0{logName.Trim().ToUpperInvariant()}\0{provider.Trim().ToUpperInvariant()}\0{eventId}"))).ToLowerInvariant();
 
+    /// <summary>
+    /// True only while a fingerprint suppression is active. An expired suppression stops hiding new matches instead of
+    /// silently continuing: expiry is the whole reason the record carries a timestamp.
+    /// </summary>
     private static async Task<bool> IsFingerprintSuppressedAsync(SqliteConnection connection, SqliteTransaction transaction, string fingerprint, CancellationToken token)
     {
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
-        command.CommandText = "SELECT suppressed FROM alert_fp_rules WHERE fingerprint=$fp;";
+        command.CommandText = "SELECT suppressed,expires_at_utc FROM alert_fp_rules WHERE fingerprint=$fp;";
         command.Parameters.AddWithValue("$fp", fingerprint);
-        var result = await command.ExecuteScalarAsync(token);
-        return result is not null and not DBNull && Convert.ToInt32(result) == 1;
+        await using var reader = await command.ExecuteReaderAsync(token);
+        if (!await reader.ReadAsync(token) || reader.GetInt32(0) != 1) return false;
+        if (reader.IsDBNull(1)) return true;
+        return DateTimeOffset.TryParse(reader.GetString(1), System.Globalization.CultureInfo.InvariantCulture,
+            System.Globalization.DateTimeStyles.RoundtripKind, out var expires) && DateTimeOffset.UtcNow < expires;
     }
 
     private static async Task ApplyFingerprintSuppressionAsync(SqliteConnection connection, SqliteTransaction transaction, string alertId, string fingerprint, CancellationToken token)
@@ -514,6 +550,20 @@ public sealed class SecurityAlertRepository(string databasePath)
         mark.Parameters.AddWithValue("$id", alertId);
         mark.Parameters.AddWithValue("$fp", fingerprint);
         await mark.ExecuteNonQueryAsync(token);
+        // Count what the suppression is actually hiding, so a suppression that hides CRITICAL matches can be flagged.
+        await using var count = connection.CreateCommand();
+        count.Transaction = transaction;
+        count.CommandText = "UPDATE alert_fp_rules SET matches_since_grant=MIN(matches_since_grant+1,1000000) WHERE fingerprint=$fp AND suppressed=1;";
+        count.Parameters.AddWithValue("$fp", fingerprint);
+        await count.ExecuteNonQueryAsync(token);
+    }
+
+    private static async Task EnsureColumnAsync(SqliteConnection connection, string table, string column, string definition, CancellationToken token)
+    {
+        await using var probe = connection.CreateCommand();
+        probe.CommandText = $"SELECT COUNT(*) FROM pragma_table_info('{table}') WHERE name='{column}';";
+        if (Convert.ToInt32(await probe.ExecuteScalarAsync(token)) > 0) return;
+        await ExecuteAsync(connection, $"ALTER TABLE {table} ADD COLUMN {column} {definition};", token);
     }
 
     private static async Task<(string Title, string LogName, string Provider, int EventId)?> ReadFingerprintIdentityAsync(SqliteConnection connection, SqliteTransaction transaction, string alertId, CancellationToken token)

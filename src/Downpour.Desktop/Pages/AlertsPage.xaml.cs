@@ -147,12 +147,15 @@ public sealed partial class AlertsPage : Page
                 : $"{repeatedPairs:N0} repeated pairs · {groups.Count - repeatedPairs:N0} single findings · showing the {repeated.Length} most severe";
 
             var openCount = snapshot.Alerts.Count(alert => alert.State == "Open");
-            StatusHeadline.Text = snapshot.Warnings.Count == 0
+            var notices = snapshot.Warnings.Distinct().ToArray();
+            // Warnings are advisory (suppression state, freshness). Treating any warning as a storage failure mislabelled
+            // routine notices as an outage.
+            StatusHeadline.Text = notices.Length == 0
                 ? "Local security alert monitor connected"
-                : "Event collection or alert storage is partially unavailable";
-            StatusDetail.Text = snapshot.Warnings.Count == 0
+                : $"Local security alert monitor connected · {notices.Length} notice{(notices.Length == 1 ? "" : "s")}";
+            StatusDetail.Text = notices.Length == 0
                 ? $"Captured {snapshot.CapturedAtUtc.ToLocalTime():MMM d · HH:mm:ss}. {openCount:N0} open in the latest {snapshot.Alerts.Count:N0} of {snapshot.TotalCount:N0} retained alerts; retention is 30 days / 10,000 alerts."
-                : string.Join("  •  ", snapshot.Warnings.Distinct());
+                : string.Join("  •  ", notices);
             ApplyFilters(snapshot.TotalCount);
         }
         finally { _requestInFlight = false; }

@@ -966,6 +966,25 @@
       ],
       "notes": "buffy 2026-11-20: completed. Fifteen foundations plus 17 tests; 1,453 tests pass. Nothing is wired into routes or the updater yet, and the ARM64 item only reports capability, it does not produce an arm64 build.",
       "updatedAt": "2026-11-20"
+    },
+    {
+      "id": "DN-049",
+      "title": "Persist suppression expiry and hidden-match counts in the alert store",
+      "status": "completed",
+      "priority": "high",
+      "files": [
+        "src/Downpour.Service/SecurityAlertRepository.cs",
+        "src/Downpour.Desktop/Pages/AlertsPage.xaml.cs",
+        "tests/Downpour.Tests/SecurityAlertRepositoryTests.cs"
+      ],
+      "acceptance": [
+        "Additive columns migrate existing databases without a version bump",
+        "An expired suppression stops hiding new matches",
+        "Hidden matches are counted and re-arm resets the count",
+        "Snapshot notices separate advisory suppression state from storage failure"
+      ],
+      "notes": "buffy 2026-11-20: completed. Expiry and counts persisted, two regression tests, 1,455 tests pass. Per-subject scope, renewal and a dedicated suppression list remain.",
+      "updatedAt": "2026-11-20"
     }
   ]
 }

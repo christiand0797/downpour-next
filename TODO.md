@@ -5,6 +5,7 @@
 - [x] 1 Release trust: `ReleaseTrustPolicy` (invalid is always refused, unsigned only on channels that do not require signing) and `tools/release/sign-release.ps1` (RSA-3072 minimum, self-test passes). Updater wiring still waits for the offline key.
 - [x] 2 Detection value: `DetectionValueLedger` counts reviewed outcomes per source and per rule, with an insufficient-sample verdict instead of guessing.
 - [x] 3 Suppression lifecycle: `SuppressionPolicy` adds scope, 90-day default expiry, match counting and warnings when a suppression hides a CRITICAL match.
+- [x] 3 wired: the alert store gained additive `expires_at_utc`/`matches_since_grant` columns; an expired suppression stops hiding new matches, every hidden match is counted, re-arm clears expiry, and the Alerts page shows active/expired suppression notices without mislabelling them as a storage outage. Still open: per-subject scope, renewal action and a dedicated suppressions list.
 - [x] 4 Supply-chain self-check: `ComponentVulnerabilityMatcher` matches shipped SBOM components against advisory ranges using the existing version comparison.
 - [x] 5 Tamper-evidence: `TrustedContentIntegrity` (unexpected rule files are violations) and `AuditAnchorPolicy` (truncation/rewrite detection against an external anchor).
 - [x] 6 Durable change ledger: `ChangeLedger` keeps a bounded, serializable, deduplicated history so "what changed" survives restarts.
