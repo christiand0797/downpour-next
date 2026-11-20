@@ -1,5 +1,13 @@
 # Downpour Next shared context
 
+## 2026-11-19 0.1.24 release and foundation modules (buffy)
+
+- Source of truth for this release is the tagged commit; `Directory.Build.props` is 0.1.24.
+- Catalog: 58 active sources. Six TweetFeed lists added; ThreatFox/URLhaus/MalwareBazaar (HTTP 410 without a free abuse.ch `Auth-Key`) and PhishTank (signed redirect) are retired and never downloaded. `docs/RELEASE_0.1.24.md` is the release body.
+- New tested foundations, not yet wired into routes: `ReleaseSignatureVerifier`/`InstallationIntegrity`, `FeedUpdateGuard` (active in the service refresh path), `LocalChangeDigest`, `EvidenceGraph`, `BehaviorBaseline`, `EncryptedDnsDetector`, `AlertGrouping`, `ThreatPack`, `EvidenceRetention`, `DetectionQualityBudget`, plus authenticated feed headers.
+- Verification: Debug and Release builds clean, 1,433 tests, 57-feed live download/parse, window and 43-route packaged smoke; archive/SBOM/SHA-256 sums verified against the GitHub assets.
+- Next: wire digest/graph/grouping into routes, sign releases (`docs/RELEASE_TRUST.md`), add the abuse.ch key setting, register the self-hosted runner.
+
 ## 2026-11-19 feed catalog validation and retirement (buffy)
 
 Resumed the unsynced CSV/feed work from the canonical clone, then verified every endpoint instead of trusting it.

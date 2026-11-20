@@ -888,6 +888,29 @@
         "Release build and full suite pass"
       ],
       "notes": "2026-11-19 buffy. Release build 0 warnings/errors; 1,397 tests passed. No collection scope, privileged action or response behavior changed. VulnerabilityMatchEngineTests now call real internals instead of a copied helper."
+    },
+    {
+      "id": "DN-046",
+      "title": "Ship verified threat sources and the trust/investigation foundations",
+      "status": "completed",
+      "priority": "high",
+      "files": [
+        "src/Downpour.Core/ThreatFeedCatalog.cs",
+        "src/Downpour.Core/FeedUpdateGuard.cs",
+        "src/Downpour.Core/ReleaseIntegrity.cs",
+        "src/Downpour.Core/EvidenceGraph.cs",
+        "src/Downpour.Core/ThreatPack.cs",
+        "docs/RELEASE_0.1.24.md",
+        "docs/RELEASE_TRUST.md",
+        ".github/workflows/self-hosted-gates.yml"
+      ],
+      "acceptance": [
+        "Every active feed endpoint validated live",
+        "Dead sources retired without breaking historical labels",
+        "Foundation modules compile and have regression tests",
+        "Release build, package, window smoke and 43-route smoke pass"
+      ],
+      "notes": "2026-11-19 buffy. 58 active sources (six TweetFeed added); four dead sources retired. Added release signature/install integrity, feed update guard, change digest, evidence graph, behaviour baseline, encrypted-DNS detection, alert grouping, threat pack, retention, rule budgets, performance gate, self-hosted workflow and authenticated feed headers. 1,433 tests pass. v0.1.24 built from the tagged commit with verified ZIP/SBOM/SHA256SUMS."
     }
   ]
 }

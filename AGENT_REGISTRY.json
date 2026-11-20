@@ -173,10 +173,10 @@
     {
       "id": "buffy",
       "role": "agent",
-      "taskId": "DN-041",
+      "taskId": "DN-046",
       "status": "idle",
-      "heartbeatUtc": "2026-11-20T01:03:47Z",
-      "notes": "2026-11-19: validated the whole feed catalog live, added six TweetFeed lists, retired four dead sources with a Retired flag that is never downloaded, fixed a Uri.TryCreate fuzz crash, and restored the live download test. Debug 1,404 tests pass; 57-feed live test passes. Optional next: abuse.ch Auth-Key support. v0.1.23 remains the published release (4dc86b7)."
+      "heartbeatUtc": "2026-11-20T01:24:42Z",
+      "notes": "2026-11-19: published v0.1.24 from the tagged source (58 active feeds, six TweetFeed lists, four dead sources retired, 1,433 tests, packaged smoke). Added tested foundations for release trust, investigation, baseline, encrypted DNS, grouping, packs and retention. Idle."
     }
   ]
 }

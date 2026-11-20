@@ -1,0 +1,31 @@
+name: Self-hosted release gates
+
+# Hosted Actions minutes are blocked on this account. A self-hosted runner costs nothing for a private
+# repository, so these gates stay dispatch-only until a runner labelled self-hosted/windows/x64 is registered.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: self-hosted-gates-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gates:
+    name: Build, test and package gate
+    runs-on: [self-hosted, windows, x64]
+    timeout-minutes: 60
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install pinned .NET SDK
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: global.json
+
+      - name: Release gates
+        shell: pwsh
+        run: ./tools/ci/run-gates.ps1

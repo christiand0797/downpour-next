@@ -1,5 +1,16 @@
 # Downpour Next TODO
 
+## 2026-11-19 0.1.24: verified feeds and trust foundations (buffy)
+
+- [x] 58 active sources; six TweetFeed lists live; four dead sources retired (ThreatFox/URLhaus/MalwareBazaar 410, PhishTank signed redirect).
+- [x] Foundation modules with tests: manifest signature verification, install integrity, feed update guard, change digest, evidence graph, behaviour baseline, encrypted-DNS detection, alert grouping, threat pack, retention policy, rule-quality budgets, index performance gate.
+- [x] Self-hosted release-gate workflow and `tools/ci/run-gates.ps1`; authenticated feed header support (`Auth-Key`).
+- [x] 1,433 tests pass; release build and package verified; v0.1.24 published.
+- [ ] Wire the new foundations into routes: change digest on the dashboard, evidence graph in investigation, grouped alerts in the Alerts view.
+- [ ] Sign releases: key custody, signed manifest, updater enforcement (see `docs/RELEASE_TRUST.md`).
+- [ ] Store an abuse.ch key in Settings and re-enable the three retired feeds when present.
+- [ ] Run the self-hosted workflow after registering a runner; hosted Actions remains billing-blocked.
+
 ## 2026-11-19 feed truthfulness slice (buffy)
 
 - [x] Validate every catalog endpoint live; retire `threatfox`, `urlhaus`, `malwarebazaar` (HTTP 410 without a free abuse.ch Auth-Key) and `phishtank` (302 to an expiring signed CDN URL). Retired entries stay catalogued for historical labels and are never downloaded.

@@ -293,15 +293,18 @@ public sealed class ThreatFeedDownloader
     private readonly HttpClient _client;
     private readonly TimeSpan _stallTimeout;
     private readonly TimeSpan _overallTimeout;
+    private readonly Func<string, string?>? _apiKeyProvider;
 
     public static readonly TimeSpan DefaultStallTimeout = TimeSpan.FromSeconds(45);
     public static readonly TimeSpan DefaultOverallTimeout = TimeSpan.FromMinutes(15);
 
-    public ThreatFeedDownloader(HttpClient? client = null, TimeSpan? stallTimeout = null, TimeSpan? overallTimeout = null)
+    public ThreatFeedDownloader(HttpClient? client = null, TimeSpan? stallTimeout = null, TimeSpan? overallTimeout = null,
+        Func<string, string?>? apiKeyProvider = null)
     {
         _client = client ?? SharedClient;
         _stallTimeout = stallTimeout ?? DefaultStallTimeout;
         _overallTimeout = overallTimeout ?? DefaultOverallTimeout;
+        _apiKeyProvider = apiKeyProvider;
     }
 
     private static HttpClient CreateClient()
@@ -329,6 +332,9 @@ public sealed class ThreatFeedDownloader
         using var stall = CancellationTokenSource.CreateLinkedTokenSource(timeout.Token);
         stall.CancelAfter(_stallTimeout);
         using var request = new HttpRequestMessage(HttpMethod.Get, uri);
+        if (feed.AuthKeyService is { Length: > 0 } service && ThreatFeedAuth.HeaderFor(service) is { } header &&
+            _apiKeyProvider?.Invoke(service) is { Length: > 0 } key)
+            request.Headers.TryAddWithoutValidation(header, key.Trim());
         using var response = await _client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, stall.Token).ConfigureAwait(false);
         if ((int)response.StatusCode is >= 300 and < 400) throw new HttpRequestException($"The source redirected ({(int)response.StatusCode}); redirects are not followed.");
         if (!response.IsSuccessStatusCode) throw new HttpRequestException($"The source answered HTTP {(int)response.StatusCode}.");

@@ -147,6 +147,13 @@ public sealed class ThreatDatabaseService(
                 {
                     var payload = await _downloader.FetchAsync(state.Definition, token);
                     var parsed = await Task.Run(() => ThreatFeedParser.Parse(state.Definition, payload), token);
+                    var guard = FeedUpdateGuard.Assess(state.Parsed?.Entries ?? 0, parsed.Entries);
+                    if (!guard.Accepted)
+                    {
+                        lock (_gate) state.Error = guard.Reason;
+                        logger.LogWarning("Threat database {Feed} update was rejected: {Reason}", state.Definition.Id, guard.Reason);
+                        continue;
+                    }
                     var retrieved = _time.GetUtcNow();
                     try { _cache.Write(state.Definition, payload, retrieved); }
                     catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
