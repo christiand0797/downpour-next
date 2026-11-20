@@ -27,7 +27,8 @@ public sealed class ThreatDatabaseService(
     ThreatFeedDownloader? downloader = null,
     string pipeName = ThreatDatabaseClient.PipeName,
     IAuthenticodeVerifier? signatures = null,
-    TimeProvider? timeProvider = null) : BackgroundService
+    TimeProvider? timeProvider = null,
+    IntelKeyStore? feedKeys = null) : BackgroundService
 {
     public static readonly TimeSpan SweepInterval = TimeSpan.FromMinutes(5);
     private static readonly TimeSpan RetryAfterFailure = TimeSpan.FromMinutes(30);
@@ -38,7 +39,8 @@ public sealed class ThreatDatabaseService(
     private const int MaximumProgramsPerSweep = 600;
 
     private readonly ThreatFeedCache _cache = cache ?? ThreatFeedCache.CreateForCurrentUser();
-    private readonly ThreatFeedDownloader _downloader = downloader ?? new ThreatFeedDownloader();
+    private readonly IntelKeyStore? _feedKeys = feedKeys;
+    private readonly ThreatFeedDownloader _downloader = downloader ?? new ThreatFeedDownloader(apiKeyProvider: service => feedKeys?.Get(service));
     private readonly object _gate = new();
     private readonly object _indexBuildGate = new();
     private readonly TimeProvider _time = timeProvider ?? TimeProvider.System;
@@ -68,7 +70,7 @@ public sealed class ThreatDatabaseService(
         public bool Updating { get; set; }
 
         public bool IsDue(DateTimeOffset now) =>
-            !Definition.Retired && !Updating && (RetrievedAtUtc is not { } retrieved || now - retrieved >= Definition.RefreshInterval) &&
+            !Updating && (RetrievedAtUtc is not { } retrieved || now - retrieved >= Definition.RefreshInterval) &&
             (Error is null || LastAttemptUtc is not { } attempt || now - attempt >= RetryAfterFailure);
     }
 
@@ -76,8 +78,17 @@ public sealed class ThreatDatabaseService(
 
     public ThreatIndex Index => Volatile.Read(ref _index);
 
+    /// <summary>
+    /// A retired entry with an auth service (the abuse.ch exports) is usable once its key is stored; retirement without
+    /// an auth service stays permanent. Keys are read from the DPAPI store, never logged or placed in a snapshot.
+    /// </summary>
+    private bool IsActive(ThreatFeedDefinition definition) =>
+        ThreatFeedEnablement.IsActive(definition, service => _feedKeys?.Get(service));
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        // Saving or removing a feed key wakes the sweep so the new eligibility applies without waiting five minutes.
+        if (_feedKeys is not null) _feedKeys.Changed += SignalSweep;
         _ = Task.Run(() => ServePipeAsync(stoppingToken), stoppingToken);
         // A damaged cache or an unexpected error on one PC must never stop the service (and every other sensor with it).
         try { await Task.Run(LoadCaches, stoppingToken); }
@@ -106,7 +117,7 @@ public sealed class ThreatDatabaseService(
         var now = _time.GetUtcNow();
         foreach (var state in _feeds.Values)
         {
-            if (state.Definition.Retired) continue;
+            if (!IsActive(state.Definition)) continue;
             try
             {
                 if (_cache.TryRead(state.Definition, now) is not { } cached) continue;
@@ -137,9 +148,10 @@ public sealed class ThreatDatabaseService(
             foreach (var state in _feeds.Values)
             {
                 var now = _time.GetUtcNow();
+                if (!IsActive(state.Definition)) continue;
                 lock (_gate)
                 {
-                    if (state.Definition.Retired || !(force ? !state.Updating && (state.Error is not null || state.RetrievedAtUtc is null || now - state.RetrievedAtUtc >= TimeSpan.FromMinutes(30)) : state.IsDue(now))) continue;
+                    if (!(force ? !state.Updating && (state.Error is not null || state.RetrievedAtUtc is null || now - state.RetrievedAtUtc >= TimeSpan.FromMinutes(30)) : state.IsDue(now))) continue;
                     state.Updating = true;
                     state.LastAttemptUtc = now;
                 }
@@ -201,7 +213,9 @@ public sealed class ThreatDatabaseService(
             lock (_gate)
             {
                 var now = _time.GetUtcNow();
-                var states = _feeds.Values.Where(s => ThreatFeedFreshness.Evaluate(s.Definition, s.Parsed, s.RetrievedAtUtc, now).MatchingEnabled).ToArray();
+                // An inactive (keyless) source is dropped from matching as soon as its key is removed; the downloaded
+                // public copy stays on disk but is never reloaded while the key is absent.
+                var states = _feeds.Values.Where(s => IsActive(s.Definition) && ThreatFeedFreshness.Evaluate(s.Definition, s.Parsed, s.RetrievedAtUtc, now).MatchingEnabled).ToArray();
                 included = states.ToDictionary(s => s.Definition.Id, s => s.Parsed!, StringComparer.Ordinal);
                 if (included.Count == _indexedFeeds.Count && included.All(pair => _indexedFeeds.TryGetValue(pair.Key, out var previous) && ReferenceEquals(pair.Value, previous))) return;
                 loaded = states.Select(s => (s.Definition, s.Parsed!)).ToList();
@@ -567,7 +581,7 @@ public sealed class ThreatDatabaseService(
         {
             var index = Index;
             var enabled = settings.Current.ThreatDatabases;
-            var feeds = _feeds.Values.Where(s => !s.Definition.Retired).Select(s =>
+            var feeds = _feeds.Values.Where(s => IsActive(s.Definition)).Select(s =>
             {
                 var d = s.Definition;
                 var freshness = ThreatFeedFreshness.Evaluate(d, s.Parsed, s.RetrievedAtUtc, now);
@@ -580,6 +594,9 @@ public sealed class ThreatDatabaseService(
                     freshness.PublishedAtUtc, freshness.State, freshness.SourceExpiresAtUtc, freshness.MatchingEnabled, freshness.Note);
             }).ToArray();
             var warnings = _warnings.Select(w => Bound(w, 500)).ToList();
+            var keyless = _feeds.Values.Where(s => s.Definition.AuthKeyService is { Length: > 0 } && !IsActive(s.Definition)).Select(s => s.Definition.Name).ToArray();
+            if (keyless.Length > 0)
+                warnings.Add($"{keyless.Length} abuse.ch source(s) stay off until a free Auth-Key is saved in Settings: {string.Join(", ", keyless)}.");
             if (!enabled) warnings.Insert(0, "Database updates are switched off in Settings. Saved copies are still used until they expire.");
             var excluded = feeds.Count(f => f.Entries > 0 && f.MatchingEnabled == false);
             if (excluded > 0) warnings.Add($"{excluded} loaded source(s) are excluded from matching by publication or cache-age policy. See each source below; downloading again does not renew old threat data.");

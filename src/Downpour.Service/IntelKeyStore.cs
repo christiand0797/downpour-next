@@ -2,6 +2,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using Downpour.Contracts;
+using Downpour.Core;
 
 namespace Downpour.Service;
 
@@ -13,7 +14,19 @@ public sealed class IntelKeyStore(string path)
 {
     public const int MaximumKeyLength = 256;
     private static readonly byte[] Entropy = Encoding.UTF8.GetBytes("Downpour.Next.IntelKeys.v1");
+
+    /// <summary>
+    /// Services this store accepts: the interactive lookup providers plus the bulk-download keys that activate catalogued
+    /// feeds. The feed keys are deliberately separate from <see cref="IntelServices"/> so the lookup coordinator never
+    /// treats an abuse.ch download key as a lookup provider.
+    /// </summary>
+    public static readonly IReadOnlySet<string> SupportedServices =
+        new HashSet<string>(IntelServices.All.Append(ThreatFeedAuth.AbuseCh), StringComparer.Ordinal);
+
     private readonly object _gate = new();
+
+    /// <summary>Raised after a key is stored or removed, so feed refreshes react without waiting for the next sweep.</summary>
+    public event Action? Changed;
 
     public static IntelKeyStore CreateForCurrentUser()
     {
@@ -26,7 +39,7 @@ public sealed class IntelKeyStore(string path)
 
     public IReadOnlyList<string> ConfiguredServices
     {
-        get { lock (_gate) return Load().Keys.Where(IntelServices.All.Contains).OrderBy(name => name).ToArray(); }
+        get { lock (_gate) return Load().Keys.Where(SupportedServices.Contains).OrderBy(name => name).ToArray(); }
     }
 
     public string? Get(string service)
@@ -48,15 +61,19 @@ public sealed class IntelKeyStore(string path)
     /// <summary>Stores or (with a null or empty key) removes a key. Returns false for invalid input or a storage failure.</summary>
     public bool Set(string service, string? key)
     {
-        if (!IntelServices.All.Contains(service)) return false;
+        if (!SupportedServices.Contains(service)) return false;
         if (key is not null && (key.Length > MaximumKeyLength || key.Any(ch => char.IsControl(ch) || char.IsWhiteSpace(ch)))) return false;
+        bool saved;
         lock (_gate)
         {
             var values = Load();
             if (string.IsNullOrEmpty(key)) values.Remove(service);
             else values[service] = Convert.ToBase64String(Protect(Encoding.UTF8.GetBytes(key)));
-            return Save(values);
+            saved = Save(values);
         }
+        // Raised outside the lock so a handler may read the store without deadlocking.
+        if (saved) Changed?.Invoke();
+        return saved;
     }
 
     private Dictionary<string, string> Load()

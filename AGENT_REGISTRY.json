@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-11-19",
+  "updatedAt": "2026-11-20",
   "agents": [
     {
       "id": "codex-primary",
@@ -173,10 +173,10 @@
     {
       "id": "buffy",
       "role": "agent",
-      "taskId": "DN-046",
+      "taskId": "DN-047",
       "status": "idle",
-      "heartbeatUtc": "2026-11-20T01:24:42Z",
-      "notes": "2026-11-19: published v0.1.24 from the tagged source (58 active feeds, six TweetFeed lists, four dead sources retired, 1,433 tests, packaged smoke). Added tested foundations for release trust, investigation, baseline, encrypted DNS, grouping, packs and retention. Idle."
+      "heartbeatUtc": "2026-11-20T02:25:00Z",
+      "notes": "DN-047 complete and handed off: abuse.ch feeds activate from a stored Auth-Key; 1,436 tests pass. Next safe task: signing/key custody (DN-010) or a 0.1.25 release of the uncut route wiring."
     }
   ]
 }

@@ -97,12 +97,14 @@ public sealed partial class SettingsPage : Page
         Downpour.Contracts.IntelServices.VirusTotal => (VirusTotalKeyBox, VirusTotalKeyState),
         Downpour.Contracts.IntelServices.AbuseIpDb => (AbuseIpDbKeyBox, AbuseIpDbKeyState),
         Downpour.Contracts.IntelServices.GreyNoise => (GreyNoiseKeyBox, GreyNoiseKeyState),
+        // Feed key, not a lookup provider: it activates ThreatFox, URLhaus and MalwareBazaar.
+        "abuse.ch" => (AbuseChKeyBox, AbuseChKeyState),
         _ => null
     };
 
     private void ShowConfiguredKeys(IReadOnlyList<string> configured)
     {
-        foreach (var service in Downpour.Contracts.IntelServices.All)
+        foreach (var service in Downpour.Contracts.IntelServices.All.Append("abuse.ch"))
             if (KeyControls(service) is { } controls)
                 controls.State.Text = configured.Contains(service) ? "Configured" : "Not configured";
     }

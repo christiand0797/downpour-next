@@ -11,7 +11,7 @@
 - [x] Change digest in Persistence review: added and removed listed autostart, task and driver items against the previous scan of the view (the service baseline only reports additions and modifications).
 - [ ] Dashboard-side change digest for listening ports and network destinations; the system snapshot carries only a connection count, so this needs a bounded port list from the service first.
 - [ ] Sign releases: key custody, signed manifest, updater enforcement (see `docs/RELEASE_TRUST.md`).
-- [ ] Store an abuse.ch key in Settings and re-enable the three retired feeds when present.
+- [x] Settings accepts a free abuse.ch Auth-Key (DPAPI, feed-only so lookups never see it). ThreatFox, URLhaus and MalwareBazaar activate, download with the `Auth-Key` header and appear with their real state; without a key they are never requested and the snapshot says why. PhishTank stays retired because no key fixes its expiring redirect. Verified with a fake key against a recording handler; a real key is not exercised in CI.
 - [ ] Run the self-hosted workflow after registering a runner; hosted Actions remains billing-blocked.
 
 ## 2026-11-19 feed truthfulness slice (buffy)

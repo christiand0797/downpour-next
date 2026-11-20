@@ -233,18 +233,19 @@ public static class ThreatFeedCatalog
         new("ip-origin", "IP origin (country and network)", "IPtoASN", ThreatFeedKinds.Geo, ThreatFeedFormat.Ip2AsnGzip,
             "https://iptoasn.com/data/ip2asn-combined.tsv.gz", 48 * MiB, TimeSpan.FromDays(7), "LOW", "", "",
             "Offline map of every routed address block to its country and network owner, so you can see roughly where connections come from without asking anyone.", "Public domain (PDDL)", "https://iptoasn.com/"),
-        // Retired sources: kept for historical alert labels and parser fixtures, never downloaded. abuse.ch's ThreatFox,
-        // URLhaus and MalwareBazaar exports answer HTTP 410 without a free Auth-Key, and PhishTank redirects to an expiring
-        // signed CDN URL, so none can be a fixed redirect-free HTTPS source. Feodo Tracker and phishing.army cover the categories.
+        // Key-gated and retired sources, kept for historical alert labels and parser fixtures. abuse.ch's ThreatFox,
+        // URLhaus and MalwareBazaar exports answer HTTP 410 without a free Auth-Key, so they stay inactive until a key is
+        // saved and then download normally. PhishTank redirects to an expiring signed CDN URL, which no key fixes, so it
+        // stays retired permanently. Feodo Tracker and phishing.army cover those categories without a key.
         new("threatfox", "ThreatFox (recent)", "abuse.ch", ThreatFeedKinds.Mixed, ThreatFeedFormat.ThreatFoxJson,
             "https://threatfox.abuse.ch/export/json/recent/", 48 * MiB, TimeSpan.FromHours(6), "HIGH", "T1071", "Malware indicator",
-            "Retired: the export now requires a free abuse.ch Auth-Key. Historical alerts keep this source name.", "CC0-1.0", "https://threatfox.abuse.ch/", Retired: true, AuthKeyService: ThreatFeedAuth.AbuseCh),
+            "Skipped until a free abuse.ch Auth-Key is saved in Settings, then downloaded with it. Historical alerts keep this source name.", "CC0-1.0", "https://threatfox.abuse.ch/", Retired: true, AuthKeyService: ThreatFeedAuth.AbuseCh),
         new("urlhaus", "URLhaus malware hosts", "abuse.ch", ThreatFeedKinds.Domain, ThreatFeedFormat.HostsFile,
             "https://urlhaus.abuse.ch/downloads/hostfile/", 16 * MiB, TimeSpan.FromHours(6), "MEDIUM", "T1189", "Malware distribution site",
-            "Retired: the export now requires a free abuse.ch Auth-Key. Historical alerts keep this source name.", "CC0-1.0", "https://urlhaus.abuse.ch/", Retired: true, AuthKeyService: ThreatFeedAuth.AbuseCh),
+            "Skipped until a free abuse.ch Auth-Key is saved in Settings, then downloaded with it. Historical alerts keep this source name.", "CC0-1.0", "https://urlhaus.abuse.ch/", Retired: true, AuthKeyService: ThreatFeedAuth.AbuseCh),
         new("malwarebazaar", "MalwareBazaar (recent)", "abuse.ch", ThreatFeedKinds.Hash, ThreatFeedFormat.Lines,
             "https://bazaar.abuse.ch/export/txt/sha256/recent/", 16 * MiB, TimeSpan.FromHours(6), "CRITICAL", "T1204", "Known malware sample",
-            "Retired: the export now requires a free abuse.ch Auth-Key. Historical alerts keep this source name.", "CC0-1.0", "https://bazaar.abuse.ch/", Retired: true, AuthKeyService: ThreatFeedAuth.AbuseCh),
+            "Skipped until a free abuse.ch Auth-Key is saved in Settings, then downloaded with it. Historical alerts keep this source name.", "CC0-1.0", "https://bazaar.abuse.ch/", Retired: true, AuthKeyService: ThreatFeedAuth.AbuseCh),
         new("phishtank", "PhishTank verified phishing URLs", "OpenDNS / Cisco", ThreatFeedKinds.Domain, ThreatFeedFormat.CsvUrl,
             "https://data.phishtank.com/data/online-valid.csv", 16 * MiB, TimeSpan.FromHours(6), "MEDIUM", "T1566", "Verified phishing host",
             "Retired: the download redirects to an expiring signed CDN URL. Historical alerts keep this source name.", "OpenDNS terms (free for non-commercial use)", "https://www.phishtank.com/", Separator: ',', Column: 1, IndicatorLimit: 1_000_000, Retired: true),

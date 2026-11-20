@@ -135,7 +135,7 @@
                     </Grid>
                     <Grid ColumnSpacing="16">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                        <StackPanel Spacing="2"><TextBlock Text="Threat database updates" FontWeight="SemiBold" /><TextBlock Text="Downloads 58 public threat databases (LOLDrivers, abuse.ch Feodo, Spamhaus, attack-framework command servers, APT and red-team tool hashes, Pegasus and Predator spyware, ransomware, scam, phishing, cryptominer and stalkerware lists, remote-access tools, IP origin data and more) in full over HTTPS and checks this PC against them locally. No API keys, and nothing about this PC is sent. When off, saved copies are still used until they expire." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" /></StackPanel>
+                        <StackPanel Spacing="2"><TextBlock Text="Threat database updates" FontWeight="SemiBold" /><TextBlock Text="Downloads 58 public threat databases (LOLDrivers, abuse.ch Feodo, Spamhaus, attack-framework command servers, APT and red-team tool hashes, Pegasus and Predator spyware, ransomware, scam, phishing, cryptominer and stalkerware lists, remote-access tools, IP origin data and more) in full over HTTPS and checks this PC against them locally. These need no key; nothing about this PC is sent. Saving a free abuse.ch Auth-Key below adds ThreatFox, URLhaus and MalwareBazaar. When off, saved copies are still used until they expire." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" /></StackPanel>
                         <ToggleSwitch x:Name="ThreatDatabasesToggle" Grid.Column="1" IsOn="True" IsEnabled="False" OnContent="On" OffContent="Off" />
                     </Grid>
                     <Grid ColumnSpacing="10">
@@ -161,6 +161,14 @@
                         <Button Grid.Column="2" Content="Save" Tag="GreyNoise" Click="SaveIntelKey_Click" />
                         <Button Grid.Column="3" Content="Remove" Tag="GreyNoise" Click="RemoveIntelKey_Click" />
                         <TextBlock x:Name="GreyNoiseKeyState" Grid.Column="4" VerticalAlignment="Center" FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Not configured" />
+                    </Grid>
+                    <Grid ColumnSpacing="10">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="110" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="140" /></Grid.ColumnDefinitions>
+                        <TextBlock Text="abuse.ch feeds" VerticalAlignment="Center" FontWeight="SemiBold" ToolTipService.ToolTip="Free key from abuse.ch; used only as the Auth-Key header on feed downloads" />
+                        <PasswordBox x:Name="AbuseChKeyBox" Grid.Column="1" PlaceholderText="Paste the free abuse.ch Auth-Key" MaxLength="256" />
+                        <Button Grid.Column="2" Content="Save" Tag="abuse.ch" Click="SaveIntelKey_Click" />
+                        <Button Grid.Column="3" Content="Remove" Tag="abuse.ch" Click="RemoveIntelKey_Click" />
+                        <TextBlock x:Name="AbuseChKeyState" Grid.Column="4" VerticalAlignment="Center" FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Not configured" />
                     </Grid>
                     <StackPanel Spacing="4">
                         <TextBlock x:Name="IntelRunState" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
