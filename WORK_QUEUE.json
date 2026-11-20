@@ -1178,6 +1178,24 @@
       ],
       "notes": "buffy 2026-11-20: completed. 1,478 tests pass. Driver and port views remain unwired.",
       "updatedAt": "2026-11-20"
+    },
+    {
+      "id": "DN-059",
+      "title": "Compare running drivers with registry driver keys",
+      "status": "completed",
+      "priority": "medium",
+      "files": [
+        "src/Downpour.Service/DriverInventoryProvider.cs",
+        "tests/Downpour.Tests/DriverInventoryTests.cs",
+        "docs/FOLLOWUP_FOUNDATIONS_2.md"
+      ],
+      "acceptance": [
+        "Running driver services compared with registry keys",
+        "Warning bounded and neutral",
+        "No warning when views agree"
+      ],
+      "notes": "buffy 2026-11-20: completed. 1,479 tests pass on rerun; one unrelated AMSI timing test failed once then passed alone and in the full rerun. Quiet here (182 running drivers, none missing).",
+      "updatedAt": "2026-11-20"
     }
   ]
 }

@@ -65,9 +65,17 @@ public sealed class DriverInventoryProvider(FileSignatureChecker? signatures = n
         // back zero and nothing above can be named. Fall back to the running driver services, which standard users may read.
         if (results.Count == 0 && totalCount > 0)
         {
-            var running = RunningDriverServices(warnings);
+            var observedServices = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var running = RunningDriverServices(warnings, observedServices);
             if (running.Count > 0)
             {
+                // A running driver service with no Services registry key is one-sided across two enumerations: the
+                // registry view is what boot configuration and uninstallers read. It is a consistency anomaly, not proof.
+                var registry = RegistryDriverServiceNames();
+                var missing = observedServices.Where(name => !registry.Contains(name)).ToArray();
+                if (missing.Length is > 0 and <= 10)
+                    warnings.Add($"{missing.Length} running driver service(s) have no Services registry key: " +
+                        $"{string.Join(", ", missing.Take(3))}. Review as a consistency anomaly, not proof of tampering.");
                 warnings.Add($"Windows hides kernel module addresses from standard accounts; showing the {running.Count:N0} running driver services instead of all {totalCount:N0} loaded modules.");
                 return new DriverInventorySnapshot(1, DateTimeOffset.UtcNow, totalCount, WithSignatures(running.Take(MaximumDrivers)), warnings);
             }
@@ -78,7 +86,7 @@ public sealed class DriverInventoryProvider(FileSignatureChecker? signatures = n
     }
 
     /// <summary>Running kernel and file-system driver services from WMI Win32_SystemDriver (documented, read-only).</summary>
-    private static List<DriverInventoryEntry> RunningDriverServices(List<string> warnings)
+    private static List<DriverInventoryEntry> RunningDriverServices(List<string> warnings, ICollection<string>? observedServices = null)
     {
         var entries = new List<DriverInventoryEntry>();
         var windowsRoot = Environment.GetFolderPath(Environment.SpecialFolder.Windows).TrimEnd('\\', '/');
@@ -96,6 +104,7 @@ public sealed class DriverInventoryProvider(FileSignatureChecker? signatures = n
                     var service = item["Name"] as string ?? "";
                     var path = Bound(item["PathName"] as string ?? "").Trim('"');
                     if (service.Length == 0) continue;
+                    observedServices?.Add(service);
                     var name = Bound(path.Length > 0 ? Path.GetFileName(path) : service);
                     var normalized = path.Replace('/', '\\');
                     var inSystemDrivers = normalized.StartsWith(systemDrivers, StringComparison.OrdinalIgnoreCase);
@@ -112,6 +121,33 @@ public sealed class DriverInventoryProvider(FileSignatureChecker? signatures = n
             warnings.Add("Windows Management Instrumentation did not return the running driver list.");
         }
         return entries;
+    }
+
+    /// <summary>Service keys that declare a kernel or file-system driver type; read-only and bounded.</summary>
+    private static HashSet<string> RegistryDriverServiceNames()
+    {
+        var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        try
+        {
+            using var root = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Services");
+            if (root is null) return names;
+            foreach (var name in root.GetSubKeyNames().Take(4096))
+            {
+                using var key = root.OpenSubKey(name);
+                var type = key?.GetValue("Type") switch
+                {
+                    int value => value,
+                    string text when int.TryParse(text, out var parsed) => parsed,
+                    _ => 0,
+                };
+                if ((type & 0x3) != 0) names.Add(name);
+            }
+        }
+        catch (Exception exception) when (exception is UnauthorizedAccessException or System.Security.SecurityException or IOException)
+        {
+            names.Clear();
+        }
+        return names;
     }
 
     private IReadOnlyList<DriverInventoryEntry> WithSignatures(IEnumerable<DriverInventoryEntry> drivers)
