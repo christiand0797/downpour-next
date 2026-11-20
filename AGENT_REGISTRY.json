@@ -173,10 +173,10 @@
     {
       "id": "buffy",
       "role": "agent",
-      "taskId": "DN-048",
+      "taskId": "DN-050",
       "status": "idle",
-      "heartbeatUtc": "2026-11-20T03:05:00Z",
-      "notes": "DN-048 complete: fifteen follow-up foundations with tests, 1,453 passing. Next safe task: wire ReleaseTrustPolicy into the updater once the offline key exists, or persist suppression expiry."
+      "heartbeatUtc": "2026-11-20T03:15:00Z",
+      "notes": "v0.1.25 published and verified; local portable at a7726c2. Next safe tasks: offline signing key for ReleaseTrustPolicy enforcement, per-subject suppression scope, persist acknowledgement timestamps."
     }
   ]
 }

@@ -985,6 +985,24 @@
       ],
       "notes": "buffy 2026-11-20: completed. Expiry and counts persisted, two regression tests, 1,455 tests pass. Per-subject scope, renewal and a dedicated suppression list remain.",
       "updatedAt": "2026-11-20"
+    },
+    {
+      "id": "DN-050",
+      "title": "Cut, verify and publish v0.1.25",
+      "status": "completed",
+      "priority": "high",
+      "files": [
+        "Directory.Build.props",
+        "docs/RELEASE_0.1.25.md"
+      ],
+      "acceptance": [
+        "Portable staging rebuilt from the tagged commit with five publishes and 1,455 tests",
+        "Window smoke and all 43 packaged routes pass",
+        "ZIP, SBOM and SHA256SUMS digests match between local files and GitHub assets",
+        "Release published as Latest with the tag pointing at the release commit"
+      ],
+      "notes": "buffy 2026-11-20: completed. v0.1.25 published from a7726c2; ZIP SHA-256 c75a3a7d13ebf2de0659c44b70354dfe1d717ad09397ba120fc3878e085c931d; assets mirrored to Desktop\\downpour v2\u0007rtifacts.",
+      "updatedAt": "2026-11-20"
     }
   ]
 }

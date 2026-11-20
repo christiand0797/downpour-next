@@ -4,7 +4,7 @@
 
 - [x] Version bumped to 0.1.25 for the five slices after the v0.1.24 tag: route wiring, suppression expiry, key-gated abuse.ch feeds, fifteen foundations.
 - [x] Release notes written in `docs/RELEASE_0.1.25.md`, explicitly listing the foundations as not wired.
-- [ ] Rebuild the portable staging, package, run window and full packaged smoke, tag, publish and verify the assets.
+- [x] Published v0.1.25 from tag `a7726c2` as Latest: local portable rebuilt (1,455 tests, five publishes), ZIP verified entry-by-entry, window smoke and all 43 packaged routes passed, all three GitHub asset digests match local files. ZIP 306,118,731 bytes SHA-256 `c75a3a7d13ebf2de0659c44b70354dfe1d717ad09397ba120fc3878e085c931d`.
 ## 2026-11-20 fifteen follow-ups started as tested foundations (buffy)
 
 - [x] 1 Release trust: `ReleaseTrustPolicy` (invalid is always refused, unsigned only on channels that do not require signing) and `tools/release/sign-release.ps1` (RSA-3072 minimum, self-test passes). Updater wiring still waits for the offline key.
