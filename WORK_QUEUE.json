@@ -1379,6 +1379,24 @@
    ],
    "notes": "buffy 2026-11-20: completed. `RuleCoverageMap` was a Core foundation since DN-052; it is now fed from real data. The provider reports readability for all 7 allow-listed channels, the alert store keeps it in `alert_channel_health` plus `alert_coverage.observed_since_utc`, and `ReadSnapshotAsync` builds `SecurityAlertSnapshot.Coverage` over the 35 built-in catalog rules with fire counts summed from stored occurrences. A zero count is never called silent until the store has watched 30 days. Alerts shows a coverage panel naming blocked rules and their reason. 1,484 tests pass (3 new); panel compiled but not inspected.",
    "updatedAt": "2026-11-20"
+  },
+  {
+   "id": "DN-069",
+   "title": "Cut and publish 0.1.30 with rule coverage",
+   "status": "completed",
+   "priority": "high",
+   "files": [
+    "Directory.Build.props",
+    "docs/RELEASE_0.1.30.md",
+    "docs/CONTINUATION.md"
+   ],
+   "acceptance": [
+    "Release build and tests clean at the pinned commit",
+    "Package, route smoke and window smoke pass",
+    "Tag, notes and assets published with matching digests"
+   ],
+   "notes": "buffy 2026-11-20: completed. Built from `ceaf758`; 1,484 Release tests, 1,077 package entries, every route and window smoke passed. ZIP 306,423,711 bytes sha256 4f80b4f5d4cbce2239fa28bdbd3b5ade6ca728a99e221727d3ca7ba771123b95; SBOM 9102a7f340eb2a2218b5892d303c17e60cd2584f085cfa376120c665a3972068. Release notes docs/RELEASE_0.1.30.md.",
+   "updatedAt": "2026-11-20"
   }
  ]
 }

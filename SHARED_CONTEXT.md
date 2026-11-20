@@ -6,6 +6,7 @@
 - The point is to separate a quiet rule from a blind one: a rule whose channel this account cannot open is named with the reason, and a zero match count is never called silence until the store has watched a full 30-day window. Fresh stores therefore report readable rules as able to fire, not as silent.
 - Alerts shows a coverage panel: how many built-in rules can fire here, which cannot and why, and when observation started. `SecurityAlertClient` requires the four counts to add up, bounds the entry list at 64 and bounds every field.
 - Verification: Debug build 0 warnings/errors; 1,484 tests pass (3 new in `RuleCoverageWiringTests`). The panel compiles but has not been viewed by hand, and the development machine's channel mix was not inspected, so the blind-spot wording has only been exercised by tests.
+- v0.1.30 published (DN-069): tag `v0.1.30`, built from `ceaf758`; ships rule coverage. ZIP 306,423,711 bytes sha256 `4f80b4f5…`, SBOM `9102a7f3…`. Release suite 1,484 passed, package 1,077 entries, every route in the packaged smoke (179 YARA rules) and window smoke passed; notes `docs/RELEASE_0.1.30.md`.
 
 ## 2026-11-19 0.1.24 release and foundation modules (buffy)
 

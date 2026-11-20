@@ -2,7 +2,8 @@
 
 ## 2026-11-20 0.1.25: visible trust work (buffy)
 
-- [x] Rule coverage wired (unreleased, DN-068): each event capture records whether every allow-listed channel could be read; the alert store keeps that and the moment coverage started, and the snapshot now splits the 35 built-in rules into can-fire, cannot-fire (with the channel or field that blocks it), silent and unknown. Alerts shows a coverage panel naming blocked rules; a fresh store never calls a readable rule silent, because silence needs a full 30-day window. 1,484 tests pass; panel not inspected.
+- [x] Published v0.1.30 (`ceaf758`): ships rule coverage (which built-in rules cannot fire here and why); ZIP 306,423,711 bytes sha256 `4f80b4f5…`, SBOM `9102a7f3…`; 1,484 tests, packaged route smoke (every route, 179 YARA rules) and window smoke passed; notes `docs/RELEASE_0.1.30.md`.
+- [x] Rule coverage wired (shipped in 0.1.30, DN-068): each event capture records whether every allow-listed channel could be read; the alert store keeps that and the moment coverage started, and the snapshot now splits the 35 built-in rules into can-fire, cannot-fire (with the channel or field that blocks it), silent and unknown. Alerts shows a coverage panel naming blocked rules; a fresh store never calls a readable rule silent, because silence needs a full 30-day window. 1,484 tests pass; panel not inspected.
 - [x] Version bumped to 0.1.25 for the five slices after the v0.1.24 tag: route wiring, suppression expiry, key-gated abuse.ch feeds, fifteen foundations.
 - [x] Release notes written in `docs/RELEASE_0.1.25.md`, explicitly listing the foundations as not wired.
 - [x] Suppressions list wired after 0.1.25 (unreleased, DN-051): the snapshot carries up to 20 active suppressions with confirmed count, hidden-match count, expiry and a suppressed alert id; Alerts shows them in a third panel with Re-arm; validation bounds every field; confirmation now counts the alerts it hides. 1,457 tests pass.
