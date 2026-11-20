@@ -1,9 +1,10 @@
 # Downpour Next TODO
 
-## 2026-11-20 0.1.31+: alert replay gate (buffy)
+## 2026-11-20 0.1.32: alert replay gate (buffy)
 
 - [x] Alert replay gate wired (DN-072): `AlertProjection` moved alert identity into Core, `AlertReplayRunner` replays a 12-record synthetic corpus (10 expected alerts) through the current catalog without touching the event log or network, and `run-gates.ps1` fails on any missing, unexpected or severity-changed alert. Tampered-corpus run exited 1; restored run exited 0; full Debug suite 1,495 passed. The corpus is scanned for host paths, addresses and user data. Docs `docs/ALERT_REPLAY.md`.
 - [ ] Update the corpus only with reviewed rule/identity changes; it does not cover Sigma/AMSI, feed parsers or the service-install signature re-grade.
+- [x] Published v0.1.32 (`408fe2f`): ships the replay gate with no runtime change; 1,495 Release tests, 1,077 package entries, every packaged route (179 YARA rules) and window smoke passed; ZIP 306,482,886 bytes sha256 `b88d9df3…`, SBOM `11fd7b8c…`, notes `docs/RELEASE_0.1.32.md`.
 
 ## 2026-11-20 0.1.31: per-process mitigations (buffy)
 

@@ -1460,6 +1460,25 @@
     "Corpus content contains no host names, addresses, paths or user data"
    ],
    "notes": "buffy 2026-11-20: completed. `AlertProjection.DedupKey` moved the service's alert identity into Core so the repository upsert and replay share one implementation. `AlertReplayRunner` parses `tests/Downpour.Tests/replay/alert-replay-corpus.json` (12 synthetic event records, 10 expected alerts, no host data) and grades them through `SecurityEventCatalog`/`SysmonCatalog`; unknown rules, malformed or oversized corpora are refused. `run-gates.ps1` runs `AlertReplayGateTests` as its own step. Verified: a tampered expected severity exits 1, the restored corpus exits 0 (5 tests), and the full Debug suite is 1,495 passed / 0 failed with a clean build. Docs: `docs/ALERT_REPLAY.md`."
+  },
+  {
+   "id": "DN-073",
+   "title": "Cut and publish 0.1.32 with the alert replay gate",
+   "status": "completed",
+   "priority": "high",
+   "files": [
+    "Directory.Build.props",
+    "docs/RELEASE_0.1.32.md",
+    "docs/CONTINUATION.md"
+   ],
+   "acceptance": [
+    "Version 0.1.32 in Directory.Build.props",
+    "Release build clean and full Release suite passing",
+    "Package, packaged route smoke and window smoke pass",
+    "Release notes record the ZIP and SBOM digests",
+    "Tag points at the pushed docs commit; package pins the embedded hash"
+   ],
+   "notes": "buffy 2026-11-20: completed. Built from `408fe2fb2b33db12913a5707ad21bfb3745de2a2`; 1,495 Release tests, 1,077 package entries, every packaged route (179 YARA rules) and the window smoke passed. ZIP 306,482,886 bytes sha256 b88d9df3a3cd04c63082a86fc943c7d4051346ab16f23cf5136c56aadd62ca7c; SBOM 11fd7b8c707d7a41e6cc81d9a66c6b79560c8e9a5c9d6c6056fa963677a323b8; SHA256SUMS 18d890de4c4f21a7b84bd5b95419b4059a5cf9967cdca21fddca74c3f16cb164. No runtime behaviour changed. Release notes docs/RELEASE_0.1.32.md."
   }
  ]
 }

@@ -7,6 +7,7 @@
 - The corpus exercises all four identity paths (record, five-minute 4625 burst, hourly rollup, Sysmon record plus ticks) and the no-record fallback, and spans System, Security, PowerShell, Sysmon and Defender rules. Expected severities are frozen beside the cases.
 - `AlertReplayDiff` reports missing, unexpected and severity-changed alerts. `tools/ci/run-gates.ps1` runs `AlertReplayGateTests` as an explicit step and stops on any difference. `AlertReplayGateTests` also refuses malformed/oversized corpora and scans the text for drive, UNC and profile paths, e-mail addresses and IPv4 literals.
 - Verified: tampering one expected severity makes the gate exit 1; the restored corpus exits 0 with 5 gate tests. Full Debug suite 1,495 passed / 0 failed, 0 warnings. Details in `docs/ALERT_REPLAY.md`. The corpus covers catalog grading and identity only; Sigma/AMSI, feed parsers and service-install signature re-grading keep their own tests.
+- v0.1.32 published (DN-073): built from `408fe2f`, no runtime behaviour change; 1,495 Release tests, 1,077 package entries, every packaged route (179 YARA rules) and the window smoke passed. ZIP 306,482,886 bytes sha256 `b88d9df3…`, SBOM `11fd7b8c…`, SHA256SUMS `18d890de…`; notes `docs/RELEASE_0.1.32.md`.
 
 ## 2026-11-20 per-process exploit mitigations wired (buffy, DN-070)
 
