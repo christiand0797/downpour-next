@@ -910,7 +910,7 @@
         "Foundation modules compile and have regression tests",
         "Release build, package, window smoke and 43-route smoke pass"
       ],
-      "notes": "2026-11-19 buffy. 58 active sources (six TweetFeed added); four dead sources retired. Added release signature/install integrity, feed update guard, change digest, evidence graph, behaviour baseline, encrypted-DNS detection, alert grouping, threat pack, retention, rule budgets, performance gate, self-hosted workflow and authenticated feed headers. 1,433 tests pass. v0.1.24 built from the tagged commit with verified ZIP/SBOM/SHA256SUMS."
+      "notes": "2026-11-19 buffy. 58 active sources (six TweetFeed added); four dead sources retired. Added release signature/install integrity, feed update guard, change digest, evidence graph, behaviour baseline, encrypted-DNS detection, alert grouping, threat pack, retention, rule budgets, performance gate, self-hosted workflow and authenticated feed headers. 1,433 tests pass. v0.1.24 published as Latest from tag 6b76f65; ZIP SHA-256 56a22707f733c13dc5c8002c66be070c60a324442e1d35e48fe45d07c06eb812, SBOM and SHA256SUMS digests match the GitHub assets."
     }
   ]
 }

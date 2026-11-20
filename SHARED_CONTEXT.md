@@ -5,7 +5,8 @@
 - Source of truth for this release is the tagged commit; `Directory.Build.props` is 0.1.24.
 - Catalog: 58 active sources. Six TweetFeed lists added; ThreatFox/URLhaus/MalwareBazaar (HTTP 410 without a free abuse.ch `Auth-Key`) and PhishTank (signed redirect) are retired and never downloaded. `docs/RELEASE_0.1.24.md` is the release body.
 - New tested foundations, not yet wired into routes: `ReleaseSignatureVerifier`/`InstallationIntegrity`, `FeedUpdateGuard` (active in the service refresh path), `LocalChangeDigest`, `EvidenceGraph`, `BehaviorBaseline`, `EncryptedDnsDetector`, `AlertGrouping`, `ThreatPack`, `EvidenceRetention`, `DetectionQualityBudget`, plus authenticated feed headers.
-- Verification: Debug and Release builds clean, 1,433 tests, 57-feed live download/parse, window and 43-route packaged smoke; archive/SBOM/SHA-256 sums verified against the GitHub assets.
+- Published v0.1.24 from tag `6b76f6570a45d5ae80a593689e6f9d449db27be0` as Latest: ZIP 305,917,332 bytes SHA-256 `56a22707f733c13dc5c8002c66be070c60a324442e1d35e48fe45d07c06eb812`, SBOM `f2c727134e35113f3454d314497f083e74b8bc31a5791669f93ea26e3e8547a6`, SHA256SUMS `3ddcddd38ea17e9d82472dc6e4a75deebab4c791ba43b09c579453dbafb19e5a`; all three GitHub asset digests match the local files.
+- Verification: Debug and Release builds clean, 1,433 tests, 57-feed live download/parse, window and 43-route packaged smoke against the packaged folder.
 - Next: wire digest/graph/grouping into routes, sign releases (`docs/RELEASE_TRUST.md`), add the abuse.ch key setting, register the self-hosted runner.
 
 ## 2026-11-19 feed catalog validation and retirement (buffy)

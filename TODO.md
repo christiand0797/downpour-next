@@ -5,7 +5,7 @@
 - [x] 58 active sources; six TweetFeed lists live; four dead sources retired (ThreatFox/URLhaus/MalwareBazaar 410, PhishTank signed redirect).
 - [x] Foundation modules with tests: manifest signature verification, install integrity, feed update guard, change digest, evidence graph, behaviour baseline, encrypted-DNS detection, alert grouping, threat pack, retention policy, rule-quality budgets, index performance gate.
 - [x] Self-hosted release-gate workflow and `tools/ci/run-gates.ps1`; authenticated feed header support (`Auth-Key`).
-- [x] 1,433 tests pass; release build and package verified; v0.1.24 published.
+- [x] 1,433 tests pass; release build and package verified; v0.1.24 published from `6b76f65` as Latest (ZIP SHA-256 `56a22707f733c13dc5c8002c66be070c60a324442e1d35e48fe45d07c06eb812`).
 - [ ] Wire the new foundations into routes: change digest on the dashboard, evidence graph in investigation, grouped alerts in the Alerts view.
 - [ ] Sign releases: key custody, signed manifest, updater enforcement (see `docs/RELEASE_TRUST.md`).
 - [ ] Store an abuse.ch key in Settings and re-enable the three retired feeds when present.
