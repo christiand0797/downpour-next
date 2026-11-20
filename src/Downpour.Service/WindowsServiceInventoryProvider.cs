@@ -127,9 +127,47 @@ public sealed class WindowsServiceInventoryProvider
             warnings.Add($"Service inventory is limited to the first {MaximumServices} entries.");
         if (!complete && warnings.Count == 0)
             warnings.Add("Windows service inventory was truncated before enumeration completed.");
+        if (complete && services.Count is > 0 and < MaximumServices && RegistryServiceNames() is { Count: > 0 } registryNames)
+        {
+            // SCM and the Services registry key are independent enumerations of the same catalog. A service visible in
+            // only one is worth a look, but it is a consistency anomaly, never proof of tampering.
+            var anomalies = CrossViewInventory.Compare(
+                new InventoryView("Service Control Manager", services.Select(service => service.ServiceName).ToHashSet(StringComparer.OrdinalIgnoreCase)),
+                new InventoryView("services registry key", registryNames));
+            if (anomalies.Count is > 0 and <= 10)
+                warnings.Add($"{anomalies.Count} service(s) appear in only one of the Service Control Manager and registry views: " +
+                    $"{string.Join(", ", anomalies.Take(3).Select(anomaly => anomaly.Artifact))}. Review as a consistency anomaly, not proof of tampering.");
+        }
 
         var status = complete ? "Available" : services.Count > 0 ? "Partial" : "Unavailable";
         return Snapshot(status, capturedAt, services, warnings);
+    }
+
+    /// <summary>Names under the Services registry key that declare a service type; read-only and bounded.</summary>
+    private static HashSet<string> RegistryServiceNames()
+    {
+        var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        try
+        {
+            using var root = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Services");
+            if (root is null) return names;
+            foreach (var name in root.GetSubKeyNames().Take(4096))
+            {
+                using var key = root.OpenSubKey(name);
+                var type = key?.GetValue("Type") switch
+                {
+                    int value => value,
+                    string text when int.TryParse(text, out var parsed) => parsed,
+                    _ => 0,
+                };
+                if ((type & 0x3F) != 0) names.Add(name);
+            }
+        }
+        catch (Exception exception) when (exception is UnauthorizedAccessException or System.Security.SecurityException or IOException)
+        {
+            names.Clear();
+        }
+        return names;
     }
 
     private static WindowsServiceInventorySnapshot Snapshot(

@@ -1160,6 +1160,24 @@
       ],
       "notes": "buffy 2026-11-20: completed. 1,477 Release tests; 1,077 ZIP entries; window smoke PASS. Explanation panel still not visually inspected.",
       "updatedAt": "2026-11-20"
+    },
+    {
+      "id": "DN-058",
+      "title": "Compare SCM and registry service views",
+      "status": "completed",
+      "priority": "medium",
+      "files": [
+        "src/Downpour.Service/WindowsServiceInventoryProvider.cs",
+        "tests/Downpour.Tests/WindowsServiceInventoryTests.cs",
+        "docs/FOLLOWUP_FOUNDATIONS_2.md"
+      ],
+      "acceptance": [
+        "Both enumerations compared read-only",
+        "Warning bounded and neutral",
+        "No warning when views agree"
+      ],
+      "notes": "buffy 2026-11-20: completed. 1,478 tests pass. Driver and port views remain unwired.",
+      "updatedAt": "2026-11-20"
     }
   ]
 }

@@ -173,10 +173,10 @@
     {
       "id": "buffy",
       "role": "agent",
-      "taskId": "DN-057",
+      "taskId": "DN-058",
       "status": "idle",
-      "heartbeatUtc": "2026-11-20T06:55:00Z",
-      "notes": "0.1.26 published. artex still not spawnable; researcher-web used for event-log and egress API facts. Next: explanation panel visual pass, weekly digest wiring, or egress ETW collector decision."
+      "heartbeatUtc": "2026-11-20T07:30:00Z",
+      "notes": "Service cross-view wired; 1,478 tests pass. 0.1.26 published earlier this session. artex still unavailable in this thread."
     }
   ]
 }
