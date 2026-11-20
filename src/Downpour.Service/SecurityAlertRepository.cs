@@ -73,7 +73,9 @@ public sealed class SecurityAlertRepository(string databasePath)
                 // Additive: per-channel ingestion cursors so a restart can say whether its quiet period is real.
                 "CREATE TABLE IF NOT EXISTS event_cursors (log_name TEXT PRIMARY KEY CHECK(length(log_name)<=128), " +
                 "last_record_id INTEGER NOT NULL CHECK(last_record_id>=0), last_hash TEXT NOT NULL CHECK(length(last_hash) BETWEEN 1 AND 128), " +
-                "updated_utc TEXT NOT NULL);",
+                "updated_utc TEXT NOT NULL);" +
+                // Additive: one last clock reading, so a backward jump is detectable after a restart.
+                "CREATE TABLE IF NOT EXISTS service_clock (id INTEGER PRIMARY KEY CHECK(id=1), last_utc TEXT NOT NULL);",
                 cancellationToken);
             // Additive (no schema bump): suppression expiry and how many matches a suppression has hidden.
             await EnsureColumnAsync(connection, "alert_fp_rules", "expires_at_utc", "TEXT NULL", cancellationToken);
@@ -276,6 +278,34 @@ public sealed class SecurityAlertRepository(string databasePath)
         var report = StoreRetentionAccounting.Assess(retained, MaximumAlertCount, oldest, DateTimeOffset.UtcNow, Retention, []);
         return new AlertRetentionSummary(report.Retained, report.Capacity, report.OldestRetainedUtc, report.Window,
             evicted, report.Warnings.Take(4).ToArray());
+    }
+
+    /// <summary>The last wall-clock reading, used to detect a clock that moved backwards.</summary>
+    public async Task<DateTimeOffset?> ReadClockReadingAsync(CancellationToken cancellationToken = default)
+    {
+        await _gate.WaitAsync(cancellationToken);
+        try
+        {
+            await using var connection = await OpenAsync(cancellationToken);
+            var value = await ScalarAsync(connection, "SELECT last_utc FROM service_clock WHERE id=1;", cancellationToken);
+            return value is null or DBNull ? null : ParseUtc(Convert.ToString(value)!);
+        }
+        finally { _gate.Release(); }
+    }
+
+    public async Task SaveClockReadingAsync(DateTimeOffset reading, CancellationToken cancellationToken = default)
+    {
+        await _gate.WaitAsync(cancellationToken);
+        try
+        {
+            await using var connection = await OpenAsync(cancellationToken);
+            await using var command = connection.CreateCommand();
+            command.CommandText = "INSERT INTO service_clock(id,last_utc) VALUES(1,$at) " +
+                "ON CONFLICT(id) DO UPDATE SET last_utc=excluded.last_utc;";
+            command.Parameters.AddWithValue("$at", reading.ToUniversalTime().ToString("O"));
+            await command.ExecuteNonQueryAsync(cancellationToken);
+        }
+        finally { _gate.Release(); }
     }
 
     /// <summary>Ingestion cursors make the gap across a restart explicit instead of assumed.</summary>

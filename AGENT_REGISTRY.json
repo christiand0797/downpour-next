@@ -173,10 +173,10 @@
     {
       "id": "buffy",
       "role": "agent",
-      "taskId": "DN-053",
+      "taskId": "DN-054",
       "status": "idle",
-      "heartbeatUtc": "2026-11-20T04:45:00Z",
-      "notes": "Event cursors + retention wired; 1,475 tests pass; service smoke clean. Next: wire clock integrity and the explanation panel, then cut 0.1.26."
+      "heartbeatUtc": "2026-11-20T05:20:00Z",
+      "notes": "Clock integrity partly wired; 1,476 tests pass. artex subagent not yet spawnable in this thread (needs reload). Next: explanation panel wiring or 0.1.26 cut."
     }
   ]
 }

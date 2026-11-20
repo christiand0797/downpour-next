@@ -1080,6 +1080,25 @@
       ],
       "notes": "buffy 2026-11-20: completed. 1,475 tests pass. Service started and refreshed 6/7 channels with no exception. Cursor replay of records (beyond the 24h lookback) is still not implemented; only the gap report is.",
       "updatedAt": "2026-11-20"
+    },
+    {
+      "id": "DN-054",
+      "title": "Wire clock integrity into the service loop",
+      "status": "completed",
+      "priority": "medium",
+      "files": [
+        "src/Downpour.Service/SecurityAlertRepository.cs",
+        "src/Downpour.Service/SecurityEventMonitorService.cs",
+        "tests/Downpour.Tests/SecurityAlertRepositoryTests.cs",
+        "docs/FOLLOWUP_FOUNDATIONS_2.md"
+      ],
+      "acceptance": [
+        "Last clock reading persists across restarts",
+        "A backward jump is reported in the alert warnings",
+        "No false warning on a consistent clock"
+      ],
+      "notes": "buffy 2026-11-20: completed. 1,476 tests pass; service smoke shows no clock warning on a healthy clock. Boot-time cross-check needs an independent boot source and is deliberately unused.",
+      "updatedAt": "2026-11-20"
     }
   ]
 }

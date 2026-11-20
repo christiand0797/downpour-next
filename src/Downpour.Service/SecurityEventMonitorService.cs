@@ -15,6 +15,8 @@ public sealed class SecurityEventMonitorService(
     private static readonly TimeSpan PollInterval = TimeSpan.FromSeconds(15);
     private bool _alertStoreReady;
     private IReadOnlyDictionary<string, EventCursor> _cursors = new Dictionary<string, EventCursor>(StringComparer.OrdinalIgnoreCase);
+    private DateTimeOffset? _lastClockReading;
+    private DateTimeOffset _clockSavedAt;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -29,6 +31,16 @@ public sealed class SecurityEventMonitorService(
                 var previous = _cursors;
                 capture = await Task.Run(() => provider.CaptureWithCursors(previous), stoppingToken);
                 snapshot = capture.Snapshot;
+                // A backwards wall clock can revive expired evidence and reorder history, so it is said out loud.
+                var clockNow = DateTimeOffset.UtcNow;
+                var finding = ClockIntegrity.Evaluate(new ClockEvidence(
+                    clockNow, _lastClockReading, TimeSpan.FromMilliseconds(Environment.TickCount64), BootUtc: null));
+                if (finding.Verdict is ClockVerdict.BackwardJump or ClockVerdict.MonotonicMismatch)
+                    snapshot = snapshot with
+                    {
+                        Warnings = snapshot.Warnings.Concat([$"System clock: {finding.Detail}"]).Take(64).ToArray()
+                    };
+                _lastClockReading = clockNow;
                 snapshot = snapshot with
                 {
                     Warnings = snapshot.Warnings.Concat(pushStatus.GetWarnings()).Distinct(StringComparer.Ordinal).Take(64).ToArray()
@@ -60,6 +72,11 @@ public sealed class SecurityEventMonitorService(
                         {
                             await alerts.SaveEventCursorsAsync(advanced.Cursors, stoppingToken);
                             _cursors = advanced.Cursors.ToDictionary(cursor => cursor.LogName, StringComparer.OrdinalIgnoreCase);
+                        }
+                        if (_lastClockReading is { } clockReading && clockReading - _clockSavedAt > TimeSpan.FromMinutes(5))
+                        {
+                            await alerts.SaveClockReadingAsync(clockReading, stoppingToken);
+                            _clockSavedAt = clockReading;
                         }
                         await PublishAlertSnapshotAsync(snapshot, stoppingToken);
                     }
@@ -96,6 +113,8 @@ public sealed class SecurityEventMonitorService(
         {
             await alerts.InitializeAsync(token);
             _cursors = await alerts.ReadEventCursorsAsync(token);
+            _lastClockReading = await alerts.ReadClockReadingAsync(token);
+            _clockSavedAt = _lastClockReading ?? DateTimeOffset.MinValue;
             var initial = await alerts.ReadSnapshotAsync(token);
             alertSnapshots.Publish(initial with { Warnings = ["Waiting for the first Windows event monitor refresh."] });
             _alertStoreReady = true;

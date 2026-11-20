@@ -191,6 +191,21 @@ public sealed class SecurityAlertRepositoryTests
     }
 
     [Fact]
+    public async Task ClockReadingPersistsForBackwardJumpDetection()
+    {
+        using var database = new TemporaryAlertDatabase();
+        var repository = new SecurityAlertRepository(database.Path);
+        await repository.InitializeAsync();
+        Assert.Null(await repository.ReadClockReadingAsync());
+        var reading = DateTimeOffset.UtcNow.AddMinutes(-3);
+        await repository.SaveClockReadingAsync(reading);
+        Assert.Equal(reading, await repository.ReadClockReadingAsync());
+        var later = reading.AddMinutes(2);
+        await repository.SaveClockReadingAsync(later);
+        Assert.Equal(later, await repository.ReadClockReadingAsync());
+    }
+
+    [Fact]
     public async Task RetentionSummaryIsPublishedWithTheSnapshot()
     {
         using var database = new TemporaryAlertDatabase();
