@@ -1446,7 +1446,7 @@
   {
    "id": "DN-072",
    "title": "Wire a sanitized alert replay corpus into the release gate",
-   "status": "pending",
+   "status": "completed",
    "priority": "medium",
    "files": [
     "src/Downpour.Core/AlertReplayDiff.cs",
@@ -1459,7 +1459,7 @@
     "The gate fails on a difference and passes on an unchanged rule set",
     "Corpus content contains no host names, addresses, paths or user data"
    ],
-   "notes": "buffy 2026-11-20: queued. `AlertReplayDiff` has been a tested Core foundation since DN-052 but no corpus or runner exists. This is the intended gate for future rule/parser changes; build the corpus from synthetic event records, not captured host data."
+   "notes": "buffy 2026-11-20: completed. `AlertProjection.DedupKey` moved the service's alert identity into Core so the repository upsert and replay share one implementation. `AlertReplayRunner` parses `tests/Downpour.Tests/replay/alert-replay-corpus.json` (12 synthetic event records, 10 expected alerts, no host data) and grades them through `SecurityEventCatalog`/`SysmonCatalog`; unknown rules, malformed or oversized corpora are refused. `run-gates.ps1` runs `AlertReplayGateTests` as its own step. Verified: a tampered expected severity exits 1, the restored corpus exits 0 (5 tests), and the full Debug suite is 1,495 passed / 0 failed with a clean build. Docs: `docs/ALERT_REPLAY.md`."
   }
  ]
 }

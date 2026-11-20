@@ -52,6 +52,10 @@ try {
         Write-Output "==> Test ($Configuration)"
         dotnet test Downpour.slnx -c $Configuration --no-build
         if ($LASTEXITCODE -ne 0) { throw "dotnet test failed with exit code $LASTEXITCODE" }
+
+        Write-Output '==> Alert replay gate'
+        dotnet test Downpour.slnx -c $Configuration --no-build --filter "FullyQualifiedName~AlertReplayGateTests"
+        if ($LASTEXITCODE -ne 0) { throw "Alert replay gate failed with exit code $LASTEXITCODE" }
     }
 
     if ($PackagePath) {

@@ -110,7 +110,7 @@ public sealed class SecurityAlertRepository(string databasePath)
             await using var transaction = connection.BeginTransaction();
             foreach (var observation in source.Events)
             {
-                var dedupKey = BuildDedupKey(observation);
+                var dedupKey = AlertProjection.DedupKey(observation);
                 var fingerprint = BuildFalsePositiveFingerprint(observation.LogName, observation.Provider, observation.EventId);
                 var id = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes("downpour-alert-v1\0" + dedupKey))).ToLowerInvariant();
                 var suppressionActive = await IsFingerprintSuppressedAsync(connection, transaction, fingerprint, cancellationToken);
@@ -822,33 +822,6 @@ public sealed class SecurityAlertRepository(string databasePath)
         command.Parameters.AddWithValue("$id", alertId);
         await using var reader = await command.ExecuteReaderAsync(token);
         return await reader.ReadAsync(token) ? (reader.GetString(0), reader.GetString(1), reader.GetString(2), reader.GetInt32(3)) : null;
-    }
-
-    private static bool IsRollupEvent(string logName, int eventId) =>
-        (logName.Equals("Microsoft-Windows-PowerShell/Operational", StringComparison.OrdinalIgnoreCase) && eventId == 4104) ||
-        (logName.Equals("Security", StringComparison.OrdinalIgnoreCase) && eventId is 4688 or 4663 or 4672 or 4673);
-
-    private static string BuildDedupKey(SecurityEventObservation observation)
-    {
-        if (observation.EventId == 4625)
-        {
-            var timestamp = observation.CreatedAtUtc!.Value.ToUniversalTime();
-            var bucket = timestamp.UtcDateTime.Ticks / TimeSpan.FromMinutes(5).Ticks;
-            return $"burst\0{observation.LogName}\0{observation.EventId}\0{bucket}";
-        }
-        // Sysmon record IDs can restart after a log clear. Keep distinct event times distinct.
-        if (observation.LogName.Equals(SysmonCatalog.LogName, StringComparison.OrdinalIgnoreCase) && observation.RecordId is { } sysmonRecord)
-            return $"sysmon\0{observation.EventId}\0{sysmonRecord}\0{observation.CreatedAtUtc!.Value.UtcTicks}";
-        // High-volume informational events become one alert per event type per hour instead of one per record.
-        if (observation.RecordId is not null && IsRollupEvent(observation.LogName, observation.EventId))
-        {
-            var hour = observation.CreatedAtUtc!.Value.ToUniversalTime().ToString("yyyyMMddHH");
-            return $"rollup\0{observation.LogName}\0{observation.EventId}\0{hour}";
-        }
-        if (observation.RecordId is { } recordId)
-            return $"record\0{observation.LogName}\0{observation.EventId}\0{recordId}";
-        var fallbackTime = observation.CreatedAtUtc!.Value.ToUniversalTime().ToString("yyyyMMddHHmm");
-        return $"fallback\0{observation.LogName}\0{observation.Provider}\0{observation.EventId}\0{fallbackTime}";
     }
 
     private static bool IsAllowedTransition(string current, string next) => current == next || current switch

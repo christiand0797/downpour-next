@@ -174,9 +174,9 @@
       "id": "buffy",
       "role": "agent",
       "taskId": "DN-072",
-      "status": "idle",
-      "heartbeatUtc": "2026-11-20T22:35:00Z",
-      "notes": "v0.1.31 published as Latest from 4104b98: per-process exploit mitigations on Hardening, 1,490 Release tests, 1,077 package entries, every route and window smoke. Next: inspect the new mitigation panel by hand, or wire the replay-diff gate / onboarding / weekly digest from the remaining Core foundations."
+      "status": "active",
+      "heartbeatUtc": "2026-11-20T23:05:00Z",
+      "notes": "DN-072: moving alert identity into Core (`AlertProjection`), adding `AlertReplayRunner`, a synthetic corpus and an explicit replay gate step. v0.1.31 remains Latest."
     }
   ]
 }

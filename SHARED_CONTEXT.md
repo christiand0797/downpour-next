@@ -1,5 +1,13 @@
 # Downpour Next shared context
 
+## 2026-11-20 alert replay gate wired (buffy, DN-072)
+
+- `AlertProjection.DedupKey` now owns the event-to-alert identity in Core; `SecurityAlertRepository` calls it instead of keeping a private copy, so the service upsert and the offline gate cannot drift.
+- `AlertReplayRunner` loads `tests/Downpour.Tests/replay/alert-replay-corpus.json`: 12 synthetic Windows event records and the 10 alerts the built-in rules grade them into. Every case is looked up in `SecurityEventCatalog`/`SysmonCatalog`; a case no rule grades refuses the corpus instead of being skipped. No event log, network, signature check or pipe is used.
+- The corpus exercises all four identity paths (record, five-minute 4625 burst, hourly rollup, Sysmon record plus ticks) and the no-record fallback, and spans System, Security, PowerShell, Sysmon and Defender rules. Expected severities are frozen beside the cases.
+- `AlertReplayDiff` reports missing, unexpected and severity-changed alerts. `tools/ci/run-gates.ps1` runs `AlertReplayGateTests` as an explicit step and stops on any difference. `AlertReplayGateTests` also refuses malformed/oversized corpora and scans the text for drive, UNC and profile paths, e-mail addresses and IPv4 literals.
+- Verified: tampering one expected severity makes the gate exit 1; the restored corpus exits 0 with 5 gate tests. Full Debug suite 1,495 passed / 0 failed, 0 warnings. Details in `docs/ALERT_REPLAY.md`. The corpus covers catalog grading and identity only; Sigma/AMSI, feed parsers and service-install signature re-grading keep their own tests.
+
 ## 2026-11-20 per-process exploit mitigations wired (buffy, DN-070)
 
 - `ExploitMitigationPosture` (Core since DN-052) is now fed from Windows. `ProcessMitigationProvider` calls `GetProcessMitigationPolicy` for up to 2,048 processes and reads six controls per image: CFG, ACG, CIG, block non-Microsoft DLLs, DEP and ASLR. It groups by image name, keeps the worst instance (`chrome ×7`), orders high-value images first then lowest score, and bounds the result at 64.

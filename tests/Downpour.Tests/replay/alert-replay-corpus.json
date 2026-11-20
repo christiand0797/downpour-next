@@ -1,0 +1,154 @@
+{
+  "schemaVersion": 1,
+  "description": "Synthetic Windows event records and the alerts the built-in rules graded them into. No host, user or network data. Update deliberately with a reviewed rule change, never by pasting captured events.",
+  "cases": [
+    {
+      "logName": "System",
+      "provider": "Service Control Manager",
+      "eventId": 7045,
+      "recordId": 4101,
+      "createdAtUtc": "2026-01-01T00:00:00Z",
+      "occurrences": 1
+    },
+    {
+      "logName": "System",
+      "provider": "EventLog",
+      "eventId": 104,
+      "recordId": 4102,
+      "createdAtUtc": "2026-01-01T00:00:30Z",
+      "occurrences": 1
+    },
+    {
+      "logName": "Security",
+      "provider": "Microsoft-Windows-Security-Auditing",
+      "eventId": 4625,
+      "recordId": 9000,
+      "createdAtUtc": "2026-01-01T00:01:00Z",
+      "occurrences": 5
+    },
+    {
+      "logName": "Security",
+      "provider": "Microsoft-Windows-Security-Auditing",
+      "eventId": 4625,
+      "recordId": 9001,
+      "createdAtUtc": "2026-01-01T00:04:00Z",
+      "occurrences": 2
+    },
+    {
+      "logName": "Security",
+      "provider": "Microsoft-Windows-Security-Auditing",
+      "eventId": 4688,
+      "recordId": 7000,
+      "createdAtUtc": "2026-01-01T00:10:00Z",
+      "occurrences": 1
+    },
+    {
+      "logName": "Security",
+      "provider": "Microsoft-Windows-Security-Auditing",
+      "eventId": 4688,
+      "recordId": 7001,
+      "createdAtUtc": "2026-01-01T00:59:00Z",
+      "occurrences": 1
+    },
+    {
+      "logName": "Microsoft-Windows-PowerShell/Operational",
+      "provider": "Microsoft-Windows-PowerShell",
+      "eventId": 4104,
+      "recordId": 300,
+      "createdAtUtc": "2026-01-01T01:05:00Z",
+      "occurrences": 1
+    },
+    {
+      "logName": "Microsoft-Windows-Sysmon/Operational",
+      "provider": "Microsoft-Windows-Sysmon",
+      "eventId": 8,
+      "recordId": 500,
+      "createdAtUtc": "2026-01-01T02:00:00Z",
+      "occurrences": 1
+    },
+    {
+      "logName": "Microsoft-Windows-Windows Defender/Operational",
+      "provider": "Microsoft-Windows-Windows Defender",
+      "eventId": 1116,
+      "recordId": 44,
+      "createdAtUtc": "2026-01-01T02:10:00Z",
+      "occurrences": 1
+    },
+    {
+      "logName": "Security",
+      "provider": "Microsoft-Windows-Security-Auditing",
+      "eventId": 1102,
+      "recordId": 12,
+      "createdAtUtc": "2026-01-01T02:20:00Z",
+      "occurrences": 1
+    },
+    {
+      "logName": "Security",
+      "provider": "Microsoft-Windows-Security-Auditing",
+      "eventId": 4720,
+      "recordId": 77,
+      "createdAtUtc": "2026-01-01T02:30:00Z",
+      "occurrences": 1
+    },
+    {
+      "logName": "Security",
+      "provider": "Microsoft-Windows-Security-Auditing",
+      "eventId": 4698,
+      "recordId": null,
+      "createdAtUtc": "2026-01-01T03:07:00Z",
+      "occurrences": 1
+    }
+  ],
+  "expected": [
+    {
+      "dedupKey": "record\u0000System\u00007045\u00004101",
+      "severity": "HIGH",
+      "ruleId": "System/7045"
+    },
+    {
+      "dedupKey": "record\u0000System\u0000104\u00004102",
+      "severity": "CRITICAL",
+      "ruleId": "System/104"
+    },
+    {
+      "dedupKey": "burst\u0000Security\u00004625\u0000213009408",
+      "severity": "HIGH",
+      "ruleId": "Security/4625"
+    },
+    {
+      "dedupKey": "rollup\u0000Security\u00004688\u00002026010100",
+      "severity": "LOW",
+      "ruleId": "Security/4688"
+    },
+    {
+      "dedupKey": "rollup\u0000Microsoft-Windows-PowerShell/Operational\u00004104\u00002026010101",
+      "severity": "LOW",
+      "ruleId": "Microsoft-Windows-PowerShell/Operational/4104"
+    },
+    {
+      "dedupKey": "sysmon\u00008\u0000500\u0000639028296000000000",
+      "severity": "MEDIUM",
+      "ruleId": "Microsoft-Windows-Sysmon/Operational/8"
+    },
+    {
+      "dedupKey": "record\u0000Microsoft-Windows-Windows Defender/Operational\u00001116\u000044",
+      "severity": "HIGH",
+      "ruleId": "Microsoft-Windows-Windows Defender/Operational/1116"
+    },
+    {
+      "dedupKey": "record\u0000Security\u00001102\u000012",
+      "severity": "CRITICAL",
+      "ruleId": "Security/1102"
+    },
+    {
+      "dedupKey": "record\u0000Security\u00004720\u000077",
+      "severity": "MEDIUM",
+      "ruleId": "Security/4720"
+    },
+    {
+      "dedupKey": "fallback\u0000Security\u0000Microsoft-Windows-Security-Auditing\u00004698\u0000202601010307",
+      "severity": "HIGH",
+      "ruleId": "Security/4698"
+    }
+  ]
+}

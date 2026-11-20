@@ -56,6 +56,8 @@ HEAD)"` so the tag points at a pushed commit; the package script must keep pinni
 - Published: `v0.1.31` as Latest, built from `4104b98`; ships per-process exploit mitigations. ZIP 306,454,701 bytes
   sha256 `b48c46bc…`, SBOM `32b4a97a…`, SHA256SUMS `b01cec07…`; the tag points at the following docs commit, so the
   package script must pin the embedded hash, not the tag.
+- On main after 0.1.31: the alert replay gate (DN-072) moved alert identity into `AlertProjection` and replays a
+  synthetic corpus through the current catalog in `run-gates.ps1`; a tampered corpus exits 1. Full Debug suite 1,495.
 - Shipped in 0.1.31: `ProcessMitigationProvider` reads CFG/ACG/CIG/non-Microsoft DLL blocking/DEP/ASLR with
   `GetProcessMitigationPolicy`, keeps one row per image name (worst instance, instance count), ranks high-value images
   first, and counts processes that refuse the query. Hardening shows readable/refused counts, high-value gaps and the

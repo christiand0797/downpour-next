@@ -1,5 +1,10 @@
 # Downpour Next TODO
 
+## 2026-11-20 0.1.31+: alert replay gate (buffy)
+
+- [x] Alert replay gate wired (DN-072): `AlertProjection` moved alert identity into Core, `AlertReplayRunner` replays a 12-record synthetic corpus (10 expected alerts) through the current catalog without touching the event log or network, and `run-gates.ps1` fails on any missing, unexpected or severity-changed alert. Tampered-corpus run exited 1; restored run exited 0; full Debug suite 1,495 passed. The corpus is scanned for host paths, addresses and user data. Docs `docs/ALERT_REPLAY.md`.
+- [ ] Update the corpus only with reviewed rule/identity changes; it does not cover Sigma/AMSI, feed parsers or the service-install signature re-grade.
+
 ## 2026-11-20 0.1.31: per-process mitigations (buffy)
 
 - [x] Per-process exploit mitigations wired (DN-070): the sensor reads CFG/ACG/CIG/non-Microsoft DLL blocking/DEP/ASLR with `GetProcessMitigationPolicy`, keeps one row per image name (worst instance, instance count), orders high-value images first, and counts processes that refuse the query instead of treating them as exposed. Hardening shows the six most exposed images with score and missing controls; DEP needs full query rights so only complete readings are reported. 1,490 tests pass (6 new); panel not inspected by hand.
