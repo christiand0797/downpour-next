@@ -4,13 +4,14 @@
 
 - [x] Version bumped to 0.1.25 for the five slices after the v0.1.24 tag: route wiring, suppression expiry, key-gated abuse.ch feeds, fifteen foundations.
 - [x] Release notes written in `docs/RELEASE_0.1.25.md`, explicitly listing the foundations as not wired.
+- [x] Suppressions list wired after 0.1.25 (unreleased, DN-051): the snapshot carries up to 20 active suppressions with confirmed count, hidden-match count, expiry and a suppressed alert id; Alerts shows them in a third panel with Re-arm; validation bounds every field; confirmation now counts the alerts it hides. 1,457 tests pass.
 - [x] Published v0.1.25 from tag `a7726c2` as Latest: local portable rebuilt (1,455 tests, five publishes), ZIP verified entry-by-entry, window smoke and all 43 packaged routes passed, all three GitHub asset digests match local files. ZIP 306,118,731 bytes SHA-256 `c75a3a7d13ebf2de0659c44b70354dfe1d717ad09397ba120fc3878e085c931d`.
 ## 2026-11-20 fifteen follow-ups started as tested foundations (buffy)
 
 - [x] 1 Release trust: `ReleaseTrustPolicy` (invalid is always refused, unsigned only on channels that do not require signing) and `tools/release/sign-release.ps1` (RSA-3072 minimum, self-test passes). Updater wiring still waits for the offline key.
 - [x] 2 Detection value: `DetectionValueLedger` counts reviewed outcomes per source and per rule, with an insufficient-sample verdict instead of guessing.
 - [x] 3 Suppression lifecycle: `SuppressionPolicy` adds scope, 90-day default expiry, match counting and warnings when a suppression hides a CRITICAL match.
-- [x] 3 wired: the alert store gained additive `expires_at_utc`/`matches_since_grant` columns; an expired suppression stops hiding new matches, every hidden match is counted, re-arm clears expiry, and the Alerts page shows active/expired suppression notices without mislabelling them as a storage outage. Still open: per-subject scope, renewal action and a dedicated suppressions list.
+- [x] 3 wired: the alert store gained additive `expires_at_utc`/`matches_since_grant` columns; an expired suppression stops hiding new matches, every hidden match is counted, re-arm clears expiry, and the Alerts page shows active/expired suppression notices without mislabelling them as a storage outage. Still open: per-subject scope and an explicit renewal action (re-arm works).
 - [x] 4 Supply-chain self-check: `ComponentVulnerabilityMatcher` matches shipped SBOM components against advisory ranges using the existing version comparison.
 - [x] 5 Tamper-evidence: `TrustedContentIntegrity` (unexpected rule files are violations) and `AuditAnchorPolicy` (truncation/rewrite detection against an external anchor).
 - [x] 6 Durable change ledger: `ChangeLedger` keeps a bounded, serializable, deduplicated history so "what changed" survives restarts.

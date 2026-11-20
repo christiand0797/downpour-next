@@ -173,10 +173,10 @@
     {
       "id": "buffy",
       "role": "agent",
-      "taskId": "DN-050",
+      "taskId": "DN-051",
       "status": "idle",
-      "heartbeatUtc": "2026-11-20T03:15:00Z",
-      "notes": "v0.1.25 published and verified; local portable at a7726c2. Next safe tasks: offline signing key for ReleaseTrustPolicy enforcement, per-subject suppression scope, persist acknowledgement timestamps."
+      "heartbeatUtc": "2026-11-20T03:40:00Z",
+      "notes": "Suppressions list wired and tested; 1,457 tests pass. Unreleased after 0.1.25. Next: per-subject suppression scope, acknowledgement timestamps, or a 0.1.26 cut."
     }
   ]
 }

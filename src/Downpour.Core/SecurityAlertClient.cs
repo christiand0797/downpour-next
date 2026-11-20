@@ -43,6 +43,19 @@ public sealed class SecurityAlertClient(string pipeName = SecurityAlertClient.Pi
         if (snapshot.Hourly is { } hourly && (hourly.Count > 7 * 24 + 2 || hourly.Any(h => h is null || h.HourUtc.Offset != TimeSpan.Zero
                 || h.Count is < 0 or > 1_000_000 || h.Serious < 0 || h.Serious > h.Count)))
             return false;
+        if (snapshot.Suppressions is { } suppressions)
+        {
+            if (suppressions.Count > 20) return false;
+            foreach (var suppression in suppressions)
+            {
+                if (suppression is null) return false;
+                if (string.IsNullOrWhiteSpace(suppression.Title) || suppression.Title.Length > 160) return false;
+                if (suppression.LogName is not { Length: <= 128 }) return false;
+                if (suppression.AlertId is { } alertId && !SecurityAlertRepositoryId.IsValid(alertId)) return false;
+                if (suppression.Confirmations is < 1 or > 1_000_000) return false;
+                if (suppression.MatchesSinceGrant is < 0 or > 1_000_000) return false;
+            }
+        }
 
         var ids = new HashSet<string>(StringComparer.Ordinal);
         foreach (var alert in snapshot.Alerts)

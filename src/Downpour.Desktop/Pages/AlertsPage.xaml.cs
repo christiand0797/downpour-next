@@ -25,6 +25,7 @@ public sealed partial class AlertsPage : Page
     public LiveCollection<SecurityAlertRow> Alerts { get; } = [];
     public LiveCollection<CorrelationFindingRow> CorrelationFindings { get; } = [];
     public LiveCollection<RepeatGroupRow> RepeatGroups { get; } = [];
+    public LiveCollection<SuppressionRow> Suppressions { get; } = [];
 
     public AlertsPage()
     {
@@ -112,6 +113,7 @@ public sealed partial class AlertsPage : Page
                 _currentSnapshot = null;
                 CorrelationFindings.Clear();
                 RepeatGroups.Clear();
+                Suppressions.Clear();
                 RepeatCount.Text = "No repeated findings while the alert store is offline.";
                 ExportButton.IsEnabled = false;
                 AlertCount.Text = "ALERT STORE OFFLINE";
@@ -141,6 +143,11 @@ public sealed partial class AlertsPage : Page
             var repeated = groups.Where(group => group.Count > 1).Take(8).ToArray();
             RepeatGroups.Clear();
             foreach (var group in repeated) RepeatGroups.Add(new RepeatGroupRow(group));
+            Suppressions.Clear();
+            foreach (var suppression in snapshot.Suppressions ?? []) Suppressions.Add(new SuppressionRow(suppression));
+            SuppressionCount.Text = Suppressions.Count == 0
+                ? "No false-positive suppression is hiding anything."
+                : $"{Suppressions.Count:N0} active suppression{(Suppressions.Count == 1 ? "" : "s")} · {Suppressions.Sum(row => row.Hidden):N0} hidden matches";
             var repeatedPairs = groups.Count(group => group.Count > 1);
             RepeatCount.Text = repeatedPairs == 0
                 ? "No repeated source and subject pairs in this snapshot."
@@ -220,6 +227,24 @@ public sealed partial class AlertsPage : Page
         _ => 1,
     };
 
+    private async void RearmSuppression_Click(object sender, RoutedEventArgs e)
+    {
+        if (_stateChangeInFlight || sender is not Button { Tag: string alertId } || string.IsNullOrEmpty(alertId)) return;
+        _stateChangeInFlight = true;
+        try
+        {
+            var response = await _client.ChangeStateAsync(
+                new AlertStateChangeRequest(1, Guid.NewGuid(), alertId, "Suppressed", "RearmFalsePositive"));
+            StatusHeadline.Text = response is null ? "Local triage pipe unavailable"
+                : response.Accepted ? "Suppression re-armed" : "Suppression could not be re-armed";
+            StatusDetail.Text = response is null
+                ? "No change was confirmed. Refresh the alert list before retrying."
+                : $"Result: {response.ResultCode}. Re-arming clears the rule, reopens its suppressed alerts and stops hiding new matches.";
+            await RefreshAsync();
+        }
+        finally { _stateChangeInFlight = false; }
+    }
+
     private void RepeatGroup_Click(object sender, RoutedEventArgs e)
     {
         if (sender is not Button { Tag: string subject }) return;
@@ -276,6 +301,28 @@ public sealed partial class AlertsPage : Page
     {
         if (sender is not Button { Tag: string correlationId }) return;
         Frame.Navigate(typeof(InvestigationTimelinePage), correlationId);
+    }
+}
+
+public sealed class SuppressionRow(AlertSuppression suppression)
+{
+    public string Title { get; } = suppression.Title;
+    public string AlertId { get; } = suppression.AlertId ?? "";
+    public int Hidden { get; } = suppression.MatchesSinceGrant;
+    public bool CanRearm { get; } = !string.IsNullOrEmpty(suppression.AlertId);
+    public bool IsExpired { get; } = suppression.ExpiresUtc is { } expires && expires <= DateTimeOffset.UtcNow;
+    public string Meta { get; } = BuildMeta(suppression);
+    public SolidColorBrush Brush { get; } = new((suppression.ExpiresUtc is { } expires && expires <= DateTimeOffset.UtcNow)
+        ? Color.FromArgb(255, 255, 167, 82)
+        : Color.FromArgb(255, 86, 210, 235));
+
+    private static string BuildMeta(AlertSuppression suppression)
+    {
+        var hidden = suppression.MatchesSinceGrant == 1 ? "1 match hidden" : $"{suppression.MatchesSinceGrant:N0} matches hidden";
+        var expiry = suppression.ExpiresUtc is not { } expires ? "no expiry recorded"
+            : expires <= DateTimeOffset.UtcNow ? $"expired {expires.ToLocalTime():yyyy-MM-dd}"
+            : $"expires {expires.ToLocalTime():yyyy-MM-dd}";
+        return $"{suppression.LogName} · {suppression.Confirmations} confirmations · {hidden} · {expiry}";
     }
 }
 

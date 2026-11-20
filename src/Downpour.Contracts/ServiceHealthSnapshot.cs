@@ -142,7 +142,21 @@ public sealed record SecurityAlertSnapshot(
     int TotalCount,
     IReadOnlyList<SecurityAlert> Alerts,
     IReadOnlyList<string> Warnings,
-    IReadOnlyList<AlertHourCount>? Hourly = null);
+    IReadOnlyList<AlertHourCount>? Hourly = null,
+    IReadOnlyList<AlertSuppression>? Suppressions = null);
+
+/// <summary>
+/// One active false-positive suppression, for the list that makes hidden evidence visible. <paramref name="AlertId"/> is
+/// a suppressed alert still governed by the rule, so the existing audited Re-arm transition can clear it; it is null
+/// when the rule currently has no suppressed alert to point at.
+/// </summary>
+public sealed record AlertSuppression(
+    string? AlertId,
+    string Title,
+    string LogName,
+    int Confirmations,
+    DateTimeOffset? ExpiresUtc,
+    int MatchesSinceGrant);
 
 /// <summary>Alerts per hour of event time across the whole store (not just the snapshot's newest rows), for Threat Pulse.</summary>
 public sealed record AlertHourCount(DateTimeOffset HourUtc, int Count, int Serious);

@@ -34,7 +34,7 @@
         <Grid Grid.Row="2" RowSpacing="10">
             <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
             <Grid ColumnSpacing="10">
-                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
             <Border Padding="12,9" CornerRadius="8" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
                 <StackPanel Spacing="3">
                     <TextBlock FontSize="10" FontWeight="SemiBold" CharacterSpacing="65" Foreground="{StaticResource HudCyanBrush}" Text="CROSS-CHANNEL PATTERNS · TIME PROXIMITY ONLY" />
@@ -81,6 +81,30 @@
                             </ListView.ItemTemplate>
                             <ListView.Footer>
                                 <TextBlock x:Name="RepeatCount" Padding="8,4" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Grouping starts with the first snapshot." TextWrapping="Wrap" />
+                            </ListView.Footer>
+                        </ListView>
+                    </StackPanel>
+                </Border>
+                <Border Grid.Column="2" Padding="12,9" CornerRadius="8" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
+                    <StackPanel Spacing="3">
+                        <TextBlock FontSize="10" FontWeight="SemiBold" CharacterSpacing="65" Foreground="{StaticResource HudCyanBrush}" Text="SUPPRESSIONS · WHAT IS HIDDEN" />
+                        <ListView x:Name="SuppressionList" ItemsSource="{x:Bind Suppressions}" SelectionMode="None" IsItemClickEnabled="False" MaxHeight="160" Background="Transparent">
+                            <ListView.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Padding="8,4" CornerRadius="4" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
+                                        <Grid ColumnSpacing="8">
+                                            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                                            <StackPanel Spacing="1">
+                                                <TextBlock Text="{Binding Title}" FontSize="11" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                                <TextBlock Text="{Binding Meta}" FontSize="10" Foreground="{Binding Brush}" TextTrimming="CharacterEllipsis" />
+                                            </StackPanel>
+                                            <Button Grid.Column="1" Content="Re-arm" ToolTipService.ToolTip="Clear this suppression, reopen its suppressed alerts and stop hiding new matches" Tag="{Binding AlertId}" IsEnabled="{Binding CanRearm}" Click="RearmSuppression_Click" FontSize="10" Padding="8,2" VerticalAlignment="Center" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                            <ListView.Footer>
+                                <TextBlock x:Name="SuppressionCount" Padding="8,4" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="No false-positive suppression is hiding anything." TextWrapping="Wrap" />
                             </ListView.Footer>
                         </ListView>
                     </StackPanel>

@@ -249,9 +249,35 @@ public sealed class SecurityAlertRepository(string databasePath)
                     reader.GetInt64(13) != 0, reader.IsDBNull(14) ? null : reader.GetString(14), reader.IsDBNull(15) ? null : reader.GetString(15)));
             }
             var suppressionWarnings = await ReadSuppressionWarningsAsync(connection, cancellationToken);
-            return new SecurityAlertSnapshot(1, DateTimeOffset.UtcNow, total, alerts, suppressionWarnings, await ReadHourlyAsync(connection, cancellationToken));
+            var suppressions = await ReadSuppressionsAsync(connection, cancellationToken);
+            return new SecurityAlertSnapshot(1, DateTimeOffset.UtcNow, total, alerts, suppressionWarnings,
+                await ReadHourlyAsync(connection, cancellationToken), suppressions);
         }
         finally { _gate.Release(); }
+    }
+
+    /// <summary>
+    /// The active false-positive suppressions with how many matches each has hidden. The representative alert id points
+    /// at a currently suppressed alert governed by the rule, so the existing audited Re-arm transition can clear it.
+    /// </summary>
+    private static async Task<IReadOnlyList<AlertSuppression>> ReadSuppressionsAsync(SqliteConnection connection, CancellationToken token)
+    {
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            "SELECT r.title,r.log_name,r.confirmations,r.expires_at_utc,r.matches_since_grant," +
+            "(SELECT ap.alert_id FROM alert_fp_applied ap JOIN alerts a ON a.alert_id=ap.alert_id " +
+            "WHERE ap.fingerprint=r.fingerprint AND a.state='Suppressed' LIMIT 1) " +
+            "FROM alert_fp_rules r WHERE r.suppressed=1 ORDER BY r.matches_since_grant DESC,r.title LIMIT 20;";
+        var suppressions = new List<AlertSuppression>(8);
+        await using var reader = await command.ExecuteReaderAsync(token);
+        while (await reader.ReadAsync(token))
+        {
+            var expires = reader.IsDBNull(3) ? (DateTimeOffset?)null : ParseUtc(reader.GetString(3));
+            suppressions.Add(new AlertSuppression(
+                reader.IsDBNull(5) ? null : reader.GetString(5),
+                reader.GetString(0), reader.GetString(1), reader.GetInt32(2), expires, reader.GetInt32(4)));
+        }
+        return suppressions;
     }
 
     /// <summary>Makes active and expired suppressions visible in the same place the alerts are reviewed.</summary>
@@ -423,6 +449,12 @@ public sealed class SecurityAlertRepository(string databasePath)
                     suppress.Parameters.AddWithValue("$provider", identity.Value.Provider);
                     suppress.Parameters.AddWithValue("$fp", fingerprint);
                     await suppress.ExecuteNonQueryAsync(cancellationToken);
+                    // Count the alerts this suppression just hid; later ingestions add one each through the helper.
+                    await using var applied = connection.CreateCommand();
+                    applied.Transaction = transaction;
+                    applied.CommandText = "UPDATE alert_fp_rules SET matches_since_grant=(SELECT COUNT(*) FROM alert_fp_applied WHERE fingerprint=$fp) WHERE fingerprint=$fp;";
+                    applied.Parameters.AddWithValue("$fp", fingerprint);
+                    await applied.ExecuteNonQueryAsync(cancellationToken);
                 }
                 await PruneFalsePositiveEventsAsync(connection, transaction, cancellationToken);
                 await transaction.CommitAsync(cancellationToken);

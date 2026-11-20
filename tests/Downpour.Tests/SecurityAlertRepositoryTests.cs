@@ -171,6 +171,47 @@ public sealed class SecurityAlertRepositoryTests
     }
 
     [Fact]
+    public async Task SnapshotListsSuppressionsWithHiddenCountsAndRearmsFromTheList()
+    {
+        using var database = new TemporaryAlertDatabase();
+        var repository = new SecurityAlertRepository(database.Path);
+        await repository.InitializeAsync();
+        var now = DateTimeOffset.UtcNow.AddMinutes(-4);
+        var observation = SecurityEventProvider.CreateObservation("System", "Service Control Manager", 7045, 91, now)!;
+        await repository.IngestAsync(new SecurityEventSnapshot(1, now, [observation], 7, []));
+        var alert = Assert.Single((await repository.ReadSnapshotAsync()).Alerts);
+        for (var confirmation = 0; confirmation < SecurityAlertRepository.FalsePositiveConfirmationThreshold; confirmation++)
+            await repository.ChangeStateAsync(new AlertStateChangeRequest(1, Guid.NewGuid(), alert.AlertId, "Open", "FalsePositive"));
+
+        var snapshot = await repository.ReadSnapshotAsync();
+        var listed = Assert.Single(snapshot.Suppressions!);
+        Assert.Equal("Windows service installed", listed.Title.Split(':')[0]);
+        Assert.False(string.IsNullOrEmpty(listed.AlertId));
+        Assert.True(listed.MatchesSinceGrant >= 1);
+        Assert.NotNull(listed.ExpiresUtc);
+        Assert.True(SecurityAlertClient.IsValidSnapshot(snapshot));
+
+        var rearm = await repository.ChangeStateAsync(new AlertStateChangeRequest(1, Guid.NewGuid(), listed.AlertId!, "Suppressed", "RearmFalsePositive"));
+        Assert.Equal("rearmed", rearm.ResultCode);
+        Assert.Empty((await repository.ReadSnapshotAsync()).Suppressions!);
+    }
+
+    [Fact]
+    public void SnapshotValidationBoundsSuppressionRows()
+    {
+        var valid = new AlertSuppression(null, "Windows service installed", "System", 3, DateTimeOffset.UtcNow.AddDays(80), 4);
+        var snapshot = new SecurityAlertSnapshot(1, DateTimeOffset.UtcNow, 0, [], [], null, [valid]);
+        Assert.True(SecurityAlertClient.IsValidSnapshot(snapshot));
+        Assert.False(SecurityAlertClient.IsValidSnapshot(snapshot with { Suppressions = [valid with { AlertId = "not-an-id" }] }));
+        Assert.False(SecurityAlertClient.IsValidSnapshot(snapshot with { Suppressions = [valid with { MatchesSinceGrant = -1 }] }));
+        Assert.False(SecurityAlertClient.IsValidSnapshot(snapshot with { Suppressions = [valid with { Title = new string('t', 161) }] }));
+        Assert.False(SecurityAlertClient.IsValidSnapshot(snapshot with
+        {
+            Suppressions = Enumerable.Range(0, 21).Select(index => valid with { Title = $"rule {index}" }).ToArray(),
+        }));
+    }
+
+    [Fact]
     public async Task ExpiredSuppressionStopsHidingMatchesAndIsReported()
     {
         using var database = new TemporaryAlertDatabase();
