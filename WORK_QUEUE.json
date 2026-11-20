@@ -1236,6 +1236,28 @@
       ],
       "notes": "buffy 2026-11-20: completed. 1,479 pass. Root cause was a 5 s gate wait timing out on a loaded machine, not a product defect.",
       "updatedAt": "2026-11-20"
+    },
+    {
+      "id": "DN-062",
+      "title": "Network listener inventory and session digest",
+      "status": "completed",
+      "priority": "medium",
+      "files": [
+        "src/Downpour.Contracts/ServiceHealthSnapshot.cs",
+        "src/Downpour.Service/NetworkInventoryProvider.cs",
+        "src/Downpour.Core/NetworkInventoryClient.cs",
+        "src/Downpour.Desktop/Pages/NetworkPage.xaml",
+        "src/Downpour.Desktop/Pages/NetworkPage.xaml.cs",
+        "tests/Downpour.Tests/SnapshotPipeIntegrationTests.cs"
+      ],
+      "acceptance": [
+        "Service snapshot carries bounded listener list",
+        "Client validates bounds and ports",
+        "Network page displays listeners and new-since-open count",
+        "Tests green"
+      ],
+      "notes": "buffy 2026-11-20: completed. Unreleased. Listener list is TCP only, read-only, no process attribution. New-since-open digest is in-memory per page instance.",
+      "updatedAt": "2026-11-20"
     }
   ]
 }

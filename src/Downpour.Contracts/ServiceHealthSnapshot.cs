@@ -96,7 +96,11 @@ public sealed record NetworkInventorySnapshot(
     IReadOnlyList<NetworkInterfaceEntry> Interfaces,
     IReadOnlyList<NetworkConnectionEntry> Connections,
     int TotalConnectionCount,
+    IReadOnlyList<NetworkListenerEntry> Listeners,
+    int TotalListenerCount,
     IReadOnlyList<string> Warnings);
+
+public sealed record NetworkListenerEntry(string Endpoint, string Address, int Port);
 
 public sealed record SecurityEventObservation(
     string LogName,

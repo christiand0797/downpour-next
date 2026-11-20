@@ -92,6 +92,24 @@
                 </ListView.ItemTemplate>
             </ListView>
             <TextBlock x:Name="ConnectionEmpty" Text="No active TCP connections were reported." FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                <StackPanel Spacing="3"><TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Text="LISTENING PORTS" /><TextBlock FontSize="19" FontWeight="SemiBold" Text="Local TCP listeners" /></StackPanel>
+                <TextBlock Grid.Column="1" x:Name="ListenerFootnote" VerticalAlignment="Bottom" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="READ ONLY" />
+            </Grid>
+            <ListView x:Name="ListenerList" ItemsSource="{x:Bind Listeners}" SelectionMode="None" IsItemClickEnabled="False" Background="{StaticResource HudPanelBrush}" MaxHeight="260">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Padding="10,8" ColumnSpacing="12">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                            <TextBlock Text="{Binding Endpoint}" FontFamily="Consolas" FontSize="11" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="1" Text="{Binding Scope}" FontSize="11" Foreground="#FF91D9E7" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="2" Text="{Binding Port}" FontFamily="Consolas" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" VerticalAlignment="Center" />
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+            <TextBlock x:Name="ListenerEmpty" Text="No local TCP listeners were reported." FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
             <TextBlock FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Endpoint inventory is local and read-only. Process ownership, packet contents, DNS history, and threat classification are not collected in this build." TextWrapping="Wrap" />
         </StackPanel>
     </ScrollViewer>

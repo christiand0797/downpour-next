@@ -132,6 +132,9 @@ public sealed class SnapshotPipeIntegrationTests
             Assert.InRange(snapshot.Interfaces.Count, 0, 32);
             Assert.InRange(snapshot.Connections.Count, 0, 256);
             Assert.True(snapshot.TotalConnectionCount >= snapshot.Connections.Count);
+            Assert.InRange(snapshot.Listeners.Count, 0, 64);
+            Assert.True(snapshot.TotalListenerCount >= snapshot.Listeners.Count);
+            Assert.All(snapshot.Listeners, row => Assert.InRange(row.Port, 1, 65_535));
         }
         finally
         {

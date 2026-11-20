@@ -173,10 +173,10 @@
     {
       "id": "buffy",
       "role": "agent",
-      "taskId": "DN-061",
+      "taskId": "DN-062",
       "status": "idle",
-      "heartbeatUtc": "2026-11-20T09:30:00Z",
-      "notes": "0.1.27 published as Latest; AMSI flake wait widened; 1,479 tests pass. Continuation doc current. artex still unavailable."
+      "heartbeatUtc": "2026-11-20T10:10:00Z",
+      "notes": "0.1.27 published. Listener inventory wired unreleased. 1,479 tests pass. Next: visual/route check of listener section when packaging 0.1.28, or destination digest."
     }
   ]
 }

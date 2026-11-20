@@ -7,6 +7,7 @@ public sealed class NetworkInventoryProvider
 {
     private const int MaximumInterfaces = 32;
     private const int MaximumConnections = 256;
+    private const int MaximumListeners = 64;
     private const int MaximumTextLength = 256;
     private readonly object _gate = new();
     private readonly Dictionary<string, InterfaceBaseline> _baselines = new(StringComparer.OrdinalIgnoreCase);
@@ -19,7 +20,8 @@ public sealed class NetworkInventoryProvider
             var warnings = new List<string>();
             var interfaces = CaptureInterfaces(now, warnings);
             var connections = CaptureConnections(warnings, out var totalConnectionCount);
-            return new NetworkInventorySnapshot(1, now, interfaces, connections, totalConnectionCount, warnings);
+            var listeners = CaptureListeners(warnings, out var totalListenerCount);
+            return new NetworkInventorySnapshot(1, now, interfaces, connections, totalConnectionCount, listeners, totalListenerCount, warnings);
         }
     }
 
@@ -84,6 +86,40 @@ public sealed class NetworkInventoryProvider
         if (all.Length > MaximumInterfaces) warnings.Add($"Interface display is limited to the first {MaximumInterfaces} of {all.Length} adapters.");
         if (entries.Count == 0) warnings.Add("No network interfaces were available for statistics.");
         return entries;
+    }
+
+    /// <summary>TCP listeners only: local ports accepting connections, with no packet contents or process attribution.</summary>
+    private static IReadOnlyList<NetworkListenerEntry> CaptureListeners(List<string> warnings, out int totalCount)
+    {
+        try
+        {
+            var all = IPGlobalProperties.GetIPGlobalProperties().GetActiveTcpListeners()
+                .Where(listener => listener.Port > 0)
+                .OrderBy(listener => listener.Port)
+                .ThenBy(listener => listener.Address.ToString(), StringComparer.Ordinal)
+                .ToArray();
+            totalCount = all.Length;
+            var rows = all.Take(MaximumListeners)
+                .Select(listener => new NetworkListenerEntry(
+                    Bound(listener.ToString()),
+                    Bound(listener.Address.ToString()),
+                    listener.Port))
+                .ToArray();
+            if (all.Length > MaximumListeners) warnings.Add($"Listener display is limited to the first {MaximumListeners} of {all.Length} local TCP listeners.");
+            return rows;
+        }
+        catch (NetworkInformationException)
+        {
+            totalCount = 0;
+            warnings.Add("Windows could not enumerate local TCP listeners.");
+            return [];
+        }
+        catch (PlatformNotSupportedException)
+        {
+            totalCount = 0;
+            warnings.Add("Local TCP listener enumeration is not supported on this platform.");
+            return [];
+        }
     }
 
     private static IReadOnlyList<NetworkConnectionEntry> CaptureConnections(List<string> warnings, out int totalCount)
