@@ -34,6 +34,7 @@ public sealed class InstalledSoftwareInventoryClient(string pipeName = Installed
         catch (UnauthorizedAccessException) { return null; }
         catch (JsonReaderException) { return null; }
         catch (JsonSerializationException) { return null; }
+        catch (InvalidDataException) { return null; }
     }
 
     private static bool ValidText(string value, int maxLength, bool required) =>

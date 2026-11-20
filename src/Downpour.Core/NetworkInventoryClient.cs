@@ -56,5 +56,11 @@ public sealed class NetworkInventoryClient(string pipeName = NetworkInventoryCli
         {
             return null;
         }
+        catch (InvalidDataException)
+        {
+            // The worker can close a pipe before writing a payload; an empty or oversized frame is a missing
+            // snapshot, never an exception that belongs on the UI thread.
+            return null;
+        }
     }
 }

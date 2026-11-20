@@ -52,5 +52,9 @@ public sealed class DriverInventoryClient(string pipeName = DriverInventoryClien
         {
             return null;
         }
+        catch (InvalidDataException)
+        {
+            return null;
+        }
     }
 }
