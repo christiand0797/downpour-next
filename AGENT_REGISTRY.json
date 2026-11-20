@@ -173,10 +173,10 @@
     {
       "id": "buffy",
       "role": "agent",
-      "taskId": "DN-006",
+      "taskId": "DN-010",
       "status": "idle",
-      "heartbeatUtc": "2026-11-19T00:00:00Z",
-      "notes": "Delivered DN-045: NVD range parsing and real affected-version comparison, IPv4/IPv6 privacy filter, DGA precision, three ordered correlations. Release build clean; 1,397 tests passed. Idle after handoff."
+      "heartbeatUtc": "2026-11-20T00:45:56Z",
+      "notes": "2026-11-19: rebuilt and published v0.1.23 as Latest from 4dc86b7 (1,397 tests, five self-contained publishes, 43-route + window smoke passed; ZIP SHA-256 4327397a1d31772e9e6c19acd3800ce850f1388e5d12a2bf9538b4e51dbd2c33, SBOM/SHA256SUMS digests match the GitHub assets). Earlier in the session delivered DN-045 (NVD ranges, indicator filter, DGA precision, ordered correlations). Idle. Note: the canonical clone at Desktop\\downpour v2 is at eb2adb3 with unique uncommitted CsvUrl/PhishTank parser work; backed up to artifacts\\wip-csvurl-feed-20261119.patch, not committed."
     }
   ]
 }
