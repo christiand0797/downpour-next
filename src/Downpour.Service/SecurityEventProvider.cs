@@ -127,7 +127,11 @@ public sealed class SecurityEventProvider(FileSignatureChecker? signatures = nul
             new SecurityEventSnapshot(1, capturedAt, bounded, queried, warnings.Take(64).ToArray()), updated, resets);
     }
 
-    /// <summary>The oldest record Windows still holds for a channel, or null when that cannot be read safely.</summary>
+    /// <summary>
+    /// The oldest record Windows still holds for a channel, or null when that cannot be read safely. A channel this
+    /// account may not read (the Security log without Event Log Readers) denies here too, which is expected: the
+    /// existing access warning covers that channel, and no gap is claimed for a log that is not being ingested.
+    /// </summary>
     private static long? EarliestAvailable(string logName)
     {
         try
