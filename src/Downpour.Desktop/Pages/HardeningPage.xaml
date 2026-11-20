@@ -38,6 +38,32 @@
         </Border>
 
         <StackPanel Grid.Row="2" Spacing="12">
+            <Border x:Name="MitigationPanel" Padding="14,11" CornerRadius="10" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
+                <StackPanel Spacing="8">
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                        <FontIcon Glyph="&#xE7EF;" FontSize="20" Foreground="{StaticResource HudCyanBrush}" VerticalAlignment="Center" />
+                        <StackPanel Grid.Column="1" Spacing="3">
+                            <TextBlock FontWeight="SemiBold" Text="Exploit mitigations by process" />
+                            <TextBlock x:Name="MitigationSummary" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Reading per-image mitigations from Windows…" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <Button x:Name="MitigationRefreshButton" Grid.Column="2" Content="Re-read" Click="MitigationRefresh_Click" VerticalAlignment="Center" />
+                    </Grid>
+                    <ItemsControl x:Name="MitigationList" ItemsSource="{x:Bind Mitigations}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Padding="0,4" ColumnSpacing="12">
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="190" /><ColumnDefinition Width="64" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Grid.Column="1" Text="{Binding ScoreText}" FontFamily="Consolas" FontSize="12" Foreground="{Binding ScoreBrush}" ToolTipService.ToolTip="{Binding Verdict}" />
+                                    <TextBlock Grid.Column="2" Text="{Binding Gaps}" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock x:Name="MitigationFooter" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
             <Border x:Name="FixResultPanel" Visibility="Collapsed" Padding="14,11" CornerRadius="10" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
                 <TextBlock x:Name="FixResultText" TextWrapping="Wrap" IsTextSelectionEnabled="True" />
             </Border>

@@ -12,9 +12,13 @@ namespace Downpour_Desktop.Pages;
 public sealed partial class HardeningPage : Page
 {
     private readonly HardeningPostureClient _client = new();
+    private readonly ProcessMitigationClient _mitigationClient = new();
     private bool _requestInFlight;
+    private bool _mitigationsInFlight;
+    private DateTimeOffset _mitigationsReadAt;
 
     public LiveCollection<PostureRow> Checks { get; } = [];
+    public LiveCollection<MitigationRow> Mitigations { get; } = [];
 
     private readonly BreakdownChart _stateChart = new() { Title = "Hardening checks", Subtitle = "Passed, needs attention, or not readable without administrator rights" };
     private readonly BreakdownChart _severityChart = new() { Title = "Findings by severity", Subtitle = "Checks that need attention" };
@@ -51,6 +55,7 @@ public sealed partial class HardeningPage : Page
         try
         {
             var snapshot = await _client.TryGetSnapshotAsync();
+            await RefreshMitigationsAsync();
             if (snapshot is null)
             {
                 await App.EnsureSensorServiceAsync();
@@ -92,6 +97,54 @@ public sealed partial class HardeningPage : Page
             _requestInFlight = false;
             RefreshButton.IsEnabled = true;
         }
+    }
+
+    private async void MitigationRefresh_Click(object sender, RoutedEventArgs e) => await RefreshMitigationsAsync(force: true);
+
+    /// <summary>
+    /// Reads the per-image mitigation policy from the sensor. Throttled: the live refresh calls this every second but the
+    /// service only recaptures every 15 seconds, so a fresh pipe round trip each second would add no information.
+    /// </summary>
+    private async Task RefreshMitigationsAsync(bool force = false)
+    {
+        if (_mitigationsInFlight) return;
+        if (!force && DateTimeOffset.UtcNow - _mitigationsReadAt < TimeSpan.FromSeconds(15)) return;
+        _mitigationsInFlight = true;
+        MitigationRefreshButton.IsEnabled = false;
+        try
+        {
+            var snapshot = await _mitigationClient.TryGetSnapshotAsync();
+            _mitigationsReadAt = DateTimeOffset.UtcNow;
+            if (snapshot is null)
+            {
+                Mitigations.Clear();
+                MitigationSummary.Text = "Per-process mitigations are unavailable: the sensor service is offline, or this Windows build does not expose the policy query.";
+                MitigationFooter.Text = "Nothing here is inferred. Downpour shows a mitigation only when Windows reports the running image's policy.";
+                return;
+            }
+            RenderMitigations(snapshot);
+        }
+        finally
+        {
+            _mitigationsInFlight = false;
+            MitigationRefreshButton.IsEnabled = true;
+        }
+    }
+
+    private void RenderMitigations(ProcessMitigationSnapshot snapshot)
+    {
+        var rows = snapshot.Processes
+            .Select(entry => (Entry: entry, Assessment: ExploitMitigationPosture.Assess(ExploitMitigationPosture.FromEntry(entry))))
+            .ToArray();
+        Mitigations.Clear();
+        foreach (var (entry, assessment) in rows.Take(6)) Mitigations.Add(new MitigationRow(entry, assessment));
+        var highValueGaps = rows.Count(row => ExploitMitigationPosture.HighValueProcesses.Contains(row.Entry.ProcessName)
+            && row.Assessment.Score < row.Assessment.Maximum);
+        MitigationSummary.Text = $"{rows.Length} image{(rows.Length == 1 ? "" : "s")} read · {highValueGaps} high-value image{(highValueGaps == 1 ? "" : "s")} missing at least one control · {snapshot.RefusedCount} process{(snapshot.RefusedCount == 1 ? "" : "es")} refused the query";
+        MitigationFooter.Text = rows.Length == 0
+            ? "No process answered the mitigation query. Protected processes refuse it, and older Windows builds do not expose it."
+            : $"Showing {Math.Min(6, rows.Length)} of {rows.Length} images, most exposed first. Read-only: this is the policy Windows applies to each image, and Downpour changes nothing. A control shown off is not enabled for that image; older Windows builds lack some controls."
+              + (snapshot.Warnings.Count == 0 ? "" : " " + string.Join(" ", snapshot.Warnings));
     }
 
     /// <summary>100 minus a severity-weighted penalty per finding; Unknown checks are not counted either way.</summary>
@@ -210,6 +263,19 @@ public sealed partial class HardeningPage : Page
     {
         "CRITICAL" => 0, "HIGH" => 1, "MEDIUM" => 2, "LOW" => 3, _ => 4
     };
+}
+
+public sealed class MitigationRow(ProcessMitigationEntry entry, MitigationAssessment assessment)
+{
+    public string Name => entry.InstanceCount > 1 ? $"{entry.ProcessName} ×{entry.InstanceCount}" : entry.ProcessName;
+    public string ScoreText => $"{assessment.Score}/{assessment.Maximum}";
+    public string Verdict => assessment.Verdict;
+    public string Gaps => assessment.Gaps.Count == 0
+        ? "All six checked controls are on."
+        : string.Join(" · ", assessment.Gaps.Select(gap => gap.Split(':')[0]));
+    public SolidColorBrush ScoreBrush => new(assessment.Score >= assessment.Maximum * 0.85
+        ? Color.FromArgb(255, 120, 230, 160)
+        : assessment.Score >= assessment.Maximum * 0.5 ? Color.FromArgb(255, 255, 214, 102) : Color.FromArgb(255, 255, 120, 110));
 }
 
 public sealed class PostureRow(PostureCheck check)

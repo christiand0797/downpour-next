@@ -57,6 +57,14 @@ public sealed class InventoryPipeEndToEndTests : IDisposable
     }
 
     [Fact]
+    public async Task ProcessMitigations()
+    {
+        var name = Pipe("Mitigations");
+        Assert.NotNull(await WithWorker(new ProcessMitigationPipeWorker(new ProcessMitigationProvider(), NullLogger<ProcessMitigationPipeWorker>.Instance, name),
+            () => new ProcessMitigationClient(name).TryGetSnapshotAsync()));
+    }
+
+    [Fact]
     public async Task Persistence()
     {
         var name = Pipe("Persistence");
