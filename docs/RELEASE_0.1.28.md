@@ -25,7 +25,16 @@ lifetime of the page instance; nothing is persisted and reopening the page start
 - Packaged route smoke: every route started with owned-service telemetry, graceful close stopped the owned service, no
   new crash log entry, YARA helper loaded 179 rules and scanned a benign fixture without matches.
 - Window smoke: native startup, maximize/restore, resize and owned-service shutdown passed.
-- ZIP SHA-256 (recorded below), SBOM SHA-256 (recorded below).
+- ZIP SHA-256 `4ed8cff03270df80033871525db577f8bc33e3b707d6e65dbcb7fcd99375e62d` (306,397,953 bytes).
+- SBOM SHA-256 `bef0e4a9b08f62964fd880757899b374986e0b7c217b2620a387c753bdf7b06d`.
+
+### Route smoke harness
+
+Two route-smoke runs on this build failed with a live desktop process that never reported a main window. The cause was
+the harness starting the desktop with a hidden window style: the app honours minimize-to-tray on startup, withdraws its
+window to the notification area, and then legitimately has no main window to close. The harness now launches the desktop
+visibly. Every assertion is unchanged: the desktop must still expose a main window, close gracefully, stop its owned
+service and write no crash entry.
 
 ## Not done / limits
 

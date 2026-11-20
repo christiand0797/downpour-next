@@ -56,7 +56,7 @@
       "taskId": "DN-010",
       "status": "idle",
       "heartbeatUtc": "2026-10-05T23:30:00Z",
-      "notes": "DN-010 progress: verified update flow code and tests (ReleaseUpdateClientTests 10/10, UpdatePathPolicyTests 2/2). Update button click-through path: HomePage.xaml.cs UpdateButton_Click → PortableUpdateInstaller.CheckAndStageAsync → ReleaseUpdateClient.CheckAsync/DownloadVerifiedPackageAsync → UpdateArchive.ExtractToStage → helper copied to %LOCALAPPDATA%\\DownpourNext\\update-helper → launch UpdateHelper with installRoot/parentPID/version → helper waits for parent & bundled service, validates manifest/hashes, backs up files, applies atomically, restarts app. Build clean (0 warnings/errors, 144 tests). Self-contained publish requires Windows App Runtime framework. MSIX packaging enabled (EnableMsixTooling=true). Next: code signing research (Authenticode cert for EXE, MSIX package signing), test on clean Windows install, locked-file failure injection."
+      "notes": "DN-010 progress: verified update flow code and tests (ReleaseUpdateClientTests 10/10, UpdatePathPolicyTests 2/2). Update button click-through path: HomePage.xaml.cs UpdateButton_Click \u2192 PortableUpdateInstaller.CheckAndStageAsync \u2192 ReleaseUpdateClient.CheckAsync/DownloadVerifiedPackageAsync \u2192 UpdateArchive.ExtractToStage \u2192 helper copied to %LOCALAPPDATA%\\DownpourNext\\update-helper \u2192 launch UpdateHelper with installRoot/parentPID/version \u2192 helper waits for parent & bundled service, validates manifest/hashes, backs up files, applies atomically, restarts app. Build clean (0 warnings/errors, 144 tests). Self-contained publish requires Windows App Runtime framework. MSIX packaging enabled (EnableMsixTooling=true). Next: code signing research (Authenticode cert for EXE, MSIX package signing), test on clean Windows install, locked-file failure injection."
     },
     {
       "id": "opencode-scanner-agent",
@@ -173,10 +173,10 @@
     {
       "id": "buffy",
       "role": "agent",
-      "taskId": "DN-063",
+      "taskId": "DN-064",
       "status": "idle",
-      "heartbeatUtc": "2026-11-20T10:35:00Z",
-      "notes": "0.1.27 is Latest. Unreleased listener inventory (DN-062) and destination digest (DN-063). 1,479 tests pass. Next safe task: cut 0.1.28 after route smoke, or inspect explanation panel manually."
+      "heartbeatUtc": "2026-11-20T10:45:00Z",
+      "notes": "v0.1.28 is Latest (built from 55bd049; ZIP 4ed8cff0). Next safe tasks: inspect Network listener/destination layout and the Alerts explanation panel by hand, or wire the next foundation (mitigation posture, rule coverage)."
     }
   ]
 }

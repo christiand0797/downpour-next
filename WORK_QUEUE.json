@@ -1278,7 +1278,7 @@
   {
    "id": "DN-064",
    "title": "Cut and publish 0.1.28 with network listener and destination digests",
-   "status": "in_progress",
+   "status": "completed",
    "priority": "high",
    "files": [
     "Directory.Build.props",
@@ -1294,7 +1294,25 @@
     "Window smoke",
     "Release published with assets"
    ],
-   "notes": "buffy 2026-11-20: started. Ships DN-062 listener inventory and DN-063 destination digest.",
+   "notes": "buffy 2026-11-20: completed. Binaries embed 55bd049 (SDK stamps HEAD at compile time); scripts pin that hash. ZIP 4ed8cff0 (306,397,953 bytes), SBOM bef0e4a9, SHA256SUMS 70997ec2. 1,479 tests, all routes, window smoke.",
+   "updatedAt": "2026-11-20"
+  },
+  {
+   "id": "DN-065",
+   "title": "Fix route smoke desktop launch withdrawn to tray",
+   "status": "completed",
+   "priority": "high",
+   "files": [
+    "artifacts/v0.1.28-smoke.ps1",
+    "docs/RELEASE_0.1.28.md",
+    "docs/CONTINUATION.md"
+   ],
+   "acceptance": [
+    "Desktop reaches a main window every route",
+    "Assertions unchanged",
+    "All routes pass"
+   ],
+   "notes": "buffy 2026-11-20: completed. Hidden-window launch is honoured by minimize-to-tray, which withdraws the window, so MainWindowHandle stayed 0 and CloseMainWindow was never sent. Harness launches visibly; assertions untouched. Three runs failed before the change, the next passed all routes.",
    "updatedAt": "2026-11-20"
   }
  ]
