@@ -933,6 +933,39 @@
       ],
       "notes": "buffy 2026-11-20: completed. Core enablement rule, DPAPI store support for the feed-auth service with a change event, service eligibility across load/refresh/rebuild/snapshot, Settings key row, three tests (enablement rule, key store acceptance/refusal/event, download gate with header assertion). Debug build clean, 1,436 tests pass. No real abuse.ch key was available, so the authenticated download is proven with a fake key and a recording handler, not against abuse.ch.",
       "updatedAt": "2026-11-20"
+    },
+    {
+      "id": "DN-048",
+      "title": "Start all fifteen ranked follow-ups as tested foundations",
+      "status": "completed",
+      "priority": "medium",
+      "files": [
+        "src/Downpour.Core/ReleaseTrustPolicy.cs",
+        "src/Downpour.Core/DetectionValueLedger.cs",
+        "src/Downpour.Core/SuppressionPolicy.cs",
+        "src/Downpour.Core/ComponentVulnerabilityMatcher.cs",
+        "src/Downpour.Core/TrustedContentIntegrity.cs",
+        "src/Downpour.Core/ChangeLedger.cs",
+        "src/Downpour.Core/AlertProvenance.cs",
+        "src/Downpour.Core/DiagnosticsBundle.cs",
+        "src/Downpour.Core/BlindSpotDiagnosis.cs",
+        "src/Downpour.Core/AlertOperationsMetrics.cs",
+        "src/Downpour.Core/ScannerArchitectureSupport.cs",
+        "src/Downpour.Core/ServiceIdentityPolicy.cs",
+        "src/Downpour.Core/RescueKitPlan.cs",
+        "src/Downpour.Core/RefreshBudget.cs",
+        "src/Downpour.Core/CasePackTrust.cs",
+        "tools/release/sign-release.ps1",
+        "docs/FOLLOWUP_FOUNDATIONS.md"
+      ],
+      "acceptance": [
+        "Each follow-up has a bounded Core type with negative tests",
+        "Signing script refuses keys under RSA-3072 and passes a sign/verify/tamper self-test",
+        "No item claims to be wired, shipped or enforced before its service or UI path exists",
+        "Debug build clean and the full suite passes"
+      ],
+      "notes": "buffy 2026-11-20: completed. Fifteen foundations plus 17 tests; 1,453 tests pass. Nothing is wired into routes or the updater yet, and the ARM64 item only reports capability, it does not produce an arm64 build.",
+      "updatedAt": "2026-11-20"
     }
   ]
 }

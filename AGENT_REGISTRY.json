@@ -173,10 +173,10 @@
     {
       "id": "buffy",
       "role": "agent",
-      "taskId": "DN-047",
+      "taskId": "DN-048",
       "status": "idle",
-      "heartbeatUtc": "2026-11-20T02:25:00Z",
-      "notes": "DN-047 complete and handed off: abuse.ch feeds activate from a stored Auth-Key; 1,436 tests pass. Next safe task: signing/key custody (DN-010) or a 0.1.25 release of the uncut route wiring."
+      "heartbeatUtc": "2026-11-20T03:05:00Z",
+      "notes": "DN-048 complete: fifteen follow-up foundations with tests, 1,453 passing. Next safe task: wire ReleaseTrustPolicy into the updater once the offline key exists, or persist suppression expiry."
     }
   ]
 }
