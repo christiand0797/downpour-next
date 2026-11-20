@@ -24,6 +24,7 @@ public sealed partial class AlertsPage : Page
 
     public LiveCollection<SecurityAlertRow> Alerts { get; } = [];
     public LiveCollection<CorrelationFindingRow> CorrelationFindings { get; } = [];
+    public LiveCollection<RepeatGroupRow> RepeatGroups { get; } = [];
 
     public AlertsPage()
     {
@@ -110,6 +111,8 @@ public sealed partial class AlertsPage : Page
                 _allAlerts = [];
                 _currentSnapshot = null;
                 CorrelationFindings.Clear();
+                RepeatGroups.Clear();
+                RepeatCount.Text = "No repeated findings while the alert store is offline.";
                 ExportButton.IsEnabled = false;
                 AlertCount.Text = "ALERT STORE OFFLINE";
                 ApplyFilters();
@@ -127,6 +130,21 @@ public sealed partial class AlertsPage : Page
             {
                 CorrelationFindings.Add(new CorrelationFindingRow(finding));
             }
+
+            // Presentation-only collapse of repeated source/subject pairs. The underlying alerts keep their identity so
+            // every triage action above still applies to individual evidence.
+            var groups = AlertGrouping.Group(snapshot.Alerts.Select(alert => new AlertGroupingInput(
+                string.IsNullOrWhiteSpace(alert.LogName) ? "local alerts" : alert.LogName,
+                alert.Title,
+                SeverityRank(alert.Severity),
+                alert.LastSeenUtc)));
+            var repeated = groups.Where(group => group.Count > 1).Take(8).ToArray();
+            RepeatGroups.Clear();
+            foreach (var group in repeated) RepeatGroups.Add(new RepeatGroupRow(group));
+            var repeatedPairs = groups.Count(group => group.Count > 1);
+            RepeatCount.Text = repeatedPairs == 0
+                ? "No repeated source and subject pairs in this snapshot."
+                : $"{repeatedPairs:N0} repeated pairs · {groups.Count - repeatedPairs:N0} single findings · showing the {repeated.Length} most severe";
 
             var openCount = snapshot.Alerts.Count(alert => alert.State == "Open");
             StatusHeadline.Text = snapshot.Warnings.Count == 0
@@ -191,6 +209,21 @@ public sealed partial class AlertsPage : Page
         finally { _stateChangeInFlight = false; }
     }
 
+    private static int SeverityRank(string severity) => severity switch
+    {
+        "CRITICAL" => 4,
+        "HIGH" => 3,
+        "MEDIUM" => 2,
+        _ => 1,
+    };
+
+    private void RepeatGroup_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: string subject }) return;
+        SearchBox.Text = subject;
+        ApplyFilters();
+    }
+
     private void SearchBox_TextChanged(object sender, TextChangedEventArgs e) => ApplyFilters();
     private void StateFilter_SelectionChanged(object sender, SelectionChangedEventArgs e) => ApplyFilters();
 
@@ -241,6 +274,34 @@ public sealed partial class AlertsPage : Page
         if (sender is not Button { Tag: string correlationId }) return;
         Frame.Navigate(typeof(InvestigationTimelinePage), correlationId);
     }
+}
+
+public sealed class RepeatGroupRow(AlertGroup group)
+{
+    private static readonly SolidColorBrush Critical = new(Color.FromArgb(255, 255, 86, 121));
+    private static readonly SolidColorBrush High = new(Color.FromArgb(255, 255, 167, 82));
+    private static readonly SolidColorBrush Medium = new(Color.FromArgb(255, 255, 218, 119));
+    private static readonly SolidColorBrush Other = new(Color.FromArgb(255, 86, 210, 235));
+
+    public string Subject { get; } = group.Subject;
+    public string Source { get; } = group.Source;
+    public string Count { get; } = group.Count == 1 ? "1 alert" : $"{group.Count:N0} alerts";
+    public string Span { get; } = $"{group.FirstSeenUtc.ToLocalTime():MMM d HH:mm} → {group.LastSeenUtc.ToLocalTime():HH:mm}";
+    public string Meta { get; } = $"{group.Source}  ·  {(group.Count == 1 ? "1 alert" : $"{group.Count:N0} alerts")}  ·  {group.FirstSeenUtc.ToLocalTime():MMM d HH:mm} → {group.LastSeenUtc.ToLocalTime():HH:mm}";
+    public string Severity { get; } = group.HighestSeverityRank switch
+    {
+        >= 4 => "CRITICAL",
+        3 => "HIGH",
+        2 => "MEDIUM",
+        _ => "LOW",
+    };
+    public SolidColorBrush SeverityBrush { get; } = group.HighestSeverityRank switch
+    {
+        >= 4 => Critical,
+        3 => High,
+        2 => Medium,
+        _ => Other,
+    };
 }
 
 public sealed class CorrelationFindingRow : ObservableRow

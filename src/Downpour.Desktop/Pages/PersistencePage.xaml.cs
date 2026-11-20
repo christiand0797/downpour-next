@@ -12,12 +12,15 @@ namespace Downpour_Desktop.Pages;
 public sealed partial class PersistencePage : Page
 {
     private const string AllCategories = "All categories";
+    private static readonly LocalChangeArea[] DigestAreas = [LocalChangeArea.Autorun, LocalChangeArea.ScheduledTask, LocalChangeArea.Driver];
     private readonly PersistenceInventoryClient _client = new();
     private IReadOnlyList<PersistenceEntry> _entries = [];
+    private IReadOnlyList<PersistenceEntry>? _digestBaseline;
     private bool _requestInFlight;
 
     public LiveCollection<PersistenceFindingRow> Findings { get; } = [];
     public LiveCollection<PersistenceEntryRow> Entries { get; } = [];
+    public LiveCollection<PersistenceDigestRow> DigestRows { get; } = [];
 
     private readonly BreakdownChart _categoryChart = new() { Title = "Autostart items by type", Subtitle = "Everything that starts automatically" };
     private readonly BreakdownChart _changeChart = new() { Title = "Changes this week", Subtitle = "Compared with the first baseline" };
@@ -72,6 +75,9 @@ public sealed partial class PersistencePage : Page
             if (snapshot is null)
             {
                 _entries = [];
+                _digestBaseline = null;
+                DigestRows.Clear();
+                DigestCount.Text = "Change digest unavailable while the persistence sensor is offline.";
                 ApplyFilter();
                 StatusHeadline.Text = "Downpour is running · persistence sensor offline";
                 StatusDetail.Text = $"{App.SensorServiceStatusHint} No cached or substituted inventory is shown.";
@@ -87,6 +93,7 @@ public sealed partial class PersistencePage : Page
                 : "No persistence findings.";
             NoFindings.Visibility = Findings.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
             _entries = snapshot.Entries;
+            UpdateDigest(snapshot.Entries);
             _categoryChart.SetData(snapshot.Entries.Where(e => e.Category != PersistenceCategories.DriverFile || e.Change != PersistenceChanges.Baseline)
                 .GroupBy(e => e.Category).Select(g => (g.Key, (double)g.Count())));
             _changeChart.SetData(snapshot.Entries.GroupBy(e => e.Change).Select(g => (g.Key, (double)g.Count())),
@@ -107,6 +114,50 @@ public sealed partial class PersistencePage : Page
         }
     }
 
+    /// <summary>
+    /// The service baseline already reports items that appeared or were modified. This digest adds what the baseline
+    /// cannot say: which listed autostart, task, and driver items were present on the previous scan of this view and are
+    /// gone now. Rows are ranked by area and direction through <see cref="LocalChangeDigest"/>; nothing is inferred about
+    /// why an item disappeared.
+    /// </summary>
+    private void UpdateDigest(IReadOnlyList<PersistenceEntry> entries)
+    {
+        var baseline = _digestBaseline;
+        _digestBaseline = entries;
+        DigestRows.Clear();
+        if (baseline is null)
+        {
+            DigestCount.Text = "First scan of this view · the digest compares with the next scan.";
+            NoDigest.Visibility = Visibility.Collapsed;
+            return;
+        }
+
+        var before = Flatten(baseline).ToLookup(item => item.Area);
+        var after = Flatten(entries).ToLookup(item => item.Area);
+        var labels = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var item in before.SelectMany(item => item).Concat(after.SelectMany(item => item))) labels.TryAdd(item.Key, item.Label);
+        var changes = LocalChangeDigest.Rank(DigestAreas.SelectMany(area => LocalChangeDigest.Compare(
+            area, before[area].Select(item => item.Key), after[area].Select(item => item.Key))));
+        foreach (var change in changes.Take(8))
+            DigestRows.Add(new PersistenceDigestRow(change, labels.GetValueOrDefault(change.Key, change.Key)));
+        DigestCount.Text = changes.Count == 0
+            ? "No listed autostart, task, or driver item appeared or disappeared since the previous scan."
+            : $"{changes.Count:N0} change{(changes.Count == 1 ? "" : "s")} since the previous scan · showing {(changes.Count > 8 ? "the top 8" : "all")}";
+        NoDigest.Visibility = DigestRows.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private static IEnumerable<(LocalChangeArea Area, string Key, string Label)> Flatten(IEnumerable<PersistenceEntry> entries) =>
+        entries.Select(entry => (AreaFor(entry.Category),
+            $"{entry.Category}|{entry.Location}|{entry.Name}",
+            $"{entry.Name} · {entry.Category} · {entry.Location}"));
+
+    private static LocalChangeArea AreaFor(string category) => category switch
+    {
+        PersistenceCategories.ScheduledTask => LocalChangeArea.ScheduledTask,
+        PersistenceCategories.DriverFile => LocalChangeArea.Driver,
+        _ => LocalChangeArea.Autorun,
+    };
+
     private void ApplyFilter()
     {
         var query = SearchBox?.Text?.Trim() ?? "";
@@ -124,6 +175,16 @@ public sealed partial class PersistencePage : Page
         foreach (var entry in matches) Entries.Add(new PersistenceEntryRow(entry));
         if (EntryCount is not null) EntryCount.Text = $"{matches.Length:N0} of {_entries.Count:N0} items";
     }
+}
+
+public sealed class PersistenceDigestRow(LocalChange change, string label)
+{
+    public string Kind { get; } = change.Kind == LocalChangeKind.Added ? "Added" : "Removed";
+    public string Area { get; } = change.Area.ToString();
+    public string Label { get; } = label;
+    public SolidColorBrush Brush { get; } = new(change.Kind == LocalChangeKind.Added
+        ? Color.FromArgb(255, 255, 170, 90)
+        : Color.FromArgb(255, 120, 200, 255));
 }
 
 public sealed class PersistenceFindingRow(PersistenceFinding finding)

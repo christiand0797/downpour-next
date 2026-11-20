@@ -46,6 +46,27 @@
                 <TextBlock x:Name="NoFindings" FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Visibility="Collapsed" TextWrapping="Wrap" />
             </StackPanel>
 
+            <StackPanel Spacing="6">
+                <Grid ColumnSpacing="8">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                    <TextBlock Text="CHANGES SINCE THE PREVIOUS SCAN" FontSize="11" FontWeight="SemiBold" CharacterSpacing="85" Foreground="{StaticResource HudTextDimBrush}" />
+                    <TextBlock x:Name="DigestCount" Grid.Column="1" FontSize="10" HorizontalAlignment="Right" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="First scan of this view." TextTrimming="CharacterEllipsis" />
+                </Grid>
+                <ItemsControl ItemsSource="{x:Bind DigestRows}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Padding="10,4" ColumnSpacing="12">
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="80" /><ColumnDefinition Width="110" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                <TextBlock Text="{Binding Kind}" FontSize="11" FontWeight="SemiBold" Foreground="{Binding Brush}" />
+                                <TextBlock Grid.Column="1" Text="{Binding Area}" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                <TextBlock Grid.Column="2" Text="{Binding Label}" FontSize="11" FontFamily="Consolas" TextTrimming="CharacterEllipsis" />
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <TextBlock x:Name="NoDigest" FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Visibility="Collapsed" Text="No listed autostart, task, or driver item appeared or disappeared since the previous scan." TextWrapping="Wrap" />
+            </StackPanel>
+
             <StackPanel Spacing="8">
                 <Grid ColumnSpacing="10">
                     <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
@@ -73,7 +94,7 @@
                 </ListView>
             </StackPanel>
 
-            <TextBlock FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Review only; nothing is disabled or removed. The first scan creates a trust-on-first-use baseline, so later additions and changes are highlighted for 7 days. The baseline stores SHA-256 hashes of values, never the commands themselves. Inbox driver files are tracked but only new, changed, or known-vulnerable drivers are listed." TextWrapping="Wrap" />
+            <TextBlock FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Review only; nothing is disabled or removed. The first scan creates a trust-on-first-use baseline, so later additions and changes are highlighted for 7 days. The baseline stores SHA-256 hashes of values, never the commands themselves. Inbox driver files are tracked but only new, changed, or known-vulnerable drivers are listed. The change digest compares listed items with the previous scan of this view only; it does not claim why an item disappeared." TextWrapping="Wrap" />
         </StackPanel>
     </ScrollViewer>
 </Page>

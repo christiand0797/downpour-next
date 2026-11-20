@@ -19,6 +19,7 @@ public sealed partial class InvestigationTimelinePage : Page
     private bool _requestInFlight;
 
     public LiveCollection<TimelineEventRow> TimelineEvents { get; } = [];
+    public LiveCollection<EvidenceGraphRow> GraphRows { get; } = [];
 
     public InvestigationTimelinePage()
     {
@@ -109,6 +110,7 @@ public sealed partial class InvestigationTimelinePage : Page
                         isEvidence));
                 }
 
+                RenderEvidenceGraph(_currentFinding, timelineAlerts);
                 EmptyState.Visibility = TimelineEvents.Count == 0 ? Microsoft.UI.Xaml.Visibility.Visible : Microsoft.UI.Xaml.Visibility.Collapsed;
                 StatusHeadline.Text = $"Showing {TimelineEvents.Count:N0} timeline events ({TimelineEvents.Count(e => e.IsEvidence)} evidence)";
                 StatusDetail.Text = $"Time window: {timeWindowStart:HH:mm:ss} to {timeWindowEnd:HH:mm:ss} (±30 minutes around finding)";
@@ -117,6 +119,7 @@ public sealed partial class InvestigationTimelinePage : Page
             {
                 // Standalone mode: show all system alerts
                 _currentFinding = null;
+                ClearEvidenceGraph("Select a correlation finding to build a case-scoped evidence graph.");
                 FindingTitle.Text = "Security Event & Attack Timeline";
                 FindingDetail.Text = $"Showing system-wide security event stream ({snapshot.Alerts.Count:N0} alerts loaded from {snapshot.TotalCount:N0} total alerts). Click 'Detect Attacks' to run automated attack detection or 'Export HTML' to save an executive report.";
 
@@ -145,6 +148,63 @@ public sealed partial class InvestigationTimelinePage : Page
         {
             _requestInFlight = false;
         }
+    }
+
+    /// <summary>
+    /// Builds the case graph from the bounded snapshot this view already holds: the finding, its evidence and related
+    /// alerts, and the techniques, providers and indicators those alerts already name. Nothing is persisted and no new
+    /// data is collected, so the graph cannot outlive the case.
+    /// </summary>
+    private void RenderEvidenceGraph(CorrelatedAlertFinding finding, IReadOnlyList<SecurityAlert> alerts)
+    {
+        var graph = new EvidenceGraph();
+        var rootId = $"finding:{finding.CorrelationId}";
+        graph.AddNode(new EvidenceNode(rootId, "finding", finding.Title));
+        var evidenceIds = new HashSet<string>(finding.EvidenceAlertIds, StringComparer.Ordinal);
+        foreach (var alert in alerts)
+        {
+            var alertId = $"alert:{alert.AlertId}";
+            if (!graph.AddNode(new EvidenceNode(alertId, "alert", alert.Title))) continue;
+            graph.AddEdge(new EvidenceEdge(rootId, alertId, evidenceIds.Contains(alert.AlertId) ? "evidence" : "related"));
+            if (!string.IsNullOrWhiteSpace(alert.Technique))
+            {
+                var techniqueId = $"technique:{alert.Technique}";
+                graph.AddNode(new EvidenceNode(techniqueId, "technique", alert.Technique));
+                graph.AddEdge(new EvidenceEdge(alertId, techniqueId, "maps-to"));
+            }
+            if (!string.IsNullOrWhiteSpace(alert.Provider))
+            {
+                var providerId = $"provider:{alert.Provider}";
+                graph.AddNode(new EvidenceNode(providerId, "provider", alert.Provider));
+                graph.AddEdge(new EvidenceEdge(alertId, providerId, "reported-by"));
+            }
+            if (!string.IsNullOrWhiteSpace(alert.Indicator))
+            {
+                var indicatorId = $"indicator:{alert.IndicatorKind}:{alert.Indicator}";
+                graph.AddNode(new EvidenceNode(indicatorId, "indicator", alert.Indicator));
+                graph.AddEdge(new EvidenceEdge(alertId, indicatorId, "observed"));
+            }
+        }
+
+        GraphRows.Clear();
+        var evidenceEdges = graph.Edges.Count(edge => edge.From == rootId && edge.Relation == "evidence");
+        foreach (var edge in graph.Edges
+            .Where(edge => edge.From == rootId || edge.From.StartsWith("alert:", StringComparison.Ordinal))
+            .OrderBy(edge => edge.Relation == "evidence" ? 0 : 1)
+            .Take(12))
+        {
+            GraphRows.Add(new EvidenceGraphRow(
+                edge.Relation,
+                graph.Find(edge.From)?.Label ?? edge.From,
+                graph.Find(edge.To)?.Label ?? edge.To));
+        }
+        GraphCount.Text = $"{graph.Nodes.Count:N0} nodes · {graph.Edges.Count:N0} edges · {evidenceEdges} evidence links · case snapshot only";
+    }
+
+    private void ClearEvidenceGraph(string message)
+    {
+        GraphRows.Clear();
+        GraphCount.Text = message;
     }
 
     private static Color GetSeverityColor(string severity) => severity switch
@@ -275,6 +335,12 @@ public sealed partial class InvestigationTimelinePage : Page
         // Navigate to Alerts page with the alert ID as a filter
         Frame.Navigate(typeof(AlertsPage), alertId);
     }
+}
+
+public sealed class EvidenceGraphRow(string relation, string from, string to)
+{
+    public string Relation { get; } = relation;
+    public string Chain { get; } = $"{from} → {to}";
 }
 
 public sealed class TimelineEventRow : ObservableRow

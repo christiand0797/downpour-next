@@ -33,14 +33,37 @@
         </Border>
 
         <Grid Grid.Row="2" RowSpacing="10">
-            <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
+            <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
             <Border Padding="12,9" CornerRadius="8" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
                 <StackPanel Spacing="3">
                     <TextBlock FontSize="10" FontWeight="SemiBold" CharacterSpacing="65" Foreground="{StaticResource HudCyanBrush}" Text="FINDING &amp; DETECTION SUMMARY" />
                     <TextBlock x:Name="FindingDetail" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Waiting for finding data." TextWrapping="Wrap" />
                 </StackPanel>
             </Border>
-            <Grid Grid.Row="1" ColumnSpacing="10">
+            <Border Grid.Row="1" Padding="12,9" CornerRadius="8" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
+                <StackPanel Spacing="3">
+                    <Grid ColumnSpacing="8">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                        <TextBlock FontSize="10" FontWeight="SemiBold" CharacterSpacing="65" Foreground="{StaticResource HudCyanBrush}" Text="EVIDENCE GRAPH" />
+                        <TextBlock x:Name="GraphCount" Grid.Column="1" FontSize="10" HorizontalAlignment="Right" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Select a correlation finding to build a case-scoped evidence graph." TextTrimming="CharacterEllipsis" />
+                    </Grid>
+                    <ListView x:Name="GraphList" ItemsSource="{x:Bind GraphRows}" SelectionMode="None" IsItemClickEnabled="False" MaxHeight="130" Background="Transparent">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Padding="6,3" ColumnSpacing="10">
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="90" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                    <TextBlock Text="{Binding Relation}" FontSize="10" FontFamily="Consolas" Foreground="{StaticResource HudCyanBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="1" Text="{Binding Chain}" FontSize="11" TextTrimming="CharacterEllipsis" />
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                        <ListView.Footer>
+                            <TextBlock Padding="6,3" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Edges need both endpoints, so a partial snapshot never produces a dangling path. Nothing is stored." TextWrapping="Wrap" />
+                        </ListView.Footer>
+                    </ListView>
+                </StackPanel>
+            </Border>
+            <Grid Grid.Row="2" ColumnSpacing="10">
                 <Grid.ColumnDefinitions><ColumnDefinition Width="2*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                 <TextBox x:Name="FilterBox" PlaceholderText="Filter timeline events (text, ID, provider, technique)..." TextChanged="FilterBox_TextChanged" />
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
@@ -52,7 +75,7 @@
                     <Button Content="Tasks" ToolTipService.ToolTip="Events 4698, 4702" Click="QuickFilter_Tasks" Padding="8,5" FontSize="11" />
                 </StackPanel>
             </Grid>
-            <ListView x:Name="TimelineList" Grid.Row="2" ItemsSource="{x:Bind TimelineEvents}" SelectionMode="None" IsItemClickEnabled="False" Background="{StaticResource DownpourSurfaceBrush}">
+            <ListView x:Name="TimelineList" Grid.Row="3" ItemsSource="{x:Bind TimelineEvents}" SelectionMode="None" IsItemClickEnabled="False" Background="{StaticResource DownpourSurfaceBrush}">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <Grid Padding="12,9" ColumnSpacing="10">
