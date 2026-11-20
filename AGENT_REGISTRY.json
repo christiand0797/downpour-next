@@ -173,10 +173,10 @@
     {
       "id": "buffy",
       "role": "agent",
-      "taskId": "DN-062",
+      "taskId": "DN-063",
       "status": "idle",
-      "heartbeatUtc": "2026-11-20T10:10:00Z",
-      "notes": "0.1.27 published. Listener inventory wired unreleased. 1,479 tests pass. Next: visual/route check of listener section when packaging 0.1.28, or destination digest."
+      "heartbeatUtc": "2026-11-20T10:35:00Z",
+      "notes": "0.1.27 is Latest. Unreleased listener inventory (DN-062) and destination digest (DN-063). 1,479 tests pass. Next safe task: cut 0.1.28 after route smoke, or inspect explanation panel manually."
     }
   ]
 }

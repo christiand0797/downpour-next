@@ -5,6 +5,7 @@
 - [x] Version bumped to 0.1.25 for the five slices after the v0.1.24 tag: route wiring, suppression expiry, key-gated abuse.ch feeds, fifteen foundations.
 - [x] Release notes written in `docs/RELEASE_0.1.25.md`, explicitly listing the foundations as not wired.
 - [x] Suppressions list wired after 0.1.25 (unreleased, DN-051): the snapshot carries up to 20 active suppressions with confirmed count, hidden-match count, expiry and a suppressed alert id; Alerts shows them in a third panel with Re-arm; validation bounds every field; confirmation now counts the alerts it hides. 1,457 tests pass.
+- [x] Network destination digest (unreleased, DN-063): the Network page counts remote endpoints first seen after its baseline snapshot and shows "N NEW DESTINATIONS". Baseline seeds on first success, so pre-existing connections are not labelled new. In-memory only. 1,479 tests pass.
 - [x] Network page listener inventory (unreleased, DN-062): the service snapshot now carries a bounded TCP listener list (64) with total count; the page shows endpoint, scope (ANY/LOOPBACK/INTERFACE) and port, plus a "new since page open" digest. Client validation and pipe integration coverage added. 1,479 tests pass. Not yet inspected visually.
 - [x] AMSI test timing hardened (unreleased, DN-061): 30 s waits replace 5 s waits in the active-scan test; no assertion changed. 1,479 tests pass.
 - [x] Published v0.1.27 (`e6074d0`): service and driver cross-view consistency checks plus a desktop crash fix for empty inventory pipe payloads; ZIP `8e72a8a8…`, SBOM `c6a0cc1d…`; 1,479 tests, packaged route smoke (all routes, 179 YARA rules) and window smoke passed. Continuation procedure in `docs/CONTINUATION.md`.
@@ -45,7 +46,7 @@
 - [x] Grouped repeated findings in Alerts: same source and subject collapse into one row with count, severity and span; a Filter button narrows the list to that exact finding. Individual triage state is unchanged.
 - [x] Evidence graph in the investigation timeline: case-scoped nodes for the finding, its evidence/related alerts, techniques, providers and indicators, with evidence edges ranked first. Nothing is persisted.
 - [x] Change digest in Persistence review: added and removed listed autostart, task and driver items against the previous scan of the view (the service baseline only reports additions and modifications).
-- [ ] Dashboard-side change digest for network destinations; the Network page now digests new listening ports per session, but remote-destination history still needs persisted snapshots.
+- [ ] Persisted destination history across service restarts (the Network page digests new remote destinations per page lifetime only; no persistence claim).
 - [ ] Sign releases: key custody, signed manifest, updater enforcement (see `docs/RELEASE_TRUST.md`).
 - [x] Settings accepts a free abuse.ch Auth-Key (DPAPI, feed-only so lookups never see it). ThreatFox, URLhaus and MalwareBazaar activate, download with the `Auth-Key` header and appear with their real state; without a key they are never requested and the snapshot says why. PhishTank stays retired because no key fixes its expiring redirect. Verified with a fake key against a recording handler; a real key is not exercised in CI.
 - [ ] Run the self-hosted workflow after registering a runner; hosted Actions remains billing-blocked.

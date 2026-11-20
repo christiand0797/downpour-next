@@ -54,6 +54,7 @@ before the build and the same hash must be written into the versioned scripts.
 - Verified: 1,479 tests, packaged route smoke, window smoke.
 - Not verified by hand: the Alerts explanation panel.
 - Blocked: egress byte volume (ETW/admin ESTATS), metered feed signal (session-0 support undocumented), ARM64, signing.
+- Unreleased after 0.1.27: bounded TCP listener inventory with session "new since page open" count (DN-062), and remote destination digest with baseline seeding (DN-063). Both need a packaged 0.1.28 build for route growth; layout not inspected.
 - Remaining Core-only foundations: rule coverage/silence, mitigation posture, metered scheduling, replay diff corpus,
   onboarding, update journal, portable encrypted bundle, IDN confusables, weekly digest, cross-view for ports.
 - Previously flaky: `AmsiSessionTests.ContextCannotBeUninitializedDuringAnActiveScan` failed under load; its waits were raised to 30 s on 2026-11-20.

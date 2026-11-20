@@ -1258,6 +1258,22 @@
       ],
       "notes": "buffy 2026-11-20: completed. Unreleased. Listener list is TCP only, read-only, no process attribution. New-since-open digest is in-memory per page instance.",
       "updatedAt": "2026-11-20"
+    },
+    {
+      "id": "DN-063",
+      "title": "Network page destination change digest",
+      "status": "completed",
+      "priority": "medium",
+      "files": [
+        "src/Downpour.Desktop/Pages/NetworkPage.xaml.cs"
+      ],
+      "acceptance": [
+        "Counts destinations first seen during the page lifetime",
+        "Excludes wildcard endpoints",
+        "No persistence claim"
+      ],
+      "notes": "buffy 2026-11-20: completed. Baselines seed on the first successful snapshot, so only later destinations count. In-memory per page; no persistence.",
+      "updatedAt": "2026-11-20"
     }
   ]
 }
