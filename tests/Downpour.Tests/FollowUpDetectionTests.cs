@@ -137,6 +137,27 @@ public sealed class FollowUpDetectionTests
     }
 
     [Fact]
+    public void AlertExplanationStatesTheBoundaryAndWhatIsMissing()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var alert = new Downpour.Contracts.SecurityAlert("a" + new string('0', 63), "Windows service installed: DemoService", "HIGH",
+            "T1543.003", "System", "Service Control Manager", 7045, 1201, now, now.AddMinutes(-5), now, 3, "Open");
+        var text = AlertExplanation.ForAlert(alert);
+        Assert.Contains("does not infer a confidence score", text);
+        Assert.Contains("event 7045", text);
+        Assert.Contains("3 occurrences", text);
+        Assert.Contains("Not available", text);
+        Assert.Contains("Verdict boundary", text);
+        Assert.DoesNotContain("verified threat", text);
+
+        var verified = AlertExplanation.ForAlert(alert with { IsVerified = true });
+        Assert.Contains("verified threat", verified);
+
+        var noisy = AlertExplanation.ForAlert(alert with { Title = new string('x', 400) });
+        Assert.True(noisy.Length <= AlertExplanation.MaximumLength);
+    }
+
+    [Fact]
     public void LookalikeDomainsAreDecodedAndNamed()
     {
         var plain = DomainConfusables.Assess("example.com");

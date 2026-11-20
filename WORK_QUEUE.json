@@ -1099,6 +1099,27 @@
       ],
       "notes": "buffy 2026-11-20: completed. 1,476 tests pass; service smoke shows no clock warning on a healthy clock. Boot-time cross-check needs an independent boot source and is deliberately unused.",
       "updatedAt": "2026-11-20"
+    },
+    {
+      "id": "DN-055",
+      "title": "Explain a stored alert from its metadata",
+      "status": "completed",
+      "priority": "high",
+      "files": [
+        "src/Downpour.Core/AlertExplanation.cs",
+        "src/Downpour.Desktop/Pages/AlertsPage.xaml",
+        "src/Downpour.Desktop/Pages/AlertsPage.xaml.cs",
+        "tests/Downpour.Tests/FollowUpDetectionTests.cs",
+        "docs/FOLLOWUP_FOUNDATIONS_2.md"
+      ],
+      "acceptance": [
+        "Explanation names the rule, evidence used, missing evidence and the boundary crossed",
+        "No confidence score is invented",
+        "Text is bounded",
+        "Alerts row click shows the explanation"
+      ],
+      "notes": "buffy 2026-11-20: completed, 1,477 tests pass. Panel has not been viewed. The richer DetectionExplanation input (per-alert field lists) is still not stored, so this uses metadata that exists.",
+      "updatedAt": "2026-11-20"
     }
   ]
 }

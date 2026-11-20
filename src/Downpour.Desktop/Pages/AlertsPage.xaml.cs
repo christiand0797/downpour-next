@@ -255,6 +255,16 @@ public sealed partial class AlertsPage : Page
     private void SearchBox_TextChanged(object sender, TextChangedEventArgs e) => ApplyFilters();
     private void StateFilter_SelectionChanged(object sender, SelectionChangedEventArgs e) => ApplyFilters();
 
+    private void AlertList_ItemClick(object sender, ItemClickEventArgs e)
+    {
+        if (e.ClickedItem is not SecurityAlertRow { Source: { } alert }) return;
+        ExplanationTitle.Text = alert.Title;
+        ExplanationText.Text = AlertExplanation.ForAlert(alert);
+        ExplanationPanel.Visibility = Visibility.Visible;
+    }
+
+    private void CloseExplanation_Click(object sender, RoutedEventArgs e) => ExplanationPanel.Visibility = Visibility.Collapsed;
+
     private void ApplyFilters(int? total = null)
     {
         if (AlertList is null) return;

@@ -32,7 +32,7 @@
         </Border>
 
         <Grid Grid.Row="2" RowSpacing="10">
-            <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
+            <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
             <Grid ColumnSpacing="10">
                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
             <Border Padding="12,9" CornerRadius="8" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
@@ -118,7 +118,18 @@
                 </ComboBox>
                 <TextBlock x:Name="AlertCount" Grid.Column="2" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="0 alerts" />
             </Grid>
-            <Grid Grid.Row="2" Padding="12,9" ColumnSpacing="10" Background="{StaticResource DownpourSurfaceElevatedBrush}">
+            <Border x:Name="ExplanationPanel" Grid.Row="2" Visibility="Collapsed" Padding="12,9" CornerRadius="8" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
+                <Grid ColumnSpacing="10">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                    <StackPanel Spacing="2">
+                        <TextBlock FontSize="10" FontWeight="SemiBold" CharacterSpacing="65" Foreground="{StaticResource HudCyanBrush}" Text="WHY THIS FIRED · METADATA ONLY" />
+                        <TextBlock x:Name="ExplanationTitle" FontSize="12" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                        <TextBlock x:Name="ExplanationText" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" MaxHeight="120" />
+                    </StackPanel>
+                    <Button Grid.Column="1" Content="Close" Click="CloseExplanation_Click" FontSize="10" Padding="8,3" VerticalAlignment="Top" />
+                </Grid>
+            </Border>
+            <Grid Grid.Row="3" Padding="12,9" ColumnSpacing="10" Background="{StaticResource DownpourSurfaceElevatedBrush}">
                 <Grid.ColumnDefinitions><ColumnDefinition Width="150" /><ColumnDefinition Width="90" /><ColumnDefinition Width="*" /><ColumnDefinition Width="135" /><ColumnDefinition Width="320" /></Grid.ColumnDefinitions>
                 <TextBlock FontSize="10" FontWeight="SemiBold" CharacterSpacing="65" Text="FIRST SEEN" />
                 <TextBlock Grid.Column="1" FontSize="10" FontWeight="SemiBold" CharacterSpacing="65" Text="SEVERITY" />
@@ -126,7 +137,7 @@
                 <TextBlock Grid.Column="3" FontSize="10" FontWeight="SemiBold" CharacterSpacing="65" Text="TRIAGE" />
                 <TextBlock Grid.Column="4" FontSize="10" FontWeight="SemiBold" CharacterSpacing="65" Text="LOCAL REVIEW" />
             </Grid>
-            <ListView x:Name="AlertList" Grid.Row="3" ItemsSource="{x:Bind Alerts}" SelectionMode="None" IsItemClickEnabled="False" Background="{StaticResource DownpourSurfaceBrush}">
+            <ListView x:Name="AlertList" Grid.Row="4" ItemsSource="{x:Bind Alerts}" SelectionMode="None" IsItemClickEnabled="True" ItemClick="AlertList_ItemClick" Background="{StaticResource DownpourSurfaceBrush}">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <Grid Padding="12,9" ColumnSpacing="10">

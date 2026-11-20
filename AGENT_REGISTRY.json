@@ -173,10 +173,10 @@
     {
       "id": "buffy",
       "role": "agent",
-      "taskId": "DN-054",
+      "taskId": "DN-055",
       "status": "idle",
-      "heartbeatUtc": "2026-11-20T05:20:00Z",
-      "notes": "Clock integrity partly wired; 1,476 tests pass. artex subagent not yet spawnable in this thread (needs reload). Next: explanation panel wiring or 0.1.26 cut."
+      "heartbeatUtc": "2026-11-20T05:55:00Z",
+      "notes": "Alert explanation wired; 1,477 tests pass. Next: 0.1.26 cut (unreleased set is large), or weekly digest wiring. artex still not spawnable in this thread."
     }
   ]
 }
