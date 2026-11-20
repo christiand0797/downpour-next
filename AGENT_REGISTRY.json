@@ -173,10 +173,10 @@
     {
       "id": "buffy",
       "role": "agent",
-      "taskId": "DN-066",
+      "taskId": "DN-067",
       "status": "idle",
-      "heartbeatUtc": "2026-11-20T11:05:00Z",
-      "notes": "v0.1.28 is Latest. Listener process attribution (DN-066) is unreleased on main with 1,481 tests. Next: cut 0.1.29, or inspect Network layout by hand."
+      "heartbeatUtc": "2026-11-20T17:45:00Z",
+      "notes": "v0.1.29 published as Latest from commit c942195 (1,481 tests, package, every route and window smoke). Next: visual inspection of the Network PROCESS column and Alerts explanation panel, or another Core foundation."
     }
   ]
 }

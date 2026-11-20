@@ -1335,7 +1335,25 @@
     "Network page shows the process column",
     "Tests green"
    ],
-   "notes": "buffy 2026-11-20: completed, unreleased. GetExtendedTcpTable both families, 128 bounded name lookups per capture; name is null when the process cannot be opened. IPv4 address offset bug caught by a real loopback-listener test. 1,481 tests pass; layout not inspected.",
+   "notes": "buffy 2026-11-20: completed and shipped in 0.1.29. GetExtendedTcpTable both families, 128 bounded name lookups per capture; name is null when the process cannot be opened. IPv4 address offset bug caught by a real loopback-listener test. 1,481 tests pass; layout not inspected.",
+   "updatedAt": "2026-11-20"
+  },
+  {
+   "id": "DN-067",
+   "title": "Cut and publish 0.1.29 with listener process attribution",
+   "status": "completed",
+   "priority": "high",
+   "files": [
+    "Directory.Build.props",
+    "docs/RELEASE_0.1.29.md",
+    "docs/CONTINUATION.md"
+   ],
+   "acceptance": [
+    "Release build and tests clean at the pinned commit",
+    "Package, route smoke and window smoke pass",
+    "Tag, notes and assets published with matching digests"
+   ],
+   "notes": "buffy 2026-11-20: completed. Built from `c942195`; 1,481 Release tests, 1,077 package entries, all routes and window smoke passed. ZIP 306,402,053 bytes sha256 024c39022bd6f2db5314c0b9cdb2e186589885b5b6d6d6f6dc8e4d7c75338bf7; SBOM ebee0668caeecea99ad2f79239c1b319476c0d4c27fec7951afd4b4931305793. Release notes docs/RELEASE_0.1.29.md.",
    "updatedAt": "2026-11-20"
   }
  ]
