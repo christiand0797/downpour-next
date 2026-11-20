@@ -1,5 +1,13 @@
 # Downpour Next shared context
 
+## 2026-11-20 per-process exploit mitigations wired (buffy, DN-070)
+
+- `ExploitMitigationPosture` (Core since DN-052) is now fed from Windows. `ProcessMitigationProvider` calls `GetProcessMitigationPolicy` for up to 2,048 processes and reads six controls per image: CFG, ACG, CIG, block non-Microsoft DLLs, DEP and ASLR. It groups by image name, keeps the worst instance (`chrome ×7`), orders high-value images first then lowest score, and bounds the result at 64.
+- A process that refuses the query is counted in `RefusedCount`, never reported as missing a mitigation. DEP requires `PROCESS_QUERY_INFORMATION`: a `PROCESS_QUERY_LIMITED_INFORMATION` handle is denied even for the caller's own process (verified with a probe), so only complete readings are reported. A real unelevated capture here read 40 images and refused 128.
+- Sensor: `Downpour.ProcessMitigations.v1`, current-user outbound-only, 4 KiB buffer, 15-second recapture cache. `ProcessMitigationClient` validates schema, field lengths, counts, process ids and instance counts.
+- Hardening shows an `EXPLOIT MITIGATIONS BY PROCESS` panel: readable/refused counts, how many high-value images miss at least one control, and the six most exposed images with score and missing control names. Read-only; nothing is changed or applied. Details in `docs/EXPLOIT_MITIGATIONS.md`.
+- Verification: Debug build 0 warnings/errors; 1,490 tests pass (6 new: bit mapping, worst-instance grouping, high-value ordering, validation bounds, live unelevated capture, pipe round trip). The panel compiles but has not been viewed by hand.
+
 ## 2026-11-20 rule coverage wired (buffy, DN-068)
 
 - `RuleCoverageMap` (a Core foundation since DN-052) is now fed from real data. `SecurityEventProvider.CaptureWithCursors` reports whether each of the 7 allow-listed channels could be read; `SecurityEventMonitorService` stores that with the alerts; `alert_channel_health` keeps the latest state per channel and `alert_coverage` keeps when observation started. `SecurityAlertRepository.ReadSnapshotAsync` builds `SecurityAlertSnapshot.Coverage` over the 35 built-in catalog rules, with fire counts summed from stored occurrences.

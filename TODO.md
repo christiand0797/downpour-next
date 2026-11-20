@@ -1,7 +1,13 @@
 # Downpour Next TODO
 
+## 2026-11-20 0.1.31: per-process mitigations (buffy)
+
+- [x] Per-process exploit mitigations wired (DN-070): the sensor reads CFG/ACG/CIG/non-Microsoft DLL blocking/DEP/ASLR with `GetProcessMitigationPolicy`, keeps one row per image name (worst instance, instance count), orders high-value images first, and counts processes that refuse the query instead of treating them as exposed. Hardening shows the six most exposed images with score and missing controls; DEP needs full query rights so only complete readings are reported. 1,490 tests pass (6 new); panel not inspected by hand.
+- [ ] Release 0.1.31 with the mitigation panel: bump, Release build + tests, package, route and window smokes, notes with digests, tag at the docs commit.
+
 ## 2026-11-20 0.1.25: visible trust work (buffy)
 
+- [ ] Per-process mitigation panel visual check (Hardening route): score colours, six-row cap, refusal wording at a narrow width.
 - [x] Published v0.1.30 (`ceaf758`): ships rule coverage (which built-in rules cannot fire here and why); ZIP 306,423,711 bytes sha256 `4f80b4f5…`, SBOM `9102a7f3…`; 1,484 tests, packaged route smoke (every route, 179 YARA rules) and window smoke passed; notes `docs/RELEASE_0.1.30.md`.
 - [x] Rule coverage wired (shipped in 0.1.30, DN-068): each event capture records whether every allow-listed channel could be read; the alert store keeps that and the moment coverage started, and the snapshot now splits the 35 built-in rules into can-fire, cannot-fire (with the channel or field that blocks it), silent and unknown. Alerts shows a coverage panel naming blocked rules; a fresh store never calls a readable rule silent, because silence needs a full 30-day window. 1,484 tests pass; panel not inspected.
 - [x] Version bumped to 0.1.25 for the five slices after the v0.1.24 tag: route wiring, suppression expiry, key-gated abuse.ch feeds, fifteen foundations.

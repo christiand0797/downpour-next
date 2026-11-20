@@ -173,10 +173,10 @@
     {
       "id": "buffy",
       "role": "agent",
-      "taskId": "DN-069",
-      "status": "idle",
-      "heartbeatUtc": "2026-11-20T20:35:00Z",
-      "notes": "v0.1.30 published as Latest from commit ceaf758 (1,484 tests, 1,077 package entries, every route and window smoke). Ships rule coverage. Next: visually inspect the Alerts coverage panel and the Network PROCESS column, or wire the next Core foundation (mitigation posture, egress baseline, replay diff)."
+      "taskId": "DN-071",
+      "status": "active",
+      "heartbeatUtc": "2026-11-20T22:10:00Z",
+      "notes": "DN-070 shipped and pushed (27eebdb): per-process exploit mitigations are read with GetProcessMitigationPolicy, grouped per image, refusal-counted, and shown on Hardening; 1,490 tests pass. Cutting 0.1.31 next (bump, Release build, package, route/window smokes, tag at docs commit)."
     }
   ]
 }
