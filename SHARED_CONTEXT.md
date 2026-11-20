@@ -1,5 +1,14 @@
 # Downpour Next shared context
 
+## 2026-11-19 feed catalog validation and retirement (buffy)
+
+Resumed the unsynced CSV/feed work from the canonical clone, then verified every endpoint instead of trusting it.
+- Live checks: Emerging Threats `/blockrules/{botcc,dshield,ciarmy,tor}.txt` return 404 (dropped; Feodo/CINS/Tor/DShield already cover them). `threatfox`, `urlhaus` and `malwarebazaar` return HTTP 410 without a free abuse.ch `Auth-Key`. PhishTank `online-valid.csv` returns 302 to `cdn.phishtank.com/datadumps/verified_online.csv` with an expiring signature, so it cannot be a fixed redirect-free HTTPS source.
+- `ThreatFeedDefinition.Retired` (default false) keeps those four entries catalogued for historical alert labels and parser fixtures, but `ThreatDatabaseService` never downloads, loads or lists them; `IsDue`, cache loading and the snapshot feed list skip them.
+- Added six TweetFeed CC0 lists: domains, corroborated domains, IPs, corroborated IPs, URLs (host extraction) and SHA-256. Active catalog is 58 sources; `capabilities.json`, README and Settings copy now say 58.
+- Added `CsvUrl` parsing with RFC 4180 field splitting (quoted URL containing a comma no longer shifts the host column). Fuzzing exposed `Uri.TryCreate` throwing `IndexOutOfRangeException` for malformed authority strings; `UrlHost` now treats that, `UriFormatException` and `ArgumentException` as "not a URL".
+- Verification: Debug build 0 warnings/0 errors; 1,404 tests pass; `DOWNPOUR_LIVE_FEEDS=1` live test downloads and strictly parses all 57 downloadable feeds with no failures (retired and IP-origin feeds excluded).
+
 ## 2026-11-19 v0.1.23 published as Latest (buffy)
 
 Source `4dc86b7dcc4957db8c4ca17fe4b2b4a1b9073ffd` is tagged `v0.1.23` and published at https://github.com/christiand0797/downpour-next/releases/tag/v0.1.23 as Latest. Local rebuild from that exact commit: 0 warnings/errors, 1,397 tests passed, five self-contained publishes; every executable reports `0.1.23+4dc86b7dcc4957db8c4ca17fe4b2b4a1b9073ffd`.

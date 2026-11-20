@@ -11,6 +11,8 @@ public enum ThreatFeedFormat
     HostsFile,
     /// <summary>One URL per line; the host is indexed.</summary>
     UrlLines,
+    /// <summary>CSV with a URL column; the host is extracted from the URL in <see cref="ThreatFeedDefinition.Column"/>.</summary>
+    CsvUrl,
     FeodoCsv,
     SpamhausJsonLines,
     ThreatFoxJson,
@@ -54,7 +56,8 @@ public sealed record ThreatFeedDefinition(
     int IndicatorLimit = 400_000,
     TimeSpan? MaximumSourceAge = null,
     bool Historical = false,
-    int CacheGeneration = 1)
+    int CacheGeneration = 1,
+    bool Retired = false)
 {
     public string Host => new Uri(Url).Host;
 }
@@ -71,18 +74,9 @@ public static class ThreatFeedCatalog
         new("lolbas", "LOLBAS", "LOLBAS Project", ThreatFeedKinds.Lolbin, ThreatFeedFormat.LolbasJson,
             "https://lolbas-project.github.io/api/lolbas.json", 8 * MiB, TimeSpan.FromDays(3), "LOW", "T1218", "Living-off-the-land binary",
             "Built-in Windows programs that attackers misuse to download or run code. Shown as context, never as a verdict.", "GPL-3.0", "https://lolbas-project.github.io/"),
-        new("threatfox", "ThreatFox (recent)", "abuse.ch", ThreatFeedKinds.Mixed, ThreatFeedFormat.ThreatFoxJson,
-            "https://threatfox.abuse.ch/export/json/recent/", 48 * MiB, TimeSpan.FromHours(6), "HIGH", "T1071", "Malware indicator",
-            "Malware command servers, payload sites and sample hashes shared by researchers in the last 48 hours.", "CC0-1.0", "https://threatfox.abuse.ch/"),
         new("feodo", "Feodo Tracker botnet C2", "abuse.ch", ThreatFeedKinds.Ip, ThreatFeedFormat.FeodoCsv,
             "https://feodotracker.abuse.ch/downloads/ipblocklist.csv", 4 * MiB, TimeSpan.FromHours(6), "HIGH", "T1071", "Botnet command server",
             "Command servers for banking and loader botnets (Emotet, QakBot, Dridex and others).", "CC0-1.0", "https://feodotracker.abuse.ch/", MaximumSourceAge: TimeSpan.FromDays(30)),
-        new("urlhaus", "URLhaus malware hosts", "abuse.ch", ThreatFeedKinds.Domain, ThreatFeedFormat.HostsFile,
-            "https://urlhaus.abuse.ch/downloads/hostfile/", 16 * MiB, TimeSpan.FromHours(6), "MEDIUM", "T1189", "Malware distribution site",
-            "Websites currently serving malware downloads.", "CC0-1.0", "https://urlhaus.abuse.ch/", MaximumSourceAge: TimeSpan.FromDays(30)),
-        new("malwarebazaar", "MalwareBazaar (recent)", "abuse.ch", ThreatFeedKinds.Hash, ThreatFeedFormat.Lines,
-            "https://bazaar.abuse.ch/export/txt/sha256/recent/", 16 * MiB, TimeSpan.FromHours(6), "CRITICAL", "T1204", "Known malware sample",
-            "SHA-256 fingerprints of malware samples submitted in the last 48 hours.", "CC0-1.0", "https://bazaar.abuse.ch/", MaximumSourceAge: TimeSpan.FromDays(30)),
         new("spamhaus-drop", "Spamhaus DROP (IPv4)", "The Spamhaus Project", ThreatFeedKinds.Ip, ThreatFeedFormat.SpamhausJsonLines,
             "https://www.spamhaus.org/drop/drop_v4.json", 8 * MiB, TimeSpan.FromHours(24), "MEDIUM", "T1071", "Hijacked or criminal network",
             "Address ranges controlled by spammers and cyber-criminals (\"Don't Route Or Peer\").", "Spamhaus DROP terms (free use)", "https://www.spamhaus.org/blocklists/do-not-route-or-peer/", MaximumSourceAge: TimeSpan.FromDays(30)),
@@ -238,6 +232,41 @@ public static class ThreatFeedCatalog
         new("ip-origin", "IP origin (country and network)", "IPtoASN", ThreatFeedKinds.Geo, ThreatFeedFormat.Ip2AsnGzip,
             "https://iptoasn.com/data/ip2asn-combined.tsv.gz", 48 * MiB, TimeSpan.FromDays(7), "LOW", "", "",
             "Offline map of every routed address block to its country and network owner, so you can see roughly where connections come from without asking anyone.", "Public domain (PDDL)", "https://iptoasn.com/"),
+        // Retired sources: kept for historical alert labels and parser fixtures, never downloaded. abuse.ch's ThreatFox,
+        // URLhaus and MalwareBazaar exports answer HTTP 410 without a free Auth-Key, and PhishTank redirects to an expiring
+        // signed CDN URL, so none can be a fixed redirect-free HTTPS source. Feodo Tracker and phishing.army cover the categories.
+        new("threatfox", "ThreatFox (recent)", "abuse.ch", ThreatFeedKinds.Mixed, ThreatFeedFormat.ThreatFoxJson,
+            "https://threatfox.abuse.ch/export/json/recent/", 48 * MiB, TimeSpan.FromHours(6), "HIGH", "T1071", "Malware indicator",
+            "Retired: the export now requires a free abuse.ch Auth-Key. Historical alerts keep this source name.", "CC0-1.0", "https://threatfox.abuse.ch/", Retired: true),
+        new("urlhaus", "URLhaus malware hosts", "abuse.ch", ThreatFeedKinds.Domain, ThreatFeedFormat.HostsFile,
+            "https://urlhaus.abuse.ch/downloads/hostfile/", 16 * MiB, TimeSpan.FromHours(6), "MEDIUM", "T1189", "Malware distribution site",
+            "Retired: the export now requires a free abuse.ch Auth-Key. Historical alerts keep this source name.", "CC0-1.0", "https://urlhaus.abuse.ch/", Retired: true),
+        new("malwarebazaar", "MalwareBazaar (recent)", "abuse.ch", ThreatFeedKinds.Hash, ThreatFeedFormat.Lines,
+            "https://bazaar.abuse.ch/export/txt/sha256/recent/", 16 * MiB, TimeSpan.FromHours(6), "CRITICAL", "T1204", "Known malware sample",
+            "Retired: the export now requires a free abuse.ch Auth-Key. Historical alerts keep this source name.", "CC0-1.0", "https://bazaar.abuse.ch/", Retired: true),
+        new("phishtank", "PhishTank verified phishing URLs", "OpenDNS / Cisco", ThreatFeedKinds.Domain, ThreatFeedFormat.CsvUrl,
+            "https://data.phishtank.com/data/online-valid.csv", 16 * MiB, TimeSpan.FromHours(6), "MEDIUM", "T1566", "Verified phishing host",
+            "Retired: the download redirects to an expiring signed CDN URL. Historical alerts keep this source name.", "OpenDNS terms (free for non-commercial use)", "https://www.phishtank.com/", Separator: ',', Column: 1, IndicatorLimit: 1_000_000, Retired: true),
+        // TweetFeed community blocklists (CC0, no API key, rolling 30-day window).
+        // Emerging Threats blocklists moved or retired their /blockrules files; Feodo, CINS and Tor already cover those categories.
+        new("tweetfeed-domains", "TweetFeed malicious domains", "TweetFeed.live", ThreatFeedKinds.Domain, ThreatFeedFormat.Lines,
+            "https://api.tweetfeed.live/v1/blocklist/domains.txt", 16 * MiB, TimeSpan.FromHours(6), "MEDIUM", "T1071", "Community-reported malicious domain",
+            "Malicious domains reported by the infosec community on X/Twitter. Rolling 30-day window; entries drop off 30 days after last report.", "CC0-1.0", "https://tweetfeed.live/"),
+        new("tweetfeed-domains-corroborated", "TweetFeed corroborated malicious domains", "TweetFeed.live", ThreatFeedKinds.Domain, ThreatFeedFormat.Lines,
+            "https://api.tweetfeed.live/v1/blocklist/domains-corroborated.txt", 8 * MiB, TimeSpan.FromHours(6), "HIGH", "T1071", "Corroborated malicious domain",
+            "Domains from TweetFeed that are also listed by URLhaus, ThreatFox, MalwareBazaar or other providers. Higher confidence, smaller list.", "CC0-1.0", "https://tweetfeed.live/"),
+        new("tweetfeed-ips", "TweetFeed malicious IPs", "TweetFeed.live", ThreatFeedKinds.Ip, ThreatFeedFormat.Lines,
+            "https://api.tweetfeed.live/v1/blocklist/ips.txt", 16 * MiB, TimeSpan.FromHours(6), "MEDIUM", "T1071", "Community-reported malicious IP",
+            "Malicious IP addresses reported by the infosec community on X/Twitter. Rolling 30-day window.", "CC0-1.0", "https://tweetfeed.live/"),
+        new("tweetfeed-ips-corroborated", "TweetFeed corroborated malicious IPs", "TweetFeed.live", ThreatFeedKinds.Ip, ThreatFeedFormat.Lines,
+            "https://api.tweetfeed.live/v1/blocklist/ips-corroborated.txt", 8 * MiB, TimeSpan.FromHours(6), "HIGH", "T1071", "Corroborated malicious IP",
+            "IPs from TweetFeed that are also listed by URLhaus, ThreatFox, MalwareBazaar or other providers. Higher confidence, smaller list.", "CC0-1.0", "https://tweetfeed.live/"),
+        new("tweetfeed-urls", "TweetFeed malicious URLs", "TweetFeed.live", ThreatFeedKinds.Mixed, ThreatFeedFormat.UrlLines,
+            "https://api.tweetfeed.live/v1/blocklist/urls.txt", 16 * MiB, TimeSpan.FromHours(6), "MEDIUM", "T1189", "Community-reported malicious URL",
+            "Full malicious URLs reported by the infosec community on X/Twitter. Hosts are extracted; paths are not visited or downloaded.", "CC0-1.0", "https://tweetfeed.live/"),
+        new("tweetfeed-sha256", "TweetFeed SHA-256 hashes", "TweetFeed.live", ThreatFeedKinds.Hash, ThreatFeedFormat.Lines,
+            "https://api.tweetfeed.live/v1/blocklist/sha256.txt", 8 * MiB, TimeSpan.FromHours(6), "MEDIUM", "T1204", "Community-reported SHA-256 hash",
+            "SHA-256 file hashes of malicious samples reported by the infosec community on X/Twitter.", "CC0-1.0", "https://tweetfeed.live/"),
     ];
 
     public static ThreatFeedDefinition? Find(string id) => All.FirstOrDefault(feed => feed.Id == id);

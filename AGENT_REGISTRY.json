@@ -173,10 +173,10 @@
     {
       "id": "buffy",
       "role": "agent",
-      "taskId": "DN-010",
+      "taskId": "DN-041",
       "status": "idle",
-      "heartbeatUtc": "2026-11-20T00:45:56Z",
-      "notes": "2026-11-19: rebuilt and published v0.1.23 as Latest from 4dc86b7 (1,397 tests, five self-contained publishes, 43-route + window smoke passed; ZIP SHA-256 4327397a1d31772e9e6c19acd3800ce850f1388e5d12a2bf9538b4e51dbd2c33, SBOM/SHA256SUMS digests match the GitHub assets). Earlier in the session delivered DN-045 (NVD ranges, indicator filter, DGA precision, ordered correlations). Idle. Note: the canonical clone at Desktop\\downpour v2 is at eb2adb3 with unique uncommitted CsvUrl/PhishTank parser work; backed up to artifacts\\wip-csvurl-feed-20261119.patch, not committed."
+      "heartbeatUtc": "2026-11-20T01:03:47Z",
+      "notes": "2026-11-19: validated the whole feed catalog live, added six TweetFeed lists, retired four dead sources with a Retired flag that is never downloaded, fixed a Uri.TryCreate fuzz crash, and restored the live download test. Debug 1,404 tests pass; 57-feed live test passes. Optional next: abuse.ch Auth-Key support. v0.1.23 remains the published release (4dc86b7)."
     }
   ]
 }

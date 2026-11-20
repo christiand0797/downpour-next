@@ -1,5 +1,6 @@
 using System.Text;
 using Downpour.Core;
+using Downpour.Contracts;
 
 namespace Downpour.Tests;
 
@@ -53,6 +54,119 @@ public sealed class ThreatFeedExpansionTests
         Assert.Equal(1, parsed.RejectedLines);
     }
 
+
+
+
+
+
+
+
+    [Fact]
+    public void TweetfeedDomainsFeedExtractsDomains()
+    {
+        var feed = Feed("tweetfeed-domains") with { IndicatorLimit = 10 };
+        const string content =
+            "# comment line\n" +
+            "malicious.example\n" +
+            "another.bad.example\n" +
+            "google.com\n"; // shared platform, skipped
+        var parsed = Parse("tweetfeed-domains", content);
+        Assert.Equal(2, parsed.Indicators.Count);
+        Assert.Contains(parsed.Indicators, i => i.Value == "malicious.example");
+        Assert.Contains(parsed.Indicators, i => i.Value == "another.bad.example");
+        Assert.DoesNotContain(parsed.Indicators, i => i.Value == "google.com");
+    }
+
+    [Fact]
+    public void TweetfeedIpsFeedExtractsIps()
+    {
+        var feed = Feed("tweetfeed-ips") with { IndicatorLimit = 10 };
+        const string content =
+            "# comment line\n" +
+            "8.8.8.8\n" +
+            "1.2.3.4\n" +
+            "10.0.0.1\n"; // private range, skipped
+        var parsed = Parse("tweetfeed-ips", content);
+        Assert.Equal(3, parsed.Indicators.Count);
+        Assert.Contains(parsed.Indicators, i => i.Value == "8.8.8.8");
+        Assert.Contains(parsed.Indicators, i => i.Value == "1.2.3.4");
+    }
+
+    [Fact]
+    public void TweetfeedUrlsFeedExtractsHosts()
+    {
+        var feed = Feed("tweetfeed-urls") with { IndicatorLimit = 10 };
+        const string content =
+            "# comment line\n" +
+            "http://evil.example/payload\n" +
+            "https://bad.example/file.exe\n" +
+            "ftp://google.com/file\n"; // shared platform, skipped
+        var parsed = Parse("tweetfeed-urls", content);
+        Assert.Equal(2, parsed.Indicators.Count);
+        Assert.Contains(parsed.Indicators, i => i.Value == "evil.example");
+        Assert.Contains(parsed.Indicators, i => i.Value == "bad.example");
+        Assert.DoesNotContain(parsed.Indicators, i => i.Value == "google.com");
+    }
+
+    [Fact]
+    public void TweetfeedSha256FeedExtractsHashes()
+    {
+        var feed = Feed("tweetfeed-sha256") with { IndicatorLimit = 10 };
+        const string content =
+            "# comment line\n" +
+            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n" +
+            "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\n" +
+            "not-a-hash\n";
+        var parsed = Parse("tweetfeed-sha256", content);
+        Assert.Equal(2, parsed.Indicators.Count);
+        Assert.Contains(parsed.Indicators, i => i.Type == IndicatorType.Sha256);
+        Assert.Equal(1, parsed.RejectedLines);
+    }
+
+    [Fact]
+    public void CsvUrlFeedExtractsHostFromUrlColumnAndSkipsSharedPlatforms()
+    {
+        var feed = Feed("phishtank") with { IndicatorLimit = 10 };
+        const string csv = """
+            phish_id,url,target
+            1,http://evil.example/phish,Example Bank
+            2,"https://bad.example/a,b",Other Bank
+            3,http://google.com/redirect,Shared platform
+            4,not-a-url,ignore
+            5,http://first.example/a,First
+            6,http://first.example/b,First again
+            """;
+        var parsed = Parse("phishtank", csv);
+
+        Assert.Equal(3, parsed.Indicators.Count);
+        Assert.Contains(parsed.Indicators, i => i.Value == "evil.example");
+        Assert.Contains(parsed.Indicators, i => i.Value == "bad.example");
+        Assert.Contains(parsed.Indicators, i => i.Value == "first.example");
+        Assert.DoesNotContain(parsed.Indicators, i => i.Value == "google.com");
+        Assert.Equal(2, parsed.RejectedLines);
+    }
+
+    [Fact]
+    public void RetiredSourcesKeepTheirOfficialEntryButAreNotDownloaded()
+    {
+        var retired = ThreatFeedCatalog.All.Where(f => f.Retired).Select(f => f.Id).ToHashSet();
+        Assert.Equal(new[] { "malwarebazaar", "phishtank", "threatfox", "urlhaus" }, retired.OrderBy(id => id));
+        Assert.All(ThreatFeedCatalog.All.Where(f => f.Retired), f => Assert.StartsWith("Retired:", f.Purpose));
+        Assert.Equal(58, ThreatFeedCatalog.All.Count(f => !f.Retired));
+    }
+
+    [Fact]
+    public void NewFeedsAreDeclaredInCatalog()
+    {
+        var ids = ThreatFeedCatalog.All.Select(f => f.Id).ToHashSet();
+        Assert.True(ids.Contains("tweetfeed-domains"), "tweetfeed-domains missing");
+        Assert.True(ids.Contains("tweetfeed-domains-corroborated"), "tweetfeed-domains-corroborated missing");
+        Assert.True(ids.Contains("tweetfeed-ips"), "tweetfeed-ips missing");
+        Assert.True(ids.Contains("tweetfeed-ips-corroborated"), "tweetfeed-ips-corroborated missing");
+        Assert.True(ids.Contains("tweetfeed-urls"), "tweetfeed-urls missing");
+        Assert.True(ids.Contains("tweetfeed-sha256"), "tweetfeed-sha256 missing");
+    }
+
     [Fact]
     public void LolRmmYieldsProgramContextAndServiceDomains()
     {
@@ -73,7 +187,7 @@ public sealed class ThreatFeedExpansionTests
         Assert.Contains(parsed.Indicators, i => i.Value == "net.anydesk.com");
     }
 
-    /// <summary>Downloads every feed added in this expansion and parses it. Opt-in: set DOWNPOUR_LIVE_FEEDS=1.</summary>
+    /// <summary>Downloads every feed in the catalog and parses it. Opt-in: set DOWNPOUR_LIVE_FEEDS=1.</summary>
     [Fact]
     public async Task LiveFeedsDownloadAndParse()
     {
@@ -81,7 +195,7 @@ public sealed class ThreatFeedExpansionTests
         using var http = new HttpClient(new HttpClientHandler { AllowAutoRedirect = false }) { Timeout = TimeSpan.FromSeconds(90) };
         http.DefaultRequestHeaders.UserAgent.ParseAdd("DownpourNext-test");
         var failures = new List<string>();
-        foreach (var feed in ThreatFeedCatalog.All.Where(f => f.Format != ThreatFeedFormat.Ip2AsnGzip))
+        foreach (var feed in ThreatFeedCatalog.All.Where(f => !f.Retired && f.Format != ThreatFeedFormat.Ip2AsnGzip))
         {
             try
             {

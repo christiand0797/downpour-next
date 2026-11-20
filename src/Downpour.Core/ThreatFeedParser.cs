@@ -43,6 +43,7 @@ public static partial class ThreatFeedParser
             ThreatFeedFormat.Lines => ParseLines(feed, Text(payload), hostsFile: false),
             ThreatFeedFormat.HostsFile => ParseLines(feed, Text(payload), hostsFile: true),
             ThreatFeedFormat.UrlLines => ParseUrls(feed, Text(payload)),
+            ThreatFeedFormat.CsvUrl => ParseCsvUrl(feed, Text(payload)),
             ThreatFeedFormat.FeodoCsv => ParseFeodo(feed, Text(payload)),
             ThreatFeedFormat.SpamhausJsonLines => ParseSpamhaus(feed, Text(payload)),
             ThreatFeedFormat.ThreatFoxJson => ParseThreatFox(feed, payload),
@@ -211,6 +212,53 @@ public static partial class ThreatFeedParser
             if (seen.Add(indicator.Value)) Add(indicators, indicator, feed.IndicatorLimit);
         }
         return new(indicators, rejected, []);
+    }
+
+    /// <summary>CSV feeds where the URL column's host is the indicator (e.g. PhishTank online-valid.csv).</summary>
+    private static ParsedThreatFeed ParseCsvUrl(ThreatFeedDefinition feed, string text)
+    {
+        var indicators = new List<ThreatIndicator>();
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        var rejected = 0;
+        foreach (var line in DataLines(text, feed.IndicatorLimit))
+        {
+            var fields = SplitCsv(line, feed.Separator);
+            var url = feed.Column < fields.Length ? fields[feed.Column] : "";
+            if (url.Length is 0) { rejected++; continue; }
+            if (UrlHost(url) is not { } host ||
+                !TryClassify(host, out var indicator, feed.DefaultLabel) || indicator.Type is not (IndicatorType.Domain or IndicatorType.Ip))
+            {
+                rejected++;
+                continue;
+            }
+            // The malicious part of a URL on a shared platform is its path, not the platform; never index the platform itself.
+            if (indicator.Type == IndicatorType.Domain && SharedPlatforms.IsSharedPlatform(indicator.Value)) continue;
+            if (seen.Add(indicator.Value)) Add(indicators, indicator, feed.IndicatorLimit);
+        }
+        return new(indicators, rejected, []);
+    }
+
+    /// <summary>RFC 4180-style field split: quoted fields may contain the separator, doubled quotes are literal.</summary>
+    private static string[] SplitCsv(string line, char separator)
+    {
+        var fields = new List<string>();
+        var field = new StringBuilder();
+        var quoted = false;
+        for (var i = 0; i < line.Length; i++)
+        {
+            var c = line[i];
+            if (quoted)
+            {
+                if (c != '"') field.Append(c);
+                else if (i + 1 < line.Length && line[i + 1] == '"') { field.Append('"'); i++; }
+                else quoted = false;
+            }
+            else if (c == '"') quoted = true;
+            else if (c == separator) { fields.Add(field.ToString().Trim()); field.Clear(); }
+            else field.Append(c);
+        }
+        fields.Add(field.ToString().Trim());
+        return [.. fields];
     }
 
     private static ParsedThreatFeed ParseFeodo(ThreatFeedDefinition feed, string text)
@@ -437,10 +485,14 @@ public static partial class ThreatFeedParser
 
     public static string? UrlHost(string value)
     {
-        if (!Uri.TryCreate(value, UriKind.Absolute, out var uri) || uri.Scheme is not ("http" or "https" or "ftp")) return null;
-        // TryCreate can succeed even when deferred IDN normalization rejects the hostname.
-        try { return uri.IdnHost; }
-        catch (UriFormatException) { return null; }
+        try
+        {
+            if (!Uri.TryCreate(value, UriKind.Absolute, out var uri) || uri.Scheme is not ("http" or "https" or "ftp")) return null;
+            // TryCreate can succeed even when deferred IDN normalization rejects the hostname, and some malformed
+            // authority strings make Uri parsing throw instead of returning false (found by the parser fuzzer).
+            return uri.IdnHost;
+        }
+        catch (Exception ex) when (ex is UriFormatException or IndexOutOfRangeException or ArgumentException) { return null; }
     }
 
     /// <summary>Classifies and normalizes one indicator, or returns false. Used for feeds and for user lookups alike.</summary>

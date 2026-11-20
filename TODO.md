@@ -1,5 +1,13 @@
 # Downpour Next TODO
 
+## 2026-11-19 feed truthfulness slice (buffy)
+
+- [x] Validate every catalog endpoint live; retire `threatfox`, `urlhaus`, `malwarebazaar` (HTTP 410 without a free abuse.ch Auth-Key) and `phishtank` (302 to an expiring signed CDN URL). Retired entries stay catalogued for historical labels and are never downloaded.
+- [x] Add six live TweetFeed CC0 blocklists (domains, corroborated domains, IPs, corroborated IPs, URLs, SHA-256); catalog is 58 active sources.
+- [x] Fix a fuzz-found `Uri.TryCreate` crash (`IndexOutOfRangeException`) in `UrlHost`.
+- [x] 1,404 tests pass; opt-in live download/parse passes for all 57 downloadable feeds.
+- [ ] Optional: add a free abuse.ch `Auth-Key` setting and authenticated fetch to restore ThreatFox, URLhaus and MalwareBazaar.
+
 ## 2026-11-19 completed slice (DN-045)
 
 - [x] Parse NVD range fields and evaluate real affected versions (inclusive/exclusive bounds, exact versions, pre-release ordering).

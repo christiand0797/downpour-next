@@ -2,7 +2,7 @@
 
 ## Threat databases (local matching, DN-031)
 
-Current v0.1.22 catalog: 55 sources; all passed live download/production parsing on 2026-10-16. Ten-source additions, license/provenance checks, historical-data distinctions, strict type handling and future capacity work are detailed in [RESEARCH_2026-10-16.md](RESEARCH_2026-10-16.md). The catalog is the authoritative current inventory; the table below describes the original subset. Source count is not a detection guarantee or a ceiling for further expansion.
+Current catalog: 58 sources; the 57 downloadable feeds (all but the IP-origin table) were re-validated end to end (download, strict parse) on 2026-11-19. Six TweetFeed CC0 lists were added. abuse.ch ThreatFox, URLhaus and MalwareBazaar now answer HTTP 410 without a free `Auth-Key`, and PhishTank redirects to an expiring signed CDN URL, so those four were retired rather than left failing. Retired entries stay in the catalog for historical alert labels but are never downloaded; re-enabling them needs free `Auth-Key` support (abuse.ch) or redirect-free hosting (PhishTank). Feodo Tracker and Phishing Army still cover those categories. Earlier research is in [RESEARCH_2026-10-16.md](RESEARCH_2026-10-16.md). The catalog is the authoritative current inventory; the table below describes the original subset. Source count is not a detection guarantee or a ceiling for further expansion.
 
 `ThreatFeedCatalog` lists every allowed source with its fixed HTTPS URL, size limit, refresh interval, severity, MITRE technique, purpose and license. `ThreatDatabaseService` downloads due feeds whole (no redirects, 20-second connection timeout, 45-second stall timeout, 15-minute overall bound and streaming size limit), parses them with a format-specific strict parser (a feed whose entries mostly fail validation is rejected as a whole), and stores only validated payloads in `%LOCALAPPDATA%\DownpourNext\threat-db\{id}.v1.cache` with a SHA-256 corruption check. Private, loopback, link-local, CGNAT, documentation and multicast ranges are never indexed or matched. Shared platforms (Google, GitHub, Microsoft, Dropbox, Discord, URL shorteners, mobile SDK hosts such as Umeng) are never indexed because a malicious path on them cannot be told apart from normal use in a DNS cache; per-customer subdomains of user-hosting platforms (`*.vercel.app`, S3 buckets, CloudFront distributions) are kept.
 
@@ -12,12 +12,12 @@ Every 5 minutes the service matches established TCP connections with owning proc
 |---|---|---|---|
 | LOLDrivers | loldrivers.io | Apache-2.0 | vulnerable/malicious driver hashes |
 | LOLBAS | lolbas-project.github.io | GPL-3.0 | built-in tools attackers misuse (context) |
-| ThreatFox, Feodo, URLhaus, MalwareBazaar | abuse.ch public exports | CC0 | C2 IPs/domains, malware hosts and hashes |
+| Feodo Tracker | abuse.ch | CC0 | botnet C2 IPs. ThreatFox, URLhaus and MalwareBazaar exports now require a free abuse.ch `Auth-Key`, so they are not fetched |
 | Spamhaus DROP v4/v6 | spamhaus.org | DROP terms | hijacked/criminal networks |
 | ET compromised | Proofpoint ET Open | BSD | compromised hosts |
 | FireHOL level 1, IPsum 3+, CINS, GreenSnow, blocklist.de | respective projects | per source | attacker/scanner reputation |
 | Tor exits | torproject.org | public | Tor exit relays (low) |
-| Phishing Army, OpenPhish | respective projects | non-commercial | phishing domains |
+| Phishing Army, OpenPhish | respective projects | non-commercial | phishing domains (Phishing Army aggregates PhishTank, OpenPhish and CERT Polska) |
 | Stalkerware indicators | Echap | CC BY 4.0 | stalkerware servers |
 | IPtoASN | iptoasn.com | PDDL | offline country/network origin |
 | C2IntelFeeds IPs and domains | drb-ra | free use | Cobalt Strike / attack-framework C2 (30 days) |
@@ -27,6 +27,12 @@ Every 5 minutes the service matches established TCP connections with owning proc
 | Pegasus, Predator | Amnesty Security Lab | CC BY 4.0 | mercenary spyware servers (weighted like stalkerware) |
 | HaGeZi TIF mini, CERT Polska, ShadowWhisperer, Block List Project (ransomware, scam, crypto), Scam Blocklist, Spam404, NoCoin | respective projects | GPL-3.0 / MIT / Unlicense / CC | malware, ransomware, scam, phishing and cryptojacking domains |
 | ET block, FireHOL level 2/3/webclient/abusers, DShield, BruteForceBlocker, IPsum 5+ | respective projects | per source | attacker and abuse reputation |
+| TweetFeed domains | TweetFeed.live | CC0 | Community-reported malicious domains (T1071), rolling 30-day window |
+| TweetFeed domains corroborated | TweetFeed.live | CC0 | Corroborated malicious domains, cross-listed with URLhaus/ThreatFox/MalwareBazaar (T1071) |
+| TweetFeed IPs | TweetFeed.live | CC0 | Community-reported malicious IPs (T1071), rolling 30-day window |
+| TweetFeed IPs corroborated | TweetFeed.live | CC0 | Corroborated malicious IPs, cross-listed with URLhaus/ThreatFox/MalwareBazaar (T1071) |
+| TweetFeed URLs | TweetFeed.live | CC0 | Community-reported malicious URLs, hosts extracted (T1189) |
+| TweetFeed SHA-256 hashes | TweetFeed.live | CC0 | Community-reported malicious file hashes (T1204) |
 | LOLRMM | lolrmm.io | Apache-2.0 | 358 remote-access tools: program names as context (T1219), service domains as low indicators |
 
 Separated-value feeds use the `Delimited` format (separator, value column, optional label column). LOLRMM program names that are

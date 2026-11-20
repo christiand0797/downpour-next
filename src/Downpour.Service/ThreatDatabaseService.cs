@@ -68,7 +68,7 @@ public sealed class ThreatDatabaseService(
         public bool Updating { get; set; }
 
         public bool IsDue(DateTimeOffset now) =>
-            !Updating && (RetrievedAtUtc is not { } retrieved || now - retrieved >= Definition.RefreshInterval) &&
+            !Definition.Retired && !Updating && (RetrievedAtUtc is not { } retrieved || now - retrieved >= Definition.RefreshInterval) &&
             (Error is null || LastAttemptUtc is not { } attempt || now - attempt >= RetryAfterFailure);
     }
 
@@ -106,6 +106,7 @@ public sealed class ThreatDatabaseService(
         var now = _time.GetUtcNow();
         foreach (var state in _feeds.Values)
         {
+            if (state.Definition.Retired) continue;
             try
             {
                 if (_cache.TryRead(state.Definition, now) is not { } cached) continue;
@@ -138,7 +139,7 @@ public sealed class ThreatDatabaseService(
                 var now = _time.GetUtcNow();
                 lock (_gate)
                 {
-                    if (!(force ? !state.Updating && (state.Error is not null || state.RetrievedAtUtc is null || now - state.RetrievedAtUtc >= TimeSpan.FromMinutes(30)) : state.IsDue(now))) continue;
+                    if (state.Definition.Retired || !(force ? !state.Updating && (state.Error is not null || state.RetrievedAtUtc is null || now - state.RetrievedAtUtc >= TimeSpan.FromMinutes(30)) : state.IsDue(now))) continue;
                     state.Updating = true;
                     state.LastAttemptUtc = now;
                 }
@@ -559,7 +560,7 @@ public sealed class ThreatDatabaseService(
         {
             var index = Index;
             var enabled = settings.Current.ThreatDatabases;
-            var feeds = _feeds.Values.Select(s =>
+            var feeds = _feeds.Values.Where(s => !s.Definition.Retired).Select(s =>
             {
                 var d = s.Definition;
                 var freshness = ThreatFeedFreshness.Evaluate(d, s.Parsed, s.RetrievedAtUtc, now);
