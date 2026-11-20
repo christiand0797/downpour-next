@@ -1196,6 +1196,29 @@
       ],
       "notes": "buffy 2026-11-20: completed. 1,479 tests pass on rerun; one unrelated AMSI timing test failed once then passed alone and in the full rerun. Quiet here (182 running drivers, none missing).",
       "updatedAt": "2026-11-20"
+    },
+    {
+      "id": "DN-060",
+      "title": "Publish 0.1.27 with cross-view checks and the pipe crash fix",
+      "status": "completed",
+      "priority": "high",
+      "files": [
+        "Directory.Build.props",
+        "docs/RELEASE_0.1.27.md",
+        "docs/CONTINUATION.md",
+        "src/Downpour.Core/NetworkInventoryClient.cs",
+        "src/Downpour.Core/DriverInventoryClient.cs",
+        "src/Downpour.Core/InstalledSoftwareInventoryClient.cs"
+      ],
+      "acceptance": [
+        "Release build and suite green",
+        "ZIP and SBOM digests verified",
+        "Route smoke including all routes",
+        "Window smoke",
+        "Release published with assets"
+      ],
+      "notes": "buffy 2026-11-20: completed. First 0.1.27 smoke run exposed a real desktop crash (InvalidDataException escaping NetworkInventoryClient into an async void timer); fixed and re-verified. Smoke harness waits widened only; assertions unchanged.",
+      "updatedAt": "2026-11-20"
     }
   ]
 }

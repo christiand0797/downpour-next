@@ -173,10 +173,10 @@
     {
       "id": "buffy",
       "role": "agent",
-      "taskId": "DN-059",
+      "taskId": "DN-060",
       "status": "idle",
-      "heartbeatUtc": "2026-11-20T08:10:00Z",
-      "notes": "Driver cross-view wired; 1,479 tests pass. Note AmsiSessionTests.ContextCannotBeUninitializedDuringAnActiveScan is timing-flaky (failed once, passed alone and on rerun). artex unavailable in this thread."
+      "heartbeatUtc": "2026-11-20T09:05:00Z",
+      "notes": "0.1.27 published. Crash fix from smoke. Continuation doc added. artex still unavailable until thread reload."
     }
   ]
 }
