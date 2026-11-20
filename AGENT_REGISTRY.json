@@ -173,10 +173,10 @@
     {
       "id": "buffy",
       "role": "agent",
-      "taskId": "DN-055",
+      "taskId": "DN-056",
       "status": "idle",
-      "heartbeatUtc": "2026-11-20T05:55:00Z",
-      "notes": "Alert explanation wired; 1,477 tests pass. Next: 0.1.26 cut (unreleased set is large), or weekly digest wiring. artex still not spawnable in this thread."
+      "heartbeatUtc": "2026-11-20T06:20:00Z",
+      "notes": "Cleared-log cursor reset landed; 1,477 tests pass. artex still unavailable; researcher-web used for Windows event-log/metered facts. Next: 0.1.26 release cut."
     }
   ]
 }

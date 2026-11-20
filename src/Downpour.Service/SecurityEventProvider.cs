@@ -10,7 +10,8 @@ namespace Downpour.Service;
 /// graded by signature instead of all being HIGH.
 /// </summary>
 /// <summary>A capture plus the cursors it advanced; the caller persists them only after a successful ingest.</summary>
-public sealed record EventLogCapture(SecurityEventSnapshot Snapshot, IReadOnlyList<EventCursor> Cursors);
+/// <summary>A capture, the cursors it advanced, and channels whose numbering restarted (a cleared log) so the caller can re-baseline.</summary>
+public sealed record EventLogCapture(SecurityEventSnapshot Snapshot, IReadOnlyList<EventCursor> Cursors, IReadOnlyList<string> Resets);
 
 public sealed class SecurityEventProvider(FileSignatureChecker? signatures = null)
 {
@@ -67,6 +68,7 @@ public sealed class SecurityEventProvider(FileSignatureChecker? signatures = nul
         var events = new List<SecurityEventObservation>();
         var warnings = new List<string>();
         var updated = new List<EventCursor>(Sources.Length);
+        var resets = new List<string>(0);
         var queried = 0;
 
         foreach (var source in Sources)
@@ -79,6 +81,12 @@ public sealed class SecurityEventProvider(FileSignatureChecker? signatures = nul
                 var previous = cursors is null ? null : cursors.GetValueOrDefault(source.LogName);
                 if (newest > 0)
                 {
+                    // A cleared channel can restart record numbering; the stored cursor is then meaningless for it.
+                    if (previous is not null && newest < previous.LastRecordId)
+                    {
+                        resets.Add(source.LogName);
+                        continue;
+                    }
                     if (EventLogContinuity.Advance(previous, source.LogName, newest, newest.ToString("x16"), capturedAt) is { } cursor)
                         updated.Add(cursor);
                     if (previous is not null && EarliestAvailable(source.LogName) is { } earliest && earliest > previous.LastRecordId + 1 && earliest <= newest)
@@ -116,7 +124,7 @@ public sealed class SecurityEventProvider(FileSignatureChecker? signatures = nul
             .ToArray();
 
         return new EventLogCapture(
-            new SecurityEventSnapshot(1, capturedAt, bounded, queried, warnings.Take(64).ToArray()), updated);
+            new SecurityEventSnapshot(1, capturedAt, bounded, queried, warnings.Take(64).ToArray()), updated, resets);
     }
 
     /// <summary>The oldest record Windows still holds for a channel, or null when that cannot be read safely.</summary>

@@ -68,6 +68,15 @@ public sealed class SecurityEventMonitorService(
                     try
                     {
                         await alerts.IngestAsync(snapshot, stoppingToken);
+                        if (capture is { Resets.Count: > 0 } cleared)
+                        {
+                            foreach (var logName in cleared.Resets)
+                            {
+                                await alerts.DeleteEventCursorAsync(logName, stoppingToken);
+                                _cursors = _cursors.Where(pair => !string.Equals(pair.Key, logName, StringComparison.OrdinalIgnoreCase))
+                                    .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.OrdinalIgnoreCase);
+                            }
+                        }
                         if (capture is { Cursors.Count: > 0 } advanced)
                         {
                             await alerts.SaveEventCursorsAsync(advanced.Cursors, stoppingToken);

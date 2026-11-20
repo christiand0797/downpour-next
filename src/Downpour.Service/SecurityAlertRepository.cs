@@ -326,6 +326,22 @@ public sealed class SecurityAlertRepository(string databasePath)
         finally { _gate.Release(); }
     }
 
+    /// <summary>Drops one channel's cursor after its log was cleared, so numbering starts from the new baseline.</summary>
+    public async Task DeleteEventCursorAsync(string logName, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(logName);
+        await _gate.WaitAsync(cancellationToken);
+        try
+        {
+            await using var connection = await OpenAsync(cancellationToken);
+            await using var command = connection.CreateCommand();
+            command.CommandText = "DELETE FROM event_cursors WHERE log_name=$log;";
+            command.Parameters.AddWithValue("$log", logName);
+            await command.ExecuteNonQueryAsync(cancellationToken);
+        }
+        finally { _gate.Release(); }
+    }
+
     /// <summary>Stores cursors monotonically: a replayed or stale record can never rewind ingestion.</summary>
     public async Task SaveEventCursorsAsync(IEnumerable<EventCursor> cursors, CancellationToken cancellationToken = default)
     {

@@ -188,6 +188,9 @@ public sealed class SecurityAlertRepositoryTests
         Assert.Equal(900, (await repository.ReadEventCursorsAsync())["System"].LastRecordId);
         await repository.SaveEventCursorsAsync([new EventCursor("System", 940, "hash-940", now)]);
         Assert.Equal(940, (await repository.ReadEventCursorsAsync())["System"].LastRecordId);
+
+        await repository.DeleteEventCursorAsync("System");
+        Assert.Empty(await repository.ReadEventCursorsAsync());
     }
 
     [Fact]

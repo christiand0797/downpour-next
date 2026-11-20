@@ -51,6 +51,6 @@ public static class EventLogContinuity
                     $"{logName}: catching up {lastAvailableRecordId - next + 1:N0} record(s) since {cursor.UpdatedUtc:yyyy-MM-dd HH:mm} UTC.");
         var missing = firstAvailableRecordId - next;
         return new(CatchUpOutcome.Lost, firstAvailableRecordId, firstAvailableRecordId, lastAvailableRecordId, missing,
-            $"{logName}: {missing:N0} record(s) were already rolled out of the log since the last run; that window cannot be recovered.");
+            $"{logName}: {missing:N0} record(s) are no longer in the log (rolled out or cleared) since the last run; that window cannot be recovered.");
     }
 }

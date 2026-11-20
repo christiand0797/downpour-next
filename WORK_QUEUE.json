@@ -1120,6 +1120,27 @@
       ],
       "notes": "buffy 2026-11-20: completed, 1,477 tests pass. Panel has not been viewed. The richer DetectionExplanation input (per-alert field lists) is still not stored, so this uses metadata that exists.",
       "updatedAt": "2026-11-20"
+    },
+    {
+      "id": "DN-056",
+      "title": "Re-baseline event cursors after a cleared log",
+      "status": "completed",
+      "priority": "medium",
+      "files": [
+        "src/Downpour.Core/EventLogContinuity.cs",
+        "src/Downpour.Service/SecurityEventProvider.cs",
+        "src/Downpour.Service/SecurityAlertRepository.cs",
+        "src/Downpour.Service/SecurityEventMonitorService.cs",
+        "tests/Downpour.Tests/SecurityAlertRepositoryTests.cs",
+        "docs/FOLLOWUP_FOUNDATIONS_2.md"
+      ],
+      "acceptance": [
+        "A restarted record numbering is detected and the stale cursor removed",
+        "Wording no longer claims a cause that cannot be known",
+        "Cursor deletion covered by a test"
+      ],
+      "notes": "buffy 2026-11-20: completed after a documentation check that OldestRecordNumber is the oldest retained record and post-clear numbering is undocumented. 1,477 tests pass; service smoke clean.",
+      "updatedAt": "2026-11-20"
     }
   ]
 }
