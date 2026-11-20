@@ -68,6 +68,9 @@ public sealed class SecurityEventMonitorService(
                     try
                     {
                         await alerts.IngestAsync(snapshot, stoppingToken);
+                        // Readability decides whether a quiet rule is quiet or blind, so it is stored with the alerts.
+                        if (capture?.Channels is { Count: > 0 } channelHealth)
+                            await alerts.SaveChannelHealthAsync(channelHealth, stoppingToken);
                         if (capture is { Resets.Count: > 0 } cleared)
                         {
                             foreach (var logName in cleared.Resets)

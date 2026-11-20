@@ -48,6 +48,7 @@ public sealed class SecurityAlertClient(string pipeName = SecurityAlertClient.Pi
                 retention.EvictedLast7Days is < 0 or > 100_000_000 || retention.Warnings is not { Count: <= 4 } ||
                 retention.Warnings.Any(warning => warning is not { Length: > 0 and <= 512 })))
             return false;
+        if (snapshot.Coverage is { } coverage && !IsValidCoverage(coverage)) return false;
         if (snapshot.Suppressions is { } suppressions)
         {
             if (suppressions.Count > 20) return false;
@@ -79,6 +80,18 @@ public sealed class SecurityAlertClient(string pipeName = SecurityAlertClient.Pi
         }
         return snapshot.Warnings.All(warning => Bounded(warning, 512, allowEmpty: true));
     }
+
+    /// <summary>Coverage is advisory: bounded counts that add up, and a bounded list of rules that cannot fire.</summary>
+    private static bool IsValidCoverage(AlertRuleCoverageSummary coverage) =>
+        coverage.Rules is >= 0 and <= 1_000 && coverage.CanFire is >= 0 and <= 1_000 &&
+        coverage.CannotFire is >= 0 and <= 1_000 && coverage.Silent is >= 0 and <= 1_000 &&
+        coverage.Unknown is >= 0 and <= 1_000 &&
+        coverage.Rules == coverage.CanFire + coverage.CannotFire + coverage.Silent + coverage.Unknown &&
+        (coverage.ObservedSinceUtc is not { } since || since.Offset == TimeSpan.Zero && since <= DateTimeOffset.UtcNow.AddMinutes(1)) &&
+        coverage.Entries is { Count: <= 64 } &&
+        coverage.Entries.All(entry => entry is not null && Bounded(entry.RuleId, 200) && Bounded(entry.Channel, 128) &&
+            entry.EventId is >= 0 and <= ushort.MaxValue &&
+            entry.State is "CanFire" or "CannotFire" or "Silent" or "Unknown" && Bounded(entry.Reason, 300));
 
     private static bool IsValidEventAlert(SecurityAlert alert) =>
         SecurityEventCatalog.TryGetRule(alert.LogName, alert.EventId, out var rule) && rule.Technique == alert.Technique &&

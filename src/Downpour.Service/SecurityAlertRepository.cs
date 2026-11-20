@@ -75,7 +75,11 @@ public sealed class SecurityAlertRepository(string databasePath)
                 "last_record_id INTEGER NOT NULL CHECK(last_record_id>=0), last_hash TEXT NOT NULL CHECK(length(last_hash) BETWEEN 1 AND 128), " +
                 "updated_utc TEXT NOT NULL);" +
                 // Additive: one last clock reading, so a backward jump is detectable after a restart.
-                "CREATE TABLE IF NOT EXISTS service_clock (id INTEGER PRIMARY KEY CHECK(id=1), last_utc TEXT NOT NULL);",
+                "CREATE TABLE IF NOT EXISTS service_clock (id INTEGER PRIMARY KEY CHECK(id=1), last_utc TEXT NOT NULL);" +
+                // Additive: per-channel readability and when coverage started, so a blind rule is not mistaken for calm.
+                "CREATE TABLE IF NOT EXISTS alert_channel_health (log_name TEXT PRIMARY KEY CHECK(length(log_name)<=128), " +
+                "readable INTEGER NOT NULL CHECK(readable IN (0,1)), updated_utc TEXT NOT NULL);" +
+                "CREATE TABLE IF NOT EXISTS alert_coverage (id INTEGER PRIMARY KEY CHECK(id=1), observed_since_utc TEXT NOT NULL);",
                 cancellationToken);
             // Additive (no schema bump): suppression expiry and how many matches a suppression has hidden.
             await EnsureColumnAsync(connection, "alert_fp_rules", "expires_at_utc", "TEXT NULL", cancellationToken);
@@ -259,8 +263,9 @@ public sealed class SecurityAlertRepository(string databasePath)
             var suppressionWarnings = await ReadSuppressionWarningsAsync(connection, cancellationToken);
             var suppressions = await ReadSuppressionsAsync(connection, cancellationToken);
             var retention = await ReadRetentionAsync(connection, total, cancellationToken);
+            var coverage = await ReadCoverageAsync(connection, cancellationToken);
             return new SecurityAlertSnapshot(1, DateTimeOffset.UtcNow, total, alerts, suppressionWarnings,
-                await ReadHourlyAsync(connection, cancellationToken), suppressions, retention);
+                await ReadHourlyAsync(connection, cancellationToken), suppressions, retention, coverage);
         }
         finally { _gate.Release(); }
     }
@@ -278,6 +283,102 @@ public sealed class SecurityAlertRepository(string databasePath)
         var report = StoreRetentionAccounting.Assess(retained, MaximumAlertCount, oldest, DateTimeOffset.UtcNow, Retention, []);
         return new AlertRetentionSummary(report.Retained, report.Capacity, report.OldestRetainedUtc, report.Window,
             evicted, report.Warnings.Take(4).ToArray());
+    }
+
+    /// <summary>
+    /// Records whether each allow-listed channel could be read. The first record also starts the observation clock, so a
+    /// zero match count is never called silence before the store has watched for a full window.
+    /// </summary>
+    public async Task SaveChannelHealthAsync(IEnumerable<ChannelReadStatus> channels, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(channels);
+        var bounded = channels
+            .Where(channel => !string.IsNullOrWhiteSpace(channel.LogName) && channel.LogName.Length <= 128)
+            .GroupBy(channel => channel.LogName, StringComparer.OrdinalIgnoreCase)
+            .Select(group => group.Last()).Take(16).ToArray();
+        if (bounded.Length == 0) return;
+        await _gate.WaitAsync(cancellationToken);
+        try
+        {
+            await using var connection = await OpenAsync(cancellationToken);
+            await using var transaction = connection.BeginTransaction();
+            var now = DateTimeOffset.UtcNow.ToString("O");
+            await using var command = connection.CreateCommand();
+            command.Transaction = transaction;
+            command.CommandText = "INSERT INTO alert_channel_health(log_name,readable,updated_utc) VALUES($log,$readable,$at) " +
+                "ON CONFLICT(log_name) DO UPDATE SET readable=excluded.readable, updated_utc=excluded.updated_utc;";
+            foreach (var channel in bounded)
+            {
+                command.Parameters.Clear();
+                command.Parameters.AddWithValue("$log", channel.LogName);
+                command.Parameters.AddWithValue("$readable", channel.Readable ? 1 : 0);
+                command.Parameters.AddWithValue("$at", now);
+                await command.ExecuteNonQueryAsync(cancellationToken);
+            }
+            await using var start = connection.CreateCommand();
+            start.Transaction = transaction;
+            start.CommandText = "INSERT INTO alert_coverage(id,observed_since_utc) VALUES(1,$at) ON CONFLICT(id) DO NOTHING;";
+            start.Parameters.AddWithValue("$at", now);
+            await start.ExecuteNonQueryAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+        }
+        finally { _gate.Release(); }
+    }
+
+    /// <summary>
+    /// Splits the built-in rules into those that can fire here and those that cannot because their channel is unreadable.
+    /// Nothing is reported until readability has been recorded, and silence is only claimed after a full window.
+    /// </summary>
+    private static async Task<AlertRuleCoverageSummary?> ReadCoverageAsync(SqliteConnection connection, CancellationToken token)
+    {
+        var readable = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var measured = 0;
+        await using (var health = connection.CreateCommand())
+        {
+            health.CommandText = "SELECT log_name,readable FROM alert_channel_health LIMIT 16;";
+            await using var reader = await health.ExecuteReaderAsync(token);
+            while (await reader.ReadAsync(token))
+            {
+                measured++;
+                if (reader.GetInt32(1) != 0) readable.Add(reader.GetString(0));
+            }
+        }
+        if (measured == 0) return null;
+
+        DateTimeOffset? observedSince = null;
+        var started = await ScalarAsync(connection, "SELECT observed_since_utc FROM alert_coverage WHERE id=1;", token);
+        if (started is not null and not DBNull) observedSince = ParseUtc(Convert.ToString(started)!);
+
+        var fireCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        await using (var fired = connection.CreateCommand())
+        {
+            fired.CommandText = "SELECT log_name,event_id,COALESCE(SUM(occurrences),0) FROM alerts GROUP BY log_name,event_id LIMIT 512;";
+            await using var reader = await fired.ExecuteReaderAsync(token);
+            while (await reader.ReadAsync(token))
+                fireCounts[$"{reader.GetString(0)}:{reader.GetInt32(1)}"] = Convert.ToInt32(Math.Min(reader.GetInt64(2), int.MaxValue));
+        }
+
+        var requirements = SecurityEventCatalog.WatchedEvents
+            .Select(entry => new RuleRequirement($"{entry.LogName}:{entry.EventId}", entry.LogName, []))
+            .ToArray();
+        var identity = SecurityEventCatalog.WatchedEvents
+            .ToDictionary(entry => $"{entry.LogName}:{entry.EventId}", entry => (entry.LogName, entry.EventId), StringComparer.OrdinalIgnoreCase);
+        var now = DateTimeOffset.UtcNow;
+        var window = RuleCoverageMap.DefaultSilenceWindow;
+        var silenceWindow = observedSince is { } since && now - since >= window ? window : (TimeSpan?)null;
+        var coverage = RuleCoverageMap.Assess(requirements, readable,
+            new Dictionary<string, IReadOnlySet<string>>(StringComparer.OrdinalIgnoreCase), fireCounts, now, silenceWindow);
+        var entries = coverage.Where(item => item.State != RuleState.CanFire).Take(64)
+            .Select(item => new AlertRuleCoverageEntry(item.RuleId, identity[item.RuleId].LogName,
+                identity[item.RuleId].EventId, item.State.ToString(), item.Reason))
+            .ToArray();
+        return new AlertRuleCoverageSummary(
+            coverage.Count,
+            coverage.Count(item => item.State == RuleState.CanFire),
+            coverage.Count(item => item.State == RuleState.CannotFire),
+            coverage.Count(item => item.State == RuleState.Silent),
+            coverage.Count(item => item.State == RuleState.Unknown),
+            observedSince, entries);
     }
 
     /// <summary>The last wall-clock reading, used to detect a clock that moved backwards.</summary>

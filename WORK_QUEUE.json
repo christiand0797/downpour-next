@@ -1355,6 +1355,30 @@
    ],
    "notes": "buffy 2026-11-20: completed. Built from `c942195`; 1,481 Release tests, 1,077 package entries, all routes and window smoke passed. ZIP 306,402,053 bytes sha256 024c39022bd6f2db5314c0b9cdb2e186589885b5b6d6d6f6dc8e4d7c75338bf7; SBOM ebee0668caeecea99ad2f79239c1b319476c0d4c27fec7951afd4b4931305793. Release notes docs/RELEASE_0.1.29.md.",
    "updatedAt": "2026-11-20"
+  },
+  {
+   "id": "DN-068",
+   "title": "Show which built-in alert rules cannot fire here",
+   "status": "completed",
+   "priority": "high",
+   "files": [
+    "src/Downpour.Contracts/ServiceHealthSnapshot.cs",
+    "src/Downpour.Core/SecurityAlertClient.cs",
+    "src/Downpour.Service/SecurityEventProvider.cs",
+    "src/Downpour.Service/SecurityEventMonitorService.cs",
+    "src/Downpour.Service/SecurityAlertRepository.cs",
+    "src/Downpour.Desktop/Pages/AlertsPage.xaml",
+    "src/Downpour.Desktop/Pages/AlertsPage.xaml.cs",
+    "tests/Downpour.Tests/RuleCoverageWiringTests.cs"
+   ],
+   "acceptance": [
+    "Channel readability is measured and stored with each capture",
+    "Coverage names rules whose channel cannot be read",
+    "Silence is never claimed before a full observation window",
+    "Client rejects inconsistent or oversized coverage"
+   ],
+   "notes": "buffy 2026-11-20: completed. `RuleCoverageMap` was a Core foundation since DN-052; it is now fed from real data. The provider reports readability for all 7 allow-listed channels, the alert store keeps it in `alert_channel_health` plus `alert_coverage.observed_since_utc`, and `ReadSnapshotAsync` builds `SecurityAlertSnapshot.Coverage` over the 35 built-in catalog rules with fire counts summed from stored occurrences. A zero count is never called silent until the store has watched 30 days. Alerts shows a coverage panel naming blocked rules and their reason. 1,484 tests pass (3 new); panel compiled but not inspected.",
+   "updatedAt": "2026-11-20"
   }
  ]
 }

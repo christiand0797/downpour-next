@@ -11,7 +11,11 @@ namespace Downpour.Service;
 /// </summary>
 /// <summary>A capture plus the cursors it advanced; the caller persists them only after a successful ingest.</summary>
 /// <summary>A capture, the cursors it advanced, and channels whose numbering restarted (a cleared log) so the caller can re-baseline.</summary>
-public sealed record EventLogCapture(SecurityEventSnapshot Snapshot, IReadOnlyList<EventCursor> Cursors, IReadOnlyList<string> Resets);
+public sealed record EventLogCapture(SecurityEventSnapshot Snapshot, IReadOnlyList<EventCursor> Cursors, IReadOnlyList<string> Resets,
+    IReadOnlyList<ChannelReadStatus>? Channels = null);
+
+/// <summary>Whether an allow-listed channel could be read during a capture, so a rule that cannot fire is visible.</summary>
+public sealed record ChannelReadStatus(string LogName, bool Readable);
 
 public sealed class SecurityEventProvider(FileSignatureChecker? signatures = null)
 {
@@ -69,6 +73,7 @@ public sealed class SecurityEventProvider(FileSignatureChecker? signatures = nul
         var warnings = new List<string>();
         var updated = new List<EventCursor>(Sources.Length);
         var resets = new List<string>(0);
+        var health = new List<ChannelReadStatus>(Sources.Length);
         var queried = 0;
 
         foreach (var source in Sources)
@@ -77,6 +82,7 @@ public sealed class SecurityEventProvider(FileSignatureChecker? signatures = nul
             {
                 var read = ReadSource(source, capturedAt);
                 events.AddRange(read);
+                health.Add(new ChannelReadStatus(source.LogName, true));
                 var newest = read.Count == 0 ? 0 : read.Max(observation => observation.RecordId ?? 0);
                 var previous = cursors is null ? null : cursors.GetValueOrDefault(source.LogName);
                 if (newest > 0)
@@ -102,18 +108,22 @@ public sealed class SecurityEventProvider(FileSignatureChecker? signatures = nul
             catch (EventLogNotFoundException)
             {
                 warnings.Add($"Event source unavailable: {source.LogName}.");
+                health.Add(new ChannelReadStatus(source.LogName, false));
             }
             catch (UnauthorizedAccessException)
             {
                 warnings.Add(AccessDeniedWarning(source.LogName));
+                health.Add(new ChannelReadStatus(source.LogName, false));
             }
             catch (EventLogException)
             {
                 warnings.Add($"Windows could not read {source.LogName}; the channel may be disabled or restricted.");
+                health.Add(new ChannelReadStatus(source.LogName, false));
             }
             catch (InvalidOperationException)
             {
                 warnings.Add($"Windows event source {source.LogName} is currently unavailable.");
+                health.Add(new ChannelReadStatus(source.LogName, false));
             }
         }
 
@@ -124,7 +134,7 @@ public sealed class SecurityEventProvider(FileSignatureChecker? signatures = nul
             .ToArray();
 
         return new EventLogCapture(
-            new SecurityEventSnapshot(1, capturedAt, bounded, queried, warnings.Take(64).ToArray()), updated, resets);
+            new SecurityEventSnapshot(1, capturedAt, bounded, queried, warnings.Take(64).ToArray()), updated, resets, health);
     }
 
     /// <summary>

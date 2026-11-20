@@ -149,7 +149,8 @@ public sealed record SecurityAlertSnapshot(
     IReadOnlyList<string> Warnings,
     IReadOnlyList<AlertHourCount>? Hourly = null,
     IReadOnlyList<AlertSuppression>? Suppressions = null,
-    AlertRetentionSummary? Retention = null);
+    AlertRetentionSummary? Retention = null,
+    AlertRuleCoverageSummary? Coverage = null);
 
 /// <summary>
 /// The alert store's retention facts: what is kept, what is being evicted, and whether capacity is removing evidence
@@ -162,6 +163,24 @@ public sealed record AlertRetentionSummary(
     TimeSpan Window,
     int EvictedLast7Days,
     IReadOnlyList<string> Warnings);
+
+/// <summary>
+/// Which built-in event-ID rules can actually fire on this PC. A rule whose channel cannot be read looks exactly like a
+/// quiet one, so blind rules are counted and named instead of being left to look like calm.
+/// </summary>
+/// <param name="ObservedSinceUtc">When channel readability was first recorded; silence is only claimed after a window.</param>
+/// <param name="Entries">The rules that are not currently able to fire, worst first and bounded.</param>
+public sealed record AlertRuleCoverageSummary(
+    int Rules,
+    int CanFire,
+    int CannotFire,
+    int Silent,
+    int Unknown,
+    DateTimeOffset? ObservedSinceUtc,
+    IReadOnlyList<AlertRuleCoverageEntry> Entries);
+
+/// <summary>One built-in rule's verdict. RuleId is "&lt;channel&gt;:&lt;event id&gt;".</summary>
+public sealed record AlertRuleCoverageEntry(string RuleId, string Channel, int EventId, string State, string Reason);
 
 /// <summary>
 /// One active false-positive suppression, for the list that makes hidden evidence visible. <paramref name="AlertId"/> is

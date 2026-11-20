@@ -32,7 +32,7 @@
         </Border>
 
         <Grid Grid.Row="2" RowSpacing="10">
-            <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
+            <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
             <Grid ColumnSpacing="10">
                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
             <Border Padding="12,9" CornerRadius="8" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
@@ -110,7 +110,18 @@
                     </StackPanel>
                 </Border>
             </Grid>
-            <Grid Grid.Row="1" ColumnSpacing="10">
+            <Border x:Name="CoveragePanel" Grid.Row="1" Visibility="Collapsed" Padding="12,9" CornerRadius="8" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
+                <Grid ColumnSpacing="10">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                    <StackPanel Spacing="2">
+                        <TextBlock FontSize="10" FontWeight="SemiBold" CharacterSpacing="65" Foreground="{StaticResource HudCyanBrush}" Text="RULE COVERAGE · CAN THIS RULE FIRE HERE?" />
+                        <TextBlock x:Name="CoverageSummary" FontSize="12" FontWeight="SemiBold" TextWrapping="Wrap" Text="Reading which channels this account can open" />
+                        <TextBlock x:Name="CoverageDetail" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" MaxHeight="90" />
+                    </StackPanel>
+                    <TextBlock x:Name="CoverageObserved" Grid.Column="1" FontSize="10" VerticalAlignment="Top" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="" />
+                </Grid>
+            </Border>
+            <Grid Grid.Row="2" ColumnSpacing="10">
                 <Grid.ColumnDefinitions><ColumnDefinition Width="2*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                 <TextBox x:Name="SearchBox" PlaceholderText="Filter by summary, channel, event ID, technique, or provider" TextChanged="SearchBox_TextChanged" />
                 <ComboBox x:Name="StateFilter" Grid.Column="1" Width="150" SelectedIndex="0" SelectionChanged="StateFilter_SelectionChanged">
@@ -118,7 +129,7 @@
                 </ComboBox>
                 <TextBlock x:Name="AlertCount" Grid.Column="2" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="0 alerts" />
             </Grid>
-            <Border x:Name="ExplanationPanel" Grid.Row="2" Visibility="Collapsed" Padding="12,9" CornerRadius="8" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
+            <Border x:Name="ExplanationPanel" Grid.Row="3" Visibility="Collapsed" Padding="12,9" CornerRadius="8" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
                 <Grid ColumnSpacing="10">
                     <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                     <StackPanel Spacing="2">
@@ -129,7 +140,7 @@
                     <Button Grid.Column="1" Content="Close" Click="CloseExplanation_Click" FontSize="10" Padding="8,3" VerticalAlignment="Top" />
                 </Grid>
             </Border>
-            <Grid Grid.Row="3" Padding="12,9" ColumnSpacing="10" Background="{StaticResource DownpourSurfaceElevatedBrush}">
+            <Grid Grid.Row="4" Padding="12,9" ColumnSpacing="10" Background="{StaticResource DownpourSurfaceElevatedBrush}">
                 <Grid.ColumnDefinitions><ColumnDefinition Width="150" /><ColumnDefinition Width="90" /><ColumnDefinition Width="*" /><ColumnDefinition Width="135" /><ColumnDefinition Width="320" /></Grid.ColumnDefinitions>
                 <TextBlock FontSize="10" FontWeight="SemiBold" CharacterSpacing="65" Text="FIRST SEEN" />
                 <TextBlock Grid.Column="1" FontSize="10" FontWeight="SemiBold" CharacterSpacing="65" Text="SEVERITY" />
@@ -137,7 +148,7 @@
                 <TextBlock Grid.Column="3" FontSize="10" FontWeight="SemiBold" CharacterSpacing="65" Text="TRIAGE" />
                 <TextBlock Grid.Column="4" FontSize="10" FontWeight="SemiBold" CharacterSpacing="65" Text="LOCAL REVIEW" />
             </Grid>
-            <ListView x:Name="AlertList" Grid.Row="4" ItemsSource="{x:Bind Alerts}" SelectionMode="None" IsItemClickEnabled="True" ItemClick="AlertList_ItemClick" Background="{StaticResource DownpourSurfaceBrush}">
+            <ListView x:Name="AlertList" Grid.Row="5" ItemsSource="{x:Bind Alerts}" SelectionMode="None" IsItemClickEnabled="True" ItemClick="AlertList_ItemClick" Background="{StaticResource DownpourSurfaceBrush}">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <Grid Padding="12,9" ColumnSpacing="10">

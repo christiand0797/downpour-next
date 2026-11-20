@@ -1,5 +1,12 @@
 # Downpour Next shared context
 
+## 2026-11-20 rule coverage wired (buffy, DN-068)
+
+- `RuleCoverageMap` (a Core foundation since DN-052) is now fed from real data. `SecurityEventProvider.CaptureWithCursors` reports whether each of the 7 allow-listed channels could be read; `SecurityEventMonitorService` stores that with the alerts; `alert_channel_health` keeps the latest state per channel and `alert_coverage` keeps when observation started. `SecurityAlertRepository.ReadSnapshotAsync` builds `SecurityAlertSnapshot.Coverage` over the 35 built-in catalog rules, with fire counts summed from stored occurrences.
+- The point is to separate a quiet rule from a blind one: a rule whose channel this account cannot open is named with the reason, and a zero match count is never called silence until the store has watched a full 30-day window. Fresh stores therefore report readable rules as able to fire, not as silent.
+- Alerts shows a coverage panel: how many built-in rules can fire here, which cannot and why, and when observation started. `SecurityAlertClient` requires the four counts to add up, bounds the entry list at 64 and bounds every field.
+- Verification: Debug build 0 warnings/errors; 1,484 tests pass (3 new in `RuleCoverageWiringTests`). The panel compiles but has not been viewed by hand, and the development machine's channel mix was not inspected, so the blind-spot wording has only been exercised by tests.
+
 ## 2026-11-19 0.1.24 release and foundation modules (buffy)
 
 - Source of truth for this release is the tagged commit; `Directory.Build.props` is 0.1.24.

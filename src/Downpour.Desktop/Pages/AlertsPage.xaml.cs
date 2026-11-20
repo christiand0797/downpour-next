@@ -114,6 +114,7 @@ public sealed partial class AlertsPage : Page
                 CorrelationFindings.Clear();
                 RepeatGroups.Clear();
                 Suppressions.Clear();
+                CoveragePanel.Visibility = Visibility.Collapsed;
                 RepeatCount.Text = "No repeated findings while the alert store is offline.";
                 ExportButton.IsEnabled = false;
                 AlertCount.Text = "ALERT STORE OFFLINE";
@@ -148,6 +149,7 @@ public sealed partial class AlertsPage : Page
             SuppressionCount.Text = Suppressions.Count == 0
                 ? "No false-positive suppression is hiding anything."
                 : $"{Suppressions.Count:N0} active suppression{(Suppressions.Count == 1 ? "" : "s")} · {Suppressions.Sum(row => row.Hidden):N0} hidden matches";
+            RenderCoverage(snapshot.Coverage);
             var repeatedPairs = groups.Count(group => group.Count > 1);
             RepeatCount.Text = repeatedPairs == 0
                 ? "No repeated source and subject pairs in this snapshot."
@@ -226,6 +228,32 @@ public sealed partial class AlertsPage : Page
         "MEDIUM" => 2,
         _ => 1,
     };
+
+    /// <summary>
+    /// A rule whose channel cannot be read looks exactly like a quiet rule, so the blocked ones are named here rather
+    /// than left out of the count. Coverage starts as advisory: silence is only claimed after a full window.
+    /// </summary>
+    private void RenderCoverage(AlertRuleCoverageSummary? coverage)
+    {
+        if (coverage is null)
+        {
+            CoveragePanel.Visibility = Visibility.Collapsed;
+            return;
+        }
+
+        CoveragePanel.Visibility = Visibility.Visible;
+        CoverageSummary.Text = coverage.CannotFire == 0
+            ? $"{coverage.CanFire:N0} of {coverage.Rules:N0} built-in rules can fire here; none is blocked by a channel this account cannot read."
+            : $"{coverage.CannotFire:N0} of {coverage.Rules:N0} built-in rules cannot fire on this PC, so silence from them is not evidence that nothing happened.";
+        var blocked = coverage.Entries.Where(entry => entry.State is "CannotFire" or "Unknown").Take(4)
+            .Select(entry => $"{entry.RuleId} · {entry.Reason}").ToArray();
+        CoverageDetail.Text = blocked.Length == 0
+            ? "Every channel the built-in catalog uses is readable."
+            : string.Join("   ·   ", blocked);
+        CoverageObserved.Text = coverage.ObservedSinceUtc is { } since
+            ? $"observed since {since.ToLocalTime():yyyy-MM-dd}"
+            : "coverage just started";
+    }
 
     private async void RearmSuppression_Click(object sender, RoutedEventArgs e)
     {

@@ -173,10 +173,10 @@
     {
       "id": "buffy",
       "role": "agent",
-      "taskId": "DN-067",
+      "taskId": "DN-068",
       "status": "idle",
-      "heartbeatUtc": "2026-11-20T17:45:00Z",
-      "notes": "v0.1.29 published as Latest from commit c942195 (1,481 tests, package, every route and window smoke). Next: visual inspection of the Network PROCESS column and Alerts explanation panel, or another Core foundation."
+      "heartbeatUtc": "2026-11-20T19:10:00Z",
+      "notes": "DN-068 completed: rule coverage is wired from stored channel readability through the alert snapshot to a new Alerts panel; 1,484 tests pass. Next: cut 0.1.30 with this slice (the panel is compiled but not visually inspected)."
     }
   ]
 }
