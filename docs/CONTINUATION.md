@@ -56,7 +56,7 @@ before the build and the same hash must be written into the versioned scripts.
 - Blocked: egress byte volume (ETW/admin ESTATS), metered feed signal (session-0 support undocumented), ARM64, signing.
 - Remaining Core-only foundations: rule coverage/silence, mitigation posture, metered scheduling, replay diff corpus,
   onboarding, update journal, portable encrypted bundle, IDN confusables, weekly digest, cross-view for ports.
-- Flaky: `AmsiSessionTests.ContextCannotBeUninitializedDuringAnActiveScan` occasionally fails under load and passes alone.
+- Previously flaky: `AmsiSessionTests.ContextCannotBeUninitializedDuringAnActiveScan` failed under load; its waits were raised to 30 s on 2026-11-20.
 
 ## Working rules already in force
 

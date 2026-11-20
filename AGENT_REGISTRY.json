@@ -173,10 +173,10 @@
     {
       "id": "buffy",
       "role": "agent",
-      "taskId": "DN-060",
+      "taskId": "DN-061",
       "status": "idle",
-      "heartbeatUtc": "2026-11-20T09:05:00Z",
-      "notes": "0.1.27 published. Crash fix from smoke. Continuation doc added. artex still unavailable until thread reload."
+      "heartbeatUtc": "2026-11-20T09:30:00Z",
+      "notes": "0.1.27 published as Latest; AMSI flake wait widened; 1,479 tests pass. Continuation doc current. artex still unavailable."
     }
   ]
 }

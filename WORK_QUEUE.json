@@ -1219,6 +1219,23 @@
       ],
       "notes": "buffy 2026-11-20: completed. First 0.1.27 smoke run exposed a real desktop crash (InvalidDataException escaping NetworkInventoryClient into an async void timer); fixed and re-verified. Smoke harness waits widened only; assertions unchanged.",
       "updatedAt": "2026-11-20"
+    },
+    {
+      "id": "DN-061",
+      "title": "Stabilize the AMSI active-scan test",
+      "status": "completed",
+      "priority": "low",
+      "files": [
+        "tests/Downpour.Tests/AmsiSessionTests.cs",
+        "docs/CONTINUATION.md"
+      ],
+      "acceptance": [
+        "Wait windows tolerate load",
+        "Assertions unchanged",
+        "Full suite green"
+      ],
+      "notes": "buffy 2026-11-20: completed. 1,479 pass. Root cause was a 5 s gate wait timing out on a loaded machine, not a product defect.",
+      "updatedAt": "2026-11-20"
     }
   ]
 }

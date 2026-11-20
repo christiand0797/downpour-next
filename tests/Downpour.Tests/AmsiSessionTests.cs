@@ -65,10 +65,10 @@ public sealed class AmsiSessionTests
     {
         using var entered = new ManualResetEventSlim();
         using var release = new ManualResetEventSlim();
-        var backend = new FakeBackend { DuringScan = () => { entered.Set(); Assert.True(release.Wait(TimeSpan.FromSeconds(5))); } };
+        var backend = new FakeBackend { DuringScan = () => { entered.Set(); Assert.True(release.Wait(TimeSpan.FromSeconds(30))); } };
         var session = new AmsiSession(backend);
         var scan = Task.Run(() => session.ScanString("private script"));
-        Assert.True(entered.Wait(TimeSpan.FromSeconds(5)));
+        Assert.True(entered.Wait(TimeSpan.FromSeconds(30)));
         var stop = Task.Run(session.Uninitialize);
         try
         {
