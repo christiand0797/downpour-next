@@ -1141,6 +1141,25 @@
       ],
       "notes": "buffy 2026-11-20: completed after a documentation check that OldestRecordNumber is the oldest retained record and post-clear numbering is undocumented. 1,477 tests pass; service smoke clean.",
       "updatedAt": "2026-11-20"
+    },
+    {
+      "id": "DN-057",
+      "title": "Publish Downpour Next 0.1.26",
+      "status": "completed",
+      "priority": "high",
+      "files": [
+        "Directory.Build.props",
+        "docs/RELEASE_0.1.26.md",
+        "artifacts/v0.1.26-package.ps1"
+      ],
+      "acceptance": [
+        "Release build and full suite green",
+        "ZIP and SBOM digests recorded",
+        "Packaged route smoke and window smoke pass",
+        "Release published with assets"
+      ],
+      "notes": "buffy 2026-11-20: completed. 1,477 Release tests; 1,077 ZIP entries; window smoke PASS. Explanation panel still not visually inspected.",
+      "updatedAt": "2026-11-20"
     }
   ]
 }
