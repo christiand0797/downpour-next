@@ -43,6 +43,11 @@ public sealed class SecurityAlertClient(string pipeName = SecurityAlertClient.Pi
         if (snapshot.Hourly is { } hourly && (hourly.Count > 7 * 24 + 2 || hourly.Any(h => h is null || h.HourUtc.Offset != TimeSpan.Zero
                 || h.Count is < 0 or > 1_000_000 || h.Serious < 0 || h.Serious > h.Count)))
             return false;
+        if (snapshot.Retention is { } retention && (retention.Retained is < 0 or > 1_000_000 || retention.Capacity is < 1 or > 1_000_000 ||
+                retention.Retained > retention.Capacity || retention.Window <= TimeSpan.Zero || retention.Window > TimeSpan.FromDays(3650) ||
+                retention.EvictedLast7Days is < 0 or > 100_000_000 || retention.Warnings is not { Count: <= 4 } ||
+                retention.Warnings.Any(warning => warning is not { Length: > 0 and <= 512 })))
+            return false;
         if (snapshot.Suppressions is { } suppressions)
         {
             if (suppressions.Count > 20) return false;

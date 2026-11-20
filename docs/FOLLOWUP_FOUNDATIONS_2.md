@@ -1,7 +1,8 @@
 # Follow-up foundations, round two
 
 Fifteen bounded, tested Core foundations for the next layer of work, landed after v0.1.25 and after the suppression
-list. **None of these is wired into a route, service loop or the updater yet.** Each entry says what exists, what the
+list. Two are now wired (event-log cursors in the service loop and retention eviction accounting in the alert store); the
+other thirteen are **not** wired into a route, service loop or the updater. Each entry says what exists, what the
 tests prove, and exactly what wiring would need to be true before it can be called working.
 
 The rule from round one still applies: a foundation is not a feature, and this document never claims parity with a
@@ -9,7 +10,7 @@ commercial product.
 
 | # | Foundation | What it does | Wired? | Wiring needs |
 |---|---|---|---|---|
-| 1 | `EventLogContinuity` | Per-channel cursor that only moves forward, plus a catch-up plan that distinguishes "current", "catch up N records" and "N records were already rolled out — that window cannot be recovered". | No | Persist a cursor per channel beside the alert DB; advance it only after a successful ingest; call `Plan` on service start and surface the lost-window note. |
+| 1 | `EventLogContinuity` | Per-channel cursor that only moves forward, plus a catch-up plan that distinguishes "current", "catch up N records" and "N records were already rolled out — that window cannot be recovered". | **Yes** | `event_cursors` table holds one monotonic row per channel, saved only after a successful ingest; the service passes prior cursors into the capture, and a lost window becomes an Alerts warning from `Plan`. Ingestion itself is still the 24-hour lookback, so this reports the gap rather than replaying records from a cursor. |
 | 2 | `EgressBaseline` | Per-process baseline of network owner + country (never addresses or payloads); reports only when an owner is new **and** the transfer is large. | No | A sampling loop over established TCP owners, an owner/ASN resolver, and a finding source. Currently no continuous sampler exists. |
 | 3 | `ClockIntegrity` | Compares the wall clock with the last reading, uptime and boot time; names backward jumps, unexplained forward jumps and monotonic mismatch. | No | Store the last reading, pass uptime/boot time from the service, and decide which verdicts become notices versus findings. |
 | 4 | `CrossViewInventory` | Generic diff between two independent enumerations (SCM vs registry services, modules vs driver keys, two TCP table APIs); calls differences consistency anomalies, never evidence of tampering. | No | A second enumeration path per artifact kind; a known-differences list (per-session services and similar legitimately differ). |
@@ -17,7 +18,7 @@ commercial product.
 | 6 | `ExploitMitigationPosture` | Scores per-process CFG/ACG/CIG/non-Microsoft DLL blocking/DEP/ASLR, ranks high-value processes, and produces remedies that route into the existing fixer. | No | A read-only `Get-ProcessMitigation`-equivalent reader; the recommendation must reuse the current fixer path rather than adding a second one. |
 | 7 | `FeedScheduling` | Respects a metered connection and a daily byte budget, defers bulk sources first, and never starves small freshness-critical sources; says which sources are deferred and why. | No | Metered state from Windows, actual per-source sizes, and a budget persisted per day. The catalog currently refreshes through its own loop. |
 | 8 | `AlertReplayDiff` | Compares expected and actual alert sets from a recorded corpus: missing, unexpected and severity changes. | No | A sanitized corpus plus a replay runner in the gate script. This is the intended gate for any future rule or parser change. |
-| 9 | `StoreRetentionAccounting` | Reports retained vs capacity, oldest evidence, per-day evictions and warns when capacity, not age, is removing evidence. | No | Eviction timestamps from the store's delete path; a line in "Persistence" or the alert footnote. |
+| 9 | `StoreRetentionAccounting` | Reports retained vs capacity, oldest evidence, per-day evictions and warns when capacity, not age, is removing evidence. | **Yes** | `PruneAsync` records evictions in `alert_evictions`; every snapshot carries an `AlertRetentionSummary`, and its warnings appear in the Alerts warning panel. The summary is not yet plotted on the Persistence page. |
 | 10 | `DetectionExplanation` | Builds the "why this fired" text from rule id, fields used, missing evidence, boundary and confidence; bounded and content-free by construction. | No | Alert records that carry the field list and missing-evidence list; the UI panel. |
 | 11 | `OnboardingPlan` | Computes the next setup step (feeds, baseline, permissions, quiet-period explanation) and keeps a genuine feed failure distinct from an expected quiet start. | No | Feed/baseline/permission state from the service; the first-run surface. |
 | 12 | `UpdateStagingJournal` | Legal update transitions only (verified before staged, staged before applied), verification detail required, rollback recorded, and a recovery sentence per state. | No | The updater must adopt the journal; signature checks remain a separate gate, so this does not change trust. |
@@ -33,7 +34,9 @@ differences, rule capability versus silence, replay diff categories, lookalike d
 budget scheduling, retention warnings, explanation bounds and provisional labelling, onboarding order, journal
 transition refusals and recovery, bundle round-trip plus tamper/wrong-passphrase rejection, and digest content.
 
-Build: Debug clean. Tests: 1,473 passed, 0 failed.
+Build: Debug clean. Tests: 1,475 passed, 0 failed. The service starts and refreshes (6 of 7 channels on a non-elevated account, as expected), with no exception in the event-monitor path.
+
+A real bug surfaced during wiring: `StoreRetentionAccounting` warned that a small, young store was evicting by capacity. Capacity warnings now require the store to be at least 90% full.
 
 ## Deliberately not built
 

@@ -67,7 +67,13 @@ public sealed class SecurityAlertRepository(string databasePath)
                 // Additive (no migration): the classified indicator of a finding, so Threats can offer a matching response.
                 "CREATE TABLE IF NOT EXISTS alert_indicators (alert_id TEXT PRIMARY KEY CHECK(length(alert_id)=64), " +
                 "kind TEXT NOT NULL CHECK(kind IN ('file','ip','domain','hash')), value TEXT NOT NULL CHECK(length(value) BETWEEN 1 AND 512), " +
-                "FOREIGN KEY(alert_id) REFERENCES alerts(alert_id) ON DELETE CASCADE);",
+                "FOREIGN KEY(alert_id) REFERENCES alerts(alert_id) ON DELETE CASCADE);" +
+                // Additive: evictions by day so capacity pressure is reported instead of silently losing evidence.
+                "CREATE TABLE IF NOT EXISTS alert_evictions (day TEXT PRIMARY KEY, evicted INTEGER NOT NULL CHECK(evicted>=0));" +
+                // Additive: per-channel ingestion cursors so a restart can say whether its quiet period is real.
+                "CREATE TABLE IF NOT EXISTS event_cursors (log_name TEXT PRIMARY KEY CHECK(length(log_name)<=128), " +
+                "last_record_id INTEGER NOT NULL CHECK(last_record_id>=0), last_hash TEXT NOT NULL CHECK(length(last_hash) BETWEEN 1 AND 128), " +
+                "updated_utc TEXT NOT NULL);",
                 cancellationToken);
             // Additive (no schema bump): suppression expiry and how many matches a suppression has hidden.
             await EnsureColumnAsync(connection, "alert_fp_rules", "expires_at_utc", "TEXT NULL", cancellationToken);
@@ -250,8 +256,71 @@ public sealed class SecurityAlertRepository(string databasePath)
             }
             var suppressionWarnings = await ReadSuppressionWarningsAsync(connection, cancellationToken);
             var suppressions = await ReadSuppressionsAsync(connection, cancellationToken);
+            var retention = await ReadRetentionAsync(connection, total, cancellationToken);
             return new SecurityAlertSnapshot(1, DateTimeOffset.UtcNow, total, alerts, suppressionWarnings,
-                await ReadHourlyAsync(connection, cancellationToken), suppressions);
+                await ReadHourlyAsync(connection, cancellationToken), suppressions, retention);
+        }
+        finally { _gate.Release(); }
+    }
+
+    private static async Task<AlertRetentionSummary> ReadRetentionAsync(SqliteConnection connection, int retained, CancellationToken token)
+    {
+        DateTimeOffset? oldest = null;
+        var oldestText = await ScalarAsync(connection, "SELECT MIN(last_seen_utc) FROM alerts;", token);
+        if (oldestText is not null and not DBNull) oldest = ParseUtc(Convert.ToString(oldestText)!);
+        var since = DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime.AddDays(-7)).ToString("yyyy-MM-dd");
+        await using var evictions = connection.CreateCommand();
+        evictions.CommandText = "SELECT COALESCE(SUM(evicted),0) FROM alert_evictions WHERE day >= $since;";
+        evictions.Parameters.AddWithValue("$since", since);
+        var evicted = Convert.ToInt32(await evictions.ExecuteScalarAsync(token));
+        var report = StoreRetentionAccounting.Assess(retained, MaximumAlertCount, oldest, DateTimeOffset.UtcNow, Retention, []);
+        return new AlertRetentionSummary(report.Retained, report.Capacity, report.OldestRetainedUtc, report.Window,
+            evicted, report.Warnings.Take(4).ToArray());
+    }
+
+    /// <summary>Ingestion cursors make the gap across a restart explicit instead of assumed.</summary>
+    public async Task<IReadOnlyDictionary<string, EventCursor>> ReadEventCursorsAsync(CancellationToken cancellationToken = default)
+    {
+        await _gate.WaitAsync(cancellationToken);
+        try
+        {
+            await using var connection = await OpenAsync(cancellationToken);
+            await using var command = connection.CreateCommand();
+            command.CommandText = "SELECT log_name,last_record_id,last_hash,updated_utc FROM event_cursors ORDER BY log_name LIMIT 64;";
+            var cursors = new Dictionary<string, EventCursor>(StringComparer.OrdinalIgnoreCase);
+            await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+            while (await reader.ReadAsync(cancellationToken))
+                cursors[reader.GetString(0)] = new EventCursor(reader.GetString(0), reader.GetInt64(1), reader.GetString(2), ParseUtc(reader.GetString(3)));
+            return cursors;
+        }
+        finally { _gate.Release(); }
+    }
+
+    /// <summary>Stores cursors monotonically: a replayed or stale record can never rewind ingestion.</summary>
+    public async Task SaveEventCursorsAsync(IEnumerable<EventCursor> cursors, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(cursors);
+        await _gate.WaitAsync(cancellationToken);
+        try
+        {
+            await using var connection = await OpenAsync(cancellationToken);
+            await using var transaction = connection.BeginTransaction();
+            await using var command = connection.CreateCommand();
+            command.Transaction = transaction;
+            command.CommandText =
+                "INSERT INTO event_cursors(log_name,last_record_id,last_hash,updated_utc) VALUES($log,$id,$hash,$at) " +
+                "ON CONFLICT(log_name) DO UPDATE SET last_record_id=excluded.last_record_id,last_hash=excluded.last_hash,updated_utc=excluded.updated_utc " +
+                "WHERE excluded.last_record_id>event_cursors.last_record_id;";
+            foreach (var cursor in cursors.Take(64))
+            {
+                command.Parameters.Clear();
+                command.Parameters.AddWithValue("$log", cursor.LogName);
+                command.Parameters.AddWithValue("$id", cursor.LastRecordId);
+                command.Parameters.AddWithValue("$hash", cursor.LastRecordHash);
+                command.Parameters.AddWithValue("$at", cursor.UpdatedUtc.ToUniversalTime().ToString("O"));
+                await command.ExecuteNonQueryAsync(cancellationToken);
+            }
+            await transaction.CommitAsync(cancellationToken);
         }
         finally { _gate.Release(); }
     }
@@ -659,12 +728,22 @@ public sealed class SecurityAlertRepository(string databasePath)
         expire.Transaction = transaction;
         expire.CommandText = "DELETE FROM alerts WHERE last_seen_utc < $cutoff;";
         expire.Parameters.AddWithValue("$cutoff", now.Subtract(Retention).ToString("O"));
-        await expire.ExecuteNonQueryAsync(token);
+        var evicted = await expire.ExecuteNonQueryAsync(token);
         await using var cap = connection.CreateCommand();
         cap.Transaction = transaction;
         cap.CommandText = "DELETE FROM alerts WHERE alert_id IN (SELECT alert_id FROM alerts ORDER BY last_seen_utc DESC,alert_id LIMIT -1 OFFSET $maximum);";
         cap.Parameters.AddWithValue("$maximum", MaximumAlertCount);
-        await cap.ExecuteNonQueryAsync(token);
+        evicted += await cap.ExecuteNonQueryAsync(token);
+        if (evicted > 0)
+        {
+            await using var record = connection.CreateCommand();
+            record.Transaction = transaction;
+            record.CommandText = "INSERT INTO alert_evictions(day,evicted) VALUES($day,$count) " +
+                "ON CONFLICT(day) DO UPDATE SET evicted=evicted+$count;";
+            record.Parameters.AddWithValue("$day", DateOnly.FromDateTime(now.UtcDateTime).ToString("yyyy-MM-dd"));
+            record.Parameters.AddWithValue("$count", evicted);
+            await record.ExecuteNonQueryAsync(token);
+        }
         await using var markers = connection.CreateCommand();
         markers.Transaction = transaction;
         markers.CommandText = "DELETE FROM alert_fp_applied WHERE NOT EXISTS(SELECT 1 FROM alerts WHERE alerts.alert_id=alert_fp_applied.alert_id);" +

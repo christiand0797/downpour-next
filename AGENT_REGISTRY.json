@@ -173,10 +173,10 @@
     {
       "id": "buffy",
       "role": "agent",
-      "taskId": "DN-052",
+      "taskId": "DN-053",
       "status": "idle",
-      "heartbeatUtc": "2026-11-20T04:05:00Z",
-      "notes": "Second-round foundations landed; 1,473 tests pass; nothing wired. Next: event-log cursors + clock reading persistence are the highest-value wirings, then 0.1.26."
+      "heartbeatUtc": "2026-11-20T04:45:00Z",
+      "notes": "Event cursors + retention wired; 1,475 tests pass; service smoke clean. Next: wire clock integrity and the explanation panel, then cut 0.1.26."
     }
   ]
 }

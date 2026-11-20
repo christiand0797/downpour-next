@@ -143,7 +143,20 @@ public sealed record SecurityAlertSnapshot(
     IReadOnlyList<SecurityAlert> Alerts,
     IReadOnlyList<string> Warnings,
     IReadOnlyList<AlertHourCount>? Hourly = null,
-    IReadOnlyList<AlertSuppression>? Suppressions = null);
+    IReadOnlyList<AlertSuppression>? Suppressions = null,
+    AlertRetentionSummary? Retention = null);
+
+/// <summary>
+/// The alert store's retention facts: what is kept, what is being evicted, and whether capacity is removing evidence
+/// ahead of the retention window. Shown so a missing old alert is explained rather than silently absent.
+/// </summary>
+public sealed record AlertRetentionSummary(
+    int Retained,
+    int Capacity,
+    DateTimeOffset? OldestRetainedUtc,
+    TimeSpan Window,
+    int EvictedLast7Days,
+    IReadOnlyList<string> Warnings);
 
 /// <summary>
 /// One active false-positive suppression, for the list that makes hidden evidence visible. <paramref name="AlertId"/> is

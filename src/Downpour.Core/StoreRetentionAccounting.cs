@@ -35,7 +35,8 @@ public static class StoreRetentionAccounting
             warnings.Add($"The alert store is at its {capacity:N0}-alert capacity, so new alerts push out the oldest evidence before the {window.TotalDays:0}-day window ends.");
         else if (retained >= capacity * 0.9)
             warnings.Add($"The alert store is {retained * 100 / capacity}% full; evidence will start leaving ahead of the {window.TotalDays:0}-day window.");
-        if (oldestRetainedUtc is { } oldest && now - oldest < window - TimeSpan.FromDays(1) && retained > 0)
+        // A small store that happens to be young is normal; only a nearly full store can be evicting by capacity.
+        if (oldestRetainedUtc is { } oldest && retained >= capacity * 0.9 && now - oldest < window - TimeSpan.FromDays(1))
             warnings.Add($"The oldest retained alert is from {oldest:yyyy-MM-dd}, newer than the {window.TotalDays:0}-day window. Capacity, not age, is evicting evidence.");
         if (last7 > 0)
             warnings.Add($"{last7:N0} alert(s) were evicted in the last seven days.");

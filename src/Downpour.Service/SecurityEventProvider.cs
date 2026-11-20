@@ -9,6 +9,9 @@ namespace Downpour.Service;
 /// installs (7045/4697) additionally record the service name and executable path (arguments dropped) so they can be
 /// graded by signature instead of all being HIGH.
 /// </summary>
+/// <summary>A capture plus the cursors it advanced; the caller persists them only after a successful ingest.</summary>
+public sealed record EventLogCapture(SecurityEventSnapshot Snapshot, IReadOnlyList<EventCursor> Cursors);
+
 public sealed class SecurityEventProvider(FileSignatureChecker? signatures = null)
 {
     public const int MaximumEvents = 256;
@@ -51,18 +54,36 @@ public sealed class SecurityEventProvider(FileSignatureChecker? signatures = nul
         new("Microsoft-Windows-Windows Firewall With Advanced Security/Firewall", [5156, 5157, 5152])
     ];
 
-    public SecurityEventSnapshot Capture()
+    public SecurityEventSnapshot Capture() => CaptureWithCursors(null).Snapshot;
+
+    /// <summary>
+    /// Captures the allow-listed sources and, when previous cursors are supplied, reports a channel whose cursor is older
+    /// than the oldest record still in the log. That is the one case where a quiet period is not real: those records were
+    /// already rolled out and cannot be recovered. Catch-up inside the log is normal and stays silent.
+    /// </summary>
+    public EventLogCapture CaptureWithCursors(IReadOnlyDictionary<string, EventCursor>? cursors)
     {
         var capturedAt = DateTimeOffset.UtcNow;
         var events = new List<SecurityEventObservation>();
         var warnings = new List<string>();
+        var updated = new List<EventCursor>(Sources.Length);
         var queried = 0;
 
         foreach (var source in Sources)
         {
             try
             {
-                events.AddRange(ReadSource(source, capturedAt));
+                var read = ReadSource(source, capturedAt);
+                events.AddRange(read);
+                var newest = read.Count == 0 ? 0 : read.Max(observation => observation.RecordId ?? 0);
+                var previous = cursors is null ? null : cursors.GetValueOrDefault(source.LogName);
+                if (newest > 0)
+                {
+                    if (EventLogContinuity.Advance(previous, source.LogName, newest, newest.ToString("x16"), capturedAt) is { } cursor)
+                        updated.Add(cursor);
+                    if (previous is not null && EarliestAvailable(source.LogName) is { } earliest && earliest > previous.LastRecordId + 1 && earliest <= newest)
+                        warnings.Add(EventLogContinuity.Plan(previous, source.LogName, earliest, newest).Note);
+                }
                 if (source.LogName.Equals("Security", StringComparison.OrdinalIgnoreCase) &&
                     TryReadFailedLogonBurst(capturedAt, warnings) is { } burst)
                 {
@@ -94,7 +115,23 @@ public sealed class SecurityEventProvider(FileSignatureChecker? signatures = nul
             .Take(MaximumEvents)
             .ToArray();
 
-        return new SecurityEventSnapshot(1, capturedAt, bounded, queried, warnings.Take(64).ToArray());
+        return new EventLogCapture(
+            new SecurityEventSnapshot(1, capturedAt, bounded, queried, warnings.Take(64).ToArray()), updated);
+    }
+
+    /// <summary>The oldest record Windows still holds for a channel, or null when that cannot be read safely.</summary>
+    private static long? EarliestAvailable(string logName)
+    {
+        try
+        {
+            using var session = new EventLogSession();
+            var information = session.GetLogInformation(logName, PathType.LogName);
+            return information.OldestRecordNumber;
+        }
+        catch (Exception exception) when (exception is EventLogException or UnauthorizedAccessException or InvalidOperationException or IOException or System.Security.SecurityException)
+        {
+            return null;
+        }
     }
 
     public static IReadOnlyCollection<int> WatchedEventIds => SecurityEventCatalog.WatchedEventIds;

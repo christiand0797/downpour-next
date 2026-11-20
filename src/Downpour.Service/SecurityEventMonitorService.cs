@@ -1,4 +1,5 @@
 using Downpour.Contracts;
+using Downpour.Core;
 
 namespace Downpour.Service;
 
@@ -13,6 +14,7 @@ public sealed class SecurityEventMonitorService(
 {
     private static readonly TimeSpan PollInterval = TimeSpan.FromSeconds(15);
     private bool _alertStoreReady;
+    private IReadOnlyDictionary<string, EventCursor> _cursors = new Dictionary<string, EventCursor>(StringComparer.OrdinalIgnoreCase);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -21,9 +23,12 @@ public sealed class SecurityEventMonitorService(
         while (!stoppingToken.IsCancellationRequested)
         {
             SecurityEventSnapshot? snapshot = null;
+            EventLogCapture? capture = null;
             try
             {
-                snapshot = await Task.Run(provider.Capture, stoppingToken);
+                var previous = _cursors;
+                capture = await Task.Run(() => provider.CaptureWithCursors(previous), stoppingToken);
+                snapshot = capture.Snapshot;
                 snapshot = snapshot with
                 {
                     Warnings = snapshot.Warnings.Concat(pushStatus.GetWarnings()).Distinct(StringComparer.Ordinal).Take(64).ToArray()
@@ -51,6 +56,11 @@ public sealed class SecurityEventMonitorService(
                     try
                     {
                         await alerts.IngestAsync(snapshot, stoppingToken);
+                        if (capture is { Cursors.Count: > 0 } advanced)
+                        {
+                            await alerts.SaveEventCursorsAsync(advanced.Cursors, stoppingToken);
+                            _cursors = advanced.Cursors.ToDictionary(cursor => cursor.LogName, StringComparer.OrdinalIgnoreCase);
+                        }
                         await PublishAlertSnapshotAsync(snapshot, stoppingToken);
                     }
                     catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
@@ -85,6 +95,7 @@ public sealed class SecurityEventMonitorService(
         try
         {
             await alerts.InitializeAsync(token);
+            _cursors = await alerts.ReadEventCursorsAsync(token);
             var initial = await alerts.ReadSnapshotAsync(token);
             alertSnapshots.Publish(initial with { Warnings = ["Waiting for the first Windows event monitor refresh."] });
             _alertStoreReady = true;
@@ -105,7 +116,8 @@ public sealed class SecurityEventMonitorService(
         var warnings = source.Warnings.ToList();
         if (source.SourcesQueried < 7)
             warnings.Add($"Only {source.SourcesQueried} of 7 allow-listed event channels were readable during the latest refresh.");
-        alertSnapshots.Publish(current with { Warnings = warnings.Take(32).ToArray() });
+        if (current.Retention is { } retention) warnings.AddRange(retention.Warnings);
+        alertSnapshots.Publish(current with { Warnings = warnings.Distinct(StringComparer.Ordinal).Take(32).ToArray() });
     }
 
     private async Task PublishAlertWarningAsync(string warning, CancellationToken token)

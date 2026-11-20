@@ -171,6 +171,47 @@ public sealed class SecurityAlertRepositoryTests
     }
 
     [Fact]
+    public async Task EventCursorsPersistAndNeverRewind()
+    {
+        using var database = new TemporaryAlertDatabase();
+        var repository = new SecurityAlertRepository(database.Path);
+        await repository.InitializeAsync();
+        var now = DateTimeOffset.UtcNow;
+        Assert.Empty(await repository.ReadEventCursorsAsync());
+
+        await repository.SaveEventCursorsAsync([new EventCursor("System", 900, "hash-900", now)]);
+        var stored = Assert.Single(await repository.ReadEventCursorsAsync());
+        Assert.Equal(900, stored.Value.LastRecordId);
+        Assert.Equal("hash-900", stored.Value.LastRecordHash);
+
+        await repository.SaveEventCursorsAsync([new EventCursor("System", 880, "hash-880", now)]);
+        Assert.Equal(900, (await repository.ReadEventCursorsAsync())["System"].LastRecordId);
+        await repository.SaveEventCursorsAsync([new EventCursor("System", 940, "hash-940", now)]);
+        Assert.Equal(940, (await repository.ReadEventCursorsAsync())["System"].LastRecordId);
+    }
+
+    [Fact]
+    public async Task RetentionSummaryIsPublishedWithTheSnapshot()
+    {
+        using var database = new TemporaryAlertDatabase();
+        var repository = new SecurityAlertRepository(database.Path);
+        await repository.InitializeAsync();
+        var now = DateTimeOffset.UtcNow;
+        await repository.IngestAsync(new SecurityEventSnapshot(1, now,
+            [SecurityEventProvider.CreateObservation("System", "Service Control Manager", 7045, 91, now)!], 7, []));
+
+        var snapshot = await repository.ReadSnapshotAsync();
+        var retention = Assert.IsType<AlertRetentionSummary>(snapshot.Retention);
+        Assert.Equal(snapshot.TotalCount, retention.Retained);
+        Assert.Equal(SecurityAlertRepository.MaximumAlertCount, retention.Capacity);
+        Assert.Equal(TimeSpan.FromDays(30), retention.Window);
+        Assert.NotNull(retention.OldestRetainedUtc);
+        Assert.Empty(retention.Warnings);
+        Assert.True(SecurityAlertClient.IsValidSnapshot(snapshot));
+        Assert.False(SecurityAlertClient.IsValidSnapshot(snapshot with { Retention = retention with { Retained = retention.Capacity + 1 } }));
+    }
+
+    [Fact]
     public async Task SnapshotListsSuppressionsWithHiddenCountsAndRearmsFromTheList()
     {
         using var database = new TemporaryAlertDatabase();

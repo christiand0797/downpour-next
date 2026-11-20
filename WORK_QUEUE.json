@@ -1056,6 +1056,30 @@
       ],
       "notes": "buffy 2026-11-20: completed. 16 new tests, 1,473 pass. Wiring needs are per-module in docs/FOLLOWUP_FOUNDATIONS_2.md.",
       "updatedAt": "2026-11-20"
+    },
+    {
+      "id": "DN-053",
+      "title": "Wire event-log cursors and alert retention accounting",
+      "status": "completed",
+      "priority": "high",
+      "files": [
+        "src/Downpour.Service/SecurityAlertRepository.cs",
+        "src/Downpour.Service/SecurityEventProvider.cs",
+        "src/Downpour.Service/SecurityEventMonitorService.cs",
+        "src/Downpour.Contracts/ServiceHealthSnapshot.cs",
+        "src/Downpour.Core/SecurityAlertClient.cs",
+        "src/Downpour.Core/StoreRetentionAccounting.cs",
+        "tests/Downpour.Tests/SecurityAlertRepositoryTests.cs",
+        "docs/FOLLOWUP_FOUNDATIONS_2.md"
+      ],
+      "acceptance": [
+        "Cursors persist per channel and never rewind",
+        "A rolled-out window is reported instead of a silent gap",
+        "Evictions are recorded per day and summarised in the snapshot",
+        "Snapshot validation bounds the retention summary"
+      ],
+      "notes": "buffy 2026-11-20: completed. 1,475 tests pass. Service started and refreshed 6/7 channels with no exception. Cursor replay of records (beyond the 24h lookback) is still not implemented; only the gap report is.",
+      "updatedAt": "2026-11-20"
     }
   ]
 }
