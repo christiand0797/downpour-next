@@ -3,7 +3,7 @@
 ## 2026-11-20 0.1.31: per-process mitigations (buffy)
 
 - [x] Per-process exploit mitigations wired (DN-070): the sensor reads CFG/ACG/CIG/non-Microsoft DLL blocking/DEP/ASLR with `GetProcessMitigationPolicy`, keeps one row per image name (worst instance, instance count), orders high-value images first, and counts processes that refuse the query instead of treating them as exposed. Hardening shows the six most exposed images with score and missing controls; DEP needs full query rights so only complete readings are reported. 1,490 tests pass (6 new); panel not inspected by hand.
-- [ ] Release 0.1.31 with the mitigation panel: bump, Release build + tests, package, route and window smokes, notes with digests, tag at the docs commit.
+- [x] Published v0.1.31 (`4104b98`): ships the per-process mitigation panel; 1,490 Release tests, 1,077 package entries, every route and window smoke passed; ZIP 306,454,701 bytes sha256 `b48c46bc…`, SBOM `32b4a97a…`, notes `docs/RELEASE_0.1.31.md`.
 
 ## 2026-11-20 0.1.25: visible trust work (buffy)
 

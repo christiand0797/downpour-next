@@ -173,10 +173,10 @@
     {
       "id": "buffy",
       "role": "agent",
-      "taskId": "DN-071",
-      "status": "active",
-      "heartbeatUtc": "2026-11-20T22:10:00Z",
-      "notes": "DN-070 shipped and pushed (27eebdb): per-process exploit mitigations are read with GetProcessMitigationPolicy, grouped per image, refusal-counted, and shown on Hardening; 1,490 tests pass. Cutting 0.1.31 next (bump, Release build, package, route/window smokes, tag at docs commit)."
+      "taskId": "DN-072",
+      "status": "idle",
+      "heartbeatUtc": "2026-11-20T22:35:00Z",
+      "notes": "v0.1.31 published as Latest from 4104b98: per-process exploit mitigations on Hardening, 1,490 Release tests, 1,077 package entries, every route and window smoke. Next: inspect the new mitigation panel by hand, or wire the replay-diff gate / onboarding / weekly digest from the remaining Core foundations."
     }
   ]
 }

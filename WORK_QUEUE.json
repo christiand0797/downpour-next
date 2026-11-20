@@ -1427,7 +1427,7 @@
   {
    "id": "DN-071",
    "title": "Cut and publish 0.1.31 with per-process exploit mitigations",
-   "status": "in_progress",
+   "status": "completed",
    "priority": "high",
    "files": [
     "Directory.Build.props",
@@ -1441,7 +1441,25 @@
     "Release notes record the ZIP and SBOM digests",
     "Tag points at the pushed docs commit; package pins the embedded hash"
    ],
-   "notes": "buffy 2026-11-20: in progress. Follow docs/CONTINUATION.md; build after the last source/docs commit, pin the embedded ProductVersion hash in the versioned scripts, and publish as Latest."
+   "notes": "buffy 2026-11-20: completed. Built from `4104b98` (binaries report 0.1.31+4104b981); 1,490 Release tests, 1,077 package entries, every packaged route (179 YARA rules) and the window smoke passed. ZIP 306,454,701 bytes sha256 b48c46bcc6bffa49c7283c377ca45c2010565afc43ce564e60776819cc5c0947; SBOM 32b4a97a044e9e0b7e0ef2e25d791e70a8ade46d34098e35a3cad0c849127fe2; SHA256SUMS b01cec07913b0a95e85f51a5d22b750070edf3b7ce9b06d016040e5698c1486a. Release notes docs/RELEASE_0.1.31.md."
+  },
+  {
+   "id": "DN-072",
+   "title": "Wire a sanitized alert replay corpus into the release gate",
+   "status": "pending",
+   "priority": "medium",
+   "files": [
+    "src/Downpour.Core/AlertReplayDiff.cs",
+    "tests/Downpour.Tests",
+    "tools/ci/run-gates.ps1"
+   ],
+   "acceptance": [
+    "A sanitized corpus can be replayed through the current parsers without network access",
+    "Missing, unexpected and severity-changed alerts are reported, not silently accepted",
+    "The gate fails on a difference and passes on an unchanged rule set",
+    "Corpus content contains no host names, addresses, paths or user data"
+   ],
+   "notes": "buffy 2026-11-20: queued. `AlertReplayDiff` has been a tested Core foundation since DN-052 but no corpus or runner exists. This is the intended gate for future rule/parser changes; build the corpus from synthetic event records, not captured host data."
   }
  ]
 }

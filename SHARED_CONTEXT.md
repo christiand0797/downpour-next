@@ -7,6 +7,7 @@
 - Sensor: `Downpour.ProcessMitigations.v1`, current-user outbound-only, 4 KiB buffer, 15-second recapture cache. `ProcessMitigationClient` validates schema, field lengths, counts, process ids and instance counts.
 - Hardening shows an `EXPLOIT MITIGATIONS BY PROCESS` panel: readable/refused counts, how many high-value images miss at least one control, and the six most exposed images with score and missing control names. Read-only; nothing is changed or applied. Details in `docs/EXPLOIT_MITIGATIONS.md`.
 - Verification: Debug build 0 warnings/errors; 1,490 tests pass (6 new: bit mapping, worst-instance grouping, high-value ordering, validation bounds, live unelevated capture, pipe round trip). The panel compiles but has not been viewed by hand.
+- v0.1.31 published (DN-071): built from `4104b98`, 1,490 Release tests, 1,077 package entries, every route and the window smoke passed. ZIP 306,454,701 bytes sha256 `b48c46bc…`, SBOM `32b4a97a…`, SHA256SUMS `b01cec07…`. Notes `docs/RELEASE_0.1.31.md`.
 
 ## 2026-11-20 rule coverage wired (buffy, DN-068)
 
