@@ -1025,6 +1025,37 @@
       ],
       "notes": "buffy 2026-11-20: completed. 1,457 tests pass. Per-subject scope and explicit renewal remain open; XAML compiles but the panel was not viewed.",
       "updatedAt": "2026-11-20"
+    },
+    {
+      "id": "DN-052",
+      "title": "Second-round follow-up foundations (15 modules)",
+      "status": "completed",
+      "priority": "high",
+      "files": [
+        "src/Downpour.Core/EventLogContinuity.cs",
+        "src/Downpour.Core/EgressBaseline.cs",
+        "src/Downpour.Core/ClockIntegrity.cs",
+        "src/Downpour.Core/CrossViewInventory.cs",
+        "src/Downpour.Core/RuleCoverage.cs",
+        "src/Downpour.Core/ExploitMitigationPosture.cs",
+        "src/Downpour.Core/FeedScheduling.cs",
+        "src/Downpour.Core/AlertReplayDiff.cs",
+        "src/Downpour.Core/StoreRetentionAccounting.cs",
+        "src/Downpour.Core/DetectionExplanation.cs",
+        "src/Downpour.Core/OnboardingPlan.cs",
+        "src/Downpour.Core/UpdateStagingJournal.cs",
+        "src/Downpour.Core/PortableSettingsBundle.cs",
+        "src/Downpour.Core/DomainConfusables.cs",
+        "src/Downpour.Core/WeeklyDigest.cs",
+        "docs/FOLLOWUP_FOUNDATIONS_2.md"
+      ],
+      "acceptance": [
+        "Each module is bounded and has negative-path tests",
+        "Documentation states plainly that none is wired",
+        "Full suite green"
+      ],
+      "notes": "buffy 2026-11-20: completed. 16 new tests, 1,473 pass. Wiring needs are per-module in docs/FOLLOWUP_FOUNDATIONS_2.md.",
+      "updatedAt": "2026-11-20"
     }
   ]
 }

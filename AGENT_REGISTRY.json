@@ -173,10 +173,10 @@
     {
       "id": "buffy",
       "role": "agent",
-      "taskId": "DN-051",
+      "taskId": "DN-052",
       "status": "idle",
-      "heartbeatUtc": "2026-11-20T03:40:00Z",
-      "notes": "Suppressions list wired and tested; 1,457 tests pass. Unreleased after 0.1.25. Next: per-subject suppression scope, acknowledgement timestamps, or a 0.1.26 cut."
+      "heartbeatUtc": "2026-11-20T04:05:00Z",
+      "notes": "Second-round foundations landed; 1,473 tests pass; nothing wired. Next: event-log cursors + clock reading persistence are the highest-value wirings, then 0.1.26."
     }
   ]
 }
