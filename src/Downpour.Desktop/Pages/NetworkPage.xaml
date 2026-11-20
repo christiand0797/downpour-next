@@ -101,16 +101,17 @@
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <Grid Padding="10,8" ColumnSpacing="12">
-                            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                             <TextBlock Text="{Binding Endpoint}" FontFamily="Consolas" FontSize="11" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
-                            <TextBlock Grid.Column="1" Text="{Binding Scope}" FontSize="11" Foreground="#FF91D9E7" VerticalAlignment="Center" />
-                            <TextBlock Grid.Column="2" Text="{Binding Port}" FontFamily="Consolas" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="1" Text="{Binding Process}" FontSize="11" TextTrimming="CharacterEllipsis" MaxWidth="220" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="2" Text="{Binding Scope}" FontSize="11" Foreground="#FF91D9E7" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="3" Text="{Binding Port}" FontFamily="Consolas" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" VerticalAlignment="Center" />
                         </Grid>
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
             <TextBlock x:Name="ListenerEmpty" Text="No local TCP listeners were reported." FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
-            <TextBlock FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Endpoint inventory is local and read-only. Process ownership, packet contents, DNS history, and threat classification are not collected in this build." TextWrapping="Wrap" />
+            <TextBlock FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Endpoint inventory is local and read-only. Listener ownership is resolved from the OS TCP table by pid; names are shown only for processes the account can open. Packet contents, DNS history, and threat classification are not collected in this build." TextWrapping="Wrap" />
         </StackPanel>
     </ScrollViewer>
 </Page>

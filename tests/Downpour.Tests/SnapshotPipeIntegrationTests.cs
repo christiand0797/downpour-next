@@ -134,7 +134,13 @@ public sealed class SnapshotPipeIntegrationTests
             Assert.True(snapshot.TotalConnectionCount >= snapshot.Connections.Count);
             Assert.InRange(snapshot.Listeners.Count, 0, 64);
             Assert.True(snapshot.TotalListenerCount >= snapshot.Listeners.Count);
-            Assert.All(snapshot.Listeners, row => Assert.InRange(row.Port, 1, 65_535));
+            Assert.All(snapshot.Listeners, row =>
+            {
+                Assert.InRange(row.Port, 1, 65_535);
+                if (row.OwningProcessId is int processId) Assert.True(processId > 0);
+                if (row.ProcessName is not null) Assert.NotNull(row.OwningProcessId);
+                Assert.True(row.ProcessName is null || row.ProcessName.Length is > 0 and <= 256);
+            });
         }
         finally
         {

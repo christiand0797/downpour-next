@@ -171,12 +171,13 @@ public sealed partial class NetworkPage : Page
                     if (_knownListeners.Add(listener.Endpoint)) _newListenersSinceOpen++;
             }
             var listenerRows = snapshot.Listeners
-                .Select(row => new NetworkListenerRow(row.Endpoint, ListenerScope(row.Address), row.Port.ToString()))
+                .Select(row => new NetworkListenerRow(row.Endpoint, ListenerScope(row.Address), row.Port.ToString(), ListenerProcess(row)))
                 .ToArray();
             CollectionReconciler.Apply(Listeners, listenerRows, row => row.Key, (current, incoming) =>
             {
                 current.Scope = incoming.Scope;
                 current.Port = incoming.Port;
+                current.Process = incoming.Process;
             });
             ListenerEmpty.Visibility = Listeners.Count == 0 ? Microsoft.UI.Xaml.Visibility.Visible : Microsoft.UI.Xaml.Visibility.Collapsed;
             ListenerFootnote.Text = snapshot.TotalListenerCount > snapshot.Listeners.Count
@@ -192,6 +193,11 @@ public sealed partial class NetworkPage : Page
             _requestInFlight = false;
         }
     }
+
+    private static string ListenerProcess(NetworkListenerEntry row) =>
+        row.OwningProcessId is not int processId ? "\u2014"
+        : row.ProcessName is null ? $"PID {processId}"
+        : $"{row.ProcessName} ({processId})";
 
     private static long? SumRates(IEnumerable<long?> values)
     {
@@ -295,15 +301,17 @@ public sealed class NetworkListenerRow : ObservableRow
     private string _endpoint = "";
     private string _scope = "";
     private string _port = "";
+    private string _process = "";
     public NetworkListenerRow() { }
 
-    public NetworkListenerRow(string endpoint, string scope, string port) =>
-        (_endpoint, _scope, _port) = (endpoint, scope, port);
+    public NetworkListenerRow(string endpoint, string scope, string port, string process) =>
+        (_endpoint, _scope, _port, _process) = (endpoint, scope, port, process);
 
     public string Key => Endpoint;
     public string Endpoint { get => _endpoint; set => SetProperty(ref _endpoint, value); }
     public string Scope { get => _scope; set => SetProperty(ref _scope, value); }
     public string Port { get => _port; set => SetProperty(ref _port, value); }
+    public string Process { get => _process; set => SetProperty(ref _process, value); }
 }
 
 public sealed class NetworkConnectionRow : ObservableRow

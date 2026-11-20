@@ -100,7 +100,8 @@ public sealed record NetworkInventorySnapshot(
     int TotalListenerCount,
     IReadOnlyList<string> Warnings);
 
-public sealed record NetworkListenerEntry(string Endpoint, string Address, int Port);
+/// <summary>A local TCP listener. OwningProcessId and ProcessName are null when the OS table or the process could not be read.</summary>
+public sealed record NetworkListenerEntry(string Endpoint, string Address, int Port, int? OwningProcessId = null, string? ProcessName = null);
 
 public sealed record SecurityEventObservation(
     string LogName,

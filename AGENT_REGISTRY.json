@@ -173,10 +173,10 @@
     {
       "id": "buffy",
       "role": "agent",
-      "taskId": "DN-064",
+      "taskId": "DN-066",
       "status": "idle",
-      "heartbeatUtc": "2026-11-20T10:45:00Z",
-      "notes": "v0.1.28 is Latest (built from 55bd049; ZIP 4ed8cff0). Next safe tasks: inspect Network listener/destination layout and the Alerts explanation panel by hand, or wire the next foundation (mitigation posture, rule coverage)."
+      "heartbeatUtc": "2026-11-20T11:05:00Z",
+      "notes": "v0.1.28 is Latest. Listener process attribution (DN-066) is unreleased on main with 1,481 tests. Next: cut 0.1.29, or inspect Network layout by hand."
     }
   ]
 }

@@ -34,7 +34,10 @@ public sealed class NetworkInventoryClient(string pipeName = NetworkInventoryCli
                 snapshot.Connections.Any(row => row is null || row.LocalEndpoint is null || row.RemoteEndpoint is null || row.State is null ||
                     row.LocalEndpoint.Length > 256 || row.RemoteEndpoint.Length > 256 || row.State.Length > 64) ||
                 snapshot.Listeners.Any(row => row is null || row.Endpoint is null || row.Address is null ||
-                    row.Endpoint.Length > 256 || row.Address.Length > 64 || row.Port is < 1 or > 65_535) ||
+                    row.Endpoint.Length > 256 || row.Address.Length > 64 || row.Port is < 1 or > 65_535 ||
+                    row.OwningProcessId is < 1 ||
+                    (row.ProcessName is not null && (row.ProcessName.Length is 0 or > 256)) ||
+                    (row.ProcessName is not null && row.OwningProcessId is null)) ||
                 snapshot.Warnings.Any(warning => warning is null || warning.Length > 512))
             {
                 return null;

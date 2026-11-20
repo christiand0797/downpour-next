@@ -55,7 +55,9 @@ pin that in the scripts rather than assuming the bump commit.
 - Wired: suppression list + Re-arm, event-log cursors (with cleared-log reset and lost-window warning), retention
   accounting, backward clock warning, alert explanation panel, service and driver cross-view checks, bounded TCP
   listener list with a session "new since page open" count, and a remote destination digest with baseline seeding.
-- Verified: 1,479 tests, packaged route smoke (all routes, 179 YARA rules), window smoke.
+- Verified: 1,481 tests (Debug), 1,479 in the 0.1.28 Release build, packaged route smoke (all routes, 179 YARA rules), window smoke.
+- Unreleased after 0.1.28: listener process attribution (DN-066) adds an owning pid and bounded image name to each
+  listener and a PROCESS column on the Network page. Needs a 0.1.29 cut to ship.
 - Not verified by hand: the Alerts explanation panel and the new Network listener/destination sections.
 - Blocked: egress byte volume (ETW/admin ESTATS), metered feed signal (session-0 support undocumented), ARM64, signing.
 - Smoke lesson (DN-065): starting the packaged desktop with a hidden window style lets minimize-to-tray withdraw the

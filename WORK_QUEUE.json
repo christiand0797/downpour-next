@@ -1314,6 +1314,29 @@
    ],
    "notes": "buffy 2026-11-20: completed. Hidden-window launch is honoured by minimize-to-tray, which withdraws the window, so MainWindowHandle stayed 0 and CloseMainWindow was never sent. Harness launches visibly; assertions untouched. Three runs failed before the change, the next passed all routes.",
    "updatedAt": "2026-11-20"
+  },
+  {
+   "id": "DN-066",
+   "title": "Attribute listening ports to owning processes",
+   "status": "completed",
+   "priority": "medium",
+   "files": [
+    "src/Downpour.Service/TcpOwnerLookup.cs",
+    "src/Downpour.Service/NetworkInventoryProvider.cs",
+    "src/Downpour.Contracts/ServiceHealthSnapshot.cs",
+    "src/Downpour.Core/NetworkInventoryClient.cs",
+    "src/Downpour.Desktop/Pages/NetworkPage.xaml",
+    "src/Downpour.Desktop/Pages/NetworkPage.xaml.cs",
+    "tests/Downpour.Tests/TcpOwnerLookupTests.cs"
+   ],
+   "acceptance": [
+    "Provider maps listeners to pids from the OS table",
+    "Client validates optional pid/name",
+    "Network page shows the process column",
+    "Tests green"
+   ],
+   "notes": "buffy 2026-11-20: completed, unreleased. GetExtendedTcpTable both families, 128 bounded name lookups per capture; name is null when the process cannot be opened. IPv4 address offset bug caught by a real loopback-listener test. 1,481 tests pass; layout not inspected.",
+   "updatedAt": "2026-11-20"
   }
  ]
 }

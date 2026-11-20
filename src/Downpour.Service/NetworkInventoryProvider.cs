@@ -88,7 +88,8 @@ public sealed class NetworkInventoryProvider
         return entries;
     }
 
-    /// <summary>TCP listeners only: local ports accepting connections, with no packet contents or process attribution.</summary>
+    /// <summary>TCP listeners only: local ports accepting connections, with optional owning process attribution.
+    /// Packet contents, DNS history and remote reputation are never collected.</summary>
     private static IReadOnlyList<NetworkListenerEntry> CaptureListeners(List<string> warnings, out int totalCount)
     {
         try
@@ -99,11 +100,20 @@ public sealed class NetworkInventoryProvider
                 .ThenBy(listener => listener.Address.ToString(), StringComparer.Ordinal)
                 .ToArray();
             totalCount = all.Length;
+            var owners = TcpOwnerLookup.CaptureListenerOwners();
+            var names = new Dictionary<int, string?>();
             var rows = all.Take(MaximumListeners)
-                .Select(listener => new NetworkListenerEntry(
-                    Bound(listener.ToString()),
-                    Bound(listener.Address.ToString()),
-                    listener.Port))
+                .Select(listener =>
+                {
+                    var endpoint = listener.ToString();
+                    int? owner = owners.TryGetValue(endpoint, out var processId) && processId > 0 ? processId : null;
+                    return new NetworkListenerEntry(
+                        Bound(endpoint),
+                        Bound(listener.Address.ToString()),
+                        listener.Port,
+                        owner,
+                        owner is int id ? TcpOwnerLookup.ProcessName(id, names) : null);
+                })
                 .ToArray();
             if (all.Length > MaximumListeners) warnings.Add($"Listener display is limited to the first {MaximumListeners} of {all.Length} local TCP listeners.");
             return rows;
