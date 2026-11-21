@@ -13,8 +13,8 @@ public static class UpdateStagingJournal
 {
     private static readonly Dictionary<UpdateState, UpdateState[]> Allowed = new()
     {
-        [UpdateState.Downloaded] = [UpdateState.Verified],
-        [UpdateState.Verified] = [UpdateState.Staged],
+        [UpdateState.Downloaded] = [UpdateState.Verified, UpdateState.RolledBack],
+        [UpdateState.Verified] = [UpdateState.Staged, UpdateState.RolledBack],
         [UpdateState.Staged] = [UpdateState.Applied, UpdateState.RolledBack],
         [UpdateState.Applied] = [],
         [UpdateState.RolledBack] = [UpdateState.Downloaded],

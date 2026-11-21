@@ -1,5 +1,11 @@
 # Downpour Next TODO
 
+## 2026-11-21 0.1.33: update staging journal (buffy)
+
+- [x] Update staging journal wired (DN-074): the desktop records downloaded → verified → staged and the standalone helper refuses to apply unless the newest journal record is `staged` for that exact version, then records applied or rolled back. The journal is atomic, bounded (32 records / 64 KiB) and holds no paths or host data. Damaged journals fail closed. 1,499 Debug tests pass (4 new); `docs/UPDATE_JOURNAL.md`.
+- [ ] Exercise a real in-app update with the journal: 0.1.32 → 0.1.33 is applied by the older helper, so the first enforcing helper is the one shipped in 0.1.33.
+- [ ] Failure-injection for a locked package file is still required before calling update rollback proven.
+
 ## 2026-11-20 0.1.32: alert replay gate (buffy)
 
 - [x] Alert replay gate wired (DN-072): `AlertProjection` moved alert identity into Core, `AlertReplayRunner` replays a 12-record synthetic corpus (10 expected alerts) through the current catalog without touching the event log or network, and `run-gates.ps1` fails on any missing, unexpected or severity-changed alert. Tampered-corpus run exited 1; restored run exited 0; full Debug suite 1,495 passed. The corpus is scanned for host paths, addresses and user data. Docs `docs/ALERT_REPLAY.md`.

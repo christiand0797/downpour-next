@@ -1,6 +1,6 @@
 {
  "schemaVersion": 1,
- "updatedAt": "2026-11-20",
+ "updatedAt": "2026-11-21",
  "tasks": [
   {
    "id": "DN-001",
@@ -1479,6 +1479,28 @@
     "Tag points at the pushed docs commit; package pins the embedded hash"
    ],
    "notes": "buffy 2026-11-20: completed. Built from `408fe2fb2b33db12913a5707ad21bfb3745de2a2`; 1,495 Release tests, 1,077 package entries, every packaged route (179 YARA rules) and the window smoke passed. ZIP 306,482,886 bytes sha256 b88d9df3a3cd04c63082a86fc943c7d4051346ab16f23cf5136c56aadd62ca7c; SBOM 11fd7b8c707d7a41e6cc81d9a66c6b79560c8e9a5c9d6c6056fa963677a323b8; SHA256SUMS 18d890de4c4f21a7b84bd5b95419b4059a5cf9967cdca21fddca74c3f16cb164. No runtime behaviour changed. Release notes docs/RELEASE_0.1.32.md."
+  },
+  {
+   "id": "DN-074",
+   "title": "Wire the update staging journal into the updater and helper",
+   "status": "completed",
+   "priority": "high",
+   "files": [
+    "src/Downpour.Core/UpdateJournalStore.cs",
+    "src/Downpour.Core/UpdateStagingJournal.cs",
+    "src/Downpour.Desktop/PortableUpdateInstaller.cs",
+    "src/Downpour.UpdateHelper/Program.cs",
+    "tests/Downpour.Tests/UpdateJournalWiringTests.cs",
+    "docs/UPDATE_JOURNAL.md"
+   ],
+   "acceptance": [
+    "Downloaded, verified, staged, applied and rolled-back transitions survive a restart",
+    "The helper refuses a package without a matching staged record",
+    "Only legal transitions are recorded; abandoned cycles are closed as rolled back",
+    "The journal is bounded, written atomically and contains no paths or host data",
+    "A damaged or oversized journal is reported rather than silently accepted"
+   ],
+   "notes": "buffy 2026-11-21: completed. `UpdateJournalStore` (Core) persists `UpdateStagingJournal` records to the per-user updates folder (update-journal.json) with 32 records / 300-character details / 64 KiB limits and an atomic temp-file replace. The desktop starts a cycle only after the published SHA-256 matched, records verified after extraction returns per-file digests, and stages after the manifest and helper copy; failures record rolled back best-effort before cleanup. The standalone helper requires the newest record to be staged for the exact manifest version before replacing any file, then records applied after restart or rolled back after restoring previous files. Downloaded and Verified may now be abandoned as rolled back; Applied stays terminal. Desktop start appends the last recovery sentence to the unresolved-staging message. Debug build 0 warnings/errors, Desktop and UpdateHelper compile clean, 1,499 tests pass (4 new). No real in-app update has exercised the journal yet. Docs: `docs/UPDATE_JOURNAL.md`."
   }
  ]
 }

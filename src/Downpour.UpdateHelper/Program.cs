@@ -83,6 +83,7 @@ internal static class Program
         }
         if (!manifest.Files.ContainsKey("Downpour.Desktop.exe") || !manifest.Files.ContainsKey("service/Downpour.Service.exe"))
             throw new InvalidDataException("The staged update is missing required executables.");
+        RequireStagedJournal(releaseVersion.ToString(3));
 
         Directory.CreateDirectory(backup);
         EnsureNoReparsePath(root, backup);
@@ -118,6 +119,7 @@ internal static class Program
             if (restarted is null) throw new InvalidOperationException("The updated Downpour app could not be restarted.");
             restarted.Dispose();
             TryDeleteDirectory(stateRoot);
+            TryRecordJournal(UpdateState.Applied, $"Applied {manifest.Tag} and restarted Downpour.");
         }
         catch
         {
@@ -131,8 +133,29 @@ internal static class Program
                 }
                 catch { }
             }
+            TryRecordJournal(UpdateState.RolledBack, $"Apply failed after touching {changed.Count} file(s); previous files restored where possible.");
             throw;
         }
+    }
+
+    /// <summary>Refuses to apply a package the journal does not call staged; a corrupt journal fails closed.</summary>
+    private static void RequireStagedJournal(string version)
+    {
+        try
+        {
+            UpdateJournalStore.RequireStaged(UpdateJournalStore.Load(UpdateJournalStore.DefaultPath), version);
+        }
+        catch (Exception exception) when (exception is InvalidDataException or IOException or UnauthorizedAccessException)
+        {
+            throw new InvalidDataException("The staged update has no matching journal record. Check for updates again to restage it.", exception);
+        }
+    }
+
+    private static void TryRecordJournal(UpdateState state, string detail)
+    {
+        try { UpdateJournalStore.Advance(UpdateJournalStore.DefaultPath, state, DateTimeOffset.UtcNow, detail); }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or InvalidDataException
+            or InvalidOperationException or ArgumentException) { }
     }
 
     private static void EnsureNoReparsePoints(string root, string state, string stage)

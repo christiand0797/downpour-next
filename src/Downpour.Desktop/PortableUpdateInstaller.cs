@@ -21,6 +21,7 @@ internal static class PortableUpdateInstaller
     {
         var installRoot = Path.TrimEndingDirectorySeparator(Path.GetFullPath(AppContext.BaseDirectory));
         var stateRoot = Path.Combine(installRoot, StateDirectoryName);
+        var journalPath = UpdateJournalStore.DefaultPath;
         PrepareStateDirectory(installRoot, stateRoot);
         var created = false;
         using var client = new ReleaseUpdateClient();
@@ -36,10 +37,14 @@ internal static class PortableUpdateInstaller
             created = true;
             var archivePath = Path.Combine(stateRoot, "release.zip");
             await client.DownloadVerifiedPackageAsync(check.Release, archivePath, cancellationToken: cancellationToken).ConfigureAwait(false);
+            UpdateJournalStore.Begin(journalPath, check.Release.Version.ToString(3), DateTimeOffset.UtcNow,
+                $"Downloaded {check.Release.Size:N0} bytes; the published SHA-256 matched.");
             var stagePath = Path.Combine(stateRoot, "stage");
             progress.Report("Verifying and staging update files…");
             var hashes = UpdateArchive.ExtractToStage(archivePath, stagePath);
             File.Delete(archivePath);
+            UpdateJournalStore.Advance(journalPath, UpdateState.Verified, DateTimeOffset.UtcNow,
+                $"{hashes.Count} extracted file digests recorded from the verified package.");
             var manifest = new StagedUpdateManifest(check.Release.Tag, new Dictionary<string, string>(hashes, StringComparer.OrdinalIgnoreCase));
             await File.WriteAllTextAsync(Path.Combine(stateRoot, "manifest.json"), JsonSerializer.Serialize(manifest), cancellationToken).ConfigureAwait(false);
 
@@ -49,6 +54,8 @@ internal static class PortableUpdateInstaller
             Directory.CreateDirectory(helperDirectory);
             var helperPath = Path.Combine(helperDirectory, "Downpour.UpdateHelper.exe");
             File.Copy(helperSource, helperPath, overwrite: true);
+            UpdateJournalStore.Advance(journalPath, UpdateState.Staged, DateTimeOffset.UtcNow,
+                $"{hashes.Count} files staged for {check.Release.Tag}.");
 
             progress.Report("Update verified. Restarting Downpour to apply it…");
             var executable = Environment.ProcessPath;
@@ -64,8 +71,10 @@ internal static class PortableUpdateInstaller
             helper.Dispose();
             return new UpdateInstallResult(true, false, $"Downpour {check.LatestVersion} is staged and will finish applying as the app restarts.");
         }
-        catch
+        catch (Exception exception)
         {
+            UpdateJournalStore.TryRecordFailure(journalPath, DateTimeOffset.UtcNow,
+                $"{exception.GetType().Name} before apply; no package file was replaced.");
             if (created) TryDeleteDirectory(stateRoot);
             throw;
         }
@@ -77,7 +86,7 @@ internal static class PortableUpdateInstaller
         var errorLog = Path.Combine(stateRoot, "update-error.txt");
         var appDataLog = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DownpourNext", "updates", "last-update-error.txt");
         if (!File.Exists(errorLog) && !File.Exists(appDataLog))
-            throw new IOException("A previous update needs attention. Review .downpour-update in the app folder before trying again.");
+            throw new IOException("A previous update needs attention. Review .downpour-update in the app folder before trying again." + DescribeJournalRecovery());
 
         EnsureSafeTree(installRoot, stateRoot);
         if (File.Exists(errorLog))
@@ -92,6 +101,19 @@ internal static class PortableUpdateInstaller
         }
         TryDeleteDirectory(stateRoot);
         if (Directory.Exists(stateRoot)) throw new IOException("A previous failed update could not be cleared safely. Extract a fresh portable package to a writable folder.");
+    }
+
+    private static string DescribeJournalRecovery()
+    {
+        try
+        {
+            var records = UpdateJournalStore.Load(UpdateJournalStore.DefaultPath);
+            return records.Count == 0 ? "" : " " + UpdateStagingJournal.Recover(records[^1]);
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
+        {
+            return " The update journal could not be read.";
+        }
     }
 
     private static void EnsureSafeTree(string root, string stateRoot)

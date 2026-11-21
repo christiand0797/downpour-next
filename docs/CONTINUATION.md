@@ -51,8 +51,12 @@ build runs changes the hash it expects. Read the hash from an executable (`(Get-
 pin that in the scripts rather than assuming the bump commit. Commit the docs first and pass `--target "$(git rev-parse
 HEAD)"` so the tag points at a pushed commit; the package script must keep pinning the embedded hash, not the tag.
 
-## Current state (end of 0.1.32)
+## Current state (end of 0.1.32, plus the unreleased update journal)
 
+- Unreleased after 0.1.32: the update staging journal (DN-074). `UpdateJournalStore` records downloaded → verified →
+  staged under `%LOCALAPPDATA%\DownpourNext\updates\update-journal.json`; the standalone helper refuses a package
+  without a matching staged record and records applied or rolled back. 1,499 Debug tests pass; a real in-app update
+  has not been exercised. Details in `docs/UPDATE_JOURNAL.md`.
 - Published: `v0.1.32` as Latest, built from `408fe2f`; adds the offline alert replay gate, no runtime behaviour
   change. ZIP 306,482,886 bytes sha256 `b88d9df3…`, SBOM `11fd7b8c…`, SHA256SUMS `18d890de…`; the tag points at the
   following docs commit, so the package script must pin the embedded hash, not the tag.
@@ -77,9 +81,8 @@ HEAD)"` so the tag points at a pushed commit; the package script must keep pinni
   window, so `MainWindowHandle` stays 0 and the close request is never sent. The harness launches visibly; do not
   reintroduce `-WindowStyle Hidden` for the desktop launch. A failed hidden run can leave a headless desktop behind;
   the smoke guard then refuses to start, so check `Get-Process Downpour.Desktop` and stop the stale pid before rerunning.
-- Remaining Core-only foundations: onboarding, update journal, portable encrypted bundle, IDN confusables, weekly
-  digest, cross-view for ports; egress novelty is blocked on byte volume and metered scheduling on a
-  session-0 signal.
+- Remaining Core-only foundations: onboarding, portable encrypted bundle, IDN confusables, weekly digest,
+  cross-view for ports; egress novelty is blocked on byte volume and metered scheduling on a session-0 signal.
 - Previously flaky: `AmsiSessionTests.ContextCannotBeUninitializedDuringAnActiveScan` failed under load; its waits were
   raised to 30 s on 2026-11-20.
 

@@ -1,5 +1,13 @@
 # Downpour Next shared context
 
+## 2026-11-21 update staging journal wired (buffy, DN-074)
+
+- `UpdateJournalStore` (Core) persists `UpdateStagingJournal` transitions to `%LOCALAPPDATA%\DownpourNext\updates\update-journal.json`: at most 32 records, 300-character details and a 64 KiB file, replaced with an atomic temp write. It holds no install path, user name, host address or package content.
+- The desktop records `Downloaded` after the published SHA-256 matches, `Verified` after extraction returns the per-file digests (detail mandatory), and `Staged` after `manifest.json` and the standalone helper are in place. A failure on that path records `RolledBack` best-effort before the staging folder is cleared.
+- The standalone helper now refuses to touch any file unless the newest record is `Staged` for the exact version in the manifest, then records `Applied` after the restart or `RolledBack` after restoring previous files where permitted. A missing or unreadable journal fails closed with "check for updates again".
+- `UpdateStagingJournal` now also allows `Downloaded → RolledBack` and `Verified → RolledBack`, so an abandoned cycle is closed honestly; `Applied` stays terminal. Desktop start appends the last recovery sentence to the existing unresolved-staging message.
+- Verification: Debug build 0 warnings/0 errors, Desktop and UpdateHelper compile clean, 1,499 tests pass (4 new in `UpdateJournalWiringTests`). No real in-app update has exercised the journal yet; details and limits in `docs/UPDATE_JOURNAL.md`.
+
 ## 2026-11-20 alert replay gate wired (buffy, DN-072)
 
 - `AlertProjection.DedupKey` now owns the event-to-alert identity in Core; `SecurityAlertRepository` calls it instead of keeping a private copy, so the service upsert and the offline gate cannot drift.

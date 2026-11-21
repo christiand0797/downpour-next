@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-11-20",
+  "updatedAt": "2026-11-21",
   "agents": [
     {
       "id": "codex-primary",
@@ -173,10 +173,10 @@
     {
       "id": "buffy",
       "role": "agent",
-      "taskId": "DN-073",
-      "status": "idle",
-      "heartbeatUtc": "2026-11-20T23:25:00Z",
-      "notes": "DN-072 completed and DN-073 published as v0.1.32 (built from 408fe2f): alert replay gate, 1,495 Release tests, 1,077 package entries, every route and window smoke. No runtime change. Next: onboarding or weekly digest from the remaining Core foundations, or viewed checks of the mitigation/coverage/network panels."
+      "taskId": "DN-074",
+      "status": "active",
+      "heartbeatUtc": "2026-11-21T00:30:00Z",
+      "notes": "DN-074 completed: the update staging journal is wired end to end. The desktop records downloaded/verified/staged with an atomic bounded journal outside the install folder, and the standalone helper refuses any package whose newest record is not staged for that version, then records applied or rolled back. 1,499 Debug tests pass. Next: build and publish 0.1.33, then wire onboarding or the weekly digest."
     }
   ]
 }
