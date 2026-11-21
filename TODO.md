@@ -1,5 +1,12 @@
 # Downpour Next TODO
 
+## 2026-11-21 0.1.37: weekly summary (buffy)
+
+- [x] Weekly summary wired (DN-082): the service reads one SQL aggregate per fact from the alert store and writes `weekly-<ISO year>-W<week>.md` into the reports folder at start + 2 minutes and every 6 hours. The digest takes nullable counts, so autostart changes and resolved findings (which the store does not hold) appear under **Not recorded** instead of a false zero, and the quiet-week sentence needs every quiet fact to be known. Nothing is written until channel readability has been recorded for seven days. Atomic, current-user-only, 40 lines / 32 KiB, never overwrites another week. Settings opens the folder. 1,531 Debug tests pass (10 new); `docs/WEEKLY_DIGEST.md`.
+- [ ] First real report: this machine's store has watched for less than seven days, so the worker defers. Check the file content and the Settings row once a week has passed.
+- [ ] The output folder is fixed; a user-selectable path is not implemented.
+- [x] Port cross-view (DN-080) shipped in v0.1.36.
+
 ## 2026-11-21 0.1.36: TCP listener cross-view (buffy)
 
 - [x] Port cross-view (DN-080): the Network capture compares the managed listener list with the native owner table, reports one to ten one-sided endpoints as a consistency anomaly (never tampering), and stays silent above ten or when either table is empty. Read-only, nothing persisted. 1,522 Debug tests pass (5 new); `docs/PORT_CROSSVIEW.md`.

@@ -93,6 +93,18 @@ public sealed partial class SettingsPage
 
     private async void RefreshCache_Click(object sender, RoutedEventArgs e) => await RefreshCacheAsync();
 
+    private void OpenReportsFolder_Click(object sender, RoutedEventArgs e)
+    {
+        var root = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DownpourNext", "reports");
+        if (!Directory.Exists(root))
+        {
+            WeeklyDigestState.Text = "No weekly summary has been written yet. One appears after the alert store has watched a full week.";
+            return;
+        }
+        try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("explorer.exe") { ArgumentList = { root }, UseShellExecute = false })?.Dispose(); }
+        catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException) { }
+    }
+
     private void OpenDataFolder_Click(object sender, RoutedEventArgs e)
     {
         var root = CacheCleaner.DefaultRoot;

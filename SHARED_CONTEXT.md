@@ -1,5 +1,14 @@
 # Downpour Next shared context
 
+## 2026-11-21 weekly summary from the alert store (buffy, DN-082)
+
+- `WeeklyDigest` now takes nullable counts and a `FindingsAcknowledged` field, so an unknown fact prints under **Not recorded** instead of a zero that reads as "nothing happened". The quiet-week sentence appears only when the autostart, hidden-match and sensor counts are all known and zero.
+- `SecurityAlertRepository.ReadWeeklyDigestFactsAsync` reads one SQL aggregate per fact (first/last seen in the window, open now and oldest open age, acknowledgements and suppressions from `alert_state_events`, active suppressions and their hidden matches, expiries in the window, evictions, blind sensors, most active rule). `WeeklyDigestInputs.FromFacts` maps it and deliberately leaves new autostarts and resolved findings unrecorded: the store holds no weekly autostart history and has no `Resolved` state.
+- `WeeklyDigestWriter` writes `%LOCALAPPDATA%\DownpourNext\reports\weekly-<ISO year>-W<week>.md` atomically, restricted to the current user, capped at 40 lines / 32 KiB and never overwriting another week's file. `WeeklyDigestWorker` runs at start + 2 minutes and every 6 hours, and only after channel readability has been recorded for seven days, so a fresh install is not called quiet.
+- Settings → Storage & cache has a **Weekly summary** row that opens the reports folder and says so when no report exists yet. The folder is not user-selectable.
+- Verification: Debug build 0 warnings/0 errors; 1,531 tests pass (10 new in `WeeklyDigestTests`). No report has been produced on this machine: its store has watched for less than seven days, so the worker defers. The rendered row and the file content were not viewed. Details in `docs/WEEKLY_DIGEST.md`.
+- All fifteen second-round foundations now have a call site except `PortableSettingsBundle`.
+
 ## 2026-11-21 TCP listener cross-view (buffy, DN-080)
 
 - The Network capture now compares the two independent enumerations of the same listening sockets: `GetActiveTcpListeners` (IPv4 and IPv6) and the native `GetExtendedTcpTable(TCP_TABLE_OWNER_PID_LISTENER)` table that already supplies process attribution. Both sides key on `IPEndPoint.ToString()`, so a difference is an enumeration difference, not a formatting one.

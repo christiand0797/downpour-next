@@ -1636,6 +1636,30 @@
     "Tag points at the pushed docs commit; package pins the embedded hash"
    ],
    "notes": "buffy 2026-11-21: completed. Built from 7d1d83d9efc958d14faddc0999cc37a156743937; 1,522 Release tests, 1,077 package entries (772,689,082 expanded bytes, 52 runtime components), every packaged route (179 YARA rules) and the window smoke passed. ZIP 306,526,663 bytes sha256 3b679a9d4b1d35dd22b5f879234efcbe1e871a94544b2853eb382dfad56ccb7a; SBOM 803638f875cbffe162cc5b15a5976437bd005e268380769a113800536fac4e88; SHA256SUMS 6f0d7983c7e2587b86646cabb63a8b04c864992c5997a5e0e666f63f82597e11. Ships the port cross-view; no detection rule changed. Release notes docs/RELEASE_0.1.36.md."
+  },
+  {
+   "id": "DN-082",
+   "title": "Write a weekly summary from the alert store",
+   "status": "completed",
+   "priority": "medium",
+   "files": [
+    "src/Downpour.Core/WeeklyDigest.cs",
+    "src/Downpour.Contracts/WeeklyDigest.cs",
+    "src/Downpour.Service/SecurityAlertRepository.cs",
+    "src/Downpour.Service/WeeklyDigestWriter.cs",
+    "src/Downpour.Service/WeeklyDigestWorker.cs",
+    "src/Downpour.Service/Program.cs",
+    "src/Downpour.Desktop/Pages/SettingsPage.xaml",
+    "src/Downpour.Desktop/Pages/SettingsPage.Cache.cs",
+    "tests/Downpour.Tests/WeeklyDigestTests.cs"
+   ],
+   "acceptance": [
+    "One bounded Markdown summary per ISO week in the reports folder",
+    "Counts come from stored rows only; unknown facts are listed as not recorded rather than zero",
+    "The quiet-week sentence needs every quiet fact to be known",
+    "Nothing is written before the store has watched a full week"
+   ],
+   "notes": "buffy 2026-11-21: completed. `WeeklyDigest` takes nullable counts and a `FindingsAcknowledged` field; `SecurityAlertRepository.ReadWeeklyDigestFactsAsync` supplies one SQL aggregate per fact and `WeeklyDigestInputs.FromFacts` maps it, leaving new autostarts and resolved findings unrecorded. `WeeklyDigestWriter` writes `weekly-<ISO year>-W<week>.md` atomically with a current-user ACL, capped at 40 lines / 32 KiB; `WeeklyDigestWorker` runs at start + 2 minutes and every 6 hours, gated on seven days of channel observation. Settings opens the reports folder. 1,531 Debug tests pass (10 new). No report has been produced on this machine yet (store younger than a week). Docs: `docs/WEEKLY_DIGEST.md`."
   }
  ]
 }

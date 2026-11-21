@@ -270,6 +270,85 @@ public sealed class SecurityAlertRepository(string databasePath)
         finally { _gate.Release(); }
     }
 
+    /// <summary>
+    /// Reads the week's stored facts with SQL aggregates only. Each field is a count or timestamp the store already keeps;
+    /// nothing is estimated and nothing absent from the schema is invented. The one nullable fact is sensor readability,
+    /// which is unknown until a channel measurement exists.
+    /// </summary>
+    public async Task<WeeklyDigestFacts> ReadWeeklyDigestFactsAsync(DateTimeOffset sinceUtc, CancellationToken cancellationToken = default)
+    {
+        await _gate.WaitAsync(cancellationToken);
+        try
+        {
+            await using var connection = await OpenAsync(cancellationToken);
+            var since = sinceUtc.ToUniversalTime().ToString("O");
+            var now = DateTimeOffset.UtcNow.ToString("O");
+            var sinceDay = DateOnly.FromDateTime(sinceUtc.UtcDateTime).ToString("yyyy-MM-dd");
+
+            var firstSeen = await CountAsync(connection, "SELECT COUNT(*) FROM alerts WHERE first_seen_utc >= $since;", cancellationToken, ("$since", since));
+            var lastSeen = await CountAsync(connection, "SELECT COUNT(*) FROM alerts WHERE last_seen_utc >= $since;", cancellationToken, ("$since", since));
+            var openNow = await CountAsync(connection, "SELECT COUNT(*) FROM alerts WHERE state IN ('Open','Acknowledged');", cancellationToken);
+            var acknowledged = await CountAsync(connection,
+                "SELECT COUNT(DISTINCT alert_id) FROM alert_state_events WHERE created_at_utc >= $since AND next_state='Acknowledged';",
+                cancellationToken, ("$since", since));
+            var suppressed = await CountAsync(connection,
+                "SELECT COUNT(DISTINCT alert_id) FROM alert_state_events WHERE created_at_utc >= $since AND next_state='Suppressed';",
+                cancellationToken, ("$since", since));
+            var active = await CountAsync(connection,
+                "SELECT COUNT(*) FROM alert_fp_rules WHERE suppressed=1 AND (expires_at_utc IS NULL OR expires_at_utc > $now);",
+                cancellationToken, ("$now", now));
+            var hidden = await CountAsync(connection,
+                "SELECT COALESCE(SUM(matches_since_grant),0) FROM alert_fp_rules WHERE suppressed=1 AND (expires_at_utc IS NULL OR expires_at_utc > $now);",
+                cancellationToken, ("$now", now));
+            var expired = await CountAsync(connection,
+                "SELECT COUNT(*) FROM alert_fp_rules WHERE suppressed=1 AND expires_at_utc IS NOT NULL AND expires_at_utc <= $now AND expires_at_utc >= $since;",
+                cancellationToken, ("$now", now), ("$since", since));
+            var evicted = await CountAsync(connection, "SELECT COALESCE(SUM(evicted),0) FROM alert_evictions WHERE day >= $day;",
+                cancellationToken, ("$day", sinceDay));
+
+            int? oldestOpenDays = null;
+            var oldestText = await ScalarAsync(connection,
+                "SELECT MIN(first_seen_utc) FROM alerts WHERE state IN ('Open','Acknowledged');", cancellationToken);
+            if (oldestText is not null and not DBNull)
+                oldestOpenDays = Math.Max(0, (int)Math.Floor((DateTimeOffset.UtcNow - ParseUtc(Convert.ToString(oldestText)!)).TotalDays));
+
+            string? mostActive = null;
+            await using (var title = connection.CreateCommand())
+            {
+                title.CommandText = "SELECT title FROM alerts WHERE last_seen_utc >= $since GROUP BY title ORDER BY SUM(occurrences) DESC, title LIMIT 1;";
+                title.Parameters.AddWithValue("$since", since);
+                var value = await title.ExecuteScalarAsync(cancellationToken);
+                if (value is string text && text.Length is > 0 and <= 160) mostActive = text;
+            }
+
+            var coverage = await ReadCoverageAsync(connection, cancellationToken);
+            return new WeeklyDigestFacts(
+                (int)Math.Min(firstSeen, int.MaxValue),
+                (int)Math.Min(lastSeen, int.MaxValue),
+                (int)Math.Min(openNow, int.MaxValue),
+                oldestOpenDays,
+                (int)Math.Min(acknowledged, int.MaxValue),
+                (int)Math.Min(suppressed, int.MaxValue),
+                (int)Math.Min(active, int.MaxValue),
+                (int)Math.Min(hidden, int.MaxValue),
+                (int)Math.Min(expired, int.MaxValue),
+                (int)Math.Min(evicted, int.MaxValue),
+                coverage?.CannotFire,
+                coverage?.ObservedSinceUtc,
+                mostActive);
+        }
+        finally { _gate.Release(); }
+    }
+
+    private static async Task<long> CountAsync(SqliteConnection connection, string sql, CancellationToken token, params (string Name, object Value)[] parameters)
+    {
+        await using var command = connection.CreateCommand();
+        command.CommandText = sql;
+        foreach (var (name, value) in parameters) command.Parameters.AddWithValue(name, value);
+        var result = await command.ExecuteScalarAsync(token);
+        return result is null or DBNull ? 0 : Convert.ToInt64(result);
+    }
+
     private static async Task<AlertRetentionSummary> ReadRetentionAsync(SqliteConnection connection, int retained, CancellationToken token)
     {
         DateTimeOffset? oldest = null;
