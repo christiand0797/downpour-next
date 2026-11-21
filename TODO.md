@@ -1,5 +1,13 @@
 # Downpour Next TODO
 
+## 2026-11-21 0.1.35: first-run guidance (buffy)
+
+- [x] First-run setup card (DN-078): the Dashboard derives the next setup step from the feed snapshot, the alert store's observation start and two local acknowledgements, and shows one step at a time. A 24-hour observation window decides the baseline; an unanswered service is not a failure and a failed first download is worded as a real failure (`FEEDS BLOCKED`) instead of the expected quiet start. The acknowledgements record that the explanation was seen, not that elevation exists. 1,517 Debug tests pass (9 new); `docs/ONBOARDING.md`.
+- [ ] Visual check of the Setup card at a narrow width, and the first-run sequence on a fresh store (this machine is past its observation window).
+- [ ] The failed-download branch has only been proved by the derivation tests, not against a real broken feed.
+- [x] IDN/lookalike DNS context (DN-076) shipped in v0.1.34.
+- [ ] Visual check of the IDN panel at a narrow width, and a real cached IDN name on screen (the empty state is the likely one on this machine).
+
 ## 2026-11-21 0.1.34: IDN lookalikes on DNS (buffy)
 
 - [x] IDN/lookalike resolver-cache context (DN-076): every cached name gets a bounded `DomainConfusables.Describe` assessment; a non-ASCII, mixed-script or brand-resembling name carries an optional lookalike block, and the DNS page shows the decoded form with a `BRAND`/`MIXED`/`IDN` badge. Context only: nothing is blocked, resolved or alerted, the DGA score is unchanged and nothing new is persisted. Hostile or oversized names return null instead of failing the capture. 1,508 Debug tests pass (9 new); `docs/DNS_CONFUSABLES.md`.

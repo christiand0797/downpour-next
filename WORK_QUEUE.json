@@ -1561,6 +1561,26 @@
     "Tag points at the pushed docs commit; package pins the embedded hash"
    ],
    "notes": "buffy 2026-11-21: completed. Built from 2a26a4789cad29cf12476b913aa53da6203a215c; 1,508 Release tests, 1,077 package entries (772,675,678 expanded bytes, 52 runtime components), every packaged route (179 YARA rules) and the window smoke passed. ZIP 306,519,738 bytes sha256 c0bac04b65fb0f9176c62d8045681aa280dbaf987308deb4987e191f033447a5; SBOM bd4ef099e6a21806242ccdd3fc187a4aaa871a2a0a3756d685047d746257d0f8; SHA256SUMS 42cf052ce915c5ab56117ee7d9e001e37227a19f351bfbe75988526283f14890. Ships the DNS IDN/lookalike panel; no detection rule changed. Release notes docs/RELEASE_0.1.34.md."
+  },
+  {
+   "id": "DN-078",
+   "title": "Show the next setup step on the Dashboard after first install",
+   "status": "completed",
+   "priority": "medium",
+   "files": [
+    "src/Downpour.Core/OnboardingPlan.cs",
+    "src/Downpour.Desktop/AppPreferences.cs",
+    "src/Downpour.Desktop/Pages/HomePage.xaml",
+    "src/Downpour.Desktop/Pages/HomePage.xaml.cs",
+    "tests/Downpour.Tests/OnboardingStateTests.cs"
+   ],
+   "acceptance": [
+    "The Dashboard shows one setup step and hides the card once setup is complete",
+    "A genuine first-download failure is worded as a failure, not as the expected quiet start",
+    "An unanswered service and a future observation start never count as progress",
+    "The acknowledgements record that the explanation was seen, not that elevation exists"
+   ],
+   "notes": "buffy 2026-11-21: completed. `OnboardingPlan.StateFrom` derives the state from the feed snapshot, the alert store observation start (24-hour window) and two local acknowledgements; the Dashboard Setup card advances one step at a time and hides when ready. FEEDS BLOCKED appears only when the service answered, no feed holds entries and at least one failed. Feed facts refresh at most once a minute and a transient miss keeps the previous answer. 1,517 Debug tests pass (9 new). Card not viewed by hand; first-run sequence not walked on a fresh store. Docs: `docs/ONBOARDING.md`."
   }
  ]
 }

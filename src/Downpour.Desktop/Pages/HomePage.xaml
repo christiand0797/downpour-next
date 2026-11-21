@@ -48,6 +48,20 @@
                 </Grid>
             </Border>
 
+            <!-- First-run guidance: one step at a time, hidden once setup is complete. -->
+            <Border x:Name="SetupCard" Padding="14,12" CornerRadius="10" Background="{StaticResource HudPanelBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1" Visibility="Collapsed">
+                <Grid ColumnSpacing="14">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                    <FontIcon Glyph="&#xE9D9;" FontSize="20" Foreground="{StaticResource HudCyanBrush}" VerticalAlignment="Center" />
+                    <StackPanel Grid.Column="1" Spacing="3">
+                        <TextBlock x:Name="SetupStepLabel" FontSize="10" FontWeight="SemiBold" CharacterSpacing="120" Foreground="{StaticResource HudTextDimBrush}" Text="SETUP" />
+                        <TextBlock x:Name="SetupHeadline" FontWeight="SemiBold" TextWrapping="Wrap" />
+                        <TextBlock x:Name="SetupDetail" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                    </StackPanel>
+                    <Button Grid.Column="2" x:Name="SetupActionButton" Content="Got it" Click="SetupAction_Click" VerticalAlignment="Center" Visibility="Collapsed" />
+                </Grid>
+            </Border>
+
             <Border x:Name="PulseCard" Padding="16,12" CornerRadius="12" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource DownpourStrokeBrush}" BorderThickness="1">
                 <Grid ColumnSpacing="18">
                     <Grid.ColumnDefinitions><ColumnDefinition Width="320" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>

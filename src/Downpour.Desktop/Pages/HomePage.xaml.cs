@@ -21,6 +21,13 @@ public sealed partial class HomePage : Page
     private bool _snapshotRequestInFlight;
     private bool _updateRequestInFlight;
     private bool _securityRequestInFlight;
+    private readonly ThreatDatabaseClient _threatClient = new();
+    private DateTimeOffset _setupFeedsCheckedAt = DateTimeOffset.MinValue;
+    private bool _setupFeedsAnswered;
+    private int _setupFeedsReady;
+    private int _setupFeedsFailed;
+    private DateTimeOffset? _setupObservingSince;
+    private OnboardingStep _setupStep = OnboardingStep.DownloadFeeds;
     private DateTimeOffset _hardeningCheckedAt = DateTimeOffset.MinValue;
     private readonly SecurityAlertClient _alertClient = new();
     private readonly BlossomScene _blossom = new();
@@ -257,6 +264,8 @@ public sealed partial class HomePage : Page
                     : $"{open.Count(a => a.Severity == "CRITICAL"):N0} critical · {open.Length - threats:N0} possible threats · open Triage to review";
             }
 
+            await RefreshSetupAsync(alerts);
+
             if (DateTimeOffset.UtcNow - _hardeningCheckedAt < TimeSpan.FromMinutes(1)) return;
             var posture = await _hardeningClient.TryGetSnapshotAsync();
             if (posture is null)
@@ -285,6 +294,61 @@ public sealed partial class HomePage : Page
         {
             _securityRequestInFlight = false;
         }
+    }
+
+    /// <summary>
+    /// First-run guidance from facts the dashboard already holds: whether the feed service answered, how many feeds hold
+    /// entries, when alert observation started, and the two acknowledgements stored locally. Feed facts are re-read at
+    /// most once a minute, and a transient miss keeps the last answer instead of walking the card backwards.
+    /// </summary>
+    private async Task RefreshSetupAsync(SecurityAlertSnapshot? alerts)
+    {
+        if (alerts?.Coverage is { } coverage) _setupObservingSince = coverage.ObservedSinceUtc;
+        if (DateTimeOffset.UtcNow - _setupFeedsCheckedAt >= TimeSpan.FromMinutes(1))
+        {
+            _setupFeedsCheckedAt = DateTimeOffset.UtcNow;
+            var response = await _threatClient.GetSnapshotAsync();
+            if (response?.Snapshot is { } feeds)
+            {
+                _setupFeedsAnswered = true;
+                _setupFeedsReady = feeds.Feeds.Count(feed => feed.Entries > 0 &&
+                    feed.State is ThreatFeedStates.Current or ThreatFeedStates.Stale);
+                _setupFeedsFailed = feeds.Feeds.Count(feed => feed.State == ThreatFeedStates.Failed);
+            }
+        }
+        RenderSetup();
+    }
+
+    private void RenderSetup()
+    {
+        var guidance = OnboardingPlan.Next(OnboardingPlan.StateFrom(
+            _setupFeedsAnswered, _setupFeedsReady, _setupFeedsFailed, _setupObservingSince, DateTimeOffset.UtcNow,
+            AppPreferences.SetupPermissionsSeen, AppPreferences.SetupQuietPeriodSeen));
+        _setupStep = guidance.Step;
+        SetupCard.Visibility = guidance.Step == OnboardingStep.Ready ? Microsoft.UI.Xaml.Visibility.Collapsed : Microsoft.UI.Xaml.Visibility.Visible;
+        if (guidance.Step == OnboardingStep.Ready) return;
+        SetupStepLabel.Text = guidance.Step switch
+        {
+            OnboardingStep.DownloadFeeds => _setupFeedsAnswered && _setupFeedsReady == 0 && _setupFeedsFailed > 0
+                ? "SETUP · FEEDS BLOCKED"
+                : "SETUP · FEEDS",
+            OnboardingStep.EstablishBaseline => "SETUP · BASELINE",
+            OnboardingStep.ConfirmPermissions => "SETUP · PERMISSIONS",
+            _ => "SETUP · FIRST DAYS",
+        };
+        SetupHeadline.Text = guidance.Headline;
+        SetupDetail.Text = guidance.Detail;
+        SetupActionButton.Visibility = guidance.Step is OnboardingStep.ConfirmPermissions or OnboardingStep.ExplainQuietPeriod
+            ? Microsoft.UI.Xaml.Visibility.Visible
+            : Microsoft.UI.Xaml.Visibility.Collapsed;
+    }
+
+    private void SetupAction_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        if (_setupStep == OnboardingStep.ConfirmPermissions) AppPreferences.SetupPermissionsSeen = true;
+        else if (_setupStep == OnboardingStep.ExplainQuietPeriod) AppPreferences.SetupQuietPeriodSeen = true;
+        else return;
+        RenderSetup();
     }
 
     private async Task RefreshSnapshotAsync()

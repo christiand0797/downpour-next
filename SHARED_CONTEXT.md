@@ -1,5 +1,13 @@
 # Downpour Next shared context
 
+## 2026-11-21 first-run guidance on the Dashboard (buffy, DN-078)
+
+- `OnboardingPlan` (Core since DN-052) now has a call site. `OnboardingPlan.StateFrom` is a pure derivation from facts the Dashboard already holds: whether the feed service answered, how many feeds hold entries, how many failed, the alert store's observation start, and two local acknowledgements. A 24-hour `ObservationWindow` decides when the quiet start stops being called a baseline.
+- The Dashboard adds a **Setup** card under the sensor status card: one step at a time (`FEEDS`, `BASELINE`, `PERMISSIONS`, `FIRST DAYS`), hidden when ready. `FEEDS BLOCKED` appears only when the service answered, no feed holds entries and at least one failed, so a broken download is never dressed as the expected quiet start.
+- `PermissionsConfirmed` and `QuietPeriodExplained` come from the new `setupPermissionsSeen` / `setupQuietPeriodSeen` preferences and mean the person saw the explanation — not that administrator access exists. Feed facts are re-read at most once a minute and a transient miss keeps the previous answer so the card never walks backwards.
+- Verification: Debug build 0 warnings/0 errors; 1,517 tests pass (9 new in `OnboardingStateTests`). The card has not been viewed at any width and the first-run sequence has not been walked on a fresh store; the failed-download branch is unit-tested only. Details in `docs/ONBOARDING.md`.
+- Remaining Core-only foundations: portable encrypted bundle, weekly digest, cross-view for ports.
+
 ## 2026-11-21 IDN lookalikes on the DNS route (buffy, DN-076)
 
 - `DomainConfusables` (Core since DN-052) is now fed from the resolver-cache capture. `DomainConfusables.Describe` is the bounded inventory wrapper around the tested `Assess`: empty, whitespace, over-253-character and unparseable names return `null` rather than throwing, so a hostile cache entry cannot fail a capture. A name is returned only when it has a non-ASCII decoded form, mixes scripts, or resembles a protected brand; plain ASCII names carry no extra payload.

@@ -20,6 +20,8 @@ public static class AppPreferences
         ("soundAlarmEnabled", false),
         ("soundAlarmIncludesHigh", false),
         ("ransomwareContentSampling", true),
+        ("setupPermissionsSeen", false),
+        ("setupQuietPeriodSeen", false),
     ];
 
     private static readonly Dictionary<string, bool> Values = Definitions.ToDictionary(d => d.Key, d => d.Default, StringComparer.Ordinal);
@@ -37,6 +39,12 @@ public static class AppPreferences
     public static bool SoundAlarmEnabled { get => Values["soundAlarmEnabled"]; set => Set("soundAlarmEnabled", value); }
     public static bool SoundAlarmIncludesHigh { get => Values["soundAlarmIncludesHigh"]; set => Set("soundAlarmIncludesHigh", value); }
     public static bool RansomwareContentSampling { get => Values["ransomwareContentSampling"]; set => Set("ransomwareContentSampling", value); }
+
+    /// <summary>The person has seen why administrator access changes what can be read; not a claim that elevation exists.</summary>
+    public static bool SetupPermissionsSeen { get => Values["setupPermissionsSeen"]; set => Set("setupPermissionsSeen", value); }
+
+    /// <summary>The person has seen the expected-quiet-start explanation.</summary>
+    public static bool SetupQuietPeriodSeen { get => Values["setupQuietPeriodSeen"]; set => Set("setupQuietPeriodSeen", value); }
 
     public static void Load()
     {

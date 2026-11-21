@@ -18,6 +18,38 @@ public sealed record OnboardingGuidance(OnboardingStep Step, string Headline, st
 /// </summary>
 public static class OnboardingPlan
 {
+    /// <summary>
+    /// How long the store must have been watching before the quiet start stops being called a baseline. A single
+    /// capture cannot distinguish "nothing has happened yet" from "nothing is wrong here".
+    /// </summary>
+    public static readonly TimeSpan ObservationWindow = TimeSpan.FromHours(24);
+
+    /// <summary>
+    /// Derives the state from facts the desktop already has: whether the feed service answered, how many feeds hold
+    /// entries and how many failed, when alert observation started, and the two acknowledgements the person has seen.
+    /// An unanswered feed service is not treated as a failed download, and a future observation start never counts as a
+    /// completed baseline.
+    /// </summary>
+    public static OnboardingState StateFrom(
+        bool feedsAnswered,
+        int feedsReady,
+        int feedsFailed,
+        DateTimeOffset? observingSinceUtc,
+        DateTimeOffset nowUtc,
+        bool permissionsAcknowledged,
+        bool quietPeriodAcknowledged)
+    {
+        if (feedsReady < 0) throw new ArgumentOutOfRangeException(nameof(feedsReady));
+        if (feedsFailed < 0) throw new ArgumentOutOfRangeException(nameof(feedsFailed));
+        var baseline = observingSinceUtc is { } since && since <= nowUtc && nowUtc - since >= ObservationWindow;
+        return new OnboardingState(
+            FeedsReady: feedsAnswered && feedsReady > 0,
+            BaselineComplete: baseline,
+            PermissionsConfirmed: permissionsAcknowledged,
+            QuietPeriodExplained: quietPeriodAcknowledged,
+            FirstFeedDownloadFailed: feedsAnswered && feedsReady == 0 && feedsFailed > 0);
+    }
+
     public static OnboardingGuidance Next(OnboardingState state)
     {
         ArgumentNullException.ThrowIfNull(state);
