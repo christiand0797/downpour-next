@@ -1,5 +1,11 @@
 # Downpour Next TODO
 
+## 2026-11-21 0.1.34: IDN lookalikes on DNS (buffy)
+
+- [x] IDN/lookalike resolver-cache context (DN-076): every cached name gets a bounded `DomainConfusables.Describe` assessment; a non-ASCII, mixed-script or brand-resembling name carries an optional lookalike block, and the DNS page shows the decoded form with a `BRAND`/`MIXED`/`IDN` badge. Context only: nothing is blocked, resolved or alerted, the DGA score is unchanged and nothing new is persisted. Hostile or oversized names return null instead of failing the capture. 1,508 Debug tests pass (9 new); `docs/DNS_CONFUSABLES.md`.
+- [ ] Visual check of the IDN panel at a narrow width, and a real cached IDN name on screen (the empty state is the likely one on this machine).
+- [ ] The protected-brand list is fixed in Core; no registry feed backs it.
+
 ## 2026-11-21 0.1.33: update staging journal (buffy)
 
 - [x] Update staging journal wired (DN-074): the desktop records downloaded → verified → staged and the standalone helper refuses to apply unless the newest journal record is `staged` for that exact version, then records applied or rolled back. The journal is atomic, bounded (32 records / 64 KiB) and holds no paths or host data. Damaged journals fail closed. 1,499 Debug tests pass (4 new); `docs/UPDATE_JOURNAL.md`.

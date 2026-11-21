@@ -53,6 +53,35 @@
                 </ListView.Footer>
             </ListView>
 
+            <!-- IDN / confusable names. Context only: a decoded name is shown beside the original and nothing here blocks. -->
+            <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" FontSize="16" Text="IDN and Lookalike Names" Margin="0,8,0,0" />
+            <Border Padding="14,12" CornerRadius="10" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">
+                <StackPanel Spacing="8">
+                    <TextBlock x:Name="LookalikeHeadline" FontWeight="SemiBold" FontSize="13" Text="Reading cached names" TextWrapping="Wrap" />
+                    <TextBlock FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="A Cyrillic or Greek character makes a different domain, so a lookalike is not matched by name and may not be on any list yet. The decoded form is shown for comparison; this panel never blocks or changes a resolution." TextWrapping="Wrap" />
+                    <ListView ItemsSource="{x:Bind Lookalikes}" SelectionMode="None" IsItemClickEnabled="False" MaxHeight="260" Background="Transparent">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Padding="8,7" ColumnSpacing="12">
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="74" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                    <Border CornerRadius="6" Padding="4,3" Background="{Binding BadgeBackground}" VerticalAlignment="Top">
+                                        <TextBlock Text="{Binding Badge}" FontSize="10" FontWeight="SemiBold" Foreground="{Binding BadgeForeground}" HorizontalAlignment="Center" />
+                                    </Border>
+                                    <StackPanel Grid.Column="1" Spacing="2">
+                                        <TextBlock Text="{Binding Domain}" FontFamily="Consolas" FontWeight="SemiBold" FontSize="12" TextWrapping="Wrap" />
+                                        <TextBlock Text="{Binding DecodedDisplay}" FontFamily="Consolas" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                                        <TextBlock Text="{Binding Verdict}" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" TextWrapping="Wrap" />
+                                    </StackPanel>
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                        <ListView.Footer>
+                            <TextBlock x:Name="EmptyLookalikeState" Padding="10" FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="Every cached name is plain ASCII with no lookalike of a protected brand." TextWrapping="Wrap" />
+                        </ListView.Footer>
+                    </ListView>
+                </StackPanel>
+            </Border>
+
             <!-- Email Authentication (SPF / DMARC / DKIM) Tool -->
             <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" FontSize="16" Text="Email Authentication Verifier (SPF / DMARC / DKIM)" Margin="0,8,0,0" />
             <Border Padding="16,14" CornerRadius="10" Background="{StaticResource DownpourSurfaceBrush}" BorderBrush="{StaticResource HudEdgeBrush}" BorderThickness="1">

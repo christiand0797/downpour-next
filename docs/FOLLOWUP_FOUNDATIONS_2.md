@@ -2,7 +2,8 @@
 
 Fifteen bounded, tested Core foundations for the next layer of work, landed after v0.1.25 and after the suppression
 list. Several are now wired (event-log cursors and retention accounting in the alert store, rule coverage and
-per-process mitigations in the service and UI, the replay gate in CI, and the update staging journal in the updater);
+per-process mitigations in the service and UI, the replay gate in CI, the update staging journal in the updater, and
+IDN/lookalike context on the DNS route);
 the rest are **not** wired into a route,
 service loop or the updater. Each entry says what exists, what the
 tests prove, and exactly what wiring would need to be true before it can be called working.
@@ -25,7 +26,7 @@ commercial product.
 | 11 | `OnboardingPlan` | Computes the next setup step (feeds, baseline, permissions, quiet-period explanation) and keeps a genuine feed failure distinct from an expected quiet start. | No | Feed/baseline/permission state from the service; the first-run surface. |
 | 12 | `UpdateStagingJournal` | Legal update transitions only (verified before staged, staged before applied), verification detail required, rollback recorded, and a recovery sentence per state. | **Yes** | `UpdateJournalStore` persists the transitions atomically under `%LOCALAPPDATA%\DownpourNext\updates`; the desktop records downloaded/verified/staged, and the standalone helper refuses to touch any file unless the newest record is `Staged` for that exact version, then records applied or rolled back. A damaged journal fails closed. Signature checks remain a separate gate, so this changes recoverability, not trust. |
 | 13 | `PortableSettingsBundle` | Passphrase-derived (PBKDF2 + AES-GCM) export/import for settings, suppressions and selected cases; feed credentials refused by default; tamper and wrong-passphrase failures are explicit. | No | An export/import surface, a passphrase prompt, and a decision on which case content may leave the machine. |
-| 14 | `DomainConfusables` | Decodes IDN, detects mixed scripts, folds common Cyrillic/Greek/fullwidth confusables, and names protected-brand lookalikes while showing the decoded form. | No | A call site in DNS/connection analysis; a context-only presentation so a lookalike is never silently blocked. |
+| 14 | `DomainConfusables` | Decodes IDN, detects mixed scripts, folds common Cyrillic/Greek/fullwidth confusables, and names protected-brand lookalikes while showing the decoded form. | **Yes** | `DomainConfusables.Describe` bounds the assessment for the inventory path (null instead of throwing for empty or oversized input) and the resolver-cache provider fills an optional `Lookalike` block per entry. The DNS page shows a bounded panel with the decoded form and a `BRAND`/`MIXED`/`IDN` badge, and the client validates every field. Context only: nothing is blocked, resolved or alerted, and the brand list is fixed. |
 | 15 | `WeeklyDigest` | Builds a local Markdown summary: new autostarts, hidden matches, expired suppressions, blind sensors, review backlog, most active rule. | No | A weekly schedule, an output path the user chooses, and inputs assembled from existing stores. No email, no telemetry. |
 
 ## Test coverage added

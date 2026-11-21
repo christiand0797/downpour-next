@@ -1,5 +1,13 @@
 # Downpour Next shared context
 
+## 2026-11-21 IDN lookalikes on the DNS route (buffy, DN-076)
+
+- `DomainConfusables` (Core since DN-052) is now fed from the resolver-cache capture. `DomainConfusables.Describe` is the bounded inventory wrapper around the tested `Assess`: empty, whitespace, over-253-character and unparseable names return `null` rather than throwing, so a hostile cache entry cannot fail a capture. A name is returned only when it has a non-ASCII decoded form, mixes scripts, or resembles a protected brand; plain ASCII names carry no extra payload.
+- `DnsCacheEntry` gains an optional `DomainLookalike` (decoded name, scripts, mixed-script flag, up to 8 brands, verdict). `DnsInventoryClient` accepts an absent block, bounds every string to 1,024 characters and rejects more than 8 brands, an oversized verdict or a null brand list.
+- The DNS page adds an **IDN and Lookalike Names** panel: brand-resembling count, total decoded count, the original name, the decoded form and the Core verdict, with a `BRAND`/`MIXED`/`IDN` badge. Context only — nothing is blocked, resolved, flushed or alerted, and the DGA score is unchanged. No decoded name is persisted; the assessment lives in the pipe snapshot only.
+- Verification: Debug build 0 warnings/0 errors; 1,508 tests pass (9 new in `DnsInventoryTests`, including a live capture checked against `Describe`). The panel has not been viewed at any width and no real cached lookalike was confirmed on screen. Details in `docs/DNS_CONFUSABLES.md`.
+- Remaining Core-only foundations: onboarding, portable encrypted bundle, weekly digest, cross-view for ports.
+
 ## 2026-11-21 update staging journal wired (buffy, DN-074)
 
 - `UpdateJournalStore` (Core) persists `UpdateStagingJournal` transitions to `%LOCALAPPDATA%\DownpourNext\updates\update-journal.json`: at most 32 records, 300-character details and a 64 KiB file, replaced with an atomic temp write. It holds no install path, user name, host address or package content.

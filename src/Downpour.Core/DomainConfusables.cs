@@ -1,4 +1,5 @@
 using System.Globalization;
+using Downpour.Contracts;
 
 namespace Downpour.Core;
 
@@ -8,7 +9,11 @@ public sealed record DomainAssessment(
     string Scripts,
     bool MixedScript,
     IReadOnlyList<string> LookalikeBrands,
-    string Verdict);
+    string Verdict)
+{
+    /// <summary>True when the name contains a character outside ASCII, even if it folds to one script.</summary>
+    public bool NonAscii { get; init; }
+}
 
 /// <summary>
 /// Catches lookalike domains that ordinary string checks and many reputation lists miss. A Cyrillic "а" in a bank name
@@ -56,7 +61,35 @@ public static class DomainConfusables
             : mixed ? "Mixed-script domain: legitimate brands do not usually mix writing systems in one name."
             : HasNonAscii(unicode) ? "Non-ASCII domain. Decoded form shown; legitimate for many sites, so compare it carefully."
             : "Plain ASCII domain; no lookalike detected.";
-        return new DomainAssessment(trimmed, folded, scripts.Count == 0 ? "Common" : string.Join(", ", scripts), mixed, brands, verdict);
+        return new DomainAssessment(trimmed, folded, scripts.Count == 0 ? "Common" : string.Join(", ", scripts), mixed, brands, verdict)
+        {
+            NonAscii = HasNonAscii(unicode),
+        };
+    }
+
+    /// <summary>
+    /// Bounded assessment for an inventory path: a hostile cache name is ignored rather than failing the capture, and a
+    /// plain ASCII name with no lookalike returns null so ordinary entries carry no extra payload. The result is context
+    /// for a person, never a block decision.
+    /// </summary>
+    public static DomainLookalike? Describe(string? domain)
+    {
+        if (string.IsNullOrWhiteSpace(domain)) return null;
+        var trimmed = domain.Trim();
+        if (trimmed.Length > 253) return null;
+        DomainAssessment assessment;
+        try
+        {
+            assessment = Assess(trimmed);
+        }
+        catch (ArgumentException)
+        {
+            return null;
+        }
+
+        if (!assessment.NonAscii && !assessment.MixedScript && assessment.LookalikeBrands.Count == 0) return null;
+        var decoded = assessment.AsciiForm.Length <= 512 ? assessment.AsciiForm : assessment.AsciiForm[..512];
+        return new DomainLookalike(decoded, assessment.Scripts, assessment.MixedScript, assessment.LookalikeBrands, assessment.Verdict);
     }
 
     private static string Decode(string domain)

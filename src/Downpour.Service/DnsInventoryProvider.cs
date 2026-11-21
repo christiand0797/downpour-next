@@ -61,7 +61,8 @@ public sealed class DnsInventoryProvider(string baselinePath)
                     RecordType: recordType,
                     RiskScore: scored.Score,
                     IsDga: scored.IsDga,
-                    Factors: scored.Factors);
+                    Factors: scored.Factors,
+                    Lookalike: DomainConfusables.Describe(name));
                 entries.Add(entry);
 
                 if (scored.Score >= DgaDetector.HighThreshold)

@@ -236,7 +236,7 @@
   {
    "id": "DN-009",
    "title": "Port AEGIS, forensics, parental controls, cleanup, VPN, remote, and remaining routes",
-   "status": "in_progress",
+   "status": "completed",
    "priority": "medium",
    "acceptance": [
     "Every source module has explicit implemented/partial/legacy/declined disposition",
@@ -1520,6 +1520,28 @@
     "Tag points at the pushed docs commit; package pins the embedded hash"
    ],
    "notes": "buffy 2026-11-21: completed. Built from 0736bc6eb085ef2381c73a3b2c2df6fee442383e; 1,499 Release tests, 1,077 package entries, every packaged route (179 YARA rules) and the window smoke passed. ZIP 306,499,568 bytes sha256 ce58c1a8f62da43233be542a6df04c8d417b3630778377d65c45f4e903d107fe; SBOM bc0b1df7b1f5f7a9c47ed1efe403cd04727570df3381731646662d0c48c5dc27; SHA256SUMS 5b256c7b6b2628f7701f1408cb9d3d47c9768d37dca507228c3b46a7de2a47c0. Ships the update staging journal; no screen or detection rule changed. Release notes docs/RELEASE_0.1.33.md."
+  },
+  {
+   "id": "DN-076",
+   "title": "Show IDN and lookalike resolver-cache names with their decoded form",
+   "status": "in_progress",
+   "priority": "medium",
+   "files": [
+    "src/Downpour.Contracts/DnsInventory.cs",
+    "src/Downpour.Core/DomainConfusables.cs",
+    "src/Downpour.Core/DnsInventoryClient.cs",
+    "src/Downpour.Service/DnsInventoryProvider.cs",
+    "src/Downpour.Desktop/Pages/DnsPage.xaml",
+    "src/Downpour.Desktop/Pages/DnsPage.xaml.cs",
+    "tests/Downpour.Tests/DnsInventoryTests.cs"
+   ],
+   "acceptance": [
+    "Every cached name gets a bounded Core assessment; plain ASCII names carry no extra payload",
+    "A name that decodes differently or resembles a protected brand is shown with its decoded form",
+    "The panel is context only: nothing is blocked, resolved or quarantined",
+    "A hostile or oversized name never fails the DNS capture"
+   ],
+   "notes": "buffy 2026-11-21: completed. `DomainConfusables.Describe` is the bounded inventory wrapper (null instead of throwing for empty/oversized/unparseable names); `DnsInventoryProvider` fills an optional `DomainLookalike` per entry only when the decoded form is non-ASCII, mixes scripts or resembles a protected brand. The client bounds every field (1,024 chars, 8 brands) and the DNS page shows a `BRAND`/`MIXED`/`IDN` panel with the decoded form. Context only: no block, no alert, no persistence, DGA score unchanged. Debug build 0 warnings/0 errors, 1,508 tests pass (9 new). Panel not viewed by hand. Docs: `docs/DNS_CONFUSABLES.md`."
   }
  ]
 }

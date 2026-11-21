@@ -19,6 +19,7 @@ public sealed partial class DnsPage : Page, INotifyPropertyChanged
 
     public LiveCollection<DnsFindingRow> Findings { get; } = [];
     public LiveCollection<DnsEntryRow> FilteredEntries { get; } = [];
+    public LiveCollection<DomainLookalikeRow> Lookalikes { get; } = [];
 
     // Email auth state
     private string _spfStatus = "";
@@ -119,6 +120,7 @@ public sealed partial class DnsPage : Page, INotifyPropertyChanged
             }
 
             Findings.Clear();
+            Lookalikes.Clear();
             _allEntries.Clear();
 
             if (snapshot is null)
@@ -127,6 +129,8 @@ public sealed partial class DnsPage : Page, INotifyPropertyChanged
                 StatusDetail.Text = $"{App.SensorServiceStatusHint} No cached DNS resolver table is shown.";
                 EmptyFindingsState.Visibility = Visibility.Visible;
                 EmptyCacheState.Visibility = Visibility.Visible;
+                LookalikeHeadline.Text = "No cached names to decode";
+                EmptyLookalikeState.Visibility = Visibility.Visible;
                 return;
             }
 
@@ -137,6 +141,20 @@ public sealed partial class DnsPage : Page, INotifyPropertyChanged
 
             _allEntries.AddRange(snapshot.Entries);
             ApplyFilter();
+
+            foreach (var entry in snapshot.Entries
+                         .Where(entry => entry.Lookalike is not null)
+                         .OrderByDescending(entry => entry.Lookalike!.Brands.Count > 0)
+                         .ThenBy(entry => entry.Domain, StringComparer.OrdinalIgnoreCase))
+                Lookalikes.Add(new DomainLookalikeRow(entry.Domain, entry.Lookalike!));
+
+            EmptyLookalikeState.Visibility = Lookalikes.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+            var brandMatches = Lookalikes.Count(row => row.HasBrand);
+            LookalikeHeadline.Text = Lookalikes.Count == 0
+                ? "No decoded or lookalike names in the cache"
+                : brandMatches == 0
+                    ? $"{Lookalikes.Count} name{(Lookalikes.Count == 1 ? "" : "s")} with a non-ASCII or mixed-script decoded form"
+                    : $"{brandMatches} name{(brandMatches == 1 ? "" : "s")} resemble a protected brand · {Lookalikes.Count} decoded in total";
 
             EmptyFindingsState.Visibility = Findings.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
 
@@ -249,6 +267,25 @@ public sealed class DnsFindingRow(DnsFinding finding)
         "MEDIUM" => Color.FromArgb(48, 230, 150, 50),
         _ => Color.FromArgb(48, 60, 200, 120)
     });
+}
+
+public sealed class DomainLookalikeRow(string domain, DomainLookalike lookalike)
+{
+    public string Domain => domain;
+    public bool HasBrand => lookalike.Brands.Count > 0;
+    public string Badge => HasBrand ? "BRAND" : lookalike.MixedScript ? "MIXED" : "IDN";
+    public string DecodedDisplay => string.Equals(domain, lookalike.DecodedName, StringComparison.Ordinal)
+        ? $"(same ASCII form: {lookalike.DecodedName})"
+        : $"decodes to: {lookalike.DecodedName}";
+    public string Verdict => lookalike.Verdict;
+
+    public SolidColorBrush BadgeForeground => new(HasBrand
+        ? Color.FromArgb(255, 255, 170, 90)
+        : Color.FromArgb(255, 180, 200, 220));
+
+    public SolidColorBrush BadgeBackground => new(HasBrand
+        ? Color.FromArgb(48, 230, 150, 50)
+        : Color.FromArgb(40, 100, 140, 180));
 }
 
 public sealed class DnsEntryRow(DnsCacheEntry entry)

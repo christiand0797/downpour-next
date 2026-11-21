@@ -10,6 +10,7 @@ public sealed class DnsInventoryClient(string pipeName = DnsInventoryClient.Pipe
     private const int MaximumEntries = 4096;
     private const int MaximumFindings = 256;
     private const int MaximumText = 512;
+    private const int MaximumBrands = 8;
     private static readonly HashSet<string> Severities = new(StringComparer.Ordinal) { "LOW", "MEDIUM", "HIGH", "CRITICAL" };
 
     public async Task<DnsCacheSnapshot?> TryGetSnapshotAsync(CancellationToken cancellationToken = default)
@@ -43,9 +44,16 @@ public sealed class DnsInventoryClient(string pipeName = DnsInventoryClient.Pipe
         && snapshot.Entries is { Count: <= MaximumEntries }
         && snapshot.Findings is { Count: <= MaximumFindings }
         && snapshot.Warnings is { Count: <= 64 }
-        && snapshot.Entries.All(e => e is not null && Text(e.Domain) && e.RiskScore >= 0 && e.RiskScore <= 100 && e.Factors.All(Text))
+        && snapshot.Entries.All(e => e is not null && Text(e.Domain) && e.RiskScore >= 0 && e.RiskScore <= 100 && e.Factors.All(Text)
+            && ValidLookalike(e.Lookalike))
         && snapshot.Findings.All(f => f is not null && Severities.Contains(f.Severity) && Text(f.Technique) && Text(f.Summary) && Text(f.Indicator))
         && snapshot.Warnings.All(Text);
+
+    /// <summary>A lookalike block is optional; when present every field is bounded and a brand list is capped.</summary>
+    private static bool ValidLookalike(DomainLookalike? lookalike) =>
+        lookalike is null
+        || (Text(lookalike.DecodedName) && Text(lookalike.Scripts) && Text(lookalike.Verdict)
+            && lookalike.Brands is { Count: <= MaximumBrands } && lookalike.Brands.All(Text));
 
     private static bool Text(string? value) => value is not null && value.Length <= MaximumText * 2;
 }

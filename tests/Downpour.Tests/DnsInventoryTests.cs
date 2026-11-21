@@ -198,10 +198,71 @@ public sealed class DnsInventoryTests
             Assert.True(File.Exists(tempBaseline));
             var content = File.ReadAllText(tempBaseline);
             Assert.False(string.IsNullOrWhiteSpace(content));
+
+            // Every captured name is described by the same Core assessment the panel relies on.
+            Assert.All(snapshot.Entries, entry =>
+                Assert.Equal(DomainConfusables.Describe(entry.Domain) is not null, entry.Lookalike is not null));
         }
         finally
         {
             if (File.Exists(tempBaseline)) File.Delete(tempBaseline);
         }
+    }
+
+    [Theory]
+    [InlineData("example.com")]
+    [InlineData("login.microsoftonline.com")]
+    [InlineData("www.google.com")]
+    public void Describe_LeavesPlainAsciiNamesUnlabelled(string domain) =>
+        Assert.Null(DomainConfusables.Describe(domain));
+
+    [Theory]
+    [InlineData("münchen.de")]
+    [InlineData("xn--80ak6aa92e.com")]
+    [InlineData("mіcrosoft.com")] // Cyrillic і (U+0456), not the ASCII i
+    public void Describe_ReturnsTheDecodedFormForNonAsciiNames(string domain)
+    {
+        var lookalike = DomainConfusables.Describe(domain);
+        Assert.NotNull(lookalike);
+        Assert.False(string.IsNullOrWhiteSpace(lookalike.Verdict));
+        Assert.False(string.IsNullOrWhiteSpace(lookalike.Scripts));
+        Assert.True(lookalike.DecodedName.Length <= 512);
+    }
+
+    [Fact]
+    public void Describe_NamesTheProtectedBrandItImitates()
+    {
+        var lookalike = DomainConfusables.Describe("mіcrosoft.com");
+        Assert.NotNull(lookalike);
+        Assert.Contains("Microsoft", lookalike.Brands);
+        Assert.True(lookalike.MixedScript);
+        Assert.Contains("Lookalike of Microsoft", lookalike.Verdict);
+    }
+
+    [Fact]
+    public void Describe_IgnoresEmptyAndOversizedNamesInsteadOfThrowing()
+    {
+        Assert.Null(DomainConfusables.Describe(null));
+        Assert.Null(DomainConfusables.Describe("   "));
+        Assert.Null(DomainConfusables.Describe(new string('a', 254)));
+        Assert.Null(DomainConfusables.Describe("not a domain"));
+    }
+
+    [Fact]
+    public void DnsInventoryClient_BoundsLookalikeContext()
+    {
+        var lookalike = new DomainLookalike("microsoft.com", "Cyrillic, Latin", true, ["Microsoft"],
+            "Lookalike of Microsoft: the decoded name resembles a protected brand but the domain differs.");
+        var entry = new DnsCacheEntry("mіcrosoft.com", 1, 15, false, ["Benign domain"], lookalike);
+        var snapshot = new DnsCacheSnapshot(1, DateTimeOffset.UtcNow, 1, 0, 0, [entry], [], []);
+        Assert.True(DnsInventoryClient.IsValid(snapshot));
+
+        var tooManyBrands = lookalike with { Brands = Enumerable.Repeat("Microsoft", 9).ToArray() };
+        Assert.False(DnsInventoryClient.IsValid(snapshot with { Entries = [entry with { Lookalike = tooManyBrands }] }));
+
+        var longVerdict = lookalike with { Verdict = new string('v', 1_025) };
+        Assert.False(DnsInventoryClient.IsValid(snapshot with { Entries = [entry with { Lookalike = longVerdict }] }));
+
+        Assert.False(DnsInventoryClient.IsValid(snapshot with { Entries = [entry with { Lookalike = lookalike with { Brands = null! } }] }));
     }
 }
