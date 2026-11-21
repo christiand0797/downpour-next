@@ -3,6 +3,7 @@
 ## 2026-11-21 0.1.36: TCP listener cross-view (buffy)
 
 - [x] Port cross-view (DN-080): the Network capture compares the managed listener list with the native owner table, reports one to ten one-sided endpoints as a consistency anomaly (never tampering), and stays silent above ten or when either table is empty. Read-only, nothing persisted. 1,522 Debug tests pass (5 new); `docs/PORT_CROSSVIEW.md`.
+- [x] Published v0.1.36 (`7d1d83d9`): ships the TCP listener cross-view; 1,522 Release tests, 1,077 package entries, every packaged route (179 YARA rules) and window smoke passed; ZIP 306,526,663 bytes sha256 `3b679a9d…`, SBOM `803638f8…`, notes `docs/RELEASE_0.1.36.md`.
 - [ ] Check the Network page warning at a narrow width, and whether this machine's two views disagree (not inspected).
 - [x] First-run setup card (DN-078) shipped in v0.1.35.
 - [ ] Visual check of the Setup card at a narrow width, and the first-run sequence on a fresh store (this machine is past its observation window).

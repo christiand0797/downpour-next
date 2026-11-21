@@ -6,6 +6,7 @@
 - `NetworkInventoryProvider.DescribeListenerViewDisagreement` reports one to ten one-sided endpoints in one bounded warning naming at most three, stays silent above ten (churn is normal on a busy machine) and silent when either table is empty. The wording always says the tables are read a moment apart and that this is a consistency anomaly, not proof of tampering.
 - Read-only: no table, socket, process or file is modified, and nothing is persisted. The warning appears in the existing Network warnings list.
 - Verification: Debug build 0 warnings/0 errors; 1,522 tests pass (5 new in `NetworkInventoryProviderTests`). Whether this machine's two views disagreed, and the warning itself on the Network page, were not inspected. Details in `docs/PORT_CROSSVIEW.md`.
+- v0.1.36 published (DN-081): built from `7d1d83d9efc958d14faddc0999cc37a156743937`; 1,522 Release tests, 1,077 package entries (772,689,082 expanded bytes, 52 runtime components), every packaged route (179 YARA rules) and the window smoke passed. ZIP 306,526,663 bytes sha256 `3b679a9d…`, SBOM `803638f8…`, SHA256SUMS `6f0d7983…`; notes `docs/RELEASE_0.1.36.md`.
 - All fifteen second-round foundations now have a call site except `PortableSettingsBundle` and `WeeklyDigest`.
 
 ## 2026-11-21 first-run guidance on the Dashboard (buffy, DN-078)
