@@ -6,6 +6,7 @@
 - `DnsCacheEntry` gains an optional `DomainLookalike` (decoded name, scripts, mixed-script flag, up to 8 brands, verdict). `DnsInventoryClient` accepts an absent block, bounds every string to 1,024 characters and rejects more than 8 brands, an oversized verdict or a null brand list.
 - The DNS page adds an **IDN and Lookalike Names** panel: brand-resembling count, total decoded count, the original name, the decoded form and the Core verdict, with a `BRAND`/`MIXED`/`IDN` badge. Context only — nothing is blocked, resolved, flushed or alerted, and the DGA score is unchanged. No decoded name is persisted; the assessment lives in the pipe snapshot only.
 - Verification: Debug build 0 warnings/0 errors; 1,508 tests pass (9 new in `DnsInventoryTests`, including a live capture checked against `Describe`). The panel has not been viewed at any width and no real cached lookalike was confirmed on screen. Details in `docs/DNS_CONFUSABLES.md`.
+- v0.1.34 published (DN-077): built from `2a26a4789cad29cf12476b913aa53da6203a215c`; 1,508 Release tests, 1,077 package entries (772,675,678 expanded bytes, 52 runtime components), every packaged route (179 YARA rules) and the window smoke passed. ZIP 306,519,738 bytes sha256 `c0bac04b…`, SBOM `bd4ef099…`, SHA256SUMS `42cf052c…`; notes `docs/RELEASE_0.1.34.md`.
 - Remaining Core-only foundations: onboarding, portable encrypted bundle, weekly digest, cross-view for ports.
 
 ## 2026-11-21 update staging journal wired (buffy, DN-074)

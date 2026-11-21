@@ -3,6 +3,7 @@
 ## 2026-11-21 0.1.34: IDN lookalikes on DNS (buffy)
 
 - [x] IDN/lookalike resolver-cache context (DN-076): every cached name gets a bounded `DomainConfusables.Describe` assessment; a non-ASCII, mixed-script or brand-resembling name carries an optional lookalike block, and the DNS page shows the decoded form with a `BRAND`/`MIXED`/`IDN` badge. Context only: nothing is blocked, resolved or alerted, the DGA score is unchanged and nothing new is persisted. Hostile or oversized names return null instead of failing the capture. 1,508 Debug tests pass (9 new); `docs/DNS_CONFUSABLES.md`.
+- [x] Published v0.1.34 (`2a26a47`): ships the IDN/lookalike DNS panel; 1,508 Release tests, 1,077 package entries, every packaged route (179 YARA rules) and window smoke passed; ZIP 306,519,738 bytes sha256 `c0bac04b…`, SBOM `bd4ef099…`, notes `docs/RELEASE_0.1.34.md`.
 - [ ] Visual check of the IDN panel at a narrow width, and a real cached IDN name on screen (the empty state is the likely one on this machine).
 - [ ] The protected-brand list is fixed in Core; no registry feed backs it.
 

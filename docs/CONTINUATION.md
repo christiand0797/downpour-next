@@ -18,30 +18,30 @@ time with the project's footer, push to `https://github.com/christiand0797/downp
 
 ## Release loop
 
-For a new version (the example cuts 0.1.34; substitute the version, the previous embedded hash and the commit):
+For a new version (the example cuts 0.1.35; substitute the version, the previous embedded hash and the commit):
 
 ```bash
 # 1. bump
-sed -i 's/0\.1\.33/0.1.34/g' Directory.Build.props   # also Assembly/FileVersion
-git commit -am "chore: bump version to 0.1.34" && COMMIT=$(git rev-parse HEAD)
+sed -i 's/0\.1\.34/0.1.35/g' Directory.Build.props   # also Assembly/FileVersion
+git commit -am "chore: bump version to 0.1.35" && COMMIT=$(git rev-parse HEAD)
 # 2. build (background it; it runs Release tests and five publishes)
-nohup pwsh -NoProfile -File Build-Portable.ps1 > artifacts/build-0.1.34.log 2>&1 &
+nohup pwsh -NoProfile -File Build-Portable.ps1 > artifacts/build-0.1.35.log 2>&1 &
 # 3. copy the version scripts and point them at the embedded commit, read from an executable
 for s in package smoke window-smoke; do
-  sed -e 's/0\.1\.33/0.1.34/g' -e "s/0736bc6eb085ef2381c73a3b2c2df6fee442383e/$COMMIT/g" \
-    artifacts/v0.1.33-$s.ps1 > artifacts/v0.1.34-$s.ps1
+  sed -e 's/0\.1\.34/0.1.35/g' -e "s/2a26a4789cad29cf12476b913aa53da6203a215c/$COMMIT/g" \
+    artifacts/v0.1.34-$s.ps1 > artifacts/v0.1.35-$s.ps1
 done
 # 4. package, route smoke, window smoke (background each, poll the log)
-pwsh -NoProfile -File artifacts/v0.1.34-package.ps1
-pwsh -NoProfile -File artifacts/v0.1.34-smoke.ps1
-pwsh -NoProfile -File artifacts/v0.1.34-window-smoke.ps1
+pwsh -NoProfile -File artifacts/v0.1.35-package.ps1
+pwsh -NoProfile -File artifacts/v0.1.35-smoke.ps1
+pwsh -NoProfile -File artifacts/v0.1.35-window-smoke.ps1
 # 5. notes, tag, publish, verify digests
-gh release create v0.1.34 -R christiand0797/downpour-next --title "Downpour Next 0.1.34" \
-  --target "$(git rev-parse HEAD)" --notes-file docs/RELEASE_0.1.34.md --latest \
-  artifacts/DownpourNext-win-x64-0.1.34.zip artifacts/DownpourNext-0.1.34-sbom.cdx.json \
-  artifacts/DownpourNext-0.1.34-SHA256SUMS.txt
+gh release create v0.1.35 -R christiand0797/downpour-next --title "Downpour Next 0.1.35" \
+  --target "$(git rev-parse HEAD)" --notes-file docs/RELEASE_0.1.35.md --latest \
+  artifacts/DownpourNext-win-x64-0.1.35.zip artifacts/DownpourNext-0.1.35-sbom.cdx.json \
+  artifacts/DownpourNext-0.1.35-SHA256SUMS.txt
 gh release list -R christiand0797/downpour-next --limit 3
-gh release view v0.1.34 -R christiand0797/downpour-next --json assets \
+gh release view v0.1.35 -R christiand0797/downpour-next --json assets \
   --jq '.assets[] | "\(.name) \(.size) \(.digest)"'
 ```
 
@@ -51,11 +51,19 @@ build runs changes the hash it expects. Read the hash from an executable (`(Get-
 pin that in the scripts rather than assuming the bump commit. Commit the docs first and pass `--target "$(git rev-parse
 HEAD)"` so the tag points at a pushed commit; the package script must keep pinning the embedded hash, not the tag.
 
-## Current state (end of 0.1.33)
+## Current state (end of 0.1.34)
 
-- Published: `v0.1.33` as Latest, built from `0736bc6`; ships the update staging journal. ZIP 306,499,568 bytes
+- Published: `v0.1.34` as Latest, built from `2a26a47`; ships IDN/lookalike context on the DNS route. ZIP
+  306,519,738 bytes sha256 `c0bac04b…`, SBOM `bd4ef099…`, SHA256SUMS `42cf052c…`; 1,508 Release tests, 1,077 package
+  entries, every packaged route (179 YARA rules) and the window smoke passed. Details in `docs/RELEASE_0.1.34.md`.
+- Published previously: `v0.1.33` built from `0736bc6`; ships the update staging journal. ZIP 306,499,568 bytes
   sha256 `ce58c1a8…`, SBOM `bc0b1df7…`, SHA256SUMS `5b256c7b…`; the tag points at the following docs commit, so the
   package script pins the embedded hash, not the tag.
+- Shipped in 0.1.34 (DN-076): `DomainConfusables.Describe` bounds the confusable assessment for the resolver-cache
+  path (null instead of throwing for empty or oversized names) and `DnsInventoryProvider` fills an optional
+  `DomainLookalike` per entry. The DNS page shows a `BRAND` / `MIXED` / `IDN` panel with the decoded form; context
+  only, no block, alert or persistence, and the DGA score is unchanged. The panel was not viewed by hand and no real
+  cached lookalike was confirmed. Details in `docs/DNS_CONFUSABLES.md`.
 - Shipped in 0.1.33 (DN-074): `UpdateJournalStore` records downloaded → verified → staged under
   `%LOCALAPPDATA%\DownpourNext\updates\update-journal.json` (32 records / 300-character details / 64 KiB, atomic
   replace). The desktop writes the transitions and the standalone helper refuses any package whose newest record is
@@ -83,8 +91,8 @@ HEAD)"` so the tag points at a pushed commit; the package script must keep pinni
   window, so `MainWindowHandle` stays 0 and the close request is never sent. The harness launches visibly; do not
   reintroduce `-WindowStyle Hidden` for the desktop launch. A failed hidden run can leave a headless desktop behind;
   the smoke guard then refuses to start, so check `Get-Process Downpour.Desktop` and stop the stale pid before rerunning.
-- Remaining Core-only foundations: onboarding, portable encrypted bundle, IDN confusables, weekly digest,
-  cross-view for ports; egress novelty is blocked on byte volume and metered scheduling on a session-0 signal.
+- Remaining Core-only foundations: onboarding, portable encrypted bundle, weekly digest, cross-view for ports;
+  egress novelty is blocked on byte volume and metered scheduling on a session-0 signal.
 - Previously flaky: `AmsiSessionTests.ContextCannotBeUninitializedDuringAnActiveScan` failed under load; its waits were
   raised to 30 s on 2026-11-20.
 

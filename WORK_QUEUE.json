@@ -1542,6 +1542,25 @@
     "A hostile or oversized name never fails the DNS capture"
    ],
    "notes": "buffy 2026-11-21: completed. `DomainConfusables.Describe` is the bounded inventory wrapper (null instead of throwing for empty/oversized/unparseable names); `DnsInventoryProvider` fills an optional `DomainLookalike` per entry only when the decoded form is non-ASCII, mixes scripts or resembles a protected brand. The client bounds every field (1,024 chars, 8 brands) and the DNS page shows a `BRAND`/`MIXED`/`IDN` panel with the decoded form. Context only: no block, no alert, no persistence, DGA score unchanged. Debug build 0 warnings/0 errors, 1,508 tests pass (9 new). Panel not viewed by hand. Docs: `docs/DNS_CONFUSABLES.md`."
+  },
+  {
+   "id": "DN-077",
+   "title": "Cut and publish 0.1.34 with IDN lookalike context",
+   "status": "completed",
+   "priority": "high",
+   "files": [
+    "Directory.Build.props",
+    "docs/RELEASE_0.1.34.md",
+    "docs/CONTINUATION.md"
+   ],
+   "acceptance": [
+    "Version 0.1.34 in Directory.Build.props",
+    "Release build clean and full Release suite passing",
+    "Package, packaged route smoke and window smoke pass",
+    "Release notes record the ZIP and SBOM digests",
+    "Tag points at the pushed docs commit; package pins the embedded hash"
+   ],
+   "notes": "buffy 2026-11-21: completed. Built from 2a26a4789cad29cf12476b913aa53da6203a215c; 1,508 Release tests, 1,077 package entries (772,675,678 expanded bytes, 52 runtime components), every packaged route (179 YARA rules) and the window smoke passed. ZIP 306,519,738 bytes sha256 c0bac04b65fb0f9176c62d8045681aa280dbaf987308deb4987e191f033447a5; SBOM bd4ef099e6a21806242ccdd3fc187a4aaa871a2a0a3756d685047d746257d0f8; SHA256SUMS 42cf052ce915c5ab56117ee7d9e001e37227a19f351bfbe75988526283f14890. Ships the DNS IDN/lookalike panel; no detection rule changed. Release notes docs/RELEASE_0.1.34.md."
   }
  ]
 }
