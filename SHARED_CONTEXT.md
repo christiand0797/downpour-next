@@ -6,6 +6,7 @@
 - The Dashboard adds a **Setup** card under the sensor status card: one step at a time (`FEEDS`, `BASELINE`, `PERMISSIONS`, `FIRST DAYS`), hidden when ready. `FEEDS BLOCKED` appears only when the service answered, no feed holds entries and at least one failed, so a broken download is never dressed as the expected quiet start.
 - `PermissionsConfirmed` and `QuietPeriodExplained` come from the new `setupPermissionsSeen` / `setupQuietPeriodSeen` preferences and mean the person saw the explanation — not that administrator access exists. Feed facts are re-read at most once a minute and a transient miss keeps the previous answer so the card never walks backwards.
 - Verification: Debug build 0 warnings/0 errors; 1,517 tests pass (9 new in `OnboardingStateTests`). The card has not been viewed at any width and the first-run sequence has not been walked on a fresh store; the failed-download branch is unit-tested only. Details in `docs/ONBOARDING.md`.
+- v0.1.35 published (DN-079): built from `34956daa404ac88bf1b63b3851ab3ff14f06311b`; 1,517 Release tests, 1,077 package entries (772,687,146 expanded bytes, 52 runtime components), every packaged route (179 YARA rules) and the window smoke passed. ZIP 306,526,378 bytes sha256 `d0a69223…`, SBOM `20529888…`, SHA256SUMS `0dbec4d0…`; notes `docs/RELEASE_0.1.35.md`.
 - Remaining Core-only foundations: portable encrypted bundle, weekly digest, cross-view for ports.
 
 ## 2026-11-21 IDN lookalikes on the DNS route (buffy, DN-076)

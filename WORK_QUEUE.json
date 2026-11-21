@@ -1581,6 +1581,25 @@
     "The acknowledgements record that the explanation was seen, not that elevation exists"
    ],
    "notes": "buffy 2026-11-21: completed. `OnboardingPlan.StateFrom` derives the state from the feed snapshot, the alert store observation start (24-hour window) and two local acknowledgements; the Dashboard Setup card advances one step at a time and hides when ready. FEEDS BLOCKED appears only when the service answered, no feed holds entries and at least one failed. Feed facts refresh at most once a minute and a transient miss keeps the previous answer. 1,517 Debug tests pass (9 new). Card not viewed by hand; first-run sequence not walked on a fresh store. Docs: `docs/ONBOARDING.md`."
+  },
+  {
+   "id": "DN-079",
+   "title": "Cut and publish 0.1.35 with first-run guidance",
+   "status": "completed",
+   "priority": "high",
+   "files": [
+    "Directory.Build.props",
+    "docs/RELEASE_0.1.35.md",
+    "docs/CONTINUATION.md"
+   ],
+   "acceptance": [
+    "Version 0.1.35 in Directory.Build.props",
+    "Release build clean and full Release suite passing",
+    "Package, packaged route smoke and window smoke pass",
+    "Release notes record the ZIP and SBOM digests",
+    "Tag points at the pushed docs commit; package pins the embedded hash"
+   ],
+   "notes": "buffy 2026-11-21: completed. Built from 34956daa404ac88bf1b63b3851ab3ff14f06311b; 1,517 Release tests, 1,077 package entries (772,687,146 expanded bytes, 52 runtime components), every packaged route (179 YARA rules) and the window smoke passed. ZIP 306,526,378 bytes sha256 d0a69223acad86881b694a67bc351fb76db9117f2b82bd22c4eae554b6e8f73e; SBOM 20529888fa3cdab02b51375b42ce626bb2b7333dddedd35f6816a8e0fe3717f6; SHA256SUMS 0dbec4d09bb188acb3184406b2e8b0a12915e41eb96c57f312b79c46b4c17121. Ships the Dashboard Setup card; no detection rule changed. Release notes docs/RELEASE_0.1.35.md."
   }
  ]
 }

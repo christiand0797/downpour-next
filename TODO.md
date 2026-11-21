@@ -3,6 +3,7 @@
 ## 2026-11-21 0.1.35: first-run guidance (buffy)
 
 - [x] First-run setup card (DN-078): the Dashboard derives the next setup step from the feed snapshot, the alert store's observation start and two local acknowledgements, and shows one step at a time. A 24-hour observation window decides the baseline; an unanswered service is not a failure and a failed first download is worded as a real failure (`FEEDS BLOCKED`) instead of the expected quiet start. The acknowledgements record that the explanation was seen, not that elevation exists. 1,517 Debug tests pass (9 new); `docs/ONBOARDING.md`.
+- [x] Published v0.1.35 (`34956daa`): ships the first-run Setup card; 1,517 Release tests, 1,077 package entries, every packaged route (179 YARA rules) and window smoke passed; ZIP 306,526,378 bytes sha256 `d0a69223…`, SBOM `20529888…`, notes `docs/RELEASE_0.1.35.md`.
 - [ ] Visual check of the Setup card at a narrow width, and the first-run sequence on a fresh store (this machine is past its observation window).
 - [ ] The failed-download branch has only been proved by the derivation tests, not against a real broken feed.
 - [x] IDN/lookalike DNS context (DN-076) shipped in v0.1.34.
