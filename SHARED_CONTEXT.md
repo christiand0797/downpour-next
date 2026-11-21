@@ -1,5 +1,13 @@
 # Downpour Next shared context
 
+## 2026-11-21 TCP listener cross-view (buffy, DN-080)
+
+- The Network capture now compares the two independent enumerations of the same listening sockets: `GetActiveTcpListeners` (IPv4 and IPv6) and the native `GetExtendedTcpTable(TCP_TABLE_OWNER_PID_LISTENER)` table that already supplies process attribution. Both sides key on `IPEndPoint.ToString()`, so a difference is an enumeration difference, not a formatting one.
+- `NetworkInventoryProvider.DescribeListenerViewDisagreement` reports one to ten one-sided endpoints in one bounded warning naming at most three, stays silent above ten (churn is normal on a busy machine) and silent when either table is empty. The wording always says the tables are read a moment apart and that this is a consistency anomaly, not proof of tampering.
+- Read-only: no table, socket, process or file is modified, and nothing is persisted. The warning appears in the existing Network warnings list.
+- Verification: Debug build 0 warnings/0 errors; 1,522 tests pass (5 new in `NetworkInventoryProviderTests`). Whether this machine's two views disagreed, and the warning itself on the Network page, were not inspected. Details in `docs/PORT_CROSSVIEW.md`.
+- All fifteen second-round foundations now have a call site except `PortableSettingsBundle` and `WeeklyDigest`.
+
 ## 2026-11-21 first-run guidance on the Dashboard (buffy, DN-078)
 
 - `OnboardingPlan` (Core since DN-052) now has a call site. `OnboardingPlan.StateFrom` is a pure derivation from facts the Dashboard already holds: whether the feed service answered, how many feeds hold entries, how many failed, the alert store's observation start, and two local acknowledgements. A 24-hour `ObservationWindow` decides when the quiet start stops being called a baseline.

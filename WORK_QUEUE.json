@@ -1600,6 +1600,23 @@
     "Tag points at the pushed docs commit; package pins the embedded hash"
    ],
    "notes": "buffy 2026-11-21: completed. Built from 34956daa404ac88bf1b63b3851ab3ff14f06311b; 1,517 Release tests, 1,077 package entries (772,687,146 expanded bytes, 52 runtime components), every packaged route (179 YARA rules) and the window smoke passed. ZIP 306,526,378 bytes sha256 d0a69223acad86881b694a67bc351fb76db9117f2b82bd22c4eae554b6e8f73e; SBOM 20529888fa3cdab02b51375b42ce626bb2b7333dddedd35f6816a8e0fe3717f6; SHA256SUMS 0dbec4d09bb188acb3184406b2e8b0a12915e41eb96c57f312b79c46b4c17121. Ships the Dashboard Setup card; no detection rule changed. Release notes docs/RELEASE_0.1.35.md."
+  },
+  {
+   "id": "DN-080",
+   "title": "Compare the managed listener list with the native TCP owner table",
+   "status": "completed",
+   "priority": "medium",
+   "files": [
+    "src/Downpour.Service/NetworkInventoryProvider.cs",
+    "tests/Downpour.Tests/NetworkInventoryProviderTests.cs"
+   ],
+   "acceptance": [
+    "One to ten one-sided listener endpoints produce one bounded warning naming at most three",
+    "More than ten differences stay silent instead of flooding the page",
+    "An unreadable table produces no claim about the other",
+    "The wording calls a difference a consistency anomaly, not proof of tampering"
+   ],
+   "notes": "buffy 2026-11-21: completed. `NetworkInventoryProvider.DescribeListenerViewDisagreement` compares `GetActiveTcpListeners` (IPv4 and IPv6) with the native `GetExtendedTcpTable` owner table that already supplies process attribution, both keyed on `IPEndPoint.ToString()`. One to ten one-sided endpoints give one warning naming at most three; more than ten or an empty table stays silent. Read-only and nothing persisted. 1,522 Debug tests pass (5 new). Whether this machine's views disagreed and the warning on the Network page were not inspected. Docs: `docs/PORT_CROSSVIEW.md`."
   }
  ]
 }

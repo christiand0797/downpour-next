@@ -33,5 +33,53 @@ public sealed class NetworkInventoryProviderTests
             Assert.InRange(row.State.Length, 1, 64);
         });
         Assert.NotNull(second.Warnings);
+        Assert.All(first.Warnings, warning =>
+        {
+            if (!warning.Contains("TCP listener(s) appear", StringComparison.Ordinal)) return;
+            Assert.Contains("not proof of tampering", warning);
+        });
+    }
+
+    [Fact]
+    public void ListenerView_AgreesOnIdenticalSets()
+    {
+        Assert.Null(NetworkInventoryProvider.DescribeListenerViewDisagreement(
+            ["0.0.0.0:135", "[::]:443"], ["[::]:443", "0.0.0.0:135"]));
+    }
+
+    [Fact]
+    public void ListenerView_IsCaseInsensitive()
+    {
+        Assert.Null(NetworkInventoryProvider.DescribeListenerViewDisagreement(
+            ["fe80::1%12:445"], ["FE80::1%12:445"]));
+    }
+
+    [Fact]
+    public void ListenerView_NamesOneSidedEndpointsAsAnAnomalyNotTampering()
+    {
+        var warning = NetworkInventoryProvider.DescribeListenerViewDisagreement(
+            ["0.0.0.0:135", "0.0.0.0:445"], ["0.0.0.0:135"]);
+        Assert.NotNull(warning);
+        Assert.Contains("0.0.0.0:445", warning);
+        Assert.Contains("1 TCP listener(s)", warning);
+        Assert.Contains("read a moment apart", warning);
+        Assert.Contains("not proof of tampering", warning);
+    }
+
+    [Fact]
+    public void ListenerView_StaysSilentWhenEitherTableIsEmpty()
+    {
+        Assert.Null(NetworkInventoryProvider.DescribeListenerViewDisagreement(["0.0.0.0:135"], []));
+        Assert.Null(NetworkInventoryProvider.DescribeListenerViewDisagreement([], ["0.0.0.0:135"]));
+    }
+
+    [Fact]
+    public void ListenerView_StaysSilentAboveTenDifferences()
+    {
+        var eleven = Enumerable.Range(1, 11).Select(port => $"0.0.0.0:{port}").ToArray();
+        Assert.Null(NetworkInventoryProvider.DescribeListenerViewDisagreement(eleven, ["0.0.0.0:9000"]));
+
+        var ten = Enumerable.Range(1, 10).Select(port => $"0.0.0.0:{port}").ToArray();
+        Assert.NotNull(NetworkInventoryProvider.DescribeListenerViewDisagreement(ten, ["0.0.0.0:1"]));
     }
 }

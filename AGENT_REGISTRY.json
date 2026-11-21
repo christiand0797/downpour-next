@@ -173,10 +173,10 @@
     {
       "id": "buffy",
       "role": "agent",
-      "taskId": "DN-079",
+      "taskId": "DN-080",
       "status": "idle",
-      "heartbeatUtc": "2026-11-21T04:20:00Z",
-      "notes": "DN-076 shipped in v0.1.34 (built from 2a26a47): the DNS route shows IDN and protected-brand lookalike names with their decoded form, context only; `Describe` is bounded so a hostile cache name returns null instead of failing the capture and the client caps every field. 1,508 Debug and Release tests, 1,077 package entries, every packaged route (179 YARA rules) and the window smoke passed. Panel not viewed by hand. DN-078 shipped in v0.1.35 (built from 34956daa): the Dashboard shows one Setup step from the feed snapshot, the 24-hour alert observation window and two local acknowledgements, and a genuine first-download failure is worded as a failure. 1,517 Debug and Release tests, 1,077 package entries, every packaged route (179 YARA rules) and the window smoke passed. Card not viewed by hand. Next: the weekly digest, cross-view for ports, or a real in-app update."
+      "heartbeatUtc": "2026-11-21T04:45:00Z",
+      "notes": "DN-076 shipped in v0.1.34 (built from 2a26a47): the DNS route shows IDN and protected-brand lookalike names with their decoded form, context only; `Describe` is bounded so a hostile cache name returns null instead of failing the capture and the client caps every field. 1,508 Debug and Release tests, 1,077 package entries, every packaged route (179 YARA rules) and the window smoke passed. Panel not viewed by hand. DN-078 shipped in v0.1.35 (built from 34956daa): the Dashboard shows one Setup step from the feed snapshot, the 24-hour alert observation window and two local acknowledgements, and a genuine first-download failure is worded as a failure. 1,517 Debug and Release tests, 1,077 package entries, every packaged route (179 YARA rules) and the window smoke passed. Card not viewed by hand. Next: cut 0.1.36 with the port cross-view, then the weekly digest or the encrypted portable bundle."
     }
   ]
 }

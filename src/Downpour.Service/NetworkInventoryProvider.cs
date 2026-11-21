@@ -1,5 +1,6 @@
 using System.Net.NetworkInformation;
 using Downpour.Contracts;
+using Downpour.Core;
 
 namespace Downpour.Service;
 
@@ -101,6 +102,8 @@ public sealed class NetworkInventoryProvider
                 .ToArray();
             totalCount = all.Length;
             var owners = TcpOwnerLookup.CaptureListenerOwners();
+            if (DescribeListenerViewDisagreement(all.Select(listener => listener.ToString()), owners.Keys) is { } disagreement)
+                warnings.Add(disagreement);
             var names = new Dictionary<int, string?>();
             var rows = all.Take(MaximumListeners)
                 .Select(listener =>
@@ -130,6 +133,26 @@ public sealed class NetworkInventoryProvider
             warnings.Add("Local TCP listener enumeration is not supported on this platform.");
             return [];
         }
+    }
+
+    /// <summary>
+    /// The managed listener list and the native owner table are independent enumerations of the same sockets. A listener
+    /// present in one and not the other is worth a look, but the tables are read a moment apart and the native table skips
+    /// rows with no owning process, so a difference is a consistency anomaly, never proof of tampering. Up to ten are
+    /// reported; more than ten is treated as churn and stays silent instead of flooding the page.
+    /// </summary>
+    internal static string? DescribeListenerViewDisagreement(IEnumerable<string> managedEndpoints, IEnumerable<string> nativeEndpoints)
+    {
+        var managed = managedEndpoints.Take(CrossViewInventory.MaximumArtifacts).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var native = nativeEndpoints.Take(CrossViewInventory.MaximumArtifacts).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        if (managed.Count == 0 || native.Count == 0) return null;
+        var anomalies = CrossViewInventory.Compare(
+            new InventoryView("managed TCP listener list", managed),
+            new InventoryView("native TCP owner table", native));
+        if (anomalies.Count is 0 or > 10) return null;
+        return $"{anomalies.Count} TCP listener(s) appear in only one of the managed and native tables: " +
+            $"{string.Join(", ", anomalies.Take(3).Select(anomaly => anomaly.Artifact))}. The tables are read a moment apart, " +
+            "so a listener that started or stopped in between can differ; treat it as a consistency anomaly, not proof of tampering.";
     }
 
     private static IReadOnlyList<NetworkConnectionEntry> CaptureConnections(List<string> warnings, out int totalCount)
