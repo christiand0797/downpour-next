@@ -1660,6 +1660,25 @@
     "Nothing is written before the store has watched a full week"
    ],
    "notes": "buffy 2026-11-21: completed. `WeeklyDigest` takes nullable counts and a `FindingsAcknowledged` field; `SecurityAlertRepository.ReadWeeklyDigestFactsAsync` supplies one SQL aggregate per fact and `WeeklyDigestInputs.FromFacts` maps it, leaving new autostarts and resolved findings unrecorded. `WeeklyDigestWriter` writes `weekly-<ISO year>-W<week>.md` atomically with a current-user ACL, capped at 40 lines / 32 KiB; `WeeklyDigestWorker` runs at start + 2 minutes and every 6 hours, gated on seven days of channel observation. Settings opens the reports folder. 1,531 Debug tests pass (10 new). No report has been produced on this machine yet (store younger than a week). Docs: `docs/WEEKLY_DIGEST.md`."
+  },
+  {
+   "id": "DN-083",
+   "title": "Cut and publish 0.1.37 with the weekly summary",
+   "status": "completed",
+   "priority": "high",
+   "files": [
+    "Directory.Build.props",
+    "docs/RELEASE_0.1.37.md",
+    "docs/CONTINUATION.md"
+   ],
+   "acceptance": [
+    "Version 0.1.37 in Directory.Build.props",
+    "Release build clean and full Release suite passing",
+    "Package, packaged route smoke and window smoke pass",
+    "Release notes record the ZIP and SBOM digests",
+    "Tag points at the pushed docs commit; package pins the embedded hash"
+   ],
+   "notes": "buffy 2026-11-21: completed. Built from 5eb0797a4a17c423d426fdbb778957a00055134f; 1,531 Release tests, 1,077 package entries (772,762,002 expanded bytes, 52 runtime components), every packaged route (179 YARA rules) and the window smoke passed. ZIP 306,550,418 bytes sha256 f49c1dfdf4f34609cbd975bd4d8498c2d4dbfebf2ea80d16491d6d4049c3a3c4; SBOM bc63bbf9084f1f1e4afb9823099f8a91806c838fd163f7afbe7724912c4308df; SHA256SUMS 0ec44e9a0d1d5b11fc459dbe815682bf4dcc54e0f2557573ca246c428e6f1623. Ships the weekly summary; the packaged service created the reports folder and left it empty (seven-day gate). Release notes docs/RELEASE_0.1.37.md."
   }
  ]
 }

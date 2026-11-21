@@ -53,5 +53,7 @@ overwrites another week's file.
   versus resolution, backwards-window refusal, ISO week/ISO year naming (`2026-W47`, `2021-01-01` → `2020-W53`), mapping
   that never invents autostarts or resolutions, store aggregates against a temporary database including a window that
   opens after the row was stored, the seven-day deferral, and atomic bounded writing with overwrite inside one week.
+- The packaged 0.1.37 service run created `%LOCALAPPDATA%\DownpourNext\reports` and left it empty, which is the
+  seven-day gate observed rather than assumed.
 - Not checked by hand: no report has been produced on this machine, because its alert store has been watching for less
   than seven days. The file content, the reports-folder button, and the rendered Settings row were not viewed.

@@ -3,6 +3,7 @@
 ## 2026-11-21 0.1.37: weekly summary (buffy)
 
 - [x] Weekly summary wired (DN-082): the service reads one SQL aggregate per fact from the alert store and writes `weekly-<ISO year>-W<week>.md` into the reports folder at start + 2 minutes and every 6 hours. The digest takes nullable counts, so autostart changes and resolved findings (which the store does not hold) appear under **Not recorded** instead of a false zero, and the quiet-week sentence needs every quiet fact to be known. Nothing is written until channel readability has been recorded for seven days. Atomic, current-user-only, 40 lines / 32 KiB, never overwrites another week. Settings opens the folder. 1,531 Debug tests pass (10 new); `docs/WEEKLY_DIGEST.md`.
+- [x] Published v0.1.37 (`5eb0797a`): ships the weekly summary; 1,531 Release tests, 1,077 package entries, every packaged route (179 YARA rules) and window smoke passed; ZIP 306,550,418 bytes sha256 `f49c1dfd…`, SBOM `bc63bbf9…`, notes `docs/RELEASE_0.1.37.md`. The packaged service created the reports folder and left it empty (seven-day gate).
 - [ ] First real report: this machine's store has watched for less than seven days, so the worker defers. Check the file content and the Settings row once a week has passed.
 - [ ] The output folder is fixed; a user-selectable path is not implemented.
 - [x] Port cross-view (DN-080) shipped in v0.1.36.

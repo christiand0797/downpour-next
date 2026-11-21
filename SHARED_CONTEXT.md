@@ -7,6 +7,7 @@
 - `WeeklyDigestWriter` writes `%LOCALAPPDATA%\DownpourNext\reports\weekly-<ISO year>-W<week>.md` atomically, restricted to the current user, capped at 40 lines / 32 KiB and never overwriting another week's file. `WeeklyDigestWorker` runs at start + 2 minutes and every 6 hours, and only after channel readability has been recorded for seven days, so a fresh install is not called quiet.
 - Settings → Storage & cache has a **Weekly summary** row that opens the reports folder and says so when no report exists yet. The folder is not user-selectable.
 - Verification: Debug build 0 warnings/0 errors; 1,531 tests pass (10 new in `WeeklyDigestTests`). No report has been produced on this machine: its store has watched for less than seven days, so the worker defers. The rendered row and the file content were not viewed. Details in `docs/WEEKLY_DIGEST.md`.
+- v0.1.37 published (DN-083): built from `5eb0797a4a17c423d426fdbb778957a00055134f`; 1,531 Release tests, 1,077 package entries (772,762,002 expanded bytes, 52 runtime components), every packaged route (179 YARA rules) and the window smoke passed. ZIP 306,550,418 bytes sha256 `f49c1dfd…`, SBOM `bc63bbf9…`, SHA256SUMS `0ec44e9a…`; notes `docs/RELEASE_0.1.37.md`. The packaged service run created the reports folder and left it empty, which is the seven-day gate observed.
 - All fifteen second-round foundations now have a call site except `PortableSettingsBundle`.
 
 ## 2026-11-21 TCP listener cross-view (buffy, DN-080)

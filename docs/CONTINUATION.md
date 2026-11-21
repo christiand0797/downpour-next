@@ -18,30 +18,30 @@ time with the project's footer, push to `https://github.com/christiand0797/downp
 
 ## Release loop
 
-For a new version (the example cuts 0.1.37; substitute the version, the previous embedded hash and the commit):
+For a new version (the example cuts 0.1.38; substitute the version, the previous embedded hash and the commit):
 
 ```bash
 # 1. bump
-sed -i 's/0\.1\.36/0.1.37/g' Directory.Build.props   # also Assembly/FileVersion
-git commit -am "chore: bump version to 0.1.37" && COMMIT=$(git rev-parse HEAD)
+sed -i 's/0\.1\.37/0.1.38/g' Directory.Build.props   # also Assembly/FileVersion
+git commit -am "chore: bump version to 0.1.38" && COMMIT=$(git rev-parse HEAD)
 # 2. build (background it; it runs Release tests and five publishes)
-nohup pwsh -NoProfile -File Build-Portable.ps1 > artifacts/build-0.1.37.log 2>&1 &
+nohup pwsh -NoProfile -File Build-Portable.ps1 > artifacts/build-0.1.38.log 2>&1 &
 # 3. copy the version scripts and point them at the embedded commit, read from an executable
 for s in package smoke window-smoke; do
-  sed -e 's/0\.1\.36/0.1.37/g' -e "s/7d1d83d9efc958d14faddc0999cc37a156743937/$COMMIT/g" \
-    artifacts/v0.1.36-$s.ps1 > artifacts/v0.1.37-$s.ps1
+  sed -e 's/0\.1\.37/0.1.38/g' -e "s/5eb0797a4a17c423d426fdbb778957a00055134f/$COMMIT/g" \
+    artifacts/v0.1.37-$s.ps1 > artifacts/v0.1.38-$s.ps1
 done
 # 4. package, route smoke, window smoke (background each, poll the log)
-pwsh -NoProfile -File artifacts/v0.1.37-package.ps1
-pwsh -NoProfile -File artifacts/v0.1.37-smoke.ps1
-pwsh -NoProfile -File artifacts/v0.1.37-window-smoke.ps1
+pwsh -NoProfile -File artifacts/v0.1.38-package.ps1
+pwsh -NoProfile -File artifacts/v0.1.38-smoke.ps1
+pwsh -NoProfile -File artifacts/v0.1.38-window-smoke.ps1
 # 5. notes, tag, publish, verify digests
-gh release create v0.1.37 -R christiand0797/downpour-next --title "Downpour Next 0.1.37" \
-  --target "$(git rev-parse HEAD)" --notes-file docs/RELEASE_0.1.37.md --latest \
-  artifacts/DownpourNext-win-x64-0.1.37.zip artifacts/DownpourNext-0.1.37-sbom.cdx.json \
-  artifacts/DownpourNext-0.1.37-SHA256SUMS.txt
+gh release create v0.1.38 -R christiand0797/downpour-next --title "Downpour Next 0.1.38" \
+  --target "$(git rev-parse HEAD)" --notes-file docs/RELEASE_0.1.38.md --latest \
+  artifacts/DownpourNext-win-x64-0.1.38.zip artifacts/DownpourNext-0.1.38-sbom.cdx.json \
+  artifacts/DownpourNext-0.1.38-SHA256SUMS.txt
 gh release list -R christiand0797/downpour-next --limit 3
-gh release view v0.1.37 -R christiand0797/downpour-next --json assets \
+gh release view v0.1.38 -R christiand0797/downpour-next --json assets \
   --jq '.assets[] | "\(.name) \(.size) \(.digest)"'
 ```
 
@@ -51,13 +51,18 @@ build runs changes the hash it expects. Read the hash from an executable (`(Get-
 pin that in the scripts rather than assuming the bump commit. Commit the docs first and pass `--target "$(git rev-parse
 HEAD)"` so the tag points at a pushed commit; the package script must keep pinning the embedded hash, not the tag.
 
-## Current state (end of 0.1.36)
+## Current state (end of 0.1.37)
 
-- Published: `v0.1.36` as Latest, built from `7d1d83d9`; ships the TCP listener cross-view. ZIP 306,526,663 bytes
-  sha256 `3b679a9d…`, SBOM `803638f8…`, SHA256SUMS `6f0d7983…`; 1,522 Release tests, 1,077 package entries, every
-  packaged route (179 YARA rules) and the window smoke passed. Details in `docs/RELEASE_0.1.36.md`.
-- Published previously: `v0.1.35` built from `34956daa`; ships first-run guidance on the Dashboard. ZIP 306,526,378
-  bytes sha256 `d0a69223…`, SBOM `20529888…`, SHA256SUMS `0dbec4d0…`; 1,517 Release tests.
+- Published: `v0.1.37` as Latest, built from `5eb0797a`; ships the weekly summary. ZIP 306,550,418 bytes sha256
+  `f49c1dfd…`, SBOM `bc63bbf9…`, SHA256SUMS `0ec44e9a…`; 1,531 Release tests, 1,077 package entries, every packaged
+  route (179 YARA rules) and the window smoke passed. Details in `docs/RELEASE_0.1.37.md`.
+- Published previously: `v0.1.36` built from `7d1d83d9`; ships the TCP listener cross-view. ZIP 306,526,663 bytes
+  sha256 `3b679a9d…`, SBOM `803638f8…`, SHA256SUMS `6f0d7983…`; 1,522 Release tests.
+- Shipped in 0.1.37 (DN-082): `WeeklyDigest` takes nullable counts, `SecurityAlertRepository.ReadWeeklyDigestFactsAsync`
+  supplies one SQL aggregate per fact, and `WeeklyDigestWorker` writes one file per ISO week into the reports folder at
+  start + 2 minutes and every 6 hours, gated on seven days of channel observation. Autostarts and resolved findings stay
+  **Not recorded** because the store does not hold them. The packaged service run created the empty reports folder, which
+  is the gate working; no report exists on this machine yet. Details in `docs/WEEKLY_DIGEST.md`.
 - Shipped in 0.1.36 (DN-080): `NetworkInventoryProvider.DescribeListenerViewDisagreement` compares the managed listener
   list with the native owner table, reports one to ten one-sided endpoints as a consistency anomaly (never tampering)
   and stays silent above ten or when either table is empty. Read-only; nothing persisted. Whether this machine's views
@@ -94,8 +99,8 @@ HEAD)"` so the tag points at a pushed commit; the package script must keep pinni
   window, so `MainWindowHandle` stays 0 and the close request is never sent. The harness launches visibly; do not
   reintroduce `-WindowStyle Hidden` for the desktop launch. A failed hidden run can leave a headless desktop behind;
   the smoke guard then refuses to start, so check `Get-Process Downpour.Desktop` and stop the stale pid before rerunning.
-- Remaining Core-only foundations: portable encrypted bundle and weekly digest; egress novelty is blocked on byte
-  volume and metered scheduling on a session-0 signal.
+- Remaining Core-only foundation: the portable encrypted settings bundle; egress novelty is blocked on byte volume and
+  metered scheduling on a session-0 signal.
 - Previously flaky: `AmsiSessionTests.ContextCannotBeUninitializedDuringAnActiveScan` failed under load; its waits were
   raised to 30 s on 2026-11-20.
 
