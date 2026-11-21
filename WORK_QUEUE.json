@@ -1501,6 +1501,25 @@
     "A damaged or oversized journal is reported rather than silently accepted"
    ],
    "notes": "buffy 2026-11-21: completed. `UpdateJournalStore` (Core) persists `UpdateStagingJournal` records to the per-user updates folder (update-journal.json) with 32 records / 300-character details / 64 KiB limits and an atomic temp-file replace. The desktop starts a cycle only after the published SHA-256 matched, records verified after extraction returns per-file digests, and stages after the manifest and helper copy; failures record rolled back best-effort before cleanup. The standalone helper requires the newest record to be staged for the exact manifest version before replacing any file, then records applied after restart or rolled back after restoring previous files. Downloaded and Verified may now be abandoned as rolled back; Applied stays terminal. Desktop start appends the last recovery sentence to the unresolved-staging message. Debug build 0 warnings/errors, Desktop and UpdateHelper compile clean, 1,499 tests pass (4 new). No real in-app update has exercised the journal yet. Docs: `docs/UPDATE_JOURNAL.md`."
+  },
+  {
+   "id": "DN-075",
+   "title": "Cut and publish 0.1.33 with the update staging journal",
+   "status": "completed",
+   "priority": "high",
+   "files": [
+    "Directory.Build.props",
+    "docs/RELEASE_0.1.33.md",
+    "docs/CONTINUATION.md"
+   ],
+   "acceptance": [
+    "Version 0.1.33 in Directory.Build.props",
+    "Release build clean and full Release suite passing",
+    "Package, packaged route smoke and window smoke pass",
+    "Release notes record the ZIP and SBOM digests",
+    "Tag points at the pushed docs commit; package pins the embedded hash"
+   ],
+   "notes": "buffy 2026-11-21: completed. Built from 0736bc6eb085ef2381c73a3b2c2df6fee442383e; 1,499 Release tests, 1,077 package entries, every packaged route (179 YARA rules) and the window smoke passed. ZIP 306,499,568 bytes sha256 ce58c1a8f62da43233be542a6df04c8d417b3630778377d65c45f4e903d107fe; SBOM bc0b1df7b1f5f7a9c47ed1efe403cd04727570df3381731646662d0c48c5dc27; SHA256SUMS 5b256c7b6b2628f7701f1408cb9d3d47c9768d37dca507228c3b46a7de2a47c0. Ships the update staging journal; no screen or detection rule changed. Release notes docs/RELEASE_0.1.33.md."
   }
  ]
 }

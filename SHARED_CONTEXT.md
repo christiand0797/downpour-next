@@ -7,6 +7,7 @@
 - The standalone helper now refuses to touch any file unless the newest record is `Staged` for the exact version in the manifest, then records `Applied` after the restart or `RolledBack` after restoring previous files where permitted. A missing or unreadable journal fails closed with "check for updates again".
 - `UpdateStagingJournal` now also allows `Downloaded → RolledBack` and `Verified → RolledBack`, so an abandoned cycle is closed honestly; `Applied` stays terminal. Desktop start appends the last recovery sentence to the existing unresolved-staging message.
 - Verification: Debug build 0 warnings/0 errors, Desktop and UpdateHelper compile clean, 1,499 tests pass (4 new in `UpdateJournalWiringTests`). No real in-app update has exercised the journal yet; details and limits in `docs/UPDATE_JOURNAL.md`.
+- v0.1.33 published (DN-075): built from `0736bc6eb085ef2381c73a3b2c2df6fee442383e`; 1,499 Release tests, 1,077 package entries, every packaged route (179 YARA rules) and the window smoke passed. ZIP 306,499,568 bytes sha256 `ce58c1a8…`, SBOM `bc0b1df7…`, SHA256SUMS `5b256c7b…`; notes `docs/RELEASE_0.1.33.md`. The 0.1.32 → 0.1.33 apply was done by the older helper, so the first helper that enforces the staged gate ships in this build.
 
 ## 2026-11-20 alert replay gate wired (buffy, DN-072)
 

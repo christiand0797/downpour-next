@@ -3,7 +3,8 @@
 ## 2026-11-21 0.1.33: update staging journal (buffy)
 
 - [x] Update staging journal wired (DN-074): the desktop records downloaded → verified → staged and the standalone helper refuses to apply unless the newest journal record is `staged` for that exact version, then records applied or rolled back. The journal is atomic, bounded (32 records / 64 KiB) and holds no paths or host data. Damaged journals fail closed. 1,499 Debug tests pass (4 new); `docs/UPDATE_JOURNAL.md`.
-- [ ] Exercise a real in-app update with the journal: 0.1.32 → 0.1.33 is applied by the older helper, so the first enforcing helper is the one shipped in 0.1.33.
+- [ ] Exercise a real in-app update with the journal: 0.1.32 → 0.1.33 was applied by the older helper, so the first enforcing helper is the one shipped in 0.1.33.
+- [x] Published v0.1.33 (`0736bc6`): ships the update staging journal; 1,499 Release tests, 1,077 package entries, every packaged route (179 YARA rules) and window smoke passed; ZIP 306,499,568 bytes sha256 `ce58c1a8…`, SBOM `bc0b1df7…`, notes `docs/RELEASE_0.1.33.md`.
 - [ ] Failure-injection for a locked package file is still required before calling update rollback proven.
 
 ## 2026-11-20 0.1.32: alert replay gate (buffy)

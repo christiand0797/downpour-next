@@ -173,10 +173,10 @@
     {
       "id": "buffy",
       "role": "agent",
-      "taskId": "DN-074",
-      "status": "active",
-      "heartbeatUtc": "2026-11-21T00:30:00Z",
-      "notes": "DN-074 completed: the update staging journal is wired end to end. The desktop records downloaded/verified/staged with an atomic bounded journal outside the install folder, and the standalone helper refuses any package whose newest record is not staged for that version, then records applied or rolled back. 1,499 Debug tests pass. Next: build and publish 0.1.33, then wire onboarding or the weekly digest."
+      "taskId": "DN-075",
+      "status": "idle",
+      "heartbeatUtc": "2026-11-21T02:10:00Z",
+      "notes": "DN-074 completed and DN-075 published as v0.1.33 (built from 0736bc6e): the update staging journal is wired end to end. The desktop records downloaded/verified/staged with an atomic bounded journal outside the install folder, and the standalone helper refuses any package whose newest record is not staged for that version, then records applied or rolled back. 1,499 Release tests, 1,077 package entries, every route and window smoke. No real in-app update exercised the journal yet. Next: wire onboarding or the weekly digest, or exercise a real update."
     }
   ]
 }
