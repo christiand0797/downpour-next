@@ -51,9 +51,18 @@ build runs changes the hash it expects. Read the hash from an executable (`(Get-
 pin that in the scripts rather than assuming the bump commit. Commit the docs first and pass `--target "$(git rev-parse
 HEAD)"` so the tag points at a pushed commit; the package script must keep pinning the embedded hash, not the tag.
 
-## Current state (end of 0.1.37)
+## Current state (end of 0.1.38)
 
-- Published: `v0.1.37` as Latest, built from `5eb0797a`; ships the weekly summary. ZIP 306,550,418 bytes sha256
+- Published: `v0.1.38` as Latest, built from `7f0a88a0`; ships portable preferences. ZIP 306,576,286 bytes sha256
+  `04761b06…`, SBOM `f1f26bc6…`, SHA256SUMS `fa2d6964…`; 1,538 Release tests, 1,077 package entries, every packaged
+  route (179 YARA rules) and the window smoke passed. Details in `docs/RELEASE_0.1.38.md`.
+- Shipped in 0.1.38 (DN-084): Settings → Storage & cache exports the eight appearance and alert switches as a
+  passphrase-encrypted `.dpnb` file and imports them behind a change list. Suppressions, cases, feed credentials,
+  machine/account detail and the two setup acknowledgements are excluded, and a wrong passphrase, foreign schema,
+  unknown name or bad value refuses the whole document. Dialogs not clicked by hand. Details in
+  `docs/PORTABLE_SETTINGS.md`.
+
+- Published previously: `v0.1.37`, built from `5eb0797a`; ships the weekly summary. ZIP 306,550,418 bytes sha256
   `f49c1dfd…`, SBOM `bc63bbf9…`, SHA256SUMS `0ec44e9a…`; 1,531 Release tests, 1,077 package entries, every packaged
   route (179 YARA rules) and the window smoke passed. Details in `docs/RELEASE_0.1.37.md`.
 - Published previously: `v0.1.36` built from `7d1d83d9`; ships the TCP listener cross-view. ZIP 306,526,663 bytes
@@ -99,7 +108,7 @@ HEAD)"` so the tag points at a pushed commit; the package script must keep pinni
   window, so `MainWindowHandle` stays 0 and the close request is never sent. The harness launches visibly; do not
   reintroduce `-WindowStyle Hidden` for the desktop launch. A failed hidden run can leave a headless desktop behind;
   the smoke guard then refuses to start, so check `Get-Process Downpour.Desktop` and stop the stale pid before rerunning.
-- Remaining Core-only foundation: the portable encrypted settings bundle; egress novelty is blocked on byte volume and
+- No Core-only foundation from either round remains unwired; egress novelty is blocked on byte volume and
   metered scheduling on a session-0 signal.
 - Previously flaky: `AmsiSessionTests.ContextCannotBeUninitializedDuringAnActiveScan` failed under load; its waits were
   raised to 30 s on 2026-11-20.

@@ -4,11 +4,11 @@ Fifteen bounded, tested Core foundations for the next layer of work, landed afte
 list. Several are now wired (event-log cursors and retention accounting in the alert store, rule coverage and
 per-process mitigations in the service and UI, the replay gate in CI, the update staging journal in the updater, and
 IDN/lookalike context on the DNS route);
-the rest are **not** wired into a route,
+the rest were not wired into a route,
 service loop or the updater. Each entry says what exists, what the
 tests prove, and exactly what wiring would need to be true before it can be called working.
 
-The rule from round one still applies: a foundation is not a feature, and this document never claims parity with a
+All fifteen now have a call site as of 0.1.38; the last was the encrypted preferences bundle in Settings, which carries switches and nothing else. The rule from round one still applies: a foundation is not a feature, and this document never claims parity with a
 commercial product.
 
 | # | Foundation | What it does | Wired? | Wiring needs |

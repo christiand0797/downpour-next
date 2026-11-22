@@ -3,6 +3,7 @@
 ## 2026-11-22 0.1.38: portable preferences (buffy)
 
 - [x] Portable preferences wired (DN-084): Settings → Storage & cache exports the eight appearance and alert switches as a passphrase-encrypted `.dpnb` file and imports them behind a confirmation listing every change. The plaintext is the new bounded `PortablePreferences` document (8 KiB, 32 entries, letter-only names, booleans only) and the container is the existing PBKDF2/AES-GCM bundle. Suppressions, cases, feed credentials, machine/account detail and the two setup acknowledgements are excluded; a foreign schema, unknown name, wrong passphrase or bad value refuses the whole document and changes nothing. 1,538 Debug tests pass (7 new); `docs/PORTABLE_SETTINGS.md`.
+- [x] Published v0.1.38 (`7f0a88a0`): ships portable preferences; 1,538 Release tests, 1,077 package entries, every packaged route (179 YARA rules) and window smoke passed; ZIP 306,576,286 bytes sha256 `04761b06…`, SBOM `f1f26bc6…`, notes `docs/RELEASE_0.1.38.md`. Every foundation from both rounds now has a call site.
 - [ ] Click through Export/Import, the passphrase dialog and a real round trip on a second Windows account or PC (compiled and unit-tested only).
 - [ ] Suppressions and selected cases are still not portable: that needs a service-side export/import path and a decision about carrying someone else's review decisions.
 - [x] Weekly summary (DN-082) shipped in v0.1.37.
