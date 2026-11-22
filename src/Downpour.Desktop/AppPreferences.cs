@@ -24,6 +24,22 @@ public static class AppPreferences
         ("setupQuietPeriodSeen", false),
     ];
 
+    /// <summary>
+    /// The switches a portable bundle may carry. The setup acknowledgements are deliberately absent: they record that
+    /// this person saw an explanation on this PC, which is not true on the PC the bundle is carried to.
+    /// </summary>
+    private static readonly string[] PortableKeys =
+    [
+        "rainEffectsEnabled",
+        "reduceMotion",
+        "autoStormCycle",
+        "notificationsEnabled",
+        "minimizeToTray",
+        "soundAlarmEnabled",
+        "soundAlarmIncludesHigh",
+        "ransomwareContentSampling",
+    ];
+
     private static readonly Dictionary<string, bool> Values = Definitions.ToDictionary(d => d.Key, d => d.Default, StringComparer.Ordinal);
     private static bool _loaded;
     private static bool _usePortableSettingsFile;
@@ -69,6 +85,30 @@ public static class AppPreferences
                 PersistenceAvailable = false;
             }
         }
+    }
+
+    /// <summary>The preference names a bundle uses, in the same PascalCase form as the local preferences file.</summary>
+    public static IReadOnlyList<string> PortableNames { get; } = PortableKeys.Select(FileKey).ToArray();
+
+    /// <summary>A copy of the portable switches, so an export cannot observe a value change halfway through.</summary>
+    public static IReadOnlyDictionary<string, bool> ReadPortableValues() =>
+        PortableKeys.ToDictionary(FileKey, key => Values[key], StringComparer.Ordinal);
+
+    /// <summary>
+    /// Applies known portable switches and returns how many actually changed. Unknown names are skipped here; the bundle
+    /// reader refuses a whole document that names one before this is reached.
+    /// </summary>
+    public static int ApplyPortableValues(IReadOnlyDictionary<string, bool> values)
+    {
+        var applied = 0;
+        foreach (var pair in values)
+        {
+            var key = PortableKeys.FirstOrDefault(candidate => string.Equals(FileKey(candidate), pair.Key, StringComparison.Ordinal));
+            if (key is null || Values[key] == pair.Value) continue;
+            Set(key, pair.Value);
+            applied++;
+        }
+        return applied;
     }
 
     private static bool Read(IPropertySet values, string key, bool fallback) =>

@@ -1,6 +1,6 @@
 {
  "schemaVersion": 1,
- "updatedAt": "2026-11-21",
+ "updatedAt": "2026-11-22",
  "tasks": [
   {
    "id": "DN-001",
@@ -1679,6 +1679,29 @@
     "Tag points at the pushed docs commit; package pins the embedded hash"
    ],
    "notes": "buffy 2026-11-21: completed. Built from 5eb0797a4a17c423d426fdbb778957a00055134f; 1,531 Release tests, 1,077 package entries (772,762,002 expanded bytes, 52 runtime components), every packaged route (179 YARA rules) and the window smoke passed. ZIP 306,550,418 bytes sha256 f49c1dfdf4f34609cbd975bd4d8498c2d4dbfebf2ea80d16491d6d4049c3a3c4; SBOM bc63bbf9084f1f1e4afb9823099f8a91806c838fd163f7afbe7724912c4308df; SHA256SUMS 0ec44e9a0d1d5b11fc459dbe815682bf4dcc54e0f2557573ca246c428e6f1623. Ships the weekly summary; the packaged service created the reports folder and left it empty (seven-day gate). Release notes docs/RELEASE_0.1.37.md."
+  },
+  {
+   "id": "DN-084",
+   "title": "Wire the portable preferences bundle into Settings",
+   "status": "completed",
+   "priority": "medium",
+   "files": [
+    "src/Downpour.Core/PortablePreferences.cs",
+    "src/Downpour.Core/PortableSettingsBundle.cs",
+    "src/Downpour.Desktop/PortableSettingsTransfer.cs",
+    "src/Downpour.Desktop/AppPreferences.cs",
+    "src/Downpour.Desktop/Pages/SettingsPage.xaml",
+    "src/Downpour.Desktop/Pages/SettingsPage.Cache.cs",
+    "tests/Downpour.Tests/PortablePreferencesTests.cs",
+    "docs/PORTABLE_SETTINGS.md"
+   ],
+   "acceptance": [
+    "Export writes one passphrase-encrypted file; import applies only after a confirmation listing each change",
+    "The bundle carries switches only: no suppressions, cases, feed keys, machine or account detail",
+    "A wrong passphrase, foreign schema, unknown name or bad value refuses the whole document",
+    "Every refusal says nothing was changed"
+   ],
+   "notes": "buffy 2026-11-22: completed. New `PortablePreferences` owns the plaintext: schema `downpour-preferences.v1`, 8 KiB, 32 entries, letter-only names up to 64 characters, booleans only, names sorted. `PortableSettingsTransfer` adds the file picker, a passphrase dialog (typed twice on export, at least 12 characters), a 64 KiB size check, the confirmation from `DescribeChanges`, and the apply through `AppPreferences.ReadPortableValues`/`ApplyPortableValues`. Settings → Storage & cache has Export…/Import… and a state line. Excluded on purpose: suppressions and cases (store-owned review decisions), feed credentials (refused by `Preview`), and the two setup acknowledgements (they mean seen on this PC). 1,538 Debug tests pass (7 new). The dialogs, pickers and a real two-machine round trip were not exercised by hand. Docs: `docs/PORTABLE_SETTINGS.md`."
   }
  ]
 }

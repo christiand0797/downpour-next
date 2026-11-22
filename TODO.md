@@ -1,5 +1,13 @@
 # Downpour Next TODO
 
+## 2026-11-22 0.1.38: portable preferences (buffy)
+
+- [x] Portable preferences wired (DN-084): Settings → Storage & cache exports the eight appearance and alert switches as a passphrase-encrypted `.dpnb` file and imports them behind a confirmation listing every change. The plaintext is the new bounded `PortablePreferences` document (8 KiB, 32 entries, letter-only names, booleans only) and the container is the existing PBKDF2/AES-GCM bundle. Suppressions, cases, feed credentials, machine/account detail and the two setup acknowledgements are excluded; a foreign schema, unknown name, wrong passphrase or bad value refuses the whole document and changes nothing. 1,538 Debug tests pass (7 new); `docs/PORTABLE_SETTINGS.md`.
+- [ ] Click through Export/Import, the passphrase dialog and a real round trip on a second Windows account or PC (compiled and unit-tested only).
+- [ ] Suppressions and selected cases are still not portable: that needs a service-side export/import path and a decision about carrying someone else's review decisions.
+- [x] Weekly summary (DN-082) shipped in v0.1.37.
+
+
 ## 2026-11-21 0.1.37: weekly summary (buffy)
 
 - [x] Weekly summary wired (DN-082): the service reads one SQL aggregate per fact from the alert store and writes `weekly-<ISO year>-W<week>.md` into the reports folder at start + 2 minutes and every 6 hours. The digest takes nullable counts, so autostart changes and resolved findings (which the store does not hold) appear under **Not recorded** instead of a false zero, and the quiet-week sentence needs every quiet fact to be known. Nothing is written until channel readability has been recorded for seven days. Atomic, current-user-only, 40 lines / 32 KiB, never overwrites another week. Settings opens the folder. 1,531 Debug tests pass (10 new); `docs/WEEKLY_DIGEST.md`.

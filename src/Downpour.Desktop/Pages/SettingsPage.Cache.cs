@@ -105,6 +105,55 @@ public sealed partial class SettingsPage
         catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException) { }
     }
 
+    private async void ExportPortableSettings_Click(object sender, RoutedEventArgs e)
+    {
+        PortableSettingsState.Text = "Choose where to save the bundle…";
+        string? message;
+        try { message = await PortableSettingsTransfer.ExportAsync(XamlRoot); }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException or System.Runtime.InteropServices.COMException)
+        {
+            message = $"The bundle could not be saved ({ex.GetType().Name}). Choose another folder and try again.";
+        }
+        PortableSettingsState.Text = message ?? "Export cancelled. Nothing was written.";
+        if (message is not null) await ActionFlows.ShowAsync(XamlRoot, "Portable preferences", message);
+    }
+
+    private async void ImportPortableSettings_Click(object sender, RoutedEventArgs e)
+    {
+        PortableSettingsState.Text = "Choose a bundle to open…";
+        string? message;
+        try { message = await PortableSettingsTransfer.ImportAsync(XamlRoot); }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException or System.Runtime.InteropServices.COMException)
+        {
+            message = $"The bundle could not be read ({ex.GetType().Name}). Nothing was changed.";
+        }
+        PortableSettingsState.Text = message ?? "Import cancelled. Nothing was changed.";
+        if (message is null) return;
+        await ActionFlows.ShowAsync(XamlRoot, "Portable preferences", message);
+        if (message.StartsWith("Applied", StringComparison.Ordinal)) SyncPreferenceToggles();
+    }
+
+    /// <summary>Re-reads the local switches after an import, without letting the toggled handlers write stale values back.</summary>
+    private void SyncPreferenceToggles()
+    {
+        var loading = _loading;
+        _loading = true;
+        try
+        {
+            RainEffectsToggle.IsOn = AppPreferences.RainEffectsEnabled;
+            ReduceMotionToggle.IsOn = AppPreferences.ReduceMotion;
+            AutoStormToggle.IsOn = AppPreferences.AutoStormCycle;
+            NotificationsToggle.IsOn = AppPreferences.NotificationsEnabled;
+            MinimizeToTrayToggle.IsOn = AppPreferences.MinimizeToTray;
+            SoundAlarmToggle.IsOn = AppPreferences.SoundAlarmEnabled;
+            SoundHighToggle.IsOn = AppPreferences.SoundAlarmIncludesHigh;
+            RansomwareSamplingToggle.IsOn = AppPreferences.RansomwareContentSampling;
+            SoundHighToggle.IsEnabled = SoundAlarmToggle.IsOn;
+        }
+        finally { _loading = loading; }
+        ShowSaveState();
+    }
+
     private void OpenDataFolder_Click(object sender, RoutedEventArgs e)
     {
         var root = CacheCleaner.DefaultRoot;

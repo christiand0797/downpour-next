@@ -1,5 +1,13 @@
 # Downpour Next shared context
 
+## 2026-11-22 portable preferences bundle (buffy, DN-084)
+
+- `PortableSettingsBundle` (Core since DN-052) now has its call site, and with it every second-round foundation. Settings → Storage & cache → **Portable preferences** exports the eight appearance and alert switches as a `.dpnb` file encrypted with a passphrase the person chooses (PBKDF2-SHA-256, 210,000 iterations, AES-256-GCM, 12 characters minimum) and imports them on another PC behind a confirmation that lists each switch that would change.
+- The scope decision is the conservative one: a bundle carries switches and nothing else. Suppressions and cases are absent because the alert store owns them and nobody made those review decisions on the new PC; feed credentials are refused by `Preview`; the two setup acknowledgements stay behind because they mean "seen on this PC". The new `PortablePreferences` document accepts only 8 KiB, 32 entries, letter-only names and booleans, so no path, host name, account name or free text has a field to travel in.
+- Import refuses the document whole — wrong passphrase, foreign schema, unknown or repeated name, non-boolean value, oversized payload — and says "Nothing was changed". A confirmed import applies through `AppPreferences`, re-arms storm cycling, re-reads the Settings toggles with their handlers muted, and the window's visuals follow the existing `Changed` event. The reader is given `AppPreferences.PortableNames`, so Core still does not know the desktop's switches.
+- Verification: Debug build 0 warnings/0 errors; 1,538 tests pass (7 new in `PortablePreferencesTests`). The buttons, the passphrase dialog and a real two-machine round trip were not exercised by hand. Details in `docs/PORTABLE_SETTINGS.md`.
+
+
 ## 2026-11-21 weekly summary from the alert store (buffy, DN-082)
 
 - `WeeklyDigest` now takes nullable counts and a `FindingsAcknowledged` field, so an unknown fact prints under **Not recorded** instead of a zero that reads as "nothing happened". The quiet-week sentence appears only when the autostart, hidden-match and sensor counts are all known and zero.
