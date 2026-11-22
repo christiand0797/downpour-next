@@ -1,5 +1,13 @@
 # Downpour Next TODO
 
+## 2026-11-22 0.1.39: update rollback proof (buffy)
+
+- [x] Staged update applier (DN-086): the helper's apply-and-rollback moved into `StagedUpdateApplier` (Core), which validates every path and staged file before touching anything, backs up each destination, moves new bytes in through a temporary name, runs the restart inside the protected region, and restores every touched file in reverse on failure. The journal detail now reports counts instead of "where possible". 1,544 Debug tests pass (6 new), including a destination held open with `FileShare.None`; `docs/UPDATE_ROLLBACK.md`.
+- [ ] A real in-app update: apply a published build over an installed older build through the helper end to end.
+- [ ] The `NotRestored` branch (restore itself failing) is implemented but has no test.
+- [x] Portable preferences (DN-084) shipped in v0.1.38.
+
+
 ## 2026-11-22 0.1.38: portable preferences (buffy)
 
 - [x] Portable preferences wired (DN-084): Settings → Storage & cache exports the eight appearance and alert switches as a passphrase-encrypted `.dpnb` file and imports them behind a confirmation listing every change. The plaintext is the new bounded `PortablePreferences` document (8 KiB, 32 entries, letter-only names, booleans only) and the container is the existing PBKDF2/AES-GCM bundle. Suppressions, cases, feed credentials, machine/account detail and the two setup acknowledgements are excluded; a foreign schema, unknown name, wrong passphrase or bad value refuses the whole document and changes nothing. 1,538 Debug tests pass (7 new); `docs/PORTABLE_SETTINGS.md`.

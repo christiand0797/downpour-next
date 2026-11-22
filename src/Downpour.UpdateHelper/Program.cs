@@ -87,53 +87,27 @@ internal static class Program
 
         Directory.CreateDirectory(backup);
         EnsureNoReparsePath(root, backup);
-        var changed = new List<(string Destination, string? Backup)>();
         try
         {
-            foreach (var relative in manifest.Files.Keys)
+            StagedUpdateApplier.Apply(root, stage, backup, manifest.Files.Keys.ToArray(), () =>
             {
-                var localRelative = relative.Replace('/', Path.DirectorySeparatorChar);
-                var destination = Path.GetFullPath(Path.Combine(root, localRelative));
-                if (!UpdatePathPolicy.IsStrictChildPath(root, destination))
-                    throw new InvalidDataException("The staged update escaped the application folder.");
-                var stagedFile = Path.Combine(stage, localRelative);
-                var backupFile = Path.Combine(backup, localRelative);
-                EnsureNoReparsePath(root, destination);
-                Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
-                EnsureNoReparsePath(root, destination);
-                string? backupPath = null;
-                if (File.Exists(destination))
-                {
-                    Directory.CreateDirectory(Path.GetDirectoryName(backupFile)!);
-                    EnsureNoReparsePath(root, backupFile);
-                    File.Copy(destination, backupFile, overwrite: false);
-                    backupPath = backupFile;
-                }
-                changed.Add((destination, backupPath));
-                var temporary = destination + ".downpour-update-" + Guid.NewGuid().ToString("N");
-                File.Copy(stagedFile, temporary, overwrite: false);
-                File.Move(temporary, destination, overwrite: true);
-            }
-
-            var restarted = Process.Start(new ProcessStartInfo(executable) { UseShellExecute = false, WorkingDirectory = root });
-            if (restarted is null) throw new InvalidOperationException("The updated Downpour app could not be restarted.");
-            restarted.Dispose();
+                var restarted = Process.Start(new ProcessStartInfo(executable) { UseShellExecute = false, WorkingDirectory = root });
+                if (restarted is null) throw new InvalidOperationException("The updated Downpour app could not be restarted.");
+                restarted.Dispose();
+            });
             TryDeleteDirectory(stateRoot);
             TryRecordJournal(UpdateState.Applied, $"Applied {manifest.Tag} and restarted Downpour.");
         }
-        catch
+        catch (Exception exception)
         {
-            for (var index = changed.Count - 1; index >= 0; index--)
-            {
-                var (destination, backupFile) = changed[index];
-                try
-                {
-                    if (backupFile is not null && File.Exists(backupFile)) File.Copy(backupFile, destination, overwrite: true);
-                    else if (File.Exists(destination)) File.Delete(destination);
-                }
-                catch { }
-            }
-            TryRecordJournal(UpdateState.RolledBack, $"Apply failed after touching {changed.Count} file(s); previous files restored where possible.");
+            // The applier has already restored what it could; the journal records the count rather than "where possible".
+            var report = (exception as StagedUpdateApplyException)?.Report;
+            TryRecordJournal(UpdateState.RolledBack, report is null
+                ? "Apply failed before any installed file was replaced; nothing needed to be restored."
+                : $"Apply failed after replacing {report.FilesReplaced} file(s); restored {report.FilesRestored}" +
+                  (report.NotRestored.Count == 0
+                      ? "."
+                      : $"; {report.NotRestored.Count} could not be restored: {string.Join(", ", report.NotRestored.Take(3))}."));
             throw;
         }
     }

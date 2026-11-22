@@ -1721,6 +1721,25 @@
     "Tag points at the pushed docs commit; package pins the embedded hash"
    ],
    "notes": "buffy 2026-11-22: completed. Built from 7f0a88a0c91822460f502e06ac314e767557e5b4; 1,538 Release tests, 1,077 package entries (772,829,702 expanded bytes, 52 runtime components), every packaged route (179 YARA rules) and the window smoke passed. ZIP 306,576,286 bytes sha256 04761b06e04689a133e88c30fc4019c4a041ee3faf5b390e6643f1bbe1d189a0; SBOM f1f26bc6229f6d7ac98fdfc90a1c0857c988df92cc81c5cf25255c74a607bdbb; SHA256SUMS fa2d6964f4103c23706d1dc0ec7b28eb0374eca12f4a2e076cd900169ea59d0a. Ships portable preferences; every foundation from both rounds now has a call site. Release notes docs/RELEASE_0.1.38.md."
+  },
+  {
+   "id": "DN-086",
+   "title": "Make the update apply and rollback testable and prove locked-file recovery",
+   "status": "completed",
+   "priority": "high",
+   "files": [
+    "src/Downpour.Core/StagedUpdateApplier.cs",
+    "src/Downpour.UpdateHelper/Program.cs",
+    "tests/Downpour.Tests/StagedUpdateApplierTests.cs",
+    "docs/UPDATE_ROLLBACK.md"
+   ],
+   "acceptance": [
+    "Every path and staged file is validated before the first write",
+    "A locked destination stops the apply and the files already replaced are restored",
+    "A failed restart restores every replaced file",
+    "The journal records how many files were restored, not 'where possible'"
+   ],
+   "notes": "buffy 2026-11-22: completed. The inline loop in the update helper became `StagedUpdateApplier.Apply(installRoot, stageRoot, backupRoot, relativeFiles, afterFilesApplied)`: plan/validate all, back up, copy to a temporary name, move into place, run the restart inside the protected region, restore in reverse with a bounded report. `StagedUpdateApplyException` carries the failed relative path plus `FilesReplaced`/`FilesRestored`/`NotRestored`, and `Program` writes those counts into the journal's rolled-back record. 6 new tests, including `FileShare.None` on a destination after one file was already replaced. 1,544 Debug tests pass. A real in-app update and the NotRestored branch remain unproven. Docs: `docs/UPDATE_ROLLBACK.md`."
   }
  ]
 }

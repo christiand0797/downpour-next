@@ -1,5 +1,13 @@
 # Downpour Next shared context
 
+## 2026-11-22 update apply and rollback proven against a locked file (buffy, DN-086)
+
+- The helper's file replacement and rollback lived inline in `Program.Apply`, so the documented gap — failure injection for a locked package file — could not be closed. `StagedUpdateApplier` (Core) now owns it: every path and staged file is validated before any write, each existing destination is backed up, the new bytes go to a temporary name and are moved into place, the caller's restart runs inside the same protected region, and any failure restores every touched file in reverse.
+- The journal's rollback detail now carries counts — `Apply failed after replacing 1 file(s); restored 1.` — instead of "where possible", and names up to three files it could not restore. A refusal before the first write says nothing needed restoring. The helper keeps the requester check, service-exit wait, manifest limits, per-file SHA-256 verification, journal gate and restart.
+- `StagedUpdateApplierTests` (6) include a destination held open with `FileShare.None`: the apply stops at that file, the file replaced before it returns to its old bytes, the locked file is untouched, and the report is 1 replaced / 1 restored / 0 unrestored. Other cases cover nested paths and backups, a failed restart restoring everything, an added file being removed, and `../escape.txt` or a missing staged file refusing before anything changes.
+- Verification: Debug build 0 warnings/0 errors; 1,544 tests pass (6 new). A real in-app update over an installed build is still not exercised, and the `NotRestored` branch is implemented but not forced by any test. Details in `docs/UPDATE_ROLLBACK.md`.
+
+
 ## 2026-11-22 portable preferences bundle (buffy, DN-084)
 
 - `PortableSettingsBundle` (Core since DN-052) now has its call site, and with it every second-round foundation. Settings → Storage & cache → **Portable preferences** exports the eight appearance and alert switches as a `.dpnb` file encrypted with a passphrase the person chooses (PBKDF2-SHA-256, 210,000 iterations, AES-256-GCM, 12 characters minimum) and imports them on another PC behind a confirmation that lists each switch that would change.
