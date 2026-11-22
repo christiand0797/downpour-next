@@ -51,9 +51,17 @@ build runs changes the hash it expects. Read the hash from an executable (`(Get-
 pin that in the scripts rather than assuming the bump commit. Commit the docs first and pass `--target "$(git rev-parse
 HEAD)"` so the tag points at a pushed commit; the package script must keep pinning the embedded hash, not the tag.
 
-## Current state (end of 0.1.39)
+## Current state (end of 0.1.40)
 
-- Published: `v0.1.39` as Latest, built from `62028ba5`; ships the provable update rollback. ZIP 306,595,059 bytes sha256
+- Published: `v0.1.40` as Latest, built from `b2e28ab8`; ships truthful, visible alert retention. ZIP 306,598,917 bytes
+  sha256 `ec0b2ab8…`, SBOM `44411b79…`, SHA256SUMS `0488cadc…`; 1,545 Release tests, 1,077 package entries, every
+  packaged route (179 YARA rules) and the window smoke passed. Details in `docs/RELEASE_0.1.40.md`.
+- Shipped in 0.1.40 (DN-088): the retention read passes its per-day eviction rows to `StoreRetentionAccounting.Assess`, so
+  `EvictedLast7Days` and the "were evicted in the last seven days" warning come from one computation. Settings → Storage
+  & cache shows an **Alert history** row (retained/capacity, oldest, evictions, warnings, offline state). The row was not
+  viewed. Details in `docs/ALERT_RETENTION.md`.
+
+- Published previously: `v0.1.39`, built from `62028ba5`; ships the provable update rollback. ZIP 306,595,059 bytes sha256
   `5b9e1239…`, SBOM `58867cdb…`, SHA256SUMS `5586c318…`; 1,544 Release tests, 1,077 package entries, every packaged
   route (179 YARA rules) and the window smoke passed. Details in `docs/RELEASE_0.1.39.md`.
 - Shipped in 0.1.39 (DN-086): `StagedUpdateApplier` (Core) validates every path and staged file before writing, backs up

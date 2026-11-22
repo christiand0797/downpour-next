@@ -6,6 +6,7 @@
 - The read now selects the per-day rows (`day,evicted` for the window) and passes `RetentionDay` records to `Assess`, so the number and the sentence come from one computation. Unparseable days are skipped instead of throwing and negative counts are clamped.
 - Settings → Storage & cache gains an **Alert history** row: retained of capacity over the window, the oldest retained alert, the seven-day eviction total and the store's warnings, amber when there is a warning, with a **Refresh** button and an explicit "service offline" state instead of zeros. Read-only; nothing is pruned, extended or reconfigured.
 - Verification: Debug build 0 warnings/0 errors; 1,545 tests pass (1 new: `RetentionSaysOutLoudWhatItsEvictionCountShows`, which inserts five evictions for today and asserts both the number and the sentence). The row was not viewed at any width, and this machine's store has no evictions, so the amber path is unit-tested only. Details in `docs/ALERT_RETENTION.md`.
+- v0.1.40 published (DN-089): built from `b2e28abe8d889c32fdfe54e13b9ecc4257ad9543`; 1,545 Release tests, 1,077 package entries (772,879,714 expanded bytes, 52 runtime components), every packaged route (179 YARA rules) and the window smoke passed. ZIP 306,598,917 bytes sha256 `ec0b2ab8…`, SBOM `44411b79…`, SHA256SUMS `0488cadc…`; notes `docs/RELEASE_0.1.40.md`.
 
 
 ## 2026-11-22 update apply and rollback proven against a locked file (buffy, DN-086)

@@ -1780,6 +1780,25 @@
     "An offline service is stated rather than shown as zeros"
    ],
    "notes": "buffy 2026-11-22: completed. `ReadRetentionAsync` now selects `day,evicted` rows for the seven-day window, builds `RetentionDay` records and passes them to `StoreRetentionAccounting.Assess`, then reports `report.EvictedLast7Days` and `report.Warnings` instead of a separately computed sum and an empty day list. Unparseable days are skipped, counts clamped. Settings → Storage & cache adds an **Alert history** row with a Refresh action, amber when warnings exist and an explicit service-offline message. 1,545 Debug tests pass (1 new in `SecurityAlertRepositoryTests`). Row not viewed; no evictions exist on this machine. Docs: `docs/ALERT_RETENTION.md`."
+  },
+  {
+   "id": "DN-089",
+   "title": "Cut and publish 0.1.40 with truthful, visible retention",
+   "status": "completed",
+   "priority": "high",
+   "files": [
+    "Directory.Build.props",
+    "docs/RELEASE_0.1.40.md",
+    "docs/CONTINUATION.md"
+   ],
+   "acceptance": [
+    "Version 0.1.40 in Directory.Build.props",
+    "Release build clean and full Release suite passing",
+    "Package, packaged route smoke and window smoke pass",
+    "Release notes record the ZIP and SBOM digests",
+    "Tag points at the pushed docs commit; package pins the embedded hash"
+   ],
+   "notes": "buffy 2026-11-22: completed. Built from b2e28abe8d889c32fdfe54e13b9ecc4257ad9543; 1,545 Release tests, 1,077 package entries (772,879,714 expanded bytes, 52 runtime components), every packaged route (179 YARA rules) and the window smoke passed. ZIP 306,598,917 bytes sha256 ec0b2ab88cbd75f76888873835b9a3e112996a254087df7e5050a1e753a67d14; SBOM 44411b79a8b40c4b3d1248cffa3d5128ba32ebad770b7eb14034cb543048059e; SHA256SUMS 0488cadce001c4e568da5a3bea7b225a496ff839d8e1ee0c4bc2c7df15cfad81. Ships the retention warning fix and the Settings Alert history row; the row itself was not viewed. Release notes docs/RELEASE_0.1.40.md."
   }
  ]
 }

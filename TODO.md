@@ -3,6 +3,7 @@
 ## 2026-11-22 0.1.40: retention says what it counts (buffy)
 
 - [x] Alert retention made truthful and visible (DN-088): the retention read now passes its per-day eviction rows to `StoreRetentionAccounting.Assess`, so `EvictedLast7Days` and the "were evicted in the last seven days" warning can no longer disagree. Settings → Storage & cache shows an **Alert history** row with retained/capacity, the oldest retained alert, the seven-day eviction total and the store's warnings, plus an explicit service-offline state. 1,545 Debug tests pass (1 new); `docs/ALERT_RETENTION.md`.
+- [x] Published v0.1.40 (`b2e28ab`): ships the retention fix and the Alert history row; 1,545 Release tests, 1,077 package entries, every packaged route (179 YARA rules) and window smoke passed; ZIP 306,598,917 bytes sha256 `ec0b2ab8…`, SBOM `44411b79…`, notes `docs/RELEASE_0.1.40.md`.
 - [ ] Visual check of the Alert history row, including the amber warning and service-offline states (this machine's store has no evictions).
 - [x] Staged update applier (DN-086) shipped in v0.1.39.
 
