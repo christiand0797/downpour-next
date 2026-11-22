@@ -126,6 +126,9 @@ HEAD)"` so the tag points at a pushed commit; the package script must keep pinni
 ## Working rules already in force
 
 - Read `SHARED_CONTEXT.md` and `WORK_QUEUE.json` first; claim a task before editing.
+- **Always commit, push and publish.** The owner's standing rule: every cycle ends with the work committed, pushed to
+  `main`, and a release published, and nothing is left local-only. A cycle that produced shippable work but no release
+  is unfinished. Doc-only follow-ups still get committed and pushed; they do not need a new version.
 - Read-only defaults, no privileged actions, no broad IPC ACLs, no PowerShell subprocesses in the product.
 - Keep `Contracts` free of WinUI/service dependencies; Windows adapters live in `Service`.
 - Do not claim a route works because it exists. State which check ran and what was not checked.
