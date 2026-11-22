@@ -171,6 +171,7 @@ public sealed partial class SettingsPage : Page
     {
         base.OnNavigatedTo(e);
         _ = RefreshCacheAsync();
+        _ = RefreshRetentionAsync();
         _loading = true;
         try
         {

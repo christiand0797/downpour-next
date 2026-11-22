@@ -154,6 +154,29 @@ public sealed partial class SettingsPage
         ShowSaveState();
     }
 
+    private async void RefreshRetention_Click(object sender, RoutedEventArgs e) => await RefreshRetentionAsync();
+
+    /// <summary>
+    /// Reads the alert store's own retention facts so a missing old finding is explained where storage is managed: how much
+    /// is kept, how old it is, and whether capacity is pushing evidence out before the window ends. Read-only.
+    /// </summary>
+    private async Task RefreshRetentionAsync()
+    {
+        var snapshot = await new Downpour.Core.SecurityAlertClient().TryGetSnapshotAsync();
+        if (snapshot?.Retention is not { } retention)
+        {
+            RetentionState.Text = "Alert history is unavailable while the sensor service is offline. Open Alerts or press Refresh once it is running.";
+            RetentionState.Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["TextFillColorSecondaryBrush"];
+            return;
+        }
+        var oldest = retention.OldestRetainedUtc is { } at ? $"oldest {at.ToLocalTime():g}" : "nothing stored yet";
+        var evicted = retention.EvictedLast7Days == 0 ? "none evicted in 7 days" : $"{retention.EvictedLast7Days:N0} evicted in 7 days";
+        RetentionState.Text = $"{retention.Retained:N0} of {retention.Capacity:N0} alerts kept over {retention.Window.TotalDays:0} days · {oldest} · {evicted}."
+            + (retention.Warnings.Count == 0 ? "" : " " + string.Join(" ", retention.Warnings));
+        RetentionState.Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources[
+            retention.Warnings.Count > 0 ? "HudAmberBrush" : "TextFillColorSecondaryBrush"];
+    }
+
     private void OpenDataFolder_Click(object sender, RoutedEventArgs e)
     {
         var root = CacheCleaner.DefaultRoot;

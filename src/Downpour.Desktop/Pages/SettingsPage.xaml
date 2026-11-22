@@ -208,6 +208,15 @@
                     <Grid ColumnSpacing="10" Margin="0,6,0,0">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                         <StackPanel Spacing="2">
+                            <TextBlock Text="Alert history" FontWeight="SemiBold" />
+                            <TextBlock x:Name="RetentionState" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"
+                                       Text="How much alert evidence is kept over the retention window, and whether the store is dropping evidence earlier than that window ends." />
+                        </StackPanel>
+                        <Button Grid.Column="1" Content="Refresh" Click="RefreshRetention_Click" VerticalAlignment="Center" />
+                    </Grid>
+                    <Grid ColumnSpacing="10" Margin="0,6,0,0">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                        <StackPanel Spacing="2">
                             <TextBlock Text="Weekly summary" FontWeight="SemiBold" />
                             <TextBlock x:Name="WeeklyDigestState" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"
                                        Text="Once the alert store has watched a full week, the service writes one Markdown summary per ISO week into the reports folder. Stored counts only; nothing is emailed." />

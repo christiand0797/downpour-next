@@ -1,5 +1,12 @@
 # Downpour Next TODO
 
+## 2026-11-22 0.1.40: retention says what it counts (buffy)
+
+- [x] Alert retention made truthful and visible (DN-088): the retention read now passes its per-day eviction rows to `StoreRetentionAccounting.Assess`, so `EvictedLast7Days` and the "were evicted in the last seven days" warning can no longer disagree. Settings → Storage & cache shows an **Alert history** row with retained/capacity, the oldest retained alert, the seven-day eviction total and the store's warnings, plus an explicit service-offline state. 1,545 Debug tests pass (1 new); `docs/ALERT_RETENTION.md`.
+- [ ] Visual check of the Alert history row, including the amber warning and service-offline states (this machine's store has no evictions).
+- [x] Staged update applier (DN-086) shipped in v0.1.39.
+
+
 ## 2026-11-22 0.1.39: update rollback proof (buffy)
 
 - [x] Staged update applier (DN-086): the helper's apply-and-rollback moved into `StagedUpdateApplier` (Core), which validates every path and staged file before touching anything, backs up each destination, moves new bytes in through a temporary name, runs the restart inside the protected region, and restores every touched file in reverse on failure. The journal detail now reports counts instead of "where possible". 1,544 Debug tests pass (6 new), including a destination held open with `FileShare.None`; `docs/UPDATE_ROLLBACK.md`.

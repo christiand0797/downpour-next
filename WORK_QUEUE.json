@@ -1759,6 +1759,27 @@
     "Tag points at the pushed docs commit; package pins the embedded hash"
    ],
    "notes": "buffy 2026-11-22: completed. Built from 62028ba59504e57f273d3b0c2f8779597a7e57ee; 1,544 Release tests, 1,077 package entries (772,874,066 expanded bytes, 52 runtime components), every packaged route (179 YARA rules) and the window smoke passed. ZIP 306,595,059 bytes sha256 5b9e1239f2ccf9a755db62e86b0f2bd0d4c102a66398d57ecbd2db002bfa496e; SBOM 58867cdb111e5ae10d776b016844d391bfda00d36be86fbdb83aa72dac7fe3b7; SHA256SUMS 5586c3189005494ff759ba962f87cd25bfbec04e7266b048489daeeb69e2f494. Ships the extracted applier and the locked-file rollback proof; a real in-app update is still pending. Release notes docs/RELEASE_0.1.39.md."
+  },
+  {
+   "id": "DN-088",
+   "title": "Make the retention warning and its number agree, and show retention in Settings",
+   "status": "completed",
+   "priority": "medium",
+   "files": [
+    "src/Downpour.Service/SecurityAlertRepository.cs",
+    "src/Downpour.Desktop/Pages/SettingsPage.xaml",
+    "src/Downpour.Desktop/Pages/SettingsPage.xaml.cs",
+    "src/Downpour.Desktop/Pages/SettingsPage.Cache.cs",
+    "tests/Downpour.Tests/SecurityAlertRepositoryTests.cs",
+    "docs/ALERT_RETENTION.md"
+   ],
+   "acceptance": [
+    "The eviction count and the eviction warning come from one computation",
+    "A store with evictions reports both the number and the sentence",
+    "Settings shows retained/capacity, oldest alert, seven-day evictions and warnings, read-only",
+    "An offline service is stated rather than shown as zeros"
+   ],
+   "notes": "buffy 2026-11-22: completed. `ReadRetentionAsync` now selects `day,evicted` rows for the seven-day window, builds `RetentionDay` records and passes them to `StoreRetentionAccounting.Assess`, then reports `report.EvictedLast7Days` and `report.Warnings` instead of a separately computed sum and an empty day list. Unparseable days are skipped, counts clamped. Settings → Storage & cache adds an **Alert history** row with a Refresh action, amber when warnings exist and an explicit service-offline message. 1,545 Debug tests pass (1 new in `SecurityAlertRepositoryTests`). Row not viewed; no evictions exist on this machine. Docs: `docs/ALERT_RETENTION.md`."
   }
  ]
 }

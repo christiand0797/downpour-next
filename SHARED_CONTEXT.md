@@ -1,5 +1,13 @@
 # Downpour Next shared context
 
+## 2026-11-22 alert retention says what it counts (buffy, DN-088)
+
+- `SecurityAlertRepository.ReadRetentionAsync` read the seven-day eviction total with one SQL `SUM` and then passed an empty day list to `StoreRetentionAccounting.Assess`. `EvictedLast7Days` was right while the summary's warnings never contained the `N alert(s) were evicted in the last seven days.` sentence — two computations of one fact, one of them empty.
+- The read now selects the per-day rows (`day,evicted` for the window) and passes `RetentionDay` records to `Assess`, so the number and the sentence come from one computation. Unparseable days are skipped instead of throwing and negative counts are clamped.
+- Settings → Storage & cache gains an **Alert history** row: retained of capacity over the window, the oldest retained alert, the seven-day eviction total and the store's warnings, amber when there is a warning, with a **Refresh** button and an explicit "service offline" state instead of zeros. Read-only; nothing is pruned, extended or reconfigured.
+- Verification: Debug build 0 warnings/0 errors; 1,545 tests pass (1 new: `RetentionSaysOutLoudWhatItsEvictionCountShows`, which inserts five evictions for today and asserts both the number and the sentence). The row was not viewed at any width, and this machine's store has no evictions, so the amber path is unit-tested only. Details in `docs/ALERT_RETENTION.md`.
+
+
 ## 2026-11-22 update apply and rollback proven against a locked file (buffy, DN-086)
 
 - The helper's file replacement and rollback lived inline in `Program.Apply`, so the documented gap — failure injection for a locked package file — could not be closed. `StagedUpdateApplier` (Core) now owns it: every path and staged file is validated before any write, each existing destination is backed up, the new bytes go to a temporary name and are moved into place, the caller's restart runs inside the same protected region, and any failure restores every touched file in reverse.

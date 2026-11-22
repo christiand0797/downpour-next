@@ -421,6 +421,31 @@ public sealed class SecurityAlertRepositoryTests
         Assert.Null(SecurityAlertControlPipeWorker.ParseStrictRequest(new byte[1025]));
     }
 
+    [Fact]
+    public async Task RetentionSaysOutLoudWhatItsEvictionCountShows()
+    {
+        using var database = new TemporaryAlertDatabase();
+        var repository = new SecurityAlertRepository(database.Path);
+        await repository.InitializeAsync();
+        var today = DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime).ToString("yyyy-MM-dd");
+        await using (var connection = new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={database.Path};Pooling=False"))
+        {
+            await connection.OpenAsync();
+            await using var insert = connection.CreateCommand();
+            insert.CommandText = "INSERT INTO alert_evictions(day,evicted) VALUES($day,5) ON CONFLICT(day) DO UPDATE SET evicted=evicted+5;";
+            insert.Parameters.AddWithValue("$day", today);
+            await insert.ExecuteNonQueryAsync();
+        }
+
+        var retention = (await repository.ReadSnapshotAsync()).Retention!;
+
+        Assert.Equal(5, retention.EvictedLast7Days);
+        Assert.Equal(0, retention.Retained);
+        Assert.Empty((await repository.ReadSnapshotAsync()).Warnings);
+        Assert.Contains(retention.Warnings, warning => warning.Contains("evicted in the last seven days", StringComparison.Ordinal));
+        Assert.Contains("5", retention.Warnings.Single(warning => warning.Contains("evicted", StringComparison.Ordinal)));
+    }
+
     internal sealed class TemporaryAlertDatabase : IDisposable
     {
         private readonly string _root = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"DownpourAlerts-{Guid.NewGuid():N}");

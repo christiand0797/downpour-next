@@ -354,14 +354,24 @@ public sealed class SecurityAlertRepository(string databasePath)
         DateTimeOffset? oldest = null;
         var oldestText = await ScalarAsync(connection, "SELECT MIN(last_seen_utc) FROM alerts;", token);
         if (oldestText is not null and not DBNull) oldest = ParseUtc(Convert.ToString(oldestText)!);
-        var since = DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime.AddDays(-7)).ToString("yyyy-MM-dd");
+        var since = DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime.AddDays(-7));
+        // Read the per-day rows rather than one total: the warning text and the summary number then come from the same
+        // computation, so the store cannot report evictions without also saying so.
+        var days = new List<RetentionDay>();
         await using var evictions = connection.CreateCommand();
-        evictions.CommandText = "SELECT COALESCE(SUM(evicted),0) FROM alert_evictions WHERE day >= $since;";
-        evictions.Parameters.AddWithValue("$since", since);
-        var evicted = Convert.ToInt32(await evictions.ExecuteScalarAsync(token));
-        var report = StoreRetentionAccounting.Assess(retained, MaximumAlertCount, oldest, DateTimeOffset.UtcNow, Retention, []);
+        evictions.CommandText = "SELECT day,evicted FROM alert_evictions WHERE day >= $since ORDER BY day;";
+        evictions.Parameters.AddWithValue("$since", since.ToString("yyyy-MM-dd"));
+        await using (var reader = await evictions.ExecuteReaderAsync(token))
+        {
+            while (await reader.ReadAsync(token))
+            {
+                if (DateOnly.TryParse(reader.GetString(0), out var day))
+                    days.Add(new RetentionDay(day, Math.Max(0, reader.GetInt32(1))));
+            }
+        }
+        var report = StoreRetentionAccounting.Assess(retained, MaximumAlertCount, oldest, DateTimeOffset.UtcNow, Retention, days);
         return new AlertRetentionSummary(report.Retained, report.Capacity, report.OldestRetainedUtc, report.Window,
-            evicted, report.Warnings.Take(4).ToArray());
+            report.EvictedLast7Days, report.Warnings.Take(4).ToArray());
     }
 
     /// <summary>
