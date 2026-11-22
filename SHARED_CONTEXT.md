@@ -6,6 +6,7 @@
 - The journal's rollback detail now carries counts — `Apply failed after replacing 1 file(s); restored 1.` — instead of "where possible", and names up to three files it could not restore. A refusal before the first write says nothing needed restoring. The helper keeps the requester check, service-exit wait, manifest limits, per-file SHA-256 verification, journal gate and restart.
 - `StagedUpdateApplierTests` (6) include a destination held open with `FileShare.None`: the apply stops at that file, the file replaced before it returns to its old bytes, the locked file is untouched, and the report is 1 replaced / 1 restored / 0 unrestored. Other cases cover nested paths and backups, a failed restart restoring everything, an added file being removed, and `../escape.txt` or a missing staged file refusing before anything changes.
 - Verification: Debug build 0 warnings/0 errors; 1,544 tests pass (6 new). A real in-app update over an installed build is still not exercised, and the `NotRestored` branch is implemented but not forced by any test. Details in `docs/UPDATE_ROLLBACK.md`.
+- v0.1.39 published (DN-087): built from `62028ba59504e57f273d3b0c2f8779597a7e57ee`; 1,544 Release tests, 1,077 package entries (772,874,066 expanded bytes, 52 runtime components), every packaged route (179 YARA rules) and the window smoke passed. ZIP 306,595,059 bytes sha256 `5b9e1239…`, SBOM `58867cdb…`, SHA256SUMS `5586c318…`; notes `docs/RELEASE_0.1.39.md`.
 
 
 ## 2026-11-22 portable preferences bundle (buffy, DN-084)

@@ -51,9 +51,18 @@ build runs changes the hash it expects. Read the hash from an executable (`(Get-
 pin that in the scripts rather than assuming the bump commit. Commit the docs first and pass `--target "$(git rev-parse
 HEAD)"` so the tag points at a pushed commit; the package script must keep pinning the embedded hash, not the tag.
 
-## Current state (end of 0.1.38)
+## Current state (end of 0.1.39)
 
-- Published: `v0.1.38` as Latest, built from `7f0a88a0`; ships portable preferences. ZIP 306,576,286 bytes sha256
+- Published: `v0.1.39` as Latest, built from `62028ba5`; ships the provable update rollback. ZIP 306,595,059 bytes sha256
+  `5b9e1239…`, SBOM `58867cdb…`, SHA256SUMS `5586c318…`; 1,544 Release tests, 1,077 package entries, every packaged
+  route (179 YARA rules) and the window smoke passed. Details in `docs/RELEASE_0.1.39.md`.
+- Shipped in 0.1.39 (DN-086): `StagedUpdateApplier` (Core) validates every path and staged file before writing, backs up
+  each destination, moves new bytes in through a temporary name, runs the restart inside the protected region and
+  restores every touched file in reverse on failure. The journal records how many files were restored. A destination
+  held open with `FileShare.None` now proves the earlier file is restored. A real in-app update is still not exercised.
+  Details in `docs/UPDATE_ROLLBACK.md`.
+
+- Published previously: `v0.1.38`, built from `7f0a88a0`; ships portable preferences. ZIP 306,576,286 bytes sha256
   `04761b06…`, SBOM `f1f26bc6…`, SHA256SUMS `fa2d6964…`; 1,538 Release tests, 1,077 package entries, every packaged
   route (179 YARA rules) and the window smoke passed. Details in `docs/RELEASE_0.1.38.md`.
 - Shipped in 0.1.38 (DN-084): Settings → Storage & cache exports the eight appearance and alert switches as a
@@ -100,7 +109,8 @@ HEAD)"` so the tag points at a pushed commit; the package script must keep pinni
   destination/listener session digests.
 - Verified: 1,499 tests in the Debug and Release builds, packaged route smoke (every route, 179 YARA rules, no crash
   entries), window smoke, ZIP/SBOM hashes.
-- Not verified by hand: a real in-app update using the journal, and failure-injection for a locked package file. The
+- Not verified by hand: a real in-app update using the journal (locked-file rollback is now proved by tests, but no
+  installed build has been updated through the helper). The
   mitigation panel, the Alerts coverage panel and explanation panel, and the Network PROCESS column and
   listener/destination sections were also never viewed. The development machine's channel mix was not reviewed either.
 - Blocked: egress byte volume (ETW/admin ESTATS), metered feed signal (session-0 support undocumented), ARM64, signing.

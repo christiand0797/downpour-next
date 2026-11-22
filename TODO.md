@@ -3,6 +3,7 @@
 ## 2026-11-22 0.1.39: update rollback proof (buffy)
 
 - [x] Staged update applier (DN-086): the helper's apply-and-rollback moved into `StagedUpdateApplier` (Core), which validates every path and staged file before touching anything, backs up each destination, moves new bytes in through a temporary name, runs the restart inside the protected region, and restores every touched file in reverse on failure. The journal detail now reports counts instead of "where possible". 1,544 Debug tests pass (6 new), including a destination held open with `FileShare.None`; `docs/UPDATE_ROLLBACK.md`.
+- [x] Published v0.1.39 (`62028ba5`): ships the testable apply/rollback; 1,544 Release tests, 1,077 package entries, every packaged route (179 YARA rules) and window smoke passed; ZIP 306,595,059 bytes sha256 `5b9e1239…`, SBOM `58867cdb…`, notes `docs/RELEASE_0.1.39.md`.
 - [ ] A real in-app update: apply a published build over an installed older build through the helper end to end.
 - [ ] The `NotRestored` branch (restore itself failing) is implemented but has no test.
 - [x] Portable preferences (DN-084) shipped in v0.1.38.

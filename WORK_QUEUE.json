@@ -1740,6 +1740,25 @@
     "The journal records how many files were restored, not 'where possible'"
    ],
    "notes": "buffy 2026-11-22: completed. The inline loop in the update helper became `StagedUpdateApplier.Apply(installRoot, stageRoot, backupRoot, relativeFiles, afterFilesApplied)`: plan/validate all, back up, copy to a temporary name, move into place, run the restart inside the protected region, restore in reverse with a bounded report. `StagedUpdateApplyException` carries the failed relative path plus `FilesReplaced`/`FilesRestored`/`NotRestored`, and `Program` writes those counts into the journal's rolled-back record. 6 new tests, including `FileShare.None` on a destination after one file was already replaced. 1,544 Debug tests pass. A real in-app update and the NotRestored branch remain unproven. Docs: `docs/UPDATE_ROLLBACK.md`."
+  },
+  {
+   "id": "DN-087",
+   "title": "Cut and publish 0.1.39 with the provable update rollback",
+   "status": "completed",
+   "priority": "high",
+   "files": [
+    "Directory.Build.props",
+    "docs/RELEASE_0.1.39.md",
+    "docs/CONTINUATION.md"
+   ],
+   "acceptance": [
+    "Version 0.1.39 in Directory.Build.props",
+    "Release build clean and full Release suite passing",
+    "Package, packaged route smoke and window smoke pass",
+    "Release notes record the ZIP and SBOM digests",
+    "Tag points at the pushed docs commit; package pins the embedded hash"
+   ],
+   "notes": "buffy 2026-11-22: completed. Built from 62028ba59504e57f273d3b0c2f8779597a7e57ee; 1,544 Release tests, 1,077 package entries (772,874,066 expanded bytes, 52 runtime components), every packaged route (179 YARA rules) and the window smoke passed. ZIP 306,595,059 bytes sha256 5b9e1239f2ccf9a755db62e86b0f2bd0d4c102a66398d57ecbd2db002bfa496e; SBOM 58867cdb111e5ae10d776b016844d391bfda00d36be86fbdb83aa72dac7fe3b7; SHA256SUMS 5586c3189005494ff759ba962f87cd25bfbec04e7266b048489daeeb69e2f494. Ships the extracted applier and the locked-file rollback proof; a real in-app update is still pending. Release notes docs/RELEASE_0.1.39.md."
   }
  ]
 }
