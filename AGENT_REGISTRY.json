@@ -1,182 +1,182 @@
 {
-  "schemaVersion": 1,
-  "updatedAt": "2026-11-21",
-  "agents": [
-    {
-      "id": "codex-primary",
-      "role": "primary",
-      "taskId": "DN-041",
-      "status": "active",
-      "heartbeatUtc": "2026-10-18T21:38:18.9925607+00:00",
-      "notes": "DN-041 integration: full HaGeZi, compact index, source freshness, local paged browser; DN-042 incomplete installer search correction. Completing tests/review before v0.1.23 build/release. Handoff docs updated."
-    },
-    {
-      "id": "v29_action_map",
-      "role": "agent",
-      "taskId": "DN-004",
-      "status": "completed",
-      "heartbeatUtc": "2026-10-04T16:13:00Z",
-      "notes": "Completed bounded read-only Windows Services inventory for existing route. Debug build clean; 54 tests passed. No management actions or handoff edits."
-    },
-    {
-      "id": "action-broker-agent",
-      "role": "agent",
-      "taskId": "DN-012",
-      "status": "idle",
-      "heartbeatUtc": "2026-10-06T05:45:00Z",
-      "notes": "DN-008 action broker foundation remains idle with quarantine execution disabled (RejectedNotImplemented) pending security review. Switched to DN-012 (driver package lifecycle broker) which is critical priority and queued. Will design versioned driver broker contracts, policy validation, signature verification, rollback/recovery procedures, and explicit user consent. First candidate: driver package inventory, signature verification, staged update with rollback. DN-011 (read-only driver inventory) is completed and provides the foundation. [2026-10-06: marked idle by claude-parity-audit; agent ran out of usage. Its uncommitted work was committed as-is and pushed.]"
-    },
-    {
-      "id": "opencode-ci-agent",
-      "role": "agent",
-      "taskId": "DN-003",
-      "status": "idle",
-      "heartbeatUtc": "2026-10-05T18:30:00Z",
-      "notes": "DN-003 completed: CI workflow syntax validated, Dependabot configured for weekly NuGet/GitHub Actions updates, all PackageReferences pinned. Local Debug/Release builds pass with 0 warnings/errors, 144 tests pass. GitHub Actions blocked by account billing/spending limit; will need manual inspection when resolved."
-    },
-    {
-      "id": "opencode-ui-agent",
-      "role": "agent",
-      "taskId": "DN-002",
-      "status": "idle",
-      "heartbeatUtc": "2026-10-05T19:30:00Z",
-      "notes": "DN-002: validated packaged app behavior. Self-contained publish fails with REGDB_E_CLASSNOTREG (Windows App Runtime framework package not included - self-contained flag only affects .NET runtime). dotnet run works via WinApp CLI debug identity. Portable package needs MSIX packaging or Windows App Runtime framework inclusion. Native route click-through testing requires either MSIX package or installed Windows App Runtime on target."
-    },
-    {
-      "id": "opencode-port-agent",
-      "role": "agent",
-      "taskId": "DN-009",
-      "status": "idle",
-      "heartbeatUtc": "2026-10-05T21:00:00Z",
-      "notes": "DN-009 completed: inventoried all 71 v29 source modules, updated source-modules.json migrationStatus fields, documented disposition in FEATURE_PARITY.md. 3 in-progress, 61 planned, 1 legacy, 4 orphaned, 1 declined, 1 reference. Route status: 12 in-progress, 23 planned."
-    },
-    {
-      "id": "opencode-update-agent",
-      "role": "agent",
-      "taskId": "DN-010",
-      "status": "idle",
-      "heartbeatUtc": "2026-10-05T23:30:00Z",
-      "notes": "DN-010 progress: verified update flow code and tests (ReleaseUpdateClientTests 10/10, UpdatePathPolicyTests 2/2). Update button click-through path: HomePage.xaml.cs UpdateButton_Click \u2192 PortableUpdateInstaller.CheckAndStageAsync \u2192 ReleaseUpdateClient.CheckAsync/DownloadVerifiedPackageAsync \u2192 UpdateArchive.ExtractToStage \u2192 helper copied to %LOCALAPPDATA%\\DownpourNext\\update-helper \u2192 launch UpdateHelper with installRoot/parentPID/version \u2192 helper waits for parent & bundled service, validates manifest/hashes, backs up files, applies atomically, restarts app. Build clean (0 warnings/errors, 144 tests). Self-contained publish requires Windows App Runtime framework. MSIX packaging enabled (EnableMsixTooling=true). Next: code signing research (Authenticode cert for EXE, MSIX package signing), test on clean Windows install, locked-file failure injection."
-    },
-    {
-      "id": "opencode-scanner-agent",
-      "role": "agent",
-      "taskId": "DN-013",
-      "status": "idle",
-      "heartbeatUtc": "2026-10-05T23:00:00Z",
-      "notes": "DN-013 completed: native file-picker click-through validated. dotnet run launches app, Scanner page navigation works, FileOpenPicker initialized with App.MainWindowHandle, bounded inspection completes. All 5 StaticFileInspector tests pass. Core inspector shipped in v0.1.13 (256 MiB limit, 96 sections, architecture/timestamp/section flags/cert-table presence). Full v29 scan, YARA/Defender, recursive scope remain open."
-    },
-    {
-      "id": "opencode-storage-agent",
-      "role": "agent",
-      "taskId": "DN-007",
-      "status": "idle",
-      "heartbeatUtc": "2026-10-05T23:30:00Z",
-      "notes": "DN-007 completed: service-side SQLite journals (OperationJournal v2, SecurityAlertRepository v2) with transactional schema migrations, WAL mode, bounded object IDs, state validation. Desktop AppPreferences handles visual preferences with LocalSettings + portable .ini fallback. Privacy minimization maintained - no PII, command lines, file contents, or browser data collected. All 144 tests pass. Remaining future: retention policies, integrity evidence, backup/restore, service identity + consent."
-    },
-    {
-      "id": "opencode-events-agent",
-      "role": "agent",
-      "taskId": "DN-004",
-      "status": "idle",
-      "heartbeatUtc": "2026-10-06T01:00:00Z",
-      "notes": "DN-004 completed: Sigma/AMSI integration implemented. Added YamlDotNet for Sigma rule parsing, SigmaEngine with YAML rule loading, detection matching for contains/startswith/endswith/re/contains|windash operators. Built-in rules for PowerShell encoded commands, execution policy bypass, download cradles, obfuscation, AMSI bypass, WMI. Integration with SecurityEventProvider for PowerShell 4104 script block analysis. 13 new tests added (SigmaEngineTests), all 157 total tests pass. Sigma rule parsing from YAML with list-based detection conditions. Support for contains|windash (dash-prefixed word boundary) operator. Remaining: Sysmon/ETW event source parity."
-    },
-    {
-      "id": "opencode-threat-intel-agent",
-      "role": "agent",
-      "taskId": "DN-006",
-      "status": "idle",
-      "heartbeatUtc": "2026-10-06T14:00:00Z",
-      "notes": "DN-006 NVD/CPE integration completed. VulnerabilitiesPage UI integrated with NVD enrichment: added NvdClient, VulnerabilityMatchEngine, Enrich with NVD button, candidate rows display CVSS scores, NVD description, affected version analysis. Per-candidate \"Check NVD\" button added for on-demand NVD enrichment. KevCandidateRow extended with NVD data properties (CVSS scores, vectors, version analysis, HasNvdData flag). Build successful (0 errors, 0 warnings), 165/167 tests pass (2 pre-existing failures). Next: per-candidate \"Check NVD\" button for on-demand enrichment, additional OSINT feed integrations (URLhaus, Abuse.ch, etc.)."
-    },
-    {
-      "id": "antigravity-worker",
-      "role": "primary",
-      "taskId": "DN-008",
-      "status": "active",
-      "heartbeatUtc": "2026-10-07T21:00:00Z",
-      "notes": "Completed DN-008 Phase 4 (Reversible USB Device Instance Block & USBSTOR mass storage toggle with immutable deny-list protecting root hubs, controllers, keyboards, mice, touchpads, and boot disk; PnP CM_Locate/Disable/Enable devnode backend; atomic durable blocked list; 60s consent tokens; caller verification; audit logging; UsbPage & RemediationPage UI; 773/773 tests pass). Next: DN-008 Phase 5 (host emergency isolation with auto-expiry)."
-    },
-    {
-      "id": "claude-parity-audit",
-      "role": "agent",
-      "taskId": "DN-038 per-tab charts / devices",
-      "status": "idle",
-      "heartbeatUtc": "2026-10-08T21:25:00Z",
-      "notes": "v0.1.19 published from a672449. Continuing per-tab charts on remaining tabs and DN-038 follow-ups. | Owner reports usage exhausted; handed over latest committed work 6fbaf37 to codex-primary."
-    },
-    {
-      "id": "codex-driver-plan",
-      "role": "agent",
-      "taskId": "DN-042",
-      "status": "idle",
-      "heartbeatUtc": "2026-10-14T09:01:10.8984181Z",
-      "notes": "2026-10-14 resumed as driver_correctness after usage-limit interruption; no earlier driver draft existed. Exact matching and truthful update scope in progress. Usage limit interrupted agent; root reviewed and completed drafts; 1250 combined Debug tests passed."
-    },
-    {
-      "id": "codex-report",
-      "role": "agent",
-      "taskId": "DN-040",
-      "status": "idle",
-      "heartbeatUtc": "2026-10-14T09:01:10.8984275Z",
-      "notes": "2026-10-14 report_finish reviewing interrupted report draft and adding regression tests. Usage limit interrupted agent; root reviewed and completed drafts; 1250 combined Debug tests passed."
-    },
-    {
-      "id": "codex-shutdown-review",
-      "role": "agent",
-      "taskId": "DN-010",
-      "status": "idle",
-      "heartbeatUtc": "2026-10-15T01:17:52.1583155Z",
-      "notes": "Owns only MainWindow.xaml.cs timer/closed-event cleanup for confirmed native dispatcher shutdown failure. Root owns build/probes/docs. MainWindow cleanup delivered; f66619e pushed. Native dashboard/process/dashboard closes code0 (622/204/291ms), full43 routes now checking."
-    },
-    {
-      "id": "codex-feed-tests",
-      "role": "agent",
-      "taskId": "DN-041",
-      "status": "idle",
-      "heartbeatUtc": "2026-10-15T19:32:03.8934656Z",
-      "notes": "Focused new-source tests / independent review; root owns shared docs and source. Drafts integrated/reviewed by root; combined full Debug1308 pass; stopped before source freeze."
-    },
-    {
-      "id": "codex-feed-review",
-      "role": "agent",
-      "taskId": "DN-041",
-      "status": "idle",
-      "heartbeatUtc": "2026-10-15T19:32:03.899338Z",
-      "notes": "Focused new-source tests / independent review; root owns shared docs and source. Drafts integrated/reviewed by root; combined full Debug1308 pass; stopped before source freeze."
-    },
-    {
-      "id": "freshness",
-      "role": "agent",
-      "taskId": "DN-041",
-      "status": "active",
-      "heartbeatUtc": "2026-10-17T11:26:02.6885282-06:00",
-      "notes": "Delegated DN-041 implementation/review; root manages registry."
-    },
-    {
-      "id": "compact_index",
-      "role": "agent",
-      "taskId": "DN-041",
-      "status": "active",
-      "heartbeatUtc": "2026-10-17T11:26:02.6989418-06:00",
-      "notes": "Delegated DN-041 implementation/review; root manages registry."
-    },
-    {
-      "id": "source_health",
-      "role": "agent",
-      "taskId": "DN-042",
-      "status": "active",
-      "heartbeatUtc": "2026-10-17T11:26:02.6991614-06:00",
-      "notes": "Direct-operation audit complete; implementing fail-closed WUA installer search outcome handling and tests. Then independent source/index review."
-    },
-    {
-      "id": "buffy",
-      "role": "agent",
-      "taskId": "DN-091",
-      "status": "idle",
-      "heartbeatUtc": "2026-11-23T03:30:00Z",
-      "notes": "DN-076 shipped in v0.1.34 (built from 2a26a47): the DNS route shows IDN and protected-brand lookalike names with their decoded form, context only; `Describe` is bounded so a hostile cache name returns null instead of failing the capture and the client caps every field. 1,508 Debug and Release tests, 1,077 package entries, every packaged route (179 YARA rules) and the window smoke passed. Panel not viewed by hand. DN-078 shipped in v0.1.35 (built from 34956daa): the Dashboard shows one Setup step from the feed snapshot, the 24-hour alert observation window and two local acknowledgements, and a genuine first-download failure is worded as a failure. 1,517 Debug and Release tests, 1,077 package entries, every packaged route (179 YARA rules) and the window smoke passed. Card not viewed by hand. DN-080 shipped in v0.1.36 (built from 7d1d83d9): the Network capture compares the managed listener list with the native owner table, reports one to ten one-sided endpoints as a consistency anomaly and stays silent above ten. 1,522 Debug and Release tests, 1,077 package entries, every packaged route (179 YARA rules) and the window smoke passed. Warning not viewed on the page. DN-082 shipped in v0.1.37 (built from 5eb0797a): the service writes one weekly Markdown summary per ISO week from alert-store aggregates, gated on seven days of observation, with unknown facts listed as not recorded. 1,531 Debug and Release tests, 1,077 package entries, every packaged route (179 YARA rules) and the window smoke passed; the packaged service created an empty reports folder, which is the gate working. DN-084 wired the encrypted portable settings bundle in v0.1.38: Settings exports the eight appearance/alert switches as a passphrase-encrypted `.dpnb` file through the new bounded `PortablePreferences` document and imports them behind a change list; suppressions, cases, feed credentials, machine detail and the setup acknowledgements are excluded, and a bad passphrase/name/value refuses the whole document. 1,538 Debug and Release tests (7 new). Dialogs not clicked by hand. v0.1.38 published from 7f0a88a0: 1,538 Release tests, 1,077 package entries (772,829,702 expanded bytes, 52 runtime components), every packaged route (179 YARA rules) and the window smoke passed; ZIP sha256 04761b06…, SBOM f1f26bc6…. Every foundation from both rounds now has a call site. DN-086 made the update apply/rollback testable: `StagedUpdateApplier` (Core) plans and validates every path before writing, backs up, moves new bytes into place, runs the restart inside the protected region and restores in reverse, with counts in `StagedUpdateApplyException` written into the journal record. A destination held open with `FileShare.None` now proves the earlier file is restored. 1,544 Debug and Release tests (6 new). A real in-app update and the NotRestored branch remain unproven. v0.1.39 published from 62028ba5: 1,544 Release tests, 1,077 package entries, every packaged route and the window smoke passed; ZIP sha256 5b9e1239…, SBOM 58867cdb…. DN-088 fixed a disagreement in the alert store's retention summary: the seven-day eviction total was computed from a SQL SUM while `Assess` was given an empty day list, so the number was right and the warning never appeared. The read now passes per-day rows, and Settings → Storage & cache shows an Alert history row (retained/capacity, oldest, evictions, warnings) with an explicit offline state. 1,545 Debug and Release tests (1 new). Row not viewed. v0.1.40 published from b2e28ab: 1,545 Release tests, 1,077 package entries, every packaged route and the window smoke passed; ZIP sha256 ec0b2ab8…, SBOM 44411b79…. DN-090 forced the restore-failure branch: both files replaced, the restart step throws while the first replacement is held open with `FileShare.None`, the reverse rollback restores one and is refused the other, and the report names `a.txt` while the file keeps the new bytes. `StagedUpdateApplyReport.Describe()` replaced the helper's 'restored where possible' dialog text and is shared with the journal record. 1,547 Debug tests pass (2 new). Dialogs not viewed. v0.1.41 published from 4644746b: 1,547 Release tests, 1,077 package entries, every packaged route and the window smoke passed; ZIP sha256 0f1e2e2f…, SBOM 10bcd97d…. Next: apply a published build over an installed one through the helper end to end, then view the failure dialog."
-    }
-  ]
+ "schemaVersion": 1,
+ "updatedAt": "2026-11-21",
+ "agents": [
+  {
+   "id": "codex-primary",
+   "role": "primary",
+   "taskId": "DN-041",
+   "status": "active",
+   "heartbeatUtc": "2026-10-18T21:38:18.9925607+00:00",
+   "notes": "DN-041 integration: full HaGeZi, compact index, source freshness, local paged browser; DN-042 incomplete installer search correction. Completing tests/review before v0.1.23 build/release. Handoff docs updated."
+  },
+  {
+   "id": "v29_action_map",
+   "role": "agent",
+   "taskId": "DN-004",
+   "status": "completed",
+   "heartbeatUtc": "2026-10-04T16:13:00Z",
+   "notes": "Completed bounded read-only Windows Services inventory for existing route. Debug build clean; 54 tests passed. No management actions or handoff edits."
+  },
+  {
+   "id": "action-broker-agent",
+   "role": "agent",
+   "taskId": "DN-012",
+   "status": "idle",
+   "heartbeatUtc": "2026-10-06T05:45:00Z",
+   "notes": "DN-008 action broker foundation remains idle with quarantine execution disabled (RejectedNotImplemented) pending security review. Switched to DN-012 (driver package lifecycle broker) which is critical priority and queued. Will design versioned driver broker contracts, policy validation, signature verification, rollback/recovery procedures, and explicit user consent. First candidate: driver package inventory, signature verification, staged update with rollback. DN-011 (read-only driver inventory) is completed and provides the foundation. [2026-10-06: marked idle by claude-parity-audit; agent ran out of usage. Its uncommitted work was committed as-is and pushed.]"
+  },
+  {
+   "id": "opencode-ci-agent",
+   "role": "agent",
+   "taskId": "DN-003",
+   "status": "idle",
+   "heartbeatUtc": "2026-10-05T18:30:00Z",
+   "notes": "DN-003 completed: CI workflow syntax validated, Dependabot configured for weekly NuGet/GitHub Actions updates, all PackageReferences pinned. Local Debug/Release builds pass with 0 warnings/errors, 144 tests pass. GitHub Actions blocked by account billing/spending limit; will need manual inspection when resolved."
+  },
+  {
+   "id": "opencode-ui-agent",
+   "role": "agent",
+   "taskId": "DN-002",
+   "status": "idle",
+   "heartbeatUtc": "2026-10-05T19:30:00Z",
+   "notes": "DN-002: validated packaged app behavior. Self-contained publish fails with REGDB_E_CLASSNOTREG (Windows App Runtime framework package not included - self-contained flag only affects .NET runtime). dotnet run works via WinApp CLI debug identity. Portable package needs MSIX packaging or Windows App Runtime framework inclusion. Native route click-through testing requires either MSIX package or installed Windows App Runtime on target."
+  },
+  {
+   "id": "opencode-port-agent",
+   "role": "agent",
+   "taskId": "DN-009",
+   "status": "idle",
+   "heartbeatUtc": "2026-10-05T21:00:00Z",
+   "notes": "DN-009 completed: inventoried all 71 v29 source modules, updated source-modules.json migrationStatus fields, documented disposition in FEATURE_PARITY.md. 3 in-progress, 61 planned, 1 legacy, 4 orphaned, 1 declined, 1 reference. Route status: 12 in-progress, 23 planned."
+  },
+  {
+   "id": "opencode-update-agent",
+   "role": "agent",
+   "taskId": "DN-010",
+   "status": "idle",
+   "heartbeatUtc": "2026-10-05T23:30:00Z",
+   "notes": "DN-010 progress: verified update flow code and tests (ReleaseUpdateClientTests 10/10, UpdatePathPolicyTests 2/2). Update button click-through path: HomePage.xaml.cs UpdateButton_Click \u2192 PortableUpdateInstaller.CheckAndStageAsync \u2192 ReleaseUpdateClient.CheckAsync/DownloadVerifiedPackageAsync \u2192 UpdateArchive.ExtractToStage \u2192 helper copied to %LOCALAPPDATA%\\DownpourNext\\update-helper \u2192 launch UpdateHelper with installRoot/parentPID/version \u2192 helper waits for parent & bundled service, validates manifest/hashes, backs up files, applies atomically, restarts app. Build clean (0 warnings/errors, 144 tests). Self-contained publish requires Windows App Runtime framework. MSIX packaging enabled (EnableMsixTooling=true). Next: code signing research (Authenticode cert for EXE, MSIX package signing), test on clean Windows install, locked-file failure injection."
+  },
+  {
+   "id": "opencode-scanner-agent",
+   "role": "agent",
+   "taskId": "DN-013",
+   "status": "idle",
+   "heartbeatUtc": "2026-10-05T23:00:00Z",
+   "notes": "DN-013 completed: native file-picker click-through validated. dotnet run launches app, Scanner page navigation works, FileOpenPicker initialized with App.MainWindowHandle, bounded inspection completes. All 5 StaticFileInspector tests pass. Core inspector shipped in v0.1.13 (256 MiB limit, 96 sections, architecture/timestamp/section flags/cert-table presence). Full v29 scan, YARA/Defender, recursive scope remain open."
+  },
+  {
+   "id": "opencode-storage-agent",
+   "role": "agent",
+   "taskId": "DN-007",
+   "status": "idle",
+   "heartbeatUtc": "2026-10-05T23:30:00Z",
+   "notes": "DN-007 completed: service-side SQLite journals (OperationJournal v2, SecurityAlertRepository v2) with transactional schema migrations, WAL mode, bounded object IDs, state validation. Desktop AppPreferences handles visual preferences with LocalSettings + portable .ini fallback. Privacy minimization maintained - no PII, command lines, file contents, or browser data collected. All 144 tests pass. Remaining future: retention policies, integrity evidence, backup/restore, service identity + consent."
+  },
+  {
+   "id": "opencode-events-agent",
+   "role": "agent",
+   "taskId": "DN-004",
+   "status": "idle",
+   "heartbeatUtc": "2026-10-06T01:00:00Z",
+   "notes": "DN-004 completed: Sigma/AMSI integration implemented. Added YamlDotNet for Sigma rule parsing, SigmaEngine with YAML rule loading, detection matching for contains/startswith/endswith/re/contains|windash operators. Built-in rules for PowerShell encoded commands, execution policy bypass, download cradles, obfuscation, AMSI bypass, WMI. Integration with SecurityEventProvider for PowerShell 4104 script block analysis. 13 new tests added (SigmaEngineTests), all 157 total tests pass. Sigma rule parsing from YAML with list-based detection conditions. Support for contains|windash (dash-prefixed word boundary) operator. Remaining: Sysmon/ETW event source parity."
+  },
+  {
+   "id": "opencode-threat-intel-agent",
+   "role": "agent",
+   "taskId": "DN-006",
+   "status": "idle",
+   "heartbeatUtc": "2026-10-06T14:00:00Z",
+   "notes": "DN-006 NVD/CPE integration completed. VulnerabilitiesPage UI integrated with NVD enrichment: added NvdClient, VulnerabilityMatchEngine, Enrich with NVD button, candidate rows display CVSS scores, NVD description, affected version analysis. Per-candidate \"Check NVD\" button added for on-demand NVD enrichment. KevCandidateRow extended with NVD data properties (CVSS scores, vectors, version analysis, HasNvdData flag). Build successful (0 errors, 0 warnings), 165/167 tests pass (2 pre-existing failures). Next: per-candidate \"Check NVD\" button for on-demand enrichment, additional OSINT feed integrations (URLhaus, Abuse.ch, etc.)."
+  },
+  {
+   "id": "antigravity-worker",
+   "role": "primary",
+   "taskId": "DN-008",
+   "status": "active",
+   "heartbeatUtc": "2026-10-07T21:00:00Z",
+   "notes": "Completed DN-008 Phase 4 (Reversible USB Device Instance Block & USBSTOR mass storage toggle with immutable deny-list protecting root hubs, controllers, keyboards, mice, touchpads, and boot disk; PnP CM_Locate/Disable/Enable devnode backend; atomic durable blocked list; 60s consent tokens; caller verification; audit logging; UsbPage & RemediationPage UI; 773/773 tests pass). Next: DN-008 Phase 5 (host emergency isolation with auto-expiry)."
+  },
+  {
+   "id": "claude-parity-audit",
+   "role": "agent",
+   "taskId": "DN-038 per-tab charts / devices",
+   "status": "idle",
+   "heartbeatUtc": "2026-10-08T21:25:00Z",
+   "notes": "v0.1.19 published from a672449. Continuing per-tab charts on remaining tabs and DN-038 follow-ups. | Owner reports usage exhausted; handed over latest committed work 6fbaf37 to codex-primary."
+  },
+  {
+   "id": "codex-driver-plan",
+   "role": "agent",
+   "taskId": "DN-042",
+   "status": "idle",
+   "heartbeatUtc": "2026-10-14T09:01:10.8984181Z",
+   "notes": "2026-10-14 resumed as driver_correctness after usage-limit interruption; no earlier driver draft existed. Exact matching and truthful update scope in progress. Usage limit interrupted agent; root reviewed and completed drafts; 1250 combined Debug tests passed."
+  },
+  {
+   "id": "codex-report",
+   "role": "agent",
+   "taskId": "DN-040",
+   "status": "idle",
+   "heartbeatUtc": "2026-10-14T09:01:10.8984275Z",
+   "notes": "2026-10-14 report_finish reviewing interrupted report draft and adding regression tests. Usage limit interrupted agent; root reviewed and completed drafts; 1250 combined Debug tests passed."
+  },
+  {
+   "id": "codex-shutdown-review",
+   "role": "agent",
+   "taskId": "DN-010",
+   "status": "idle",
+   "heartbeatUtc": "2026-10-15T01:17:52.1583155Z",
+   "notes": "Owns only MainWindow.xaml.cs timer/closed-event cleanup for confirmed native dispatcher shutdown failure. Root owns build/probes/docs. MainWindow cleanup delivered; f66619e pushed. Native dashboard/process/dashboard closes code0 (622/204/291ms), full43 routes now checking."
+  },
+  {
+   "id": "codex-feed-tests",
+   "role": "agent",
+   "taskId": "DN-041",
+   "status": "idle",
+   "heartbeatUtc": "2026-10-15T19:32:03.8934656Z",
+   "notes": "Focused new-source tests / independent review; root owns shared docs and source. Drafts integrated/reviewed by root; combined full Debug1308 pass; stopped before source freeze."
+  },
+  {
+   "id": "codex-feed-review",
+   "role": "agent",
+   "taskId": "DN-041",
+   "status": "idle",
+   "heartbeatUtc": "2026-10-15T19:32:03.899338Z",
+   "notes": "Focused new-source tests / independent review; root owns shared docs and source. Drafts integrated/reviewed by root; combined full Debug1308 pass; stopped before source freeze."
+  },
+  {
+   "id": "freshness",
+   "role": "agent",
+   "taskId": "DN-041",
+   "status": "active",
+   "heartbeatUtc": "2026-10-17T11:26:02.6885282-06:00",
+   "notes": "Delegated DN-041 implementation/review; root manages registry."
+  },
+  {
+   "id": "compact_index",
+   "role": "agent",
+   "taskId": "DN-041",
+   "status": "active",
+   "heartbeatUtc": "2026-10-17T11:26:02.6989418-06:00",
+   "notes": "Delegated DN-041 implementation/review; root manages registry."
+  },
+  {
+   "id": "source_health",
+   "role": "agent",
+   "taskId": "DN-042",
+   "status": "active",
+   "heartbeatUtc": "2026-10-17T11:26:02.6991614-06:00",
+   "notes": "Direct-operation audit complete; implementing fail-closed WUA installer search outcome handling and tests. Then independent source/index review."
+  },
+  {
+   "id": "buffy",
+   "role": "agent",
+   "taskId": "DN-091",
+   "status": "idle",
+   "heartbeatUtc": "2026-11-23T03:30:00Z",
+   "notes": "DN-076 shipped in v0.1.34 (built from 2a26a47): the DNS route shows IDN and protected-brand lookalike names with their decoded form, context only; `Describe` is bounded so a hostile cache name returns null instead of failing the capture and the client caps every field. 1,508 Debug and Release tests, 1,077 package entries, every packaged route (179 YARA rules) and the window smoke passed. Panel not viewed by hand. DN-078 shipped in v0.1.35 (built from 34956daa): the Dashboard shows one Setup step from the feed snapshot, the 24-hour alert observation window and two local acknowledgements, and a genuine first-download failure is worded as a failure. 1,517 Debug and Release tests, 1,077 package entries, every packaged route (179 YARA rules) and the window smoke passed. Card not viewed by hand. DN-080 shipped in v0.1.36 (built from 7d1d83d9): the Network capture compares the managed listener list with the native owner table, reports one to ten one-sided endpoints as a consistency anomaly and stays silent above ten. 1,522 Debug and Release tests, 1,077 package entries, every packaged route (179 YARA rules) and the window smoke passed. Warning not viewed on the page. DN-082 shipped in v0.1.37 (built from 5eb0797a): the service writes one weekly Markdown summary per ISO week from alert-store aggregates, gated on seven days of observation, with unknown facts listed as not recorded. 1,531 Debug and Release tests, 1,077 package entries, every packaged route (179 YARA rules) and the window smoke passed; the packaged service created an empty reports folder, which is the gate working. DN-084 wired the encrypted portable settings bundle in v0.1.38: Settings exports the eight appearance/alert switches as a passphrase-encrypted `.dpnb` file through the new bounded `PortablePreferences` document and imports them behind a change list; suppressions, cases, feed credentials, machine detail and the setup acknowledgements are excluded, and a bad passphrase/name/value refuses the whole document. 1,538 Debug and Release tests (7 new). Dialogs not clicked by hand. v0.1.38 published from 7f0a88a0: 1,538 Release tests, 1,077 package entries (772,829,702 expanded bytes, 52 runtime components), every packaged route (179 YARA rules) and the window smoke passed; ZIP sha256 04761b06\u2026, SBOM f1f26bc6\u2026. Every foundation from both rounds now has a call site. DN-086 made the update apply/rollback testable: `StagedUpdateApplier` (Core) plans and validates every path before writing, backs up, moves new bytes into place, runs the restart inside the protected region and restores in reverse, with counts in `StagedUpdateApplyException` written into the journal record. A destination held open with `FileShare.None` now proves the earlier file is restored. 1,544 Debug and Release tests (6 new). A real in-app update and the NotRestored branch remain unproven. v0.1.39 published from 62028ba5: 1,544 Release tests, 1,077 package entries, every packaged route and the window smoke passed; ZIP sha256 5b9e1239\u2026, SBOM 58867cdb\u2026. DN-088 fixed a disagreement in the alert store's retention summary: the seven-day eviction total was computed from a SQL SUM while `Assess` was given an empty day list, so the number was right and the warning never appeared. The read now passes per-day rows, and Settings \u2192 Storage & cache shows an Alert history row (retained/capacity, oldest, evictions, warnings) with an explicit offline state. 1,545 Debug and Release tests (1 new). Row not viewed. v0.1.40 published from b2e28ab: 1,545 Release tests, 1,077 package entries, every packaged route and the window smoke passed; ZIP sha256 ec0b2ab8\u2026, SBOM 44411b79\u2026. DN-090 forced the restore-failure branch: both files replaced, the restart step throws while the first replacement is held open with `FileShare.None`, the reverse rollback restores one and is refused the other, and the report names `a.txt` while the file keeps the new bytes. `StagedUpdateApplyReport.Describe()` replaced the helper's 'restored where possible' dialog text and is shared with the journal record. 1,547 Debug tests pass (2 new). Dialogs not viewed. v0.1.41 published from 4644746b: 1,547 Release tests, 1,077 package entries, every packaged route and the window smoke passed; ZIP sha256 0f1e2e2f\u2026, SBOM 10bcd97d\u2026. Next: apply a published build over an installed one through the helper end to end, then view the failure dialog. DN-092/DN-093: Spamhaus ASN-DROP became the first source keyed by network owner. A strict NDJSON parser feeds `ThreatIndex.Asn`, `NetworkReputation.Describe` attaches the listing to every connection's evidence and to `RemoteConnectionOrigin.ListedNetwork`, and the wording says a listed network describes routing, not the program; a listed network alone still grades likely-benign. Added OffSeq Mirage (CC BY 4.0) and retired threatview-md5 after it answered HTTP 200 with 0 bytes; active catalog 59. Research incl. rejected sources in docs/RESEARCH_2026-11-23.md. 1,552 Debug tests (5 new), all 58 downloadable feeds parsed live. UI not viewed."
+  }
+ ]
 }

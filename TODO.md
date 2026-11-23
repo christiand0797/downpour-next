@@ -146,6 +146,8 @@
 
 - [x] Validate every catalog endpoint live; retire `threatfox`, `urlhaus`, `malwarebazaar` (HTTP 410 without a free abuse.ch Auth-Key) and `phishtank` (302 to an expiring signed CDN URL). Retired entries stay catalogued for historical labels and are never downloaded.
 - [x] Add six live TweetFeed CC0 blocklists (domains, corroborated domains, IPs, corroborated IPs, URLs, SHA-256); catalog is 58 active sources.
+- [x] Add Spamhaus ASN-DROP as a network-owner source: every connection now carries whether its autonomous system is listed as bulletproof or criminal hosting, worded as a property of routing and never as a program verdict. OffSeq Mirage (CC BY 4.0) honeypot addresses added; Threatview MD5 retired after HTTP 200 with 0 bytes; catalog is 59 active sources. Rejected sources and the remaining gaps are in [`docs/RESEARCH_2026-11-23.md`](docs/RESEARCH_2026-11-23.md).
+- [ ] Newly observed domains (first seen today in certificate transparency or SANS ISC) remain the highest-value missing signal; blocked on a licence decision because the public ISC data is CC BY-NC-SA.
 - [x] Fix a fuzz-found `Uri.TryCreate` crash (`IndexOutOfRangeException`) in `UrlHost`.
 - [x] 1,404 tests pass; opt-in live download/parse passes for all 57 downloadable feeds.
 - [ ] Optional: add a free abuse.ch `Auth-Key` setting and authenticated fetch to restore ThreatFox, URLhaus and MalwareBazaar.

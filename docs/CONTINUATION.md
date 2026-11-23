@@ -51,6 +51,27 @@ build runs changes the hash it expects. Read the hash from an executable (`(Get-
 pin that in the scripts rather than assuming the bump commit. Commit the docs first and pass `--target "$(git rev-parse
 HEAD)"` so the tag points at a pushed commit; the package script must keep pinning the embedded hash, not the tag.
 
+## Current state (end of 0.1.42)
+
+- Published: `v0.1.42` as Latest, built from `d47f0602`; ships network reputation from Spamhaus ASN-DROP. ZIP
+  306,622,248 bytes sha256 `9988f297…`, SBOM `3b182325…`, SHA256SUMS `76636560…`; 1,552 Release tests, 1,077 package
+  entries (772,932,818 expanded bytes, 52 components), every packaged route (179 YARA rules) and the window smoke passed.
+  Details in `docs/RELEASE_0.1.42.md`.
+- Shipped in 0.1.42 (DN-092, DN-093): `ThreatFeedFormat.SpamhausAsnJson` reads Spamhaus ASN-DROP NDJSON with the same
+  rejection-ratio, duplicate and size rules as every other feed; `ThreatIndex.Asn` keeps network listings apart from
+  indicator rows; `NetworkReputation.Describe` attaches the listing to every connection's evidence and
+  `RemoteConnectionOrigin.ListedNetwork` carries it on rows that matched nothing, so a clean address on a bulletproof
+  network is visible. The wording says the listing is about routing, not the program, and a listed network alone still
+  grades likely-benign (pinned by a test). Added OffSeq Mirage (CC BY 4.0) and retired `threatview-md5` after it answered
+  HTTP 200 with 0 bytes; active catalog is 59. Research including rejected sources: `docs/RESEARCH_2026-11-23.md`.
+- Not verified by hand: the Network column marker, the connection detail listing row and the new snapshot warning were
+  not viewed. A network listing is context, never proof about a program or a person.
+- Known test flake: `AlertSnapshotAndTriagePipesExchangeBoundedLocalData` can exhaust its 10-second pipe-startup retry
+  window under a full-suite load. It passed isolated in 252 ms and the full Release suite then passed; both results are
+  kept in `docs/RELEASE_0.1.42.md`.
+- Highest-value next signal, still blocked: newly observed domains from SANS ISC `domaindata.json.gz` (CC BY-NC-SA terms
+  unresolved) — a name first seen today that this PC just resolved is the strongest missing phishing/loader tell.
+
 ## Current state (end of 0.1.41)
 
 - Published: `v0.1.41` as Latest, built from `4644746b`; ships the counted, named restore failure. ZIP 306,599,535 bytes
