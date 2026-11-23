@@ -1914,7 +1914,7 @@
   {
    "id": "DN-096",
    "title": "Cut and publish 0.1.43 with bounded DNS novelty",
-   "status": "in_progress",
+   "status": "completed",
    "priority": "high",
    "files": [
     "Directory.Build.props",
@@ -1924,7 +1924,7 @@
     "Release build, package, route smoke and window smoke pass",
     "Release published with matching digests"
    ],
-   "notes": "2026-11-23 buffy: pending build, package, smokes and publication."
+   "notes": "2026-11-23 buffy: source commit 121e6535bc5ac143610bf4193a3a82af6c8b5301. Release build 1,557 tests, package 1,077 entries / 773,005,652 expanded bytes / 52 components, route smoke (179 YARA rules) and window smoke passed. ZIP 306,646,947 bytes sha256 0a504ecdc278142ae2314f33705c906ab21ad227ba2d214dcc5ab4bbb0286821; SBOM 5f1d47fe1a1c896ad2ee52478e47a4a829bf117336a50540f03607d3d5347655; SHA256SUMS 1cfa369c4b62e926e18e9d93b95f20f8d598ed5bf7f9591c8dfa66a70350593a. Notes docs/RELEASE_0.1.43.md."
   }
  ]
 }

@@ -53,6 +53,13 @@ HEAD)"` so the tag points at a pushed commit; the package script must keep pinni
 
 ## Current state (end of 0.1.43)
 
+- Published: `v0.1.43` as Latest, built from `121e6535`; ships bounded DNS novelty. ZIP 306,646,947 bytes sha256
+  `0a504ecd…`, SBOM `5f1d47fe…`, SHA256SUMS `1cfa369c…`; 1,557 Release tests, 1,077 package entries (773,005,652
+  expanded bytes, 52 components), every packaged route (179 YARA rules) and the window smoke passed. Details in
+  `docs/RELEASE_0.1.43.md`.
+- Last known test flake: `AlertSnapshotAndTriagePipesExchangeBoundedLocalData` (10-second pipe-startup window under a
+  full-suite load). It passed in both 0.1.43 runs.
+
 - Shipped in 0.1.43 (DN-095): `DomainBaseline` (Core) replaces the resolver-cache `HashSet` + `Take(20_000)` with a
   bounded, deterministic memory of SHA-256 hashes and two dates. Eviction is least-recently-resolved first, so a name
   still in the cache cannot fall out and re-alert; the first capture stays silent; legacy hash/plaintext baselines are

@@ -8,6 +8,7 @@
 - `DnsCacheSnapshot` gains `NewlyObservedCount`, `ObservedSinceUtc`, `BaselineCount`; `DnsCacheEntry` gains an optional `FirstSeenUtc`. The desktop client bounds all four and rejects a first-seen date later than its own capture. The DNS status line reports first sightings since a date and says plainly that this is **first sighting on this PC, not registration age**.
 - This is the honest local half of the blocked new-domain signal; the external half (SANS ISC `domaindata.json.gz`, CC BY-NC-SA) remains a licensing decision.
 - Verification: Debug build 0 warnings/0 errors; 1,557 tests pass (5 new in `DomainBaselineTests`, including the eviction regression). The DNS status line and a real over-capacity baseline were not viewed.
+- v0.1.43 published (DN-096): built from `121e6535bc5ac143610bf4193a3a82af6c8b5301`; 1,557 Release tests, 1,077 package entries (773,005,652 expanded bytes, 52 runtime components), every packaged route (179 YARA rules) and the window smoke passed. ZIP 306,646,947 bytes sha256 `0a504ecd…`, SBOM `5f1d47fe…`, SHA256SUMS `1cfa369c…`; notes `docs/RELEASE_0.1.43.md`.
 
 ## 2026-11-23 a connection now says whose network it reaches (buffy, DN-092)
 

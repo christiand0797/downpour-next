@@ -37,6 +37,14 @@ pretending to know a domain's age.
 - Packaged route smoke (every route, 179 YARA rules) and window smoke passed.
 - **Not viewed:** the DNS page status line, and the over-capacity path on a real machine.
 
+## Package
+
+- `DownpourNext-win-x64-0.1.43.zip` — 306,646,947 bytes, SHA-256 `0a504ecdc278142ae2314f33705c906ab21ad227ba2d214dcc5ab4bbb0286821`.
+- `DownpourNext-0.1.43-sbom.cdx.json` — SHA-256 `5f1d47fe1a1c896ad2ee52478e47a4a829bf117336a50540f03607d3d5347655` (52 components).
+- `DownpourNext-0.1.43-SHA256SUMS.txt` — 198 bytes, SHA-256 `1cfa369c4b62e926e18e9d93b95f20f8d598ed5bf7f9591c8dfa66a70350593a`.
+- 1,077 entries, 773,005,652 expanded bytes, 52 runtime components. Every executable reports
+  `0.1.43+121e6535bc5ac143610bf4193a3a82af6c8b5301`.
+
 ## Limits
 
 - Local novelty is not reputation, registration age or proof of anything. A name can be new here and perfectly ordinary.
