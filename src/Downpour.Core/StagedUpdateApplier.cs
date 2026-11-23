@@ -1,7 +1,22 @@
 namespace Downpour.Core;
 
 /// <summary>What an apply did: how many files it replaced, and whether each touched file was restored after a failure.</summary>
-public sealed record StagedUpdateApplyReport(int FilesReplaced, int FilesRestored, IReadOnlyList<string> NotRestored);
+public sealed record StagedUpdateApplyReport(int FilesReplaced, int FilesRestored, IReadOnlyList<string> NotRestored)
+{
+    /// <summary>How many unrestored files a sentence may name; the count is always the real one.</summary>
+    public const int MaximumNamedFiles = 3;
+
+    /// <summary>
+    /// One factual sentence built from these counts, so the helper's dialog and the journal record cannot describe the
+    /// same failure differently. A file that could not be restored is named, not folded into "where possible".
+    /// </summary>
+    public string Describe() => FilesReplaced == 0
+        ? "No installed file had been replaced, so nothing needed to be restored."
+        : NotRestored.Count == 0
+            ? $"Replaced {FilesReplaced} file(s) and restored {FilesRestored}."
+            : $"Replaced {FilesReplaced} file(s) and restored {FilesRestored}; {NotRestored.Count} could not be restored: " +
+              $"{string.Join(", ", NotRestored.Take(MaximumNamedFiles))}.";
+}
 
 /// <summary>
 /// Raised when applying a staged update fails. The applier has already tried to restore every file it touched; the report

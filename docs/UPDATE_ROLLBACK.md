@@ -1,7 +1,8 @@
 # Update apply and rollback
 
 The standalone update helper replaced files and rolled back inline, so the rollback could only be reasoned about, never
-run. `StagedUpdateApplier` (DN-086) moves that step into Core so a locked file can stop it in a test.
+run. `StagedUpdateApplier` (DN-086) moves that step into Core so a locked file can stop it in a test, and DN-090 proves the
+restore itself can fail without the report pretending the folder is clean.
 
 ## What the applier does
 
@@ -23,6 +24,21 @@ run. `StagedUpdateApplier` (DN-086) moves that step into Core so a locked file c
 The helper keeps what must stay in the helper: requester and parent-process check, service-exit wait, manifest size and
 path limits, per-file SHA-256 verification, the staged-journal gate, the restart and the journal records.
 
+## One sentence, two surfaces
+
+The helper's failure dialog used to say "Existing package files were restored where possible" while the applier knew
+exactly how many files it had put back. `StagedUpdateApplyReport.Describe()` now builds the only sentence either surface
+uses:
+
+- `Replaced 2 file(s) and restored 1; 1 could not be restored: a.txt.`
+- `Replaced 2 file(s) and restored 2.`
+- `No installed file had been replaced, so nothing needed to be restored.`
+
+The dialog adds "Extract the portable package again before relying on this installation" only when a file could not be
+restored, and the journal's rolled-back record stores the same sentence. An exception thrown before the applier runs —
+a refused manifest path or digest — reports "No package file was replaced; the installed build is untouched", which is
+what the helper's pre-apply checks guarantee.
+
 ## Journal detail now carries counts
 
 The rollback record used to say "previous files restored where possible". It now says how many files were replaced and
@@ -33,7 +49,7 @@ how many were restored, and names up to three that were not:
 - or, when the manifest was refused before the first write, `Apply failed before any installed file was replaced; nothing
   needed to be restored.`
 
-## Tests (`StagedUpdateApplierTests`, 6)
+## Tests (`StagedUpdateApplierTests`, 8)
 
 | Test | What it proves |
 |---|---|
@@ -41,16 +57,18 @@ how many were restored, and names up to three that were not:
 | `ALockedFileStopsTheApplyAndEarlierFilesAreRestored` | A destination held open with `FileShare.None` stops the apply at that file, the file replaced before it is restored to its old bytes, the locked file is unchanged, and the report says 1 replaced / 1 restored / 0 unrestored. |
 | `AFileThatCannotBeBackedUpIsLeftUnchangedAndNotCounted` | When the first file cannot even be read for backup, nothing is replaced or restored and both files keep their old bytes. |
 | `AFailedRestartRestoresEveryFileItReplaced` | A throwing post-apply step restores every replaced file, including one in a nested folder. |
+| `ARestoreThatItselfFailsIsCountedAndNamed` | Both files are replaced, the restart step throws while the first replacement is held open with `FileShare.None`, and the reverse rollback restores the second file but is refused the first: 2 replaced / 1 restored / `a.txt` named as unrestored, the sentence says so, and `a.txt` keeps the new bytes. |
+| `ARefusalBeforeTheFirstWriteSaysNothingNeededRestoring` | The zero-replaced and clean-rollback reports read as the exact sentences the helper shows. |
 | `AFailedApplyRemovesFilesThatDidNotExistBefore` | A file added by a failed attempt is deleted, and the file that stopped the update keeps its old bytes. |
 | `AnUnsafePathOrMissingStagedFileIsRefusedBeforeAnythingChanges` | `../escape.txt` and a missing staged file both throw `InvalidDataException` with the already-written file untouched. |
 
-Debug build: 0 warnings, 0 errors. Full Debug suite: 1,544 passed, 0 failed.
+Debug build: 0 warnings, 0 errors. Full Debug suite: 1,547 passed, 0 failed.
 
 ## Still not proven
 
 - **A real in-app update.** No published build has been applied over an installed older build through this code path on
   this machine. The tests drive the same applier the helper calls, with synthetic packages and no restart of a real app.
-- **The `NotRestored` branch.** It is only reachable when restoring a file itself fails (for example the file became
-  locked during rollback). The report and journal wording are implemented, but no test forces a restore to fail.
+- **A forced dialog.** Both the restarted-build failure and the unrestored-file wording are unit-tested, but no one has
+  seen the message box itself; forcing it needs a disposable install and a deliberate failure.
 - **Elevation and ACLs.** The portable build runs unelevated; a package extracted into a folder the account cannot write
   would fail earlier, in staging, which is unchanged by this slice.

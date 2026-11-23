@@ -1,5 +1,12 @@
 # Downpour Next shared context
 
+## 2026-11-23 a rollback that cannot restore says so (buffy, DN-090)
+
+- The `NotRestored` branch — a rollback that cannot put a replaced file back — shipped in 0.1.39 with no test. `ARestoreThatItselfFailsIsCountedAndNamed` now reaches it the way a real failed update would: both files are replaced, the restart step throws while the first replaced file is held open with `FileShare.None`, and the reverse restore succeeds for the second file and is refused for the first. The report is 2 replaced / 1 restored / `a.txt` named, and `a.txt` keeps the new bytes — the mixed installation the report exists to describe.
+- The helper's failure dialog said "Existing package files were restored where possible" even though the applier knew the exact counts. `StagedUpdateApplyReport.Describe()` is now the only sentence either surface uses — `Replaced 2 file(s) and restored 1; 1 could not be restored: a.txt.` The dialog and the journal's rolled-back record both call it, so they cannot disagree, and the dialog adds "Extract the portable package again before relying on this installation" only when a file was not restored.
+- An exception thrown before the applier runs — a refused manifest path or digest — reports "No package file was replaced; the installed build is untouched", which is what the helper's own pre-apply checks guarantee.
+- Verification: Debug build 0 warnings/0 errors; 1,547 tests pass (2 new in `StagedUpdateApplierTests`). Neither the dialog nor the message box was viewed; the sentences are asserted by tests. Details in `docs/UPDATE_ROLLBACK.md`.
+
 ## 2026-11-22 alert retention says what it counts (buffy, DN-088)
 
 - `SecurityAlertRepository.ReadRetentionAsync` read the seven-day eviction total with one SQL `SUM` and then passed an empty day list to `StoreRetentionAccounting.Assess`. `EvictedLast7Days` was right while the summary's warnings never contained the `N alert(s) were evicted in the last seven days.` sentence — two computations of one fact, one of them empty.

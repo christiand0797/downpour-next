@@ -1,5 +1,13 @@
 # Downpour Next TODO
 
+## 2026-11-23 0.1.41: a rollback that cannot restore says so (buffy)
+
+- [x] Restore-failure branch (DN-090): the `NotRestored` path is now forced the way a real failed update reaches it — both files replaced, the restart step throws while the first replacement is held open with `FileShare.None`, the rollback restores the second and is refused the first. The report is 2 replaced / 1 restored / `a.txt`, and the file keeps the new bytes. `StagedUpdateApplyReport.Describe()` replaced the dialog's "restored where possible" and is shared with the journal record, so the person and the journal read one sentence. 1,547 Debug tests pass (2 new); `docs/UPDATE_ROLLBACK.md`.
+- [ ] A real in-app update: apply a published build over an installed older build through the helper end to end.
+- [ ] View the update failure dialog (needs a forced failure in a disposable install).
+- [x] Alert retention made truthful and visible (DN-088) shipped in v0.1.40.
+
+
 ## 2026-11-22 0.1.40: retention says what it counts (buffy)
 
 - [x] Alert retention made truthful and visible (DN-088): the retention read now passes its per-day eviction rows to `StoreRetentionAccounting.Assess`, so `EvictedLast7Days` and the "were evicted in the last seven days" warning can no longer disagree. Settings → Storage & cache shows an **Alert history** row with retained/capacity, the oldest retained alert, the seven-day eviction total and the store's warnings, plus an explicit service-offline state. 1,545 Debug tests pass (1 new); `docs/ALERT_RETENTION.md`.
@@ -13,7 +21,7 @@
 - [x] Staged update applier (DN-086): the helper's apply-and-rollback moved into `StagedUpdateApplier` (Core), which validates every path and staged file before touching anything, backs up each destination, moves new bytes in through a temporary name, runs the restart inside the protected region, and restores every touched file in reverse on failure. The journal detail now reports counts instead of "where possible". 1,544 Debug tests pass (6 new), including a destination held open with `FileShare.None`; `docs/UPDATE_ROLLBACK.md`.
 - [x] Published v0.1.39 (`62028ba5`): ships the testable apply/rollback; 1,544 Release tests, 1,077 package entries, every packaged route (179 YARA rules) and window smoke passed; ZIP 306,595,059 bytes sha256 `5b9e1239…`, SBOM `58867cdb…`, notes `docs/RELEASE_0.1.39.md`.
 - [ ] A real in-app update: apply a published build over an installed older build through the helper end to end.
-- [ ] The `NotRestored` branch (restore itself failing) is implemented but has no test.
+- [x] The `NotRestored` branch (restore itself failing) is implemented and now tested in 0.1.41 (DN-090).
 - [x] Portable preferences (DN-084) shipped in v0.1.38.
 
 

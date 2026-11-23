@@ -125,6 +125,53 @@ public sealed class StagedUpdateApplierTests : IDisposable
     }
 
     [Fact]
+    public void ARestoreThatItselfFailsIsCountedAndNamed()
+    {
+        Write("a.txt", "old-a");
+        Write("b.txt", "old-b");
+        Write("a.txt", "new-a", "stage");
+        Write("b.txt", "new-b", "stage");
+
+        // Both files are replaced, then the restart fails while the first replacement is held open for writing. The rollback
+        // restores b.txt and is refused a.txt, which is the branch a real mixed installation would take.
+        FileStream? held = null;
+        var exception = Assert.Throws<StagedUpdateApplyException>(() => StagedUpdateApplier.Apply(
+            Install, Stage, Backup, ["a.txt", "b.txt"], () =>
+            {
+                held = new FileStream(Path.Combine(Install, "a.txt"), FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+                throw new InvalidOperationException("The updated Downpour app could not be restarted.");
+            }));
+
+        try
+        {
+            Assert.Equal(2, exception.Report.FilesReplaced);
+            Assert.Equal(1, exception.Report.FilesRestored);
+            Assert.Equal(new[] { "a.txt" }, exception.Report.NotRestored);
+            Assert.Contains("1 of 2", exception.Message);
+            Assert.Contains("restored 1", exception.Report.Describe());
+            Assert.Contains("could not be restored: a.txt", exception.Report.Describe());
+        }
+        finally
+        {
+            held?.Dispose();
+        }
+
+        // The file the filesystem refused keeps the new bytes: the report says so instead of implying a clean rollback.
+        Assert.Equal("new-a", Read("a.txt"));
+        Assert.Equal("old-b", Read("b.txt"));
+        Assert.Empty(Directory.GetFiles(_root, "*.downpour-update-*", SearchOption.AllDirectories));
+    }
+
+    [Fact]
+    public void ARefusalBeforeTheFirstWriteSaysNothingNeededRestoring()
+    {
+        var report = new StagedUpdateApplyReport(0, 0, []);
+
+        Assert.Equal("No installed file had been replaced, so nothing needed to be restored.", report.Describe());
+        Assert.Equal("Replaced 7 file(s) and restored 7.", new StagedUpdateApplyReport(7, 7, []).Describe());
+    }
+
+    [Fact]
     public void AFailedApplyRemovesFilesThatDidNotExistBefore()
     {
         Write("b.txt", "old-b");

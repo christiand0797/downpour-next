@@ -22,8 +22,16 @@ internal static class Program
         {
             var logPath = WriteErrorLog(exception);
             var detail = exception.Message.Length > 1200 ? exception.Message[..1200] : exception.Message;
-            var message = "Downpour could not complete the update. Existing package files were restored where possible. " +
-                $"Details: {exception.GetType().Name}: {detail}" +
+            // The applier already tried every restore; the report says how many worked and names the ones that did not,
+            // so the dialog never falls back to "restored where possible". An exception thrown before Apply means no
+            // installed file was touched at all.
+            var report = (exception as StagedUpdateApplyException)?.Report;
+            var recovery = report?.Describe() ?? "No package file was replaced; the installed build is untouched.";
+            var message = $"Downpour could not complete the update. {recovery}" +
+                (report is { NotRestored.Count: > 0 }
+                    ? " Extract the portable package again before relying on this installation."
+                    : "") +
+                $" Details: {exception.GetType().Name}: {detail}" +
                 (logPath is null ? "" : $"\n\nLog: {logPath}") +
                 "\n\nIf the app does not reopen, launch Downpour.Desktop.exe from its portable folder.";
             MessageBoxW(IntPtr.Zero, message, "Downpour update", 0x10);
@@ -104,10 +112,7 @@ internal static class Program
             var report = (exception as StagedUpdateApplyException)?.Report;
             TryRecordJournal(UpdateState.RolledBack, report is null
                 ? "Apply failed before any installed file was replaced; nothing needed to be restored."
-                : $"Apply failed after replacing {report.FilesReplaced} file(s); restored {report.FilesRestored}" +
-                  (report.NotRestored.Count == 0
-                      ? "."
-                      : $"; {report.NotRestored.Count} could not be restored: {string.Join(", ", report.NotRestored.Take(3))}."));
+                : report.Describe());
             throw;
         }
     }
