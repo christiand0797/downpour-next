@@ -19,6 +19,7 @@ public sealed class ThreatIndex
     private readonly Link[] _links;
     private readonly List<(IPNetwork Network, int Feed, string Label)> _networks;
     private readonly Dictionary<string, ThreatLolbin> _lolbins;
+    private readonly Dictionary<int, AsnListing> _asns;
 
     // A row is 16 bytes on x64. Before compaction Source/Order identify the input feed/indicator, preserving
     // the first label encountered. Afterwards Source is ~sourceIndex or a nonnegative provenance-link index.
@@ -40,7 +41,7 @@ public sealed class ThreatIndex
     public static readonly ThreatIndex Empty = Build([]);
 
     private ThreatIndex(Entry[] entries, int entryCount, Source[] sources, Link[] links,
-        List<(IPNetwork, int, string)> networks, Dictionary<string, ThreatLolbin> lolbins)
+        List<(IPNetwork, int, string)> networks, Dictionary<string, ThreatLolbin> lolbins, Dictionary<int, AsnListing> asns)
     {
         _entries = entries;
         _entryCount = entryCount;
@@ -48,6 +49,7 @@ public sealed class ThreatIndex
         _links = links;
         _networks = networks;
         _lolbins = lolbins;
+        _asns = asns;
     }
 
     public int IndicatorCount => _entryCount + _networks.Count;
@@ -65,6 +67,7 @@ public sealed class ThreatIndex
         var feedIndexes = new int[feeds.Count];
         var networks = new List<(IPNetwork, int, string)>();
         var lolbins = new Dictionary<string, ThreatLolbin>(StringComparer.OrdinalIgnoreCase);
+        var asns = new Dictionary<int, AsnListing>();
         for (var feedPosition = 0; feedPosition < feeds.Count; feedPosition++)
         {
             var (feed, parsed) = feeds[feedPosition];
@@ -83,6 +86,10 @@ public sealed class ThreatIndex
                 entries[count] = new Entry(indicator.Value, feedPosition, indicatorPosition);
                 count++;
             }
+            // Network listings are keyed by ASN, not by address, so they are kept apart from the indicator rows.
+            // The first list to name a network wins, matching the program rule below.
+            if (parsed.Asns is { Count: > 0 })
+                foreach (var listing in parsed.Asns) asns.TryAdd(listing.Asn, listing);
             // The first list to name a program wins, so LOLBAS keeps its built-in tool description over LOLRMM.
             foreach (var lolbin in parsed.Lolbins) lolbins.TryAdd(lolbin.Name, lolbin);
         }
@@ -135,7 +142,7 @@ public sealed class ThreatIndex
         // avoid the peak allocation of a second similarly-sized array just to remove a little spare capacity.
         if (distinct < entries.Length * 3L / 4) Array.Resize(ref entries, distinct);
         else Array.Clear(entries, distinct, entries.Length - distinct);
-        return new ThreatIndex(entries, distinct, sources.ToArray(), links.ToArray(), networks, lolbins);
+        return new ThreatIndex(entries, distinct, sources.ToArray(), links.ToArray(), networks, lolbins, asns);
     }
 
     private static int IndexOf(string id)
@@ -185,6 +192,12 @@ public sealed class ThreatIndex
     }
 
     public ThreatLolbin? Lolbin(string fileName) => _lolbins.GetValueOrDefault(fileName);
+
+    /// <summary>How many autonomous systems a network-owner list names. They are not address indicators.</summary>
+    public int AsnListingCount => _asns.Count;
+
+    /// <summary>The listing for this autonomous system, or null. Network listings never decide a program's verdict.</summary>
+    public AsnListing? Asn(int? asn) => asn is { } value ? _asns.GetValueOrDefault(value) : null;
 
     private void Collect(string key, List<(ThreatFeedDefinition, string)> hits)
     {

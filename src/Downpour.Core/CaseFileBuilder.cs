@@ -79,7 +79,7 @@ public static class CaseFileBuilder
             md.AppendLine();
             md.AppendLine("### Internet connections at the last sweep");
             foreach (var c in db.Connections.Take(150))
-                md.AppendLine($"- {Clean(c.Program)} (PID {c.ProcessId}) → {c.RemoteAddress}:{c.RemotePort} · {c.CountryCode ?? "??"} · {(c.Asn is { } asn ? $"AS{asn} {Clean(c.Network ?? "")}" : "network unknown")}{(c.Listed ? " · **LISTED**" : "")}");
+                md.AppendLine($"- {Clean(c.Program)} (PID {c.ProcessId}) → {c.RemoteAddress}:{c.RemotePort} · {c.CountryCode ?? "??"} · {(c.Asn is { } asn ? $"AS{asn} {Clean(c.Network ?? "")}" : "network unknown")}{(c.ListedNetwork is { } networkListing ? $" · **NETWORK LISTED: {Clean(networkListing)}**" : "")}{(c.Listed ? " · **LISTED**" : "")}");
             md.AppendLine();
         }
 

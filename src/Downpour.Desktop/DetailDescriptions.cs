@@ -75,6 +75,7 @@ internal static class DetailDescriptions
             new("Program", c.Program), new("Process ID", c.ProcessId.ToString()), new("Remote address", c.RemoteAddress), new("Remote port", c.RemotePort.ToString()),
             new("Country", c.CountryCode is { } code ? $"{IpOriginDatabase.CountryName(code)} ({code})" : "Unknown"),
             new("Network", c.Asn is { } asn ? $"AS{asn} · {c.Network}" : c.Network ?? ""), new("In a threat database", c.Listed ? "Yes" : "No"),
+            new("Network listing", c.ListedNetwork is { } listed ? $"Spamhaus ASN-DROP: {listed} (about the network, not the program)" : "Not on Spamhaus ASN-DROP"),
         ], ProcessId: c.ProcessId, Address: c.RemoteAddress, Kind: "connection");
 
     public static DetailEntity FeedEntry(string value, string type, string label)

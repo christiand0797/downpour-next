@@ -14,9 +14,9 @@ public enum IndicatorType { Ip, Network, Domain, Sha256, Sha1, Md5, Lolbin }
 public readonly record struct ThreatIndicator(IndicatorType Type, string Value, string Label);
 
 public sealed record ParsedThreatFeed(IReadOnlyList<ThreatIndicator> Indicators, int RejectedLines, IReadOnlyList<ThreatLolbin> Lolbins, IpOriginDatabase? Origins = null,
-    DateTimeOffset? SourcePublishedAtUtc = null, string? PublicationError = null)
+    DateTimeOffset? SourcePublishedAtUtc = null, string? PublicationError = null, IReadOnlyList<AsnListing>? Asns = null)
 {
-    public int Entries => Indicators.Count + Lolbins.Count + (Origins?.Ranges ?? 0);
+    public int Entries => Indicators.Count + Lolbins.Count + (Origins?.Ranges ?? 0) + (Asns?.Count ?? 0);
 }
 
 public sealed record ThreatLolbin(string Name, string Categories, string Techniques);
@@ -38,6 +38,7 @@ public static partial class ThreatFeedParser
         if (payload.Length > feed.MaximumBytes) throw new InvalidDataException("The feed exceeds its size limit.");
         if (feed.IndicatorLimit is < 1 or > 3_000_000) throw new InvalidDataException("Invalid feed indicator budget.");
         if (feed.Format == ThreatFeedFormat.Ip2AsnGzip) return new ParsedThreatFeed([], 0, [], IpOriginDatabase.Parse(payload));
+        if (feed.Format == ThreatFeedFormat.SpamhausAsnJson) return ParseSpamhausAsns(feed, Text(payload));
         var result = feed.Format switch
         {
             ThreatFeedFormat.Lines => ParseLines(feed, Text(payload), hostsFile: false),
@@ -459,6 +460,46 @@ public static partial class ThreatFeedParser
             ? ThreatFeedFreshness.ParseUtc(generatedAt.GetString()) : null;
         return new(indicators, rejected, [], SourcePublishedAtUtc: generated,
             PublicationError: generated is null ? "Expected publication metadata is missing or invalid." : null);
+    }
+
+    /// <summary>
+    /// Spamhaus ASN-DROP names autonomous systems, not addresses, so this parser returns network listings instead of
+    /// indicators. A row without a usable ASN and name is rejected; a mostly malformed payload is refused whole, exactly
+    /// like every other format, so a changed feed cannot quietly empty the network-reputation set.
+    /// </summary>
+    private static ParsedThreatFeed ParseSpamhausAsns(ThreatFeedDefinition feed, string text)
+    {
+        var asns = new List<AsnListing>();
+        var seen = new HashSet<int>();
+        var rejected = 0;
+        var rows = 0;
+        foreach (var line in DataLines(text, feed.IndicatorLimit))
+        {
+            rows++;
+            try
+            {
+                using var document = JsonDocument.Parse(line, new JsonDocumentOptions { MaxDepth = 4 });
+                var root = document.RootElement;
+                var asName = String(root, "asname");
+                if (root.ValueKind != JsonValueKind.Object || !root.TryGetProperty("asn", out var asnElement) ||
+                    asnElement.ValueKind != JsonValueKind.Number || !asnElement.TryGetInt64(out var number) ||
+                    number is < 1 or > int.MaxValue || asName is not { Length: > 0 })
+                {
+                    rejected++;
+                    continue;
+                }
+                if (!seen.Add((int)number)) continue;
+                if (asns.Count >= feed.IndicatorLimit) throw new InvalidDataException($"The feed has more than {feed.IndicatorLimit:N0} networks.");
+                var country = String(root, "cc") is { Length: 2 } cc && cc.All(char.IsAsciiLetterUpper) ? cc : "";
+                var registry = String(root, "rir") is { Length: > 0 } rir ? Label(Clean(rir.ToLowerInvariant())) : "";
+                asns.Add(new AsnListing((int)number, Label(Clean(asName)), country, registry));
+            }
+            catch (JsonException) { rejected++; }
+        }
+        if (asns.Count == 0) throw new InvalidDataException("The feed contained no valid networks.");
+        if (rows > 20 && rejected > rows * MaximumRejectedRatio)
+            throw new InvalidDataException($"The feed format looks wrong: {rejected:N0} of {rows:N0} entries failed validation.");
+        return new ParsedThreatFeed([], rejected, [], Asns: asns);
     }
 
     private static bool MatchesKind(string kind, IndicatorType type) => kind switch

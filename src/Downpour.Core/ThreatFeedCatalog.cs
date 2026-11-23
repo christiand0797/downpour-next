@@ -20,6 +20,8 @@ public enum ThreatFeedFormat
     LolbasJson,
     /// <summary>Gzip IPtoASN table (start, end, ASN, country, network name).</summary>
     Ip2AsnGzip,
+    /// <summary>Spamhaus ASN-DROP: one JSON object per line naming an autonomous system that should not be routed.</summary>
+    SpamhausAsnJson,
     /// <summary>
     /// Separated values (CSV, "value;description"): the indicator is field <see cref="ThreatFeedDefinition.Column"/>, the
     /// label optionally field <see cref="ThreatFeedDefinition.LabelColumn"/>. A header line simply fails validation once.
@@ -84,6 +86,9 @@ public static class ThreatFeedCatalog
         new("spamhaus-drop-v6", "Spamhaus DROP (IPv6)", "The Spamhaus Project", ThreatFeedKinds.Ip, ThreatFeedFormat.SpamhausJsonLines,
             "https://www.spamhaus.org/drop/drop_v6.json", 4 * MiB, TimeSpan.FromHours(24), "MEDIUM", "T1071", "Hijacked or criminal network",
             "IPv6 ranges controlled by spammers and cyber-criminals.", "Spamhaus DROP terms (free use)", "https://www.spamhaus.org/blocklists/do-not-route-or-peer/", MaximumSourceAge: TimeSpan.FromDays(30)),
+        new("spamhaus-asn-drop", "Spamhaus ASN-DROP networks", "The Spamhaus Project", ThreatFeedKinds.Network, ThreatFeedFormat.SpamhausAsnJson,
+            "https://www.spamhaus.org/drop/asndrop.json", 4 * MiB, TimeSpan.FromHours(24), "MEDIUM", "T1583.003", "Network listed by Spamhaus ASN-DROP",
+            "Autonomous systems Spamhaus says should not be routed: bulletproof hosting and criminal infrastructure. Used to describe the network a connection reaches; it is not a statement about the program using it.", "Spamhaus DROP terms (free use)", "https://www.spamhaus.org/blocklists/asn-drop/", IndicatorLimit: 20_000),
         new("et-compromised", "Emerging Threats compromised hosts", "Proofpoint Emerging Threats", ThreatFeedKinds.Ip, ThreatFeedFormat.Lines,
             "https://rules.emergingthreats.net/blockrules/compromised-ips.txt", 8 * MiB, TimeSpan.FromHours(24), "MEDIUM", "T1071", "Known compromised host",
             "Machines observed attacking others because they were compromised.", "ET Open (BSD)", "https://rules.emergingthreats.net/"),
@@ -93,6 +98,9 @@ public static class ThreatFeedCatalog
         new("ipsum", "IPsum (3+ lists)", "Miroslav Stampar", ThreatFeedKinds.Ip, ThreatFeedFormat.Lines,
             "https://raw.githubusercontent.com/stamparm/ipsum/master/levels/3.txt", 8 * MiB, TimeSpan.FromHours(24), "LOW", "T1071", "Address on 3 or more blocklists",
             "Addresses listed by at least three blocklists. Upstream lists can overlap; listing count does not prove independent evidence.", "Unlicense", "https://github.com/stamparm/ipsum"),
+        new("mirage-honeypot", "OffSeq Mirage honeypot attackers", "OffSeq", ThreatFeedKinds.Ip, ThreatFeedFormat.Lines,
+            "https://feeds.offseq.com/mirage-feed/latest/ipv4-7d.txt", 4 * MiB, TimeSpan.FromHours(6), "MEDIUM", "T1595", "Honeypot-observed attacker",
+            "Addresses that attacked a distributed honeypot fleet in the last seven days, after the provider's own listing rules. One provider's observation: absence proves nothing, and presence does not identify who was behind the address.", "CC BY 4.0", "https://feeds.offseq.com/"),
         new("cins", "CINS Army", "Collective Intelligence Network Security", ThreatFeedKinds.Ip, ThreatFeedFormat.Lines,
             "https://cinsscore.com/list/ci-badguys.txt", 8 * MiB, TimeSpan.FromHours(24), "LOW", "T1071", "Poor-reputation address",
             "Addresses with consistently bad behaviour seen by Sentinel IPS sensors.", "Free use", "https://cinsscore.com/"),
@@ -208,9 +216,6 @@ public static class ThreatFeedCatalog
         new("threatview-domain", "Threatview domain reputation", "Threatview.io", ThreatFeedKinds.Domain, ThreatFeedFormat.Lines,
             "https://threatview.io/Downloads/DOMAIN-High-Confidence-Feed.txt", 32 * MiB, TimeSpan.FromDays(1), "LOW", "T1071", "Threatview-listed domain",
             "Threatview's domain dataset for local DNS correlation. Shared-service exclusions and contextual verdicts remain applied.", "Free community use (Threatview terms)", "https://threatview.io/", IndicatorLimit: 1_000_000),
-        new("threatview-md5", "Threatview malware MD5", "Threatview.io", ThreatFeedKinds.Hash, ThreatFeedFormat.Lines,
-            "https://threatview.io/Downloads/MD5-HASH-ALL.txt", 8 * MiB, TimeSpan.FromDays(1), "HIGH", "T1204", "Listed malware MD5 fingerprint",
-            "MD5 sample fingerprints matched to locally hashed files; MD5 is a legacy reputation identifier, not a signature or authenticity proof.", "Free community use (Threatview terms)", "https://threatview.io/"),
         new("threatview-sha", "Threatview malware SHA hashes", "Threatview.io", ThreatFeedKinds.Hash, ThreatFeedFormat.Lines,
             "https://threatview.io/Downloads/SHA-HASH-FEED.txt", 8 * MiB, TimeSpan.FromDays(1), "HIGH", "T1204", "Listed malware SHA fingerprint",
             "SHA-1 and SHA-256 sample fingerprints matched to locally hashed files. The hash type is retained in the index.", "Free community use (Threatview terms)", "https://threatview.io/"),
@@ -237,6 +242,9 @@ public static class ThreatFeedCatalog
         // URLhaus and MalwareBazaar exports answer HTTP 410 without a free Auth-Key, so they stay inactive until a key is
         // saved and then download normally. PhishTank redirects to an expiring signed CDN URL, which no key fixes, so it
         // stays retired permanently. Feodo Tracker and phishing.army cover those categories without a key.
+        new("threatview-md5", "Threatview malware MD5", "Threatview.io", ThreatFeedKinds.Hash, ThreatFeedFormat.Lines,
+            "https://threatview.io/Downloads/MD5-HASH-ALL.txt", 8 * MiB, TimeSpan.FromDays(1), "HIGH", "T1204", "Listed malware MD5 fingerprint",
+            "Retired: the provider answered HTTP 200 with an empty file on 2026-11-23, and an empty response cannot be told apart from a truncation. The same provider's SHA-1/SHA-256 feed and the Mandiant and DigitalSide hash sources still cover MD5-adjacent evidence. Historical alerts keep this source name.", "Free community use (Threatview terms)", "https://threatview.io/", Retired: true),
         new("threatfox", "ThreatFox (recent)", "abuse.ch", ThreatFeedKinds.Mixed, ThreatFeedFormat.ThreatFoxJson,
             "https://threatfox.abuse.ch/export/json/recent/", 48 * MiB, TimeSpan.FromHours(6), "HIGH", "T1071", "Malware indicator",
             "Skipped until a free abuse.ch Auth-Key is saved in Settings, then downloaded with it. Historical alerts keep this source name.", "CC0-1.0", "https://threatfox.abuse.ch/", Retired: true, AuthKeyService: ThreatFeedAuth.AbuseCh),

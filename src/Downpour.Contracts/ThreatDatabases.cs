@@ -10,6 +10,8 @@ public static class ThreatFeedKinds
     public const string Lolbin = "lolbin";
     public const string Mixed = "mixed";
     public const string Geo = "geo";
+    /// <summary>A network-owner list keyed by autonomous system number rather than by address.</summary>
+    public const string Network = "network";
 }
 
 /// <summary>Local state of one feed. Nothing about this PC is sent to the source; feeds are downloaded whole.</summary>
@@ -102,6 +104,9 @@ public sealed record ThreatDatabaseSnapshot(
 /// Approximate origin of a public IP from an offline database: the country the address block is registered in and the
 /// network (ISP, hosting company or VPN) that announces it. It locates a network, never a person or street address.
 /// </summary>
+/// <summary>One autonomous system named by a network-owner list such as Spamhaus ASN-DROP.</summary>
+public sealed record AsnListing(int Asn, string Name, string Country, string Registry);
+
 public sealed record IpOrigin(string Ip, string? CountryCode, int? Asn, string? Network);
 
 /// <summary>An established connection from a program on this PC to a public address, with its approximate origin.</summary>
@@ -113,7 +118,8 @@ public sealed record RemoteConnectionOrigin(
     string? CountryCode,
     int? Asn,
     string? Network,
-    bool Listed);
+    bool Listed,
+    string? ListedNetwork = null);
 
 /// <summary>
 /// Operation = "snapshot", "refresh" (download due/failed feeds now), "lookup" (check one IP, domain, URL or hash locally),

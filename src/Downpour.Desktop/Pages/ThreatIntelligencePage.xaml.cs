@@ -60,7 +60,7 @@ public sealed partial class ThreatIntelligencePage : Page
                 EmptyText.Text = _client.FailureMessage;
                 return;
             }
-            var browsable = snapshot.Feeds.Where(f => f.Kind != ThreatFeedKinds.Geo).ToArray();
+            var browsable = snapshot.Feeds.Where(f => f.Kind is not (ThreatFeedKinds.Geo or ThreatFeedKinds.Network)).ToArray();
             var changed = browsable.Length != _feeds.Count || browsable.Zip(_feeds).Any(p => p.First.Id != p.Second.Id || p.First.Entries != p.Second.Entries);
             _feeds = browsable;
             if (!changed && FeedPicker.Items.Count > 0) { ShowDetail(); return; }

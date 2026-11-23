@@ -78,7 +78,8 @@ public static class ThreatVerdictEngine
         var reasons = new List<string>();
         var feeds = e.Hits.Select(h => h.Feed).DistinctBy(f => f.Id).ToArray();
         var names = string.Join(", ", feeds.Select(f => f.Name));
-        reasons.Add(feeds.Length == 1 ? $"Listed by 1 database: {names}." : $"Listed by {feeds.Length} databases: {names}.");
+        reasons.Add(feeds.Length == 0 ? "No threat database lists this indicator."
+            : feeds.Length == 1 ? $"Listed by 1 database: {names}." : $"Listed by {feeds.Length} databases: {names}.");
         if (feeds.Length > 1)
             reasons.Add("These sources may copy or aggregate the same indicators. Independence is not established; additional listings do not increase confidence.");
 

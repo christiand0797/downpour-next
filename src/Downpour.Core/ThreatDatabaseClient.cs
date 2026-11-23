@@ -93,7 +93,7 @@ public sealed class ThreatDatabaseClient(string pipeName = ThreatDatabaseClient.
             && m.Confidence is >= 0 and <= 100 && (m.Reasons is null || m.Reasons.Count <= 12 && m.Reasons.All(r => Text(r, 300))))
         && s.Lolbins.All(l => l is not null && Text(l.Name, 64) && Text(l.Categories, 96) && Text(l.Techniques, 96) && l.Instances > 0)
         && s.Connections.All(c => c is not null && Text(c.Program, 128) && Text(c.RemoteAddress, 64) && c.RemotePort is >= 0 and <= 65535
-            && Origin(c.RemoteAddress, c.CountryCode, c.Network))
+            && Origin(c.RemoteAddress, c.CountryCode, c.Network) && (c.ListedNetwork is null || Text(c.ListedNetwork, 160)))
         && s.Warnings.All(w => Text(w, 512));
 
     private static bool Origin(string ip, string? country, string? network) =>

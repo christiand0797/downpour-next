@@ -107,8 +107,10 @@ public sealed partial class ThreatDatabasesPage : Page
         _coverage.SetMetric(scoring.Length == 0 ? null : 100d * online / scoring.Length, $"{online}/{scoring.Length}");
         IndicatorsText.Text = s.TotalIndicators.ToString("N0");
         var origin = s.Feeds.FirstOrDefault(f => f.Kind == ThreatFeedKinds.Geo);
-        OriginsText.Text = origin is { Entries: > 0, MatchingEnabled: false } ? "Origin database excluded by age policy" :
-            origin is { Entries: > 0 } ? $"+ {origin.Entries:N0} origin ranges" : "Origin database not loaded yet";
+        var asnListings = s.Feeds.FirstOrDefault(f => f.Kind == ThreatFeedKinds.Network);
+        OriginsText.Text = (origin is { Entries: > 0, MatchingEnabled: false } ? "Origin database excluded by age policy" :
+            origin is { Entries: > 0 } ? $"+ {origin.Entries:N0} origin ranges" : "Origin database not loaded yet") +
+            (asnListings is { Entries: > 0 } ? $" · + {asnListings.Entries:N0} listed networks" : "");
 
         var serious = s.Matches.Count(m => m.Severity is "CRITICAL" or "HIGH");
         MatchesText.Text = s.Matches.Count.ToString("N0");
@@ -141,10 +143,10 @@ public sealed partial class ThreatDatabasesPage : Page
         LiveList.Set(ConnectionList, s.Connections.Select(c => new ConnectionRow
         {
             Program = c.Program,
-            Pid = $"PID {c.ProcessId}{(c.Listed ? " · LISTED IN A THREAT DATABASE" : "")}",
+            Pid = $"PID {c.ProcessId}{(c.Listed ? " · LISTED IN A THREAT DATABASE" : "")}{(c.ListedNetwork is not null ? " · NETWORK ON SPAMHAUS ASN-DROP" : "")}",
             Endpoint = c.RemoteAddress.Contains(':') ? $"[{c.RemoteAddress}]:{c.RemotePort}" : $"{c.RemoteAddress}:{c.RemotePort}",
             Country = c.CountryCode is { } code ? $"{IpOriginDatabase.CountryName(code)} ({code})" : "Origin unknown",
-            Network = c.Asn is { } asn ? $"AS{asn} · {c.Network}" : c.Network ?? "",
+            Network = (c.Asn is { } asn ? $"AS{asn} · {c.Network}" : c.Network ?? "") + (c.ListedNetwork is { } listed ? $" · ASN-DROP: {listed}" : ""),
             MarkerBrush = c.Listed ? Brush("HudRedBrush") : Brush("HudCyanBrush"),
             Origin = c,
         }).ToArray());
@@ -154,7 +156,7 @@ public sealed partial class ThreatDatabasesPage : Page
             Name = f.Name,
             Provider = $"{f.Provider} · {f.License}".ToUpperInvariant(),
             State = PublicationLabel(f),
-            Entries = f.Entries > 0 ? $"{f.Entries:N0} {(f.Kind == ThreatFeedKinds.Geo ? "ranges" : "entries")}{(f.MatchingEnabled == false ? " · excluded from matching" : "")}" : "—",
+            Entries = f.Entries > 0 ? $"{f.Entries:N0} {(f.Kind == ThreatFeedKinds.Geo ? "ranges" : f.Kind == ThreatFeedKinds.Network ? "networks" : "entries")}{(f.MatchingEnabled == false ? " · excluded from matching" : "")}" : "—",
             Purpose = f.Purpose + (f.FreshnessNote is { } note ? Environment.NewLine + note : ""),
             Updated = DownloadAndPublication(f, s.CapturedAtUtc),
             StateBrush = StateBrush(PublicationColorState(f)),

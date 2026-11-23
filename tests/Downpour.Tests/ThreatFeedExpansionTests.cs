@@ -150,11 +150,12 @@ public sealed class ThreatFeedExpansionTests
     public void RetiredSourcesKeepTheirOfficialEntryButOnlyKeyedOnesCanActivate()
     {
         var retired = ThreatFeedCatalog.All.Where(f => f.Retired).Select(f => f.Id).ToHashSet();
-        Assert.Equal(new[] { "malwarebazaar", "phishtank", "threatfox", "urlhaus" }, retired.OrderBy(id => id));
+        Assert.Equal(new[] { "malwarebazaar", "phishtank", "threatfox", "threatview-md5", "urlhaus" }, retired.OrderBy(id => id));
         Assert.StartsWith("Retired:", ThreatFeedCatalog.All.Single(f => f.Id == "phishtank").Purpose);
-        Assert.All(ThreatFeedCatalog.All.Where(f => f.Retired && f.Id != "phishtank"),
+        Assert.StartsWith("Retired:", ThreatFeedCatalog.All.Single(f => f.Id == "threatview-md5").Purpose);
+        Assert.All(ThreatFeedCatalog.All.Where(f => f.Retired && f.Id is not ("phishtank" or "threatview-md5")),
             f => Assert.Contains("abuse.ch Auth-Key", f.Purpose));
-        Assert.Equal(58, ThreatFeedCatalog.All.Count(f => !f.Retired));
+        Assert.Equal(59, ThreatFeedCatalog.All.Count(f => !f.Retired));
     }
 
     [Fact]

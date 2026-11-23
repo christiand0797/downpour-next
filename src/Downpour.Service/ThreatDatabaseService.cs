@@ -283,12 +283,16 @@ public sealed class ThreatDatabaseService(
             {
                 var path = processPaths.GetValueOrDefault(connection.ProcessId);
                 var evidence = new ThreatEvidence(ThreatMatchPlaces.Connection, remote, hits, program, path, RemotePort: connection.RemotePort,
-                    Network: where?.Asn is { } asn ? $"AS{asn} {where.Network} ({where.CountryCode ?? "??"})" : null);
+                    Network: NetworkReputation.Describe(where, index));
                 found.Add(Assess(now, evidence, $"{program} → {remote}:{connection.RemotePort}"));
             }
             origin.Add(new RemoteConnectionOrigin(Bound(program, 128), connection.ProcessId, remote, connection.RemotePort,
-                where?.CountryCode, where?.Asn, where?.Network, hits.Count > 0));
+                where?.CountryCode, where?.Asn, where?.Network, hits.Count > 0, NetworkReputation.Listing(index, where?.Asn)));
         }
+
+        var listedNetworks = origin.Count(c => c.ListedNetwork is not null);
+        if (listedNetworks > 0)
+            warnings.Add($"{listedNetworks} connection(s) reach networks Spamhaus ASN-DROP lists as criminal or bulletproof hosting. That describes the network's routing, not the program using it, and it is not a verdict.");
 
         // DNS cache names, attributed to a program when one is connected to an address the name resolved to.
         var domains = 0;
@@ -313,7 +317,7 @@ public sealed class ThreatDatabaseService(
                 var sinkholed = addresses.Count > 0 && addresses.All(IsSinkhole);
                 var evidence = new ThreatEvidence(ThreatMatchPlaces.Dns, indicator.Value, hits, ConnectionObserved: connected is not null,
                     ConnectedProgram: connected, ParentDomainOnly: !ListsExactName(index, indicator.Value),
-                    Network: network is { } n ? $"AS{n.Asn} {n.Network} ({n.CountryCode ?? "??"})" : null, Sinkholed: sinkholed);
+                    Network: NetworkReputation.Describe(network, index), Sinkholed: sinkholed);
                 var resolved = addresses.Count > 0 ? $" ({string.Join(", ", addresses.Take(3))})" : "";
                 found.Add(Assess(now, evidence, connected is not null
                     ? $"{connected} connected to {indicator.Value}{resolved}"
