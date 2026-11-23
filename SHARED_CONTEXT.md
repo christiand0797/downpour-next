@@ -1,5 +1,14 @@
 # Downpour Next shared context
 
+## 2026-11-23 DNS novelty remembers when, and stops repeating itself (buffy, DN-095)
+
+- The resolver-cache baseline saved `known.Take(20_000)` from a `HashSet`. Past 20,000 remembered names each capture wrote an **arbitrary** subset, so a name still in the cache could fall out, be called new next cycle, and raise the same DGA finding again. Nothing stored a first-seen date either.
+- `DomainBaseline` (Core) now keeps SHA-256 plus **first seen** and **last seen** per name. Eviction is least-recently-resolved first (ties by hash), so a name resolved today survives while space is contested and a repeated capture reports nothing new. Invalid hashes are ignored, duplicates count once, and the first capture is still a silent baseline.
+- The provider reads both file shapes: `{SchemaVersion:2, Domains:[{Hash, FirstSeenUtc, LastSeenUtc}]}` and the earlier hash list or plaintext names (hashed in place, stamped with the file's own time — “known at least since then”). No name is written; `DnsBaselinePrivacyTests` asserts that against the v2 file too.
+- `DnsCacheSnapshot` gains `NewlyObservedCount`, `ObservedSinceUtc`, `BaselineCount`; `DnsCacheEntry` gains an optional `FirstSeenUtc`. The desktop client bounds all four and rejects a first-seen date later than its own capture. The DNS status line reports first sightings since a date and says plainly that this is **first sighting on this PC, not registration age**.
+- This is the honest local half of the blocked new-domain signal; the external half (SANS ISC `domaindata.json.gz`, CC BY-NC-SA) remains a licensing decision.
+- Verification: Debug build 0 warnings/0 errors; 1,557 tests pass (5 new in `DomainBaselineTests`, including the eviction regression). The DNS status line and a real over-capacity baseline were not viewed.
+
 ## 2026-11-23 a connection now says whose network it reaches (buffy, DN-092)
 
 - Every match had a country and an ISP name; an address on no indicator list had nothing else, which is exactly the bulletproof-hosting case address lists miss. Spamhaus ASN-DROP is the first catalogued source keyed by **network owner** instead of address, name or file hash. `ThreatFeedFormat.SpamhausAsnJson` reads its NDJSON (`asn`, `rir`, `cc`, `asname`) with the same rejection-ratio, duplicate and size rules as every other format, so a changed feed is refused whole rather than quietly emptying the set.

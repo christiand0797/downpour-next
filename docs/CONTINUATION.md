@@ -51,6 +51,16 @@ build runs changes the hash it expects. Read the hash from an executable (`(Get-
 pin that in the scripts rather than assuming the bump commit. Commit the docs first and pass `--target "$(git rev-parse
 HEAD)"` so the tag points at a pushed commit; the package script must keep pinning the embedded hash, not the tag.
 
+## Current state (end of 0.1.43)
+
+- Shipped in 0.1.43 (DN-095): `DomainBaseline` (Core) replaces the resolver-cache `HashSet` + `Take(20_000)` with a
+  bounded, deterministic memory of SHA-256 hashes and two dates. Eviction is least-recently-resolved first, so a name
+  still in the cache cannot fall out and re-alert; the first capture stays silent; legacy hash/plaintext baselines are
+  migrated in place. `DnsCacheSnapshot` reports `NewlyObservedCount`, `ObservedSinceUtc` and `BaselineCount`, entries carry
+  an optional `FirstSeenUtc`, and the DNS status line says "first sighting on this PC, not registration age". Details in
+  `docs/DNS_NOVELTY.md`; not viewed on screen.
+- Still blocked: global newly-observed domains (SANS ISC `domaindata.json.gz`, CC BY-NC-SA).
+
 ## Current state (end of 0.1.42)
 
 - Published: `v0.1.42` as Latest, built from `d47f0602`; ships network reputation from Spamhaus ASN-DROP. ZIP

@@ -8,7 +8,7 @@ namespace Downpour.Service;
 public sealed class DnsInventoryProvider(string baselinePath)
 {
     private const int MaximumCacheEntries = 4000;
-    private const int MaximumBaselineEntries = 20000;
+    private const int MaximumBaselineEntries = DomainBaseline.DefaultCapacity;
     private const int MaximumFindings = 256;
     private readonly object _gate = new();
 
@@ -41,78 +41,71 @@ public sealed class DnsInventoryProvider(string baselinePath)
     {
         var warnings = new List<string>();
         var rawEntries = ReadResolverCache(warnings);
+        var now = DateTimeOffset.UtcNow;
 
-        var entries = new List<DnsCacheEntry>();
+        var scored = new List<(string Name, int RecordType, int Score, bool IsDga, IReadOnlyList<string> Factors, DomainLookalike? Lookalike)>();
+        var hashes = new List<string>(rawEntries.Count);
+        foreach (var (name, recordType) in rawEntries)
+        {
+            var result = DgaDetector.ScoreDomain(name);
+            scored.Add((name, recordType, result.Score, result.IsDga, result.Factors, DomainConfusables.Describe(name)));
+            hashes.Add(HashDomain(name));
+        }
+
+        // The baseline is the only persisted DNS state, and it holds hashes plus two dates — never a name.
+        DomainBaselineUpdate update;
+        lock (_gate)
+        {
+            update = LoadBaseline().Observe(hashes, now, MaximumBaselineEntries);
+            if (update.FirstRun || update.NewHashes.Count > 0 || update.Evicted > 0) SaveBaseline(update.Baseline);
+        }
+        if (update.Evicted > 0)
+            warnings.Add($"{update.Evicted} older name(s) left the local baseline because it reached {MaximumBaselineEntries:N0} entries. The least recently resolved go first, so a name resolved today is kept.");
+        var newSet = update.NewHashes.ToHashSet(StringComparer.Ordinal);
+
+        var entries = new List<DnsCacheEntry>(scored.Count);
         var findings = new List<DnsFinding>();
         var highRiskCount = 0;
         var mediumRiskCount = 0;
+        var newlyObserved = 0;
 
-        lock (_gate)
+        for (var index = 0; index < scored.Count; index++)
         {
-            var (baselineDomains, isFirstRun) = LoadBaseline();
-            var known = new HashSet<string>(baselineDomains, StringComparer.OrdinalIgnoreCase);
-            var newlySeen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var (name, recordType, score, isDga, factors, lookalike) = scored[index];
+            var hash = hashes[index];
+            // A first capture is a baseline, so no name in it has a meaningful "first seen" date yet.
+            entries.Add(new DnsCacheEntry(name, recordType, score, isDga, factors, lookalike, update.FirstRun ? null : update.Baseline.FirstSeen(hash)));
 
-            foreach (var (name, recordType) in rawEntries)
-            {
-                var scored = DgaDetector.ScoreDomain(name);
-                var entry = new DnsCacheEntry(
-                    Domain: name,
-                    RecordType: recordType,
-                    RiskScore: scored.Score,
-                    IsDga: scored.IsDga,
-                    Factors: scored.Factors,
-                    Lookalike: DomainConfusables.Describe(name));
-                entries.Add(entry);
+            if (score >= DgaDetector.HighThreshold)
+                highRiskCount++;
+            else if (score >= DgaDetector.AlertThreshold)
+                mediumRiskCount++;
 
-                if (scored.Score >= DgaDetector.HighThreshold)
-                    highRiskCount++;
-                else if (scored.Score >= DgaDetector.AlertThreshold)
-                    mediumRiskCount++;
-
-                var hashed = HashDomain(name);
-                newlySeen.Add(hashed);
-
-                // TOFU baseline logic:
-                // If not in baseline and not first run, alert!
-                if (!isFirstRun && !known.Contains(hashed) && scored.Score >= DgaDetector.AlertThreshold)
-                {
-                    if (findings.Count < MaximumFindings)
-                    {
-                        var severity = scored.Score >= DgaDetector.HighThreshold ? "HIGH" : "MEDIUM";
-                        var technique = scored.Score >= DgaDetector.HighThreshold ? "T1071.004" : "T1568";
-                        var factorSummary = string.Join("; ", scored.Factors.Take(3));
-                        findings.Add(new DnsFinding(
-                            Severity: severity,
-                            Technique: technique,
-                            Summary: $"DGA-like domain observed in resolver cache: {name} (Risk {scored.Score}: {factorSummary})",
-                            Indicator: $"dns:{name}:{scored.Score}"));
-                    }
-                }
-
-                known.Add(hashed);
-            }
-
-            // Update baseline
-            if (isFirstRun)
-            {
-                SaveBaseline(newlySeen.Take(MaximumBaselineEntries));
-            }
-            else if (newlySeen.Any(d => !baselineDomains.Contains(d)))
-            {
-                SaveBaseline(known.Take(MaximumBaselineEntries));
-            }
+            if (update.FirstRun || !newSet.Contains(hash)) continue;
+            newlyObserved++;
+            if (score < DgaDetector.AlertThreshold || findings.Count >= MaximumFindings) continue;
+            var severity = score >= DgaDetector.HighThreshold ? "HIGH" : "MEDIUM";
+            var technique = score >= DgaDetector.HighThreshold ? "T1071.004" : "T1568";
+            var factorSummary = string.Join("; ", factors.Take(3));
+            findings.Add(new DnsFinding(
+                Severity: severity,
+                Technique: technique,
+                Summary: $"DGA-like domain observed in resolver cache: {name} (Risk {score}: {factorSummary})",
+                Indicator: $"dns:{name}:{score}"));
         }
 
         return new DnsCacheSnapshot(
             SchemaVersion: 1,
-            CapturedAtUtc: DateTimeOffset.UtcNow,
+            CapturedAtUtc: now,
             TotalEntries: entries.Count,
             HighRiskCount: highRiskCount,
             MediumRiskCount: mediumRiskCount,
             Entries: entries,
             Findings: findings,
-            Warnings: warnings);
+            Warnings: warnings,
+            NewlyObservedCount: update.FirstRun ? 0 : newlyObserved,
+            ObservedSinceUtc: update.Baseline.EstablishedUtc,
+            BaselineCount: update.Baseline.Count);
     }
 
     private static List<(string Name, int RecordType)> ReadResolverCache(List<string> warnings)
@@ -169,40 +162,82 @@ public sealed class DnsInventoryProvider(string baselinePath)
     internal static string HashDomain(string domain) =>
         Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(domain.Trim().ToLowerInvariant()))).ToLowerInvariant();
 
-    private static bool IsHash(string value) => value.Length == 64 && value.All(ch => ch is >= '0' and <= '9' or >= 'a' and <= 'f');
-
-    private (HashSet<string> domains, bool isFirstRun) LoadBaseline()
+    /// <summary>Reads both file shapes: the current hash+dates model and the earlier list of hashes or plaintext names.</summary>
+    private DomainBaseline LoadBaseline()
     {
         try
         {
             var info = new FileInfo(baselinePath);
             if (!info.Exists || info.Length > 8 * 1024 * 1024 || (info.Attributes & FileAttributes.ReparsePoint) != 0)
-                return (new HashSet<string>(StringComparer.Ordinal), true);
+                return new DomainBaseline();
 
-            var model = JsonSerializer.Deserialize<DnsBaselineModel>(File.ReadAllText(baselinePath));
-            if (model?.Domains == null)
-                return (new HashSet<string>(StringComparer.Ordinal), true);
+            var text = File.ReadAllText(baselinePath);
+            using var document = JsonDocument.Parse(text);
+            var root = document.RootElement;
+            if (root.ValueKind != JsonValueKind.Object || !root.TryGetProperty("Domains", out var domains) || domains.ValueKind != JsonValueKind.Array)
+                return new DomainBaseline();
 
-            // Earlier builds stored plaintext names; hash them and rewrite the file once.
-            var hashes = new HashSet<string>(model.Domains.Select(d => IsHash(d) ? d : HashDomain(d)), StringComparer.Ordinal);
-            if (model.Domains.Any(d => !IsHash(d))) SaveBaseline(hashes);
-            return (hashes, false);
+            var fallback = ReadUpdatedUtc(root) ?? new DateTimeOffset(info.LastWriteTimeUtc, TimeSpan.Zero);
+            var now = DateTimeOffset.UtcNow;
+            var observations = new List<DomainObservation>();
+            foreach (var item in domains.EnumerateArray())
+            {
+                if (observations.Count >= DomainBaseline.MaximumCapacity) break;
+                if (item.ValueKind == JsonValueKind.String)
+                {
+                    // Earlier builds stored hashes, and before that plaintext names. Both are known at least since the file's time.
+                    var value = item.GetString();
+                    if (string.IsNullOrWhiteSpace(value)) continue;
+                    var hash = DomainBaseline.IsHash(value) ? value : HashDomain(value);
+                    observations.Add(new DomainObservation(hash, fallback, fallback));
+                }
+                else if (item.ValueKind == JsonValueKind.Object &&
+                         item.TryGetProperty("Hash", out var hashElement) && hashElement.ValueKind == JsonValueKind.String &&
+                         hashElement.GetString() is { } hash && DomainBaseline.IsHash(hash))
+                {
+                    var first = ReadDate(item, "FirstSeenUtc") ?? fallback;
+                    var last = ReadDate(item, "LastSeenUtc") ?? first;
+                    // A stored date in the future would win every eviction comparison forever; keep it inside the clock.
+                    observations.Add(new DomainObservation(hash, first > now + DomainBaseline.MaximumClockSkew ? now : first,
+                        last > now + DomainBaseline.MaximumClockSkew ? now : last));
+                }
+            }
+            return new DomainBaseline(observations, MaximumBaselineEntries);
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException or FormatException)
         {
-            return (new HashSet<string>(StringComparer.Ordinal), true);
+            return new DomainBaseline();
         }
     }
 
-    private void SaveBaseline(IEnumerable<string> hashes)
+    private static DateTimeOffset? ReadUpdatedUtc(JsonElement root) =>
+        root.TryGetProperty("UpdatedUtc", out var updated) && updated.ValueKind == JsonValueKind.String &&
+        DateTimeOffset.TryParse(updated.GetString(), System.Globalization.CultureInfo.InvariantCulture,
+            System.Globalization.DateTimeStyles.AssumeUniversal | System.Globalization.DateTimeStyles.AdjustToUniversal, out var value)
+            ? value : null;
+
+    private static DateTimeOffset? ReadDate(JsonElement item, string name) =>
+        item.TryGetProperty(name, out var element) && element.ValueKind == JsonValueKind.String &&
+        DateTimeOffset.TryParse(element.GetString(), System.Globalization.CultureInfo.InvariantCulture,
+            System.Globalization.DateTimeStyles.AssumeUniversal | System.Globalization.DateTimeStyles.AdjustToUniversal, out var value)
+            ? value : null;
+
+    private void SaveBaseline(DomainBaseline baseline)
     {
         var temporary = baselinePath + ".tmp";
         try
         {
             var dir = Path.GetDirectoryName(baselinePath);
             if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
-            var list = hashes.OrderBy(h => h, StringComparer.Ordinal).ToList();
-            var model = new DnsBaselineModel { UpdatedUtc = DateTimeOffset.UtcNow, Count = list.Count, Domains = list };
+            var entries = baseline.Snapshot().Take(MaximumBaselineEntries)
+                .Select(observation => new DnsBaselineEntry
+                {
+                    Hash = observation.Hash,
+                    FirstSeenUtc = observation.FirstSeenUtc,
+                    LastSeenUtc = observation.LastSeenUtc,
+                })
+                .ToList();
+            var model = new DnsBaselineModel { SchemaVersion = 2, UpdatedUtc = DateTimeOffset.UtcNow, Count = entries.Count, Domains = entries };
             File.WriteAllText(temporary, JsonSerializer.Serialize(model));
             File.Move(temporary, baselinePath, overwrite: true);
         }
@@ -215,9 +250,17 @@ public sealed class DnsInventoryProvider(string baselinePath)
 
     private sealed class DnsBaselineModel
     {
+        public int SchemaVersion { get; set; }
         public DateTimeOffset UpdatedUtc { get; set; }
         public int Count { get; set; }
-        /// <summary>SHA-256 hashes of lower-cased domain names.</summary>
-        public List<string> Domains { get; set; } = [];
+        /// <summary>SHA-256 hashes with their first and most recent observation. Never a domain name.</summary>
+        public List<DnsBaselineEntry> Domains { get; set; } = [];
+    }
+
+    private sealed class DnsBaselineEntry
+    {
+        public string Hash { get; set; } = "";
+        public DateTimeOffset FirstSeenUtc { get; set; }
+        public DateTimeOffset LastSeenUtc { get; set; }
     }
 }

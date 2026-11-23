@@ -17,7 +17,9 @@ public sealed record DnsCacheEntry(
     int RiskScore,
     bool IsDga,
     IReadOnlyList<string> Factors,
-    DomainLookalike? Lookalike = null);
+    DomainLookalike? Lookalike = null,
+    /// <summary>When this PC first resolved the name, as far as the local baseline remembers. Null during the first capture.</summary>
+    DateTimeOffset? FirstSeenUtc = null);
 
 public sealed record DnsFinding(
     string Severity,
@@ -33,7 +35,12 @@ public sealed record DnsCacheSnapshot(
     int MediumRiskCount,
     IReadOnlyList<DnsCacheEntry> Entries,
     IReadOnlyList<DnsFinding> Findings,
-    IReadOnlyList<string> Warnings);
+    IReadOnlyList<string> Warnings,
+    /// <summary>Names in this capture that the local baseline had never seen. Zero during the first capture by design.</summary>
+    int NewlyObservedCount = 0,
+    /// <summary>When the earliest remembered name was first resolved, so "new" has a frame of reference.</summary>
+    DateTimeOffset? ObservedSinceUtc = null,
+    int BaselineCount = 0);
 
 public sealed record EmailSecurityCheckResult(
     string Domain,

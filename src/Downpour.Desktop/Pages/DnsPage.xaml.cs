@@ -177,7 +177,11 @@ public sealed partial class DnsPage : Page, INotifyPropertyChanged
 
             var captured = snapshot.CapturedAtUtc.ToLocalTime();
             var warnings = snapshot.Warnings.Count == 0 ? "" : $" {string.Join(" ", snapshot.Warnings)}";
-            StatusDetail.Text = $"Checked {captured:HH:mm:ss}. TOFU baseline active.{warnings}";
+            var novelty = snapshot.NewlyObservedCount == 0
+                ? snapshot.ObservedSinceUtc is { } watching ? $"No name was new since {watching.ToLocalTime():MMM d}." : "The first capture builds the baseline; nothing is called new yet."
+                : $"{snapshot.NewlyObservedCount} name{(snapshot.NewlyObservedCount == 1 ? "" : "s")} resolved for the first time here" +
+                  $"{(snapshot.ObservedSinceUtc is { } start ? $" since {start.ToLocalTime():MMM d}" : "")}. That is a first sighting on this PC, not the domain's registration age.";
+            StatusDetail.Text = $"Checked {captured:HH:mm:ss}. {novelty}{warnings}";
         }
         finally
         {

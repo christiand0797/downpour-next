@@ -1889,6 +1889,42 @@
     "Release published with matching digests"
    ],
    "notes": "2026-11-23 buffy: source commit d47f060256069fdbc4d9e2da915501096d758207. Release build 1,552 tests, package 1,077 entries / 772,932,818 expanded bytes / 52 components, route smoke (179 YARA rules) and window smoke passed. ZIP 306,622,248 bytes sha256 9988f2979e66ce896cdad12f9561e2b6d91114f492797ce7781c5270cefc1bdf; SBOM 3b182325ccb8bc7a68214895015a9013d662036872d78e4cf5a7673b0863054e; SHA256SUMS 766365600287effa4aa799a17c88cfaa8a5d4f499220b8dd86564176c4574971. Notes docs/RELEASE_0.1.42.md. One first Release run failed a pipe-startup test at its 10-second window; isolated pass and full-suite pass recorded."
+  },
+  {
+   "id": "DN-095",
+   "title": "Make DNS novelty bounded, deterministic and visible",
+   "status": "completed",
+   "priority": "high",
+   "files": [
+    "src/Downpour.Core/DomainBaseline.cs",
+    "src/Downpour.Service/DnsInventoryProvider.cs",
+    "src/Downpour.Contracts/DnsInventory.cs",
+    "src/Downpour.Core/DnsInventoryClient.cs",
+    "src/Downpour.Desktop/Pages/DnsPage.xaml.cs",
+    "tests/Downpour.Tests/DomainBaselineTests.cs"
+   ],
+   "acceptance": [
+    "A full baseline evicts least-recently-resolved names, never an arbitrary subset",
+    "Repeating a capture never reports the same name as new",
+    "First-seen dates are shown and described as local, not registration age",
+    "No domain name is persisted"
+   ],
+   "notes": "2026-11-23 buffy: the old code saved `known.Take(20_000)` from a HashSet, so past capacity a name still in the resolver cache could fall out and re-alert every other cycle. `DomainBaseline` now stores SHA-256 + first/last seen, evicts the least recently resolved first (ties by hash), keeps the first capture silent, ignores malformed hashes and migrates v1 hash/plaintext files in place. Snapshot gains NewlyObservedCount/ObservedSinceUtc/BaselineCount; entries gain FirstSeenUtc; client bounds all four. DNS status line reports first sightings since a date and says it is a local first sighting. 1,557 Debug tests pass (5 new). Status line and over-capacity path not viewed."
+  },
+  {
+   "id": "DN-096",
+   "title": "Cut and publish 0.1.43 with bounded DNS novelty",
+   "status": "in_progress",
+   "priority": "high",
+   "files": [
+    "Directory.Build.props",
+    "docs/RELEASE_0.1.43.md"
+   ],
+   "acceptance": [
+    "Release build, package, route smoke and window smoke pass",
+    "Release published with matching digests"
+   ],
+   "notes": "2026-11-23 buffy: pending build, package, smokes and publication."
   }
  ]
 }

@@ -44,8 +44,12 @@ public sealed class DnsInventoryClient(string pipeName = DnsInventoryClient.Pipe
         && snapshot.Entries is { Count: <= MaximumEntries }
         && snapshot.Findings is { Count: <= MaximumFindings }
         && snapshot.Warnings is { Count: <= 64 }
+        && snapshot.NewlyObservedCount >= 0 && snapshot.NewlyObservedCount <= snapshot.TotalEntries
+        && snapshot.BaselineCount is >= 0 and <= DomainBaseline.MaximumCapacity
+        && (snapshot.ObservedSinceUtc is null || snapshot.ObservedSinceUtc >= new DateTimeOffset(2000, 1, 1, 0, 0, 0, TimeSpan.Zero)
+            && snapshot.ObservedSinceUtc <= snapshot.CapturedAtUtc.AddMinutes(5))
         && snapshot.Entries.All(e => e is not null && Text(e.Domain) && e.RiskScore >= 0 && e.RiskScore <= 100 && e.Factors.All(Text)
-            && ValidLookalike(e.Lookalike))
+            && ValidLookalike(e.Lookalike) && ValidFirstSeen(e.FirstSeenUtc, snapshot.CapturedAtUtc))
         && snapshot.Findings.All(f => f is not null && Severities.Contains(f.Severity) && Text(f.Technique) && Text(f.Summary) && Text(f.Indicator))
         && snapshot.Warnings.All(Text);
 
@@ -54,6 +58,11 @@ public sealed class DnsInventoryClient(string pipeName = DnsInventoryClient.Pipe
         lookalike is null
         || (Text(lookalike.DecodedName) && Text(lookalike.Scripts) && Text(lookalike.Verdict)
             && lookalike.Brands is { Count: <= MaximumBrands } && lookalike.Brands.All(Text));
+
+    /// <summary>A first-seen date must be plausible and cannot be later than the capture that reported it.</summary>
+    private static bool ValidFirstSeen(DateTimeOffset? firstSeen, DateTimeOffset capturedAtUtc) =>
+        firstSeen is null || (firstSeen >= new DateTimeOffset(2000, 1, 1, 0, 0, 0, TimeSpan.Zero)
+            && firstSeen <= capturedAtUtc.AddMinutes(5));
 
     private static bool Text(string? value) => value is not null && value.Length <= MaximumText * 2;
 }

@@ -27,6 +27,10 @@ public sealed class DnsBaselinePrivacyTests
             Assert.DoesNotContain("private-banking-site", stored);
             Assert.Contains(DnsInventoryProvider.HashDomain("private-banking-site.example"), stored);
             Assert.DoesNotMatch(@"""[a-z0-9-]+\.[a-z]{2,}""", stored); // no plaintext domain-shaped strings
+            // v2 keeps the same privacy property and adds only the two dates, so "new" has a frame of reference.
+            Assert.Contains("\"SchemaVersion\":2", stored);
+            Assert.Contains("FirstSeenUtc", stored);
+            Assert.Contains("LastSeenUtc", stored);
         }
         finally
         {
