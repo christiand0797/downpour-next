@@ -3,6 +3,7 @@
 ## 2026-11-23 0.1.41: a rollback that cannot restore says so (buffy)
 
 - [x] Restore-failure branch (DN-090): the `NotRestored` path is now forced the way a real failed update reaches it — both files replaced, the restart step throws while the first replacement is held open with `FileShare.None`, the rollback restores the second and is refused the first. The report is 2 replaced / 1 restored / `a.txt`, and the file keeps the new bytes. `StagedUpdateApplyReport.Describe()` replaced the dialog's "restored where possible" and is shared with the journal record, so the person and the journal read one sentence. 1,547 Debug tests pass (2 new); `docs/UPDATE_ROLLBACK.md`.
+- [x] Published v0.1.41 (`4644746b`): ships the counted, named restore failure and the shared dialog/journal sentence; 1,547 Release tests, 1,077 package entries, every packaged route (179 YARA rules) and window smoke passed; ZIP 306,599,535 bytes sha256 `0f1e2e2f…`, SBOM `10bcd97d…`, notes `docs/RELEASE_0.1.41.md`.
 - [ ] A real in-app update: apply a published build over an installed older build through the helper end to end.
 - [ ] View the update failure dialog (needs a forced failure in a disposable install).
 - [x] Alert retention made truthful and visible (DN-088) shipped in v0.1.40.

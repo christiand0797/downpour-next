@@ -51,9 +51,17 @@ build runs changes the hash it expects. Read the hash from an executable (`(Get-
 pin that in the scripts rather than assuming the bump commit. Commit the docs first and pass `--target "$(git rev-parse
 HEAD)"` so the tag points at a pushed commit; the package script must keep pinning the embedded hash, not the tag.
 
-## Current state (end of 0.1.40)
+## Current state (end of 0.1.41)
 
-- Published: `v0.1.40` as Latest, built from `b2e28ab8`; ships truthful, visible alert retention. ZIP 306,598,917 bytes
+- Published: `v0.1.41` as Latest, built from `4644746b`; ships the counted, named restore failure. ZIP 306,599,535 bytes
+  sha256 `0f1e2e2f…`, SBOM `10bcd97d…`, SHA256SUMS `aab0bc82…`; 1,547 Release tests, 1,077 package entries, every
+  packaged route (179 YARA rules) and the window smoke passed. Details in `docs/RELEASE_0.1.41.md`.
+- Shipped in 0.1.41 (DN-090): `StagedUpdateApplyReport.Describe()` is one sentence used by both the helper's failure
+  dialog and the journal record — `Replaced 2 file(s) and restored 1; 1 could not be restored: a.txt.` — replacing
+  "restored where possible". `ARestoreThatItselfFailsIsCountedAndNamed` forces the branch by holding the first replaced
+  file open with `FileShare.None` while the restart step throws: 2 replaced / 1 restored / `a.txt` named, and that file
+  keeps the new bytes. The dialog was not viewed. Details in `docs/UPDATE_ROLLBACK.md`.
+- Published previously: `v0.1.40`, built from `b2e28ab8`; ships truthful, visible alert retention. ZIP 306,598,917 bytes
   sha256 `ec0b2ab8…`, SBOM `44411b79…`, SHA256SUMS `0488cadc…`; 1,545 Release tests, 1,077 package entries, every
   packaged route (179 YARA rules) and the window smoke passed. Details in `docs/RELEASE_0.1.40.md`.
 - Shipped in 0.1.40 (DN-088): the retention read passes its per-day eviction rows to `StoreRetentionAccounting.Assess`, so
@@ -115,10 +123,11 @@ HEAD)"` so the tag points at a pushed commit; the package script must keep pinni
   (with cleared-log reset and lost-window warning), retention accounting, backward clock warning, alert explanation
   panel, service and driver cross-view checks, bounded TCP listener list with process attribution, and remote
   destination/listener session digests.
-- Verified: 1,499 tests in the Debug and Release builds, packaged route smoke (every route, 179 YARA rules, no crash
+- Verified: 1,547 tests in the Debug and Release builds, packaged route smoke (every route, 179 YARA rules, no crash
   entries), window smoke, ZIP/SBOM hashes.
-- Not verified by hand: a real in-app update using the journal (locked-file rollback is now proved by tests, but no
-  installed build has been updated through the helper). The
+- Not verified by hand: a real in-app update using the journal (the locked-file rollback and the refused restore are now
+  proved by tests, but no installed build has been updated through the helper, and the failure dialog has not been seen).
+  The
   mitigation panel, the Alerts coverage panel and explanation panel, and the Network PROCESS column and
   listener/destination sections were also never viewed. The development machine's channel mix was not reviewed either.
 - Blocked: egress byte volume (ETW/admin ESTATS), metered feed signal (session-0 support undocumented), ARM64, signing.

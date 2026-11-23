@@ -1818,6 +1818,25 @@
     "A refusal before the first write still says nothing needed to be restored"
    ],
    "notes": "buffy 2026-11-23: completed. `ARestoreThatItselfFailsIsCountedAndNamed` replaces both files, throws from the post-apply step while `a.txt` is held open with `FileShare.None`, and the reverse rollback restores `b.txt` but is refused `a.txt`: 2 replaced / 1 restored / `a.txt` unrestored, `a.txt` keeps `new-a`, and no temporary file remains. `StagedUpdateApplyReport.Describe()` now builds the only sentence the helper shows and the journal stores, replacing 'Existing package files were restored where possible.'; the dialog adds the extraction advice only for an unrestored file. A second test pins the zero-replaced and clean-rollback sentences. 1,547 Debug tests pass (2 new). Dialogs not viewed. Docs: `docs/UPDATE_ROLLBACK.md`."
+  },
+  {
+   "id": "DN-091",
+   "title": "Cut and publish 0.1.41 with the counted restore failure",
+   "status": "completed",
+   "priority": "high",
+   "files": [
+    "Directory.Build.props",
+    "docs/RELEASE_0.1.41.md",
+    "docs/CONTINUATION.md"
+   ],
+   "acceptance": [
+    "Version 0.1.41 in Directory.Build.props",
+    "Release build clean and full Release suite passing",
+    "Package, packaged route smoke and window smoke pass",
+    "Release notes record the ZIP and SBOM digests",
+    "Tag points at the pushed docs commit; package pins the embedded hash"
+   ],
+   "notes": "buffy 2026-11-23: completed. Built from 4644746b0bf62b0c592545ed5a72ff34a9867b7d; 1,547 Release tests, 1,077 package entries (772,881,118 expanded bytes, 52 runtime components), every packaged route (179 YARA rules) and the window smoke passed. ZIP 306,599,535 bytes sha256 0f1e2e2f5d7180e4604bbe3c4a2ada5edc444de29f866efb426b6f4c9352bd95; SBOM 10bcd97da285189c5f6879844e074eda7abad9be31b2a375492e860da22ce977; SHA256SUMS aab0bc8217c69cfaed413d287db9620967e7cf555267eb432fce218194f9a1e9. Ships the counted and named restore failure; the failure dialog was not viewed and a real in-app update is still pending. Release notes docs/RELEASE_0.1.41.md."
   }
  ]
 }

@@ -6,6 +6,7 @@
 - The helper's failure dialog said "Existing package files were restored where possible" even though the applier knew the exact counts. `StagedUpdateApplyReport.Describe()` is now the only sentence either surface uses — `Replaced 2 file(s) and restored 1; 1 could not be restored: a.txt.` The dialog and the journal's rolled-back record both call it, so they cannot disagree, and the dialog adds "Extract the portable package again before relying on this installation" only when a file was not restored.
 - An exception thrown before the applier runs — a refused manifest path or digest — reports "No package file was replaced; the installed build is untouched", which is what the helper's own pre-apply checks guarantee.
 - Verification: Debug build 0 warnings/0 errors; 1,547 tests pass (2 new in `StagedUpdateApplierTests`). Neither the dialog nor the message box was viewed; the sentences are asserted by tests. Details in `docs/UPDATE_ROLLBACK.md`.
+- v0.1.41 published (DN-091): built from `4644746b0bf62b0c592545ed5a72ff34a9867b7d`; 1,547 Release tests, 1,077 package entries (772,881,118 expanded bytes, 52 runtime components), every packaged route (179 YARA rules) and the window smoke passed. ZIP 306,599,535 bytes sha256 `0f1e2e2f…`, SBOM `10bcd97d…`, SHA256SUMS `aab0bc82…`; notes `docs/RELEASE_0.1.41.md`.
 
 ## 2026-11-22 alert retention says what it counts (buffy, DN-088)
 
