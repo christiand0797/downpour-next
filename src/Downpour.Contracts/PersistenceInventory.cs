@@ -45,7 +45,8 @@ public static class PersistenceCategories
     public const string WmiSubscription = "WMI subscription";
     public const string DllShadow = "DLL shadow";
     public const string DriverFile = "Driver file";
+    public const string LocalAccount = "Local account";
 
     public static readonly IReadOnlySet<string> All = new HashSet<string>(StringComparer.Ordinal)
-        { RegistryRun, Winlogon, StartupFolder, ScheduledTask, WmiSubscription, DllShadow, DriverFile };
+        { RegistryRun, Winlogon, StartupFolder, ScheduledTask, WmiSubscription, DllShadow, DriverFile, LocalAccount };
 }

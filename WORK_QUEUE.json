@@ -1925,6 +1925,45 @@
     "Release published with matching digests"
    ],
    "notes": "2026-11-23 buffy: source commit 121e6535bc5ac143610bf4193a3a82af6c8b5301. Release build 1,557 tests, package 1,077 entries / 773,005,652 expanded bytes / 52 components, route smoke (179 YARA rules) and window smoke passed. ZIP 306,646,947 bytes sha256 0a504ecdc278142ae2314f33705c906ab21ad227ba2d214dcc5ab4bbb0286821; SBOM 5f1d47fe1a1c896ad2ee52478e47a4a829bf117336a50540f03607d3d5347655; SHA256SUMS 1cfa369c4b62e926e18e9d93b95f20f8d598ed5bf7f9591c8dfa66a70350593a. Notes docs/RELEASE_0.1.43.md."
+  },
+  {
+   "id": "DN-097",
+   "title": "Put local accounts and Administrators membership in the persistence baseline",
+   "status": "completed",
+   "priority": "high",
+   "files": [
+    "src/Downpour.Contracts/PersistenceInventory.cs",
+    "src/Downpour.Core/PersistenceAnalyzer.cs",
+    "src/Downpour.Service/PersistenceInventoryProvider.cs",
+    "src/Downpour.Desktop/Pages/PersistencePage.xaml.cs",
+    "tests/Downpour.Tests/LocalAccountPersistenceTests.cs",
+    "docs/LOCAL_ACCOUNTS.md"
+   ],
+   "acceptance": [
+    "Every local account is listed with its Administrators membership",
+    "A new account or a privilege change raises a T1136.001 finding at the right severity",
+    "The first sweep is a silent baseline",
+    "No logon times or activity are recorded",
+    "Capture stays fast with an unreachable domain controller"
+   ],
+   "notes": "2026-11-28 buffy: entries join the existing TOFU baseline; new enabled administrator CRITICAL, enabled standard HIGH, disabled MEDIUM; adding an account to Administrators is a CRITICAL modification. The harness caught two real faults before release: the paging loop reported 256 accounts on a machine with 8 (now one MAX_PREFERRED_LENGTH call with dedupe), and NetLocalGroupGetMembers level 3 blocked for minutes with an unreachable DC (now per-account NetUserGetLocalGroups, group name via LookupAccountSid). Capture afterwards 2.08 s. 1,563 tests pass. Persistence page not viewed."
+  },
+  {
+   "id": "DN-098",
+   "title": "Opt-in registration age for a DNS entry via RDAP",
+   "status": "queued",
+   "priority": "medium",
+   "files": [
+    "src/Downpour.Contracts/DnsInventory.cs",
+    "src/Downpour.Core/DnsInventoryClient.cs"
+   ],
+   "acceptance": [
+    "The IANA bootstrap ships in the binary; nothing is fetched at startup",
+    "One authoritative query per explicit user action, with the registry named",
+    "No domain name is written to disk; the cache is keyed by hash",
+    "404, 429 and a missing events array each produce a distinct honest message"
+   ],
+   "notes": "2026-11-28 buffy: closes the gap docs/DNS_NOVELTY.md calls out (local first sighting is not registration age). Requires an explicit click because a lookup tells one registry that this PC is interested in the name."
   }
  ]
 }

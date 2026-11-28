@@ -1,5 +1,13 @@
 # Downpour Next shared context
 
+## 2026-11-28 Local accounts join the persistence baseline (buffy, DN-097)
+
+- The persistence sweep now lists every local Windows account and whether it is in Administrators, as entries in the existing TOFU baseline. New enabled administrator → `CRITICAL`; new enabled standard user → `HIGH`; disabled → `MEDIUM`; an existing account added to Administrators → `CRITICAL` modification (`T1136.001`). The Persistence page filter includes the category.
+- Read-only and unelevated (`NetUserEnum`, `NetUserGetLocalGroups`). Only `enabled|disabled` and `administrator|standard user` are baselined — no logon times, because that is user activity and would make every sign-in look like a modification. Account names are stored locally; nothing leaves the machine.
+- Two defects found by a temporary harness before release: (1) the first version paged `NetUserEnum` with a resume handle and reported **256 accounts on a machine with 8** — now a single `MAX_PREFERRED_LENGTH` call with de-duplication; (2) `NetLocalGroupGetMembers` level 3 resolves member names and **blocked for minutes** with an unreachable domain controller — membership is now per account via `NetUserGetLocalGroups`, with the group name from its well-known SID via `LookupAccountSid`. Capture after the fix: 2.08 s.
+- Verification: Debug 0 warnings/0 errors, 1,563 tests (6 new in `LocalAccountPersistenceTests`). The Persistence page with the new category was not viewed.
+- Still not built, by design: anything that identifies a person from an account compromise. Attribution needs a provider's logs and legal process, not local inference.
+
 ## 2026-11-23 DNS novelty remembers when, and stops repeating itself (buffy, DN-095)
 
 - The resolver-cache baseline saved `known.Take(20_000)` from a `HashSet`. Past 20,000 remembered names each capture wrote an **arbitrary** subset, so a name still in the cache could fall out, be called new next cycle, and raise the same DGA finding again. Nothing stored a first-seen date either.

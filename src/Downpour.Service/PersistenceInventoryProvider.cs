@@ -1,6 +1,8 @@
 using System.Management;
 using System.Runtime.InteropServices;
 using System.Security;
+using System.Security.Principal;
+using System.Text;
 using System.Text.Json;
 using Downpour.Contracts;
 using Downpour.Core;
@@ -58,6 +60,7 @@ public sealed class PersistenceInventoryProvider(string baselinePath, FileSignat
         ReadScheduledTasks(observations, status, warnings);
         ReadWmiSubscriptions(observations, status);
         ReadDllShadows(observations, status);
+        ReadLocalAccounts(observations, status, warnings);
         var (driverObservations, driverStatus) = ReadDriverFiles();
         status.Add(driverStatus);
 
@@ -342,6 +345,152 @@ public sealed class PersistenceInventoryProvider(string baselinePath, FileSignat
         }
         status.Add($"PATH folders writable by standard users: {writable} of {directories.Length}");
     }
+
+    /// <summary>
+    /// Local user accounts and who is in the built-in Administrators group. Both are ordinary unelevated queries, so this
+    /// needs no policy or privilege. Only the stable attributes (enabled or disabled, administrator or not) enter the
+    /// baselined value: a last-logon time would make every sign-in look like a modification and would record user
+    /// activity the product deliberately does not collect.
+    /// </summary>
+    private static void ReadLocalAccounts(List<PersistenceObservation> observations, List<string> status, List<string> warnings)
+    {
+        var accounts = EnumerateLocalAccounts(warnings);
+        var group = AdministratorsGroupName();
+        var rows = accounts.Select(account => (account.Name, account.Disabled, Admin: IsAdministrator(account.Name, group))).ToArray();
+        foreach (var row in rows)
+        {
+            observations.Add(new(PersistenceCategories.LocalAccount, "Local users", Text(row.Name),
+                $"{(row.Disabled ? "disabled" : "enabled")}, {(row.Admin ? "administrator" : "standard user")}", "T1136.001"));
+        }
+        status.Add($"Local accounts: {rows.Length}, in Administrators: {rows.Count(row => row.Admin)}");
+    }
+
+    private const int FilterNormalAccount = 0x0002;
+    private const int UfAccountDisable = 0x0002;
+    private const int MaximumLocalAccounts = 256;
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    private struct UserInfo1
+    {
+        public string Name;
+        public string Password;
+        public int PasswordAge;
+        public int Privilege;
+        public string HomeDirectory;
+        public string Comment;
+        public int Flags;
+        public string ScriptPath;
+    }
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    private struct LocalGroupUsersInfo0
+    {
+        public string Name;
+    }
+
+    [DllImport("netapi32.dll", CharSet = CharSet.Unicode)]
+    private static extern int NetUserEnum(string? serverName, int level, int filter, out IntPtr buffer, int preferredMaximumLength,
+        out int entriesRead, out int totalEntries, ref int resumeHandle);
+
+    [DllImport("netapi32.dll", CharSet = CharSet.Unicode)]
+    private static extern int NetUserGetLocalGroups(string? serverName, string userName, int level, int flags, out IntPtr buffer,
+        int preferredMaximumLength, out int entriesRead, out int totalEntries);
+
+    [DllImport("netapi32.dll")]
+    private static extern int NetApiBufferFree(IntPtr buffer);
+
+    private static List<(string Name, bool Disabled)> EnumerateLocalAccounts(List<string> warnings)
+    {
+        var accounts = new List<(string Name, bool Disabled)>();
+        var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var resume = 0;
+        try
+        {
+            // MAX_PREFERRED_LENGTH returns every account in one buffer, so there is no paging loop to get wrong.
+            var result = NetUserEnum(null, 1, FilterNormalAccount, out var page, -1, out var read, out _, ref resume);
+            if (result != 0)
+            {
+                warnings.Add($"Local accounts could not be enumerated (netapi32 error {result}); this sweep has none.");
+                return accounts;
+            }
+            if (page == IntPtr.Zero) return accounts;
+            try
+            {
+                var size = Marshal.SizeOf<UserInfo1>();
+                for (var i = 0; i < read && accounts.Count < MaximumLocalAccounts; i++)
+                {
+                    var info = Marshal.PtrToStructure<UserInfo1>(IntPtr.Add(page, i * size));
+                    if (string.IsNullOrWhiteSpace(info.Name) || !names.Add(info.Name)) continue;
+                    accounts.Add((info.Name, (info.Flags & UfAccountDisable) != 0));
+                }
+            }
+            finally
+            {
+                NetApiBufferFree(page);
+            }
+        }
+        catch (Exception ex) when (ex is EntryPointNotFoundException or DllNotFoundException or MarshalDirectiveException)
+        {
+            warnings.Add($"Local account enumeration is unavailable ({ex.GetType().Name}).");
+        }
+        return accounts;
+    }
+
+    /// <summary>
+    /// Whether a local account is in the built-in Administrators group. Membership is read per account with
+    /// <c>NetUserGetLocalGroups</c>, which resolves only local group names. <c>NetLocalGroupGetMembers</c> at level 3
+    /// resolves every member name and can block for minutes on a machine whose domain controller is unreachable — and
+    /// this sweep runs inside the service's capture path.
+    /// </summary>
+    private static bool IsAdministrator(string account, string group)
+    {
+        var result = NetUserGetLocalGroups(null, account, 0, 0x0001, out var page, -1, out var read, out _);
+        if (result != 0 || page == IntPtr.Zero) return false;
+        try
+        {
+            var size = Marshal.SizeOf<LocalGroupUsersInfo0>();
+            for (var i = 0; i < read; i++)
+            {
+                var info = Marshal.PtrToStructure<LocalGroupUsersInfo0>(IntPtr.Add(page, i * size));
+                if (string.Equals(info.Name, group, StringComparison.OrdinalIgnoreCase)) return true;
+            }
+            return false;
+        }
+        finally
+        {
+            NetApiBufferFree(page);
+        }
+    }
+
+    /// <summary>
+    /// The localized name of the built-in Administrators group, resolved from its well-known SID with
+    /// <c>LookupAccountSid</c>. This is deliberately not <c>NTAccount.Translate</c>: that call can block for a long time
+    /// on a machine whose domain controller is unreachable, and this sweep runs inside the service's capture path.
+    /// </summary>
+    private static string AdministratorsGroupName()
+    {
+        try
+        {
+            var sid = new SecurityIdentifier(WellKnownSidType.BuiltinAdministratorsSid, null);
+            var bytes = new byte[sid.BinaryLength];
+            sid.GetBinaryForm(bytes, 0);
+            var name = new StringBuilder(256);
+            var nameLength = name.Capacity;
+            var domain = new StringBuilder(256);
+            var domainLength = domain.Capacity;
+            if (LookupAccountSid(null, bytes, name, ref nameLength, domain, ref domainLength, out _) && name.Length > 0)
+                return name.ToString();
+        }
+        catch (SystemException)
+        {
+            // Fall through to the English name.
+        }
+        return "Administrators";
+    }
+
+    [DllImport("advapi32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    private static extern bool LookupAccountSid(string? systemName, byte[] sid, StringBuilder name, ref int nameLength,
+        StringBuilder domain, ref int domainLength, out int sidUse);
 
     internal static bool IsWritableByStandardUsers(string directory) => FileSystemExposure.IsWritableByStandardUsers(directory);
 

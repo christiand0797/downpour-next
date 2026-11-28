@@ -40,7 +40,7 @@ public sealed partial class PersistencePage : Page
         {
             PersistenceCategories.RegistryRun, PersistenceCategories.Winlogon, PersistenceCategories.StartupFolder,
             PersistenceCategories.ScheduledTask, PersistenceCategories.WmiSubscription, PersistenceCategories.DllShadow,
-            PersistenceCategories.DriverFile
+            PersistenceCategories.DriverFile, PersistenceCategories.LocalAccount
         })
             CategoryFilter.Items.Add(category);
         CategoryFilter.SelectedIndex = 0;

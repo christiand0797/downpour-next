@@ -148,6 +148,7 @@
 - [x] Add six live TweetFeed CC0 blocklists (domains, corroborated domains, IPs, corroborated IPs, URLs, SHA-256); catalog is 58 active sources.
 - [x] Add Spamhaus ASN-DROP as a network-owner source: every connection now carries whether its autonomous system is listed as bulletproof or criminal hosting, worded as a property of routing and never as a program verdict. OffSeq Mirage (CC BY 4.0) honeypot addresses added; Threatview MD5 retired after HTTP 200 with 0 bytes; catalog is 59 active sources. Rejected sources and the remaining gaps are in [`docs/RESEARCH_2026-11-23.md`](docs/RESEARCH_2026-11-23.md).
 - [x] Make the DNS novelty baseline bounded and deterministic: least-recently-resolved eviction instead of an arbitrary subset (which let the same DGA name re-alert), first-seen and last-seen dates per hash, and a first-sighting count on the DNS page that says it is local, not registration age.
+- [x] Local account inventory: every local user and Administrators membership in the persistence baseline, with T1136.001 findings for a new account or privilege change, read-only and unelevated.
 - [ ] Global newly observed domains (first seen today in certificate transparency or SANS ISC) remain the highest-value missing signal; blocked on a licence decision because the public ISC data is CC BY-NC-SA.
 - [x] Fix a fuzz-found `Uri.TryCreate` crash (`IndexOutOfRangeException`) in `UrlHost`.
 - [x] 1,404 tests pass; opt-in live download/parse passes for all 57 downloadable feeds.

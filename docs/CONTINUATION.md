@@ -51,6 +51,15 @@ build runs changes the hash it expects. Read the hash from an executable (`(Get-
 pin that in the scripts rather than assuming the bump commit. Commit the docs first and pass `--target "$(git rev-parse
 HEAD)"` so the tag points at a pushed commit; the package script must keep pinning the embedded hash, not the tag.
 
+## Current state (end of 0.1.44)
+
+- Shipped in 0.1.44 (DN-097): local user accounts and Administrators membership are entries in the persistence TOFU
+  baseline, with `T1136.001` findings for a new account or a privilege change. Read-only and unelevated; no logon times
+  are recorded. Details, including the two defects the harness caught (duplicate paging; a domain-name-resolution stall
+  in `NetLocalGroupGetMembers`), are in `docs/LOCAL_ACCOUNTS.md`; the Persistence page was not viewed.
+- Next queued: DN-098 — opt-in registration age for a DNS entry via RDAP (IANA bootstrap shipped in the binary, one
+  authoritative query per explicit click, hash-keyed cache). Design recorded in the 0.1.43-cycle research.
+
 ## Current state (end of 0.1.43)
 
 - Published: `v0.1.43` as Latest, built from `121e6535`; ships bounded DNS novelty. ZIP 306,646,947 bytes sha256

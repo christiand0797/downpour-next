@@ -175,6 +175,17 @@ public static partial class PersistenceAnalyzer
                 case PersistenceCategories.ScheduledTask when recent:
                     findings.Add(TaskFinding(entry, runAs.GetValueOrDefault($"{entry.Category}|{entry.Location}|{entry.Name}", ""), verb));
                     break;
+                case PersistenceCategories.LocalAccount when recent:
+                {
+                    // An account that appears or gains Administrators membership is the local half of T1136.001. A
+                    // disabled account is still worth recording but cannot be signed into until someone enables it.
+                    var administrator = entry.Value.Contains("administrator", StringComparison.Ordinal);
+                    var disabled = entry.Value.StartsWith("disabled", StringComparison.Ordinal);
+                    findings.Add(new(disabled ? "MEDIUM" : administrator ? "CRITICAL" : "HIGH", "T1136.001", entry.Category,
+                        $"Local account {verb}: {entry.Name} ({(disabled ? "disabled" : "enabled")}, {(administrator ? "administrator" : "standard user")})",
+                        entry.Name));
+                    break;
+                }
             }
         }
         return findings.Select(finding => finding with { Summary = Bound(finding.Summary), Indicator = Bound(finding.Indicator) }).ToArray();
