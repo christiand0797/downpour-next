@@ -1964,6 +1964,45 @@
     "404, 429 and a missing events array each produce a distinct honest message"
    ],
    "notes": "2026-11-28 buffy: closes the gap docs/DNS_NOVELTY.md calls out (local first sighting is not registration age). Requires an explicit click because a lookup tells one registry that this PC is interested in the name."
+  },
+  {
+   "id": "DN-099",
+   "title": "Automate the nightly and stable release channels",
+   "status": "completed",
+   "priority": "high",
+   "files": [
+    "tools/release/Package-Portable.ps1",
+    "tools/release/Test-Portable.ps1",
+    "tools/release/Cut-Release.ps1",
+    "tools/release/Invoke-Nightly.ps1",
+    "tools/release/Register-NightlyTask.ps1",
+    "docs/NIGHTLY.md",
+    "AGENTS.md"
+   ],
+   "acceptance": [
+    "One package path verifies the built commit, SBOM, manifest and archive bytes",
+    "One smoke path covers every packaged route, the YARA helper and the native window",
+    "A stable cut publishes only after every gate passes and verifies uploaded digests",
+    "A registered task builds, tests and publishes a dated prerelease from main, skipping an unchanged HEAD",
+    "Old nightlies are pruned and stable releases are never touched"
+   ],
+   "notes": "2026-11-28 buffy: Package-Portable.ps1 re-ran against the 0.1.44 output (1,078 entries, 773,037,789 expanded bytes, 52 components, archive re-hashed) and the native window smoke passed. DownpourNightly is registered at 03:30, limited privilege, interactive only, against a dedicated shallow clone at C:\\Users\\purpl\\DownpourNext; the task fetched, fast-forwarded and built that clone. A failed nightly test gate is rerun once with the first attempt named; unattended builds disable MSBuild node reuse and shared compilation after a build wedged in the Roslyn compiler server with every process idle. No nightly release was published because the machine stays at 100% CPU (DN-100)."
+  },
+  {
+   "id": "DN-100",
+   "title": "Prove a full nightly publish on a quiet machine",
+   "status": "queued",
+   "priority": "high",
+   "files": [
+    "tools/release/Invoke-Nightly.ps1",
+    "docs/NIGHTLY.md"
+   ],
+   "acceptance": [
+    "A nightly release exists with uploaded digests matching the local assets",
+    "The 179-route sweep, YARA helper and native window smoke pass from the scheduled task",
+    "A second run with unchanged HEAD logs a skip instead of rebuilding"
+   ],
+   "notes": "2026-11-28 buffy: blocked by six pagentactivationruntimestarter (Power Automate Desktop) processes holding this machine at 100% CPU; a full-suite run failed five timing tests (a different five each attempt) while the same five passed 5/5 in one second alone. No nightly has been published."
   }
  ]
 }

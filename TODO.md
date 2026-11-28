@@ -1,5 +1,13 @@
 # Downpour Next TODO
 
+## 2026-11-28 one release path, two channels (buffy)
+
+- [x] Reusable release tooling (DN-099): `Package-Portable.ps1` verifies each executable names the built commit, writes the SBOM and manifest, and re-hashes the archive; `Test-Portable.ps1` sweeps every packaged route, the YARA helper and the native window; `Cut-Release.ps1` runs the stable gates and verifies uploaded digests; `Invoke-Nightly.ps1` builds and publishes a dated prerelease from `main`, skipping unchanged HEAD and pruning older nightlies; `Register-NightlyTask.ps1` bootstraps the clone and registers `DownpourNightly`. Package re-ran against the 0.1.44 output (1,078 entries, 52 components) and the window smoke passed.
+- [x] `DownpourNightly` registered at 03:30, limited privilege, interactive only, two-hour limit, against `C:\Users\purpl\DownpourNext`.
+- [ ] First full nightly publish and route sweep: blocked by 100% CPU from six Power Automate Desktop `pagentactivationruntimestarter` processes on this machine. Five timing tests fail per full-suite run and pass 5/5 in one second alone; no nightly release was published. Run on an idle machine, or after those processes end (DN-100).
+- [ ] The 179-route sweep has not been timed from the scheduled task; it is the longest gate and may need splitting for the two-hour limit if a quiet run approaches it.
+
+
 ## 2026-11-23 0.1.41: a rollback that cannot restore says so (buffy)
 
 - [x] Restore-failure branch (DN-090): the `NotRestored` path is now forced the way a real failed update reaches it — both files replaced, the restart step throws while the first replacement is held open with `FileShare.None`, the rollback restores the second and is refused the first. The report is 2 replaced / 1 restored / `a.txt`, and the file keeps the new bytes. `StagedUpdateApplyReport.Describe()` replaced the dialog's "restored where possible" and is shared with the journal record, so the person and the journal read one sentence. 1,547 Debug tests pass (2 new); `docs/UPDATE_ROLLBACK.md`.
