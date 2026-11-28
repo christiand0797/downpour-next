@@ -37,3 +37,10 @@ dotnet test Downpour.slnx -c Debug
 ```
 
 For an end-to-end local snapshot check, start `Downpour.Service` in one terminal and `Downpour.Desktop` in another. Stop both after the smoke check. Add tests for parsers, policy, and data transformations; privileged actions require dedicated denial, audit, timeout, and rollback tests before they can be enabled.
+
+## Release channels
+
+- Stable: `pwsh ./tools/release/Cut-Release.ps1 -Version <x.y.z>` bumps the version, writes the notes from commit subjects when `docs/RELEASE_<version>.md` is absent, builds, packages, smokes, tags, pushes and publishes as Latest, then verifies every uploaded digest. Do not push or publish a release whose build, tests or either smoke failed.
+- Nightly: `tools/release/Invoke-Nightly.ps1` fast-forwards `main`, skips an unchanged HEAD, runs the same gates, publishes `nightly-YYYYMMDD` as a prerelease and prunes nightlies older than seven days. `tools/release/Register-NightlyTask.ps1` registers it as the `DownpourNightly` task against a dedicated clone. See `docs/NIGHTLY.md`.
+- `tools/release/Package-Portable.ps1` and `tools/release/Test-Portable.ps1` are the reusable halves of the old per-version scripts in `artifacts/`; do not copy them per release.
+- The nightly keeps the shipping loop running daily. It does not write features: product changes still need a reviewed commit on `main`.
