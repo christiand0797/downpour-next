@@ -31,6 +31,14 @@ come from `Cut-Release.ps1`.
 9. Writes `artifacts/nightly/<date>-report.md` with the commit, test count, digests and the next
    queued `WORK_QUEUE.json` tasks.
 
+A failed test gate is rerun once, in full, against the same binaries. The first attempt's failing
+tests are named in the log, the report and the release notes, and a failure that repeats stops the
+nightly. This exists because the first build in a fresh clone can miss the suite's own wall-clock
+budgets (the 200,000-domain index and the ten-second pipe connects) while Windows Defender scans two
+gigabytes of new binaries: the first run of this task failed five timing tests and all five passed in
+one second once the clone was warm. It is not a way past a real regression, and `-NoTestRetry`
+disables it.
+
 A failure stops at the failing gate and leaves the previous nightly and the stable release in place.
 The log is `artifacts/nightly/logs/nightly-<date>.log`; `artifacts/nightly/state.json` records the
 last commit, tag and result.

@@ -96,7 +96,8 @@ if ($LASTEXITCODE -ne 0 -or -not $origin -or $origin -notmatch 'downpour-next') 
     Fail "The clone's origin does not point at downpour-next: $origin"
 }
 
-$pwshPath = (Get-Command pwsh).Source
+$candidate = Join-Path $PSHOME 'pwsh.exe'
+$pwshPath = if (Test-Path -LiteralPath $candidate) { $candidate } else { (Get-Command pwsh).Source }
 $identity = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
 
 $action = New-ScheduledTaskAction -Execute $pwshPath `

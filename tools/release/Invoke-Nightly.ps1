@@ -38,6 +38,10 @@
 .PARAMETER SkipSmoke
     Skip the packaged smoke. Not recommended.
 
+.PARAMETER NoTestRetry
+    Fail on the first failing test run. By default a failed test gate is rerun once in full and the
+    first attempt's failures are recorded; a failure that repeats still stops the nightly.
+
 .PARAMETER NoPublish
     Build, package and smoke locally without creating a GitHub release.
 
@@ -55,6 +59,7 @@ param(
     [switch]$Force,
     [switch]$SkipBuild,
     [switch]$SkipSmoke,
+    [switch]$NoTestRetry,
     [switch]$NoPublish
 )
 
@@ -165,17 +170,60 @@ if ($state.lastCommit -eq $head -and -not $Force) {
 # --- Build -----------------------------------------------------------------
 
 $buildLog = Join-Path $logDir "build-$Date.log"
+$retryLog = Join-Path $logDir "test-retry-$Date.log"
 $testCount = 0
+$firstAttemptFailures = @()
+$testRetryUsed = $false
 if ($SkipBuild) {
     Write-Log 'Skipping the build (-SkipBuild).'
 } else {
     Write-Log "Building (log: $buildLog)"
     & pwsh -NoProfile -File (Join-Path $repo 'Build-Portable.ps1') -Configuration Release *>&1 |
         Tee-Object -FilePath $buildLog | ForEach-Object { Add-Content -LiteralPath $logPath -Value $_ }
-    if ($LASTEXITCODE -ne 0) { Fail "Build-Portable.ps1 failed with exit code $LASTEXITCODE. See $buildLog" }
-    $testCount = Get-TestCount -Path $buildLog
-    if ($testCount -le 0) { Fail "The build log has no passing test count. See $buildLog" }
-    Write-Log "Release tests passed: $testCount"
+    if ($LASTEXITCODE -ne 0) {
+        $failureText = if (Test-Path -LiteralPath $buildLog) { Get-Content -LiteralPath $buildLog -Raw } else { '' }
+        $failureMatch = [regex]::Match($failureText, 'Failed!\s+-\s+Failed:\s+(\d+),\s+Passed:\s+(\d+)')
+        if (-not $failureMatch.Success) {
+            Fail "Build-Portable.ps1 failed before the test gate. See $buildLog"
+        }
+        $firstAttemptFailures = @(
+            [regex]::Matches($failureText, '\[xUnit\.net[^\]]*\]\s+(\S+)\s+\[FAIL\]') |
+                ForEach-Object { $_.Groups[1].Value } |
+                Sort-Object -Unique
+        )
+        $firstLine = ($failureText -split "`n" | Where-Object { $_ -match 'Failed!\s+-\s+Failed:' } | Select-Object -Last 1).Trim()
+        if ($NoTestRetry) { Fail "The test gate failed and -NoTestRetry is set: $firstLine" }
+        Write-Log "Test gate failed on attempt 1: $firstLine"
+        Write-Log ('Failing tests: ' + ($firstAttemptFailures -join ', '))
+        Write-Log 'Rerunning the full suite once against the same binaries (a cold clone can miss its timing budgets).'
+
+        & dotnet test (Join-Path $repo 'Downpour.slnx') -c Release --no-build --no-restore --nologo `
+            --blame-hang-timeout 10m *>&1 |
+            Tee-Object -FilePath $retryLog | ForEach-Object { Add-Content -LiteralPath $logPath -Value $_ }
+        if ($LASTEXITCODE -ne 0) {
+            $retryText = Get-Content -LiteralPath $retryLog -Raw
+            $retryFailures = @(
+                [regex]::Matches($retryText, '\[xUnit\.net[^\]]*\]\s+(\S+)\s+\[FAIL\]') |
+                    ForEach-Object { $_.Groups[1].Value } |
+                    Sort-Object -Unique
+            )
+            Fail ('The test gate failed twice. First attempt: ' + ($firstAttemptFailures -join ', ') +
+                '. Rerun: ' + ($retryFailures -join ', '))
+        }
+        $testCount = Get-TestCount -Path $retryLog
+        if ($testCount -le 0) { Fail "The retry log has no passing test count. See $retryLog" }
+        $testRetryUsed = $true
+        Write-Log "Retry passed with $testCount tests. Republishing without the test gate."
+
+        & pwsh -NoProfile -File (Join-Path $repo 'Build-Portable.ps1') -Configuration Release -SkipTests *>&1 |
+            Tee-Object -FilePath (Join-Path $logDir "publish-$Date.log") |
+            ForEach-Object { Add-Content -LiteralPath $logPath -Value $_ }
+        if ($LASTEXITCODE -ne 0) { Fail "The publish after the retry failed with exit code $LASTEXITCODE" }
+    } else {
+        $testCount = Get-TestCount -Path $buildLog
+        if ($testCount -le 0) { Fail "The build log has no passing test count. See $buildLog" }
+        Write-Log "Release tests passed: $testCount"
+    }
 }
 
 $buildProps = Get-Content -LiteralPath (Join-Path $repo 'Directory.Build.props') -Raw
@@ -214,6 +262,11 @@ if ($commits.Count -eq 0) { $commits = @('- No non-merge commits in the last 36 
 
 $notesPath = Join-Path $nightlyDir "$Date-notes.md"
 $validation = if ($testCount -gt 0) { "$testCount Release tests passed" } else { 'the existing build was reused' }
+$retrySentence = if ($testRetryUsed) {
+    "A first test attempt failed (``$($firstAttemptFailures -join '``, ``')``); the full suite was rerun once and passed."
+} else {
+    ''
+}
 $notes = @"
 # Downpour Next nightly $Date
 
@@ -226,6 +279,7 @@ $($commits -join "`n")
 ## Validation
 
 - Release build and $validation.
+$retrySentence
 - Every packaged route, the YARA helper and the native window smoke passed.
 - Unsigned portable package; this is a prerelease, not the latest stable build.
 
@@ -303,7 +357,7 @@ $report = @"
 - Result: **passed**
 - Commit: ``$head``
 - Version: $version
-- Tests: $testCount
+- Tests: $testCount$(if ($testRetryUsed) { " (passed on rerun; first attempt failed: $($firstAttemptFailures -join ', '))" })
 - Archive: ``$(Split-Path -Leaf $evidence.zip)`` ($($evidence.zipBytes) bytes)
 - SHA-256: ``$($evidence.zipSha256)``
 - Release: $(if ($NoPublish) { 'not published (-NoPublish)' } else { "https://github.com/$githubRepo/releases/tag/$tag" })
