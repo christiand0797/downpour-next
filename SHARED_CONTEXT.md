@@ -1,5 +1,13 @@
 # Downpour Next shared context
 
+## 2026-11-28 Scheduled tasks are visible and editable through the action broker (buffy, DN-101)
+
+- The new Monitoring route `scheduled-tasks` lists every Task Scheduler task from the persistence snapshot, including hidden ones. `PersistenceEntry.TaskDetail` carries state, run-as, run level, author, hidden, up to eight triggers, last/next run and the raw last result; it is outside the baseline key and hash, so existing baselines stay valid.
+- Enable, disable and delete use a new preview/consent pipe (`Downpour.ScheduledTaskActions.v1`) rather than direct writes. Full paths are validated, `\Microsoft\Windows\` and `\Downpour\` are protected, each action needs a single-use token, every attempt is audited, and the resulting state is re-read from Task Scheduler instead of assumed. The new **scheduled-task changes** sensor setting gates the pipe.
+- Deliberately absent: run-now, trigger/action/principal edits, task XML import, and bulk operations.
+- Verification: Debug build 0 warnings/0 errors; 67 scheduled-task and persistence tests pass (19 new). The COM mutation path was not exercised against live tasks and the row menu was not viewed, so the first real change should be reviewed on screen. Full release gates remain blocked by the 100% CPU load in DN-100.
+- Not released; `docs/SCHEDULED_TASKS.md` records the fields, limits and policy.
+
 ## 2026-11-28 Nightly and stable releases now have one audited path (buffy, DN-099)
 
 - `tools/release/` replaces the per-version package and smoke scripts that used to be copied into `artifacts/`. `Package-Portable.ps1` refuses executables that do not name the built commit, writes the CycloneDX SBOM, the file manifest and the archive, then re-opens the archive and re-hashes every entry. `Test-Portable.ps1` opens every route in `capabilities.json`, checks the owned service and snapshot, exercises the YARA helper and runs the native window smoke. `Cut-Release.ps1` refuses a dirty tree or an existing tag, bumps the version, generates notes from commit subjects when they are absent, builds, packages, smokes, tags, pushes, publishes as Latest and verifies every uploaded digest; nothing is pushed or published when a gate fails.

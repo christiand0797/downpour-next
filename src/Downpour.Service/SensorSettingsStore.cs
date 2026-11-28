@@ -57,6 +57,7 @@ public sealed class SensorSettingsStore(string path)
                 SensorSettingKeys.HostIsolationActions => current with { HostIsolationActions = request.Value },
                 SensorSettingKeys.ThreatDatabases => current with { ThreatDatabases = request.Value },
                 SensorSettingKeys.LocalLearning => current with { LocalLearning = request.Value },
+                SensorSettingKeys.ScheduledTaskActions => current with { ScheduledTaskActions = request.Value },
                 _ => current with { IntelLookups = request.Value },
             };
             if (updated == current) return new(1, request.RequestId, true, "unchanged", current);

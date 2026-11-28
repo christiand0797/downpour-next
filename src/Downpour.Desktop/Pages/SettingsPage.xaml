@@ -119,6 +119,11 @@
                         <StackPanel Spacing="2"><TextBlock Text="Allow host isolation" FontWeight="SemiBold" /><TextBlock Text="Permits a confirmed, time-limited network cut-off (5 minutes to 24 hours). A Windows scheduled task always ends it on time, even if Downpour is closed; isolation is refused if that cannot be scheduled." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" /></StackPanel>
                         <ToggleSwitch x:Name="HostIsolationToggle" Grid.Column="1" IsOn="True" IsEnabled="False" OnContent="On" OffContent="Off" />
                     </Grid>
+                    <Grid ColumnSpacing="16">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                        <StackPanel Spacing="2"><TextBlock Text="Allow scheduled-task changes" FontWeight="SemiBold" /><TextBlock Text="Permits confirmed enable, disable, or removal of a Task Scheduler task after its own preview. Windows-owned tasks under \Microsoft\Windows and Downpour's own tasks stay protected, and nothing runs a task on demand." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" /></StackPanel>
+                        <ToggleSwitch x:Name="ScheduledTaskActionsToggle" Grid.Column="1" IsOn="True" IsEnabled="False" OnContent="On" OffContent="Off" />
+                    </Grid>
                     <TextBlock x:Name="SensorSettingsState" FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" TextWrapping="Wrap" />
                 </StackPanel>
             </Border>

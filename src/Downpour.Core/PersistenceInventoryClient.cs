@@ -44,9 +44,14 @@ public sealed class PersistenceInventoryClient(string pipeName = PersistenceInve
         && snapshot.SourceStatus.All(Text) && snapshot.Warnings.All(Text)
         && snapshot.Entries.All(e => e is not null && PersistenceCategories.All.Contains(e.Category) && PersistenceChanges.All.Contains(e.Change)
             && Text(e.Location) && Text(e.Name) && Text(e.Value) && Text(e.Technique)
-            && e.Indicators is { Count: <= 8 } && e.Indicators.All(Text))
+            && e.Indicators is { Count: <= 8 } && e.Indicators.All(Text)
+            && (e.TaskDetail is null || TaskDetailValid(e.TaskDetail)))
         && snapshot.Findings.All(f => f is not null && Severities.Contains(f.Severity) && PersistenceCategories.All.Contains(f.Category)
             && Text(f.Technique) && Text(f.Summary) && Text(f.Indicator));
 
     private static bool Text(string? value) => value is not null && value.Length <= MaximumText;
+
+    private static bool TaskDetailValid(PersistenceTaskDetail detail) =>
+        Text(detail.State) && Text(detail.RunAs) && Text(detail.RunLevel) && Text(detail.Author)
+        && detail.Triggers is { Count: <= 8 } && detail.Triggers.All(Text);
 }

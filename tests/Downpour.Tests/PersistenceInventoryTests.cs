@@ -266,4 +266,36 @@ public sealed class PersistenceInventoryTests
         Assert.False(PersistenceInventoryClient.IsValid(good with { Entries = [entry with { Change = "Deleted" }] }));
         Assert.False(PersistenceInventoryClient.IsValid(good with { SchemaVersion = 2 }));
     }
+
+    [Fact]
+    public void ScheduledTaskDetailTravelsWithTheEntryWithoutChangingItsBaselineHash()
+    {
+        var detail = new PersistenceTaskDetail("Ready", @"NT AUTHORITY\SYSTEM", "Highest", "Microsoft Corporation", true,
+            ["Daily from 2026-10-01 03:00"], T0.AddDays(-1), T0.AddDays(1), 0);
+        var observation = new PersistenceObservation(PersistenceCategories.ScheduledTask,
+            @"\Microsoft\Windows\UpdateOrchestrator", @"\Microsoft\Windows\UpdateOrchestrator\Schedule Scan",
+            @"C:\Windows\System32\usoclient.exe StartScan", "T1053.005", @"NT AUTHORITY\SYSTEM", detail);
+
+        var (entries, baseline, first) = PersistenceAnalyzer.Compare([observation], null, T0);
+
+        Assert.True(first);
+        var entry = Assert.Single(entries);
+        Assert.Same(detail, entry.TaskDetail);
+        Assert.Equal(PersistenceAnalyzer.Hash(observation.Value), baseline.Items[PersistenceAnalyzer.Key(observation)].ValueSha256);
+    }
+
+    [Fact]
+    public void ClientRejectsAnOversizedTaskDetail()
+    {
+        var detail = new PersistenceTaskDetail("Ready", "user", "Least privilege", "author", false, ["At logon"], null, null, null);
+        var entry = new PersistenceEntry(PersistenceCategories.ScheduledTask, @"\", @"\Task", "action", "T1053.005",
+            PersistenceChanges.Baseline, null, [], detail);
+        var snapshot = new PersistenceSnapshot(1, T0, T0, false, [entry], [], [], []);
+
+        Assert.True(PersistenceInventoryClient.IsValid(snapshot));
+        Assert.False(PersistenceInventoryClient.IsValid(snapshot with
+        {
+            Entries = [entry with { TaskDetail = detail with { Triggers = [new string('x', 1025)] } }]
+        }));
+    }
 }

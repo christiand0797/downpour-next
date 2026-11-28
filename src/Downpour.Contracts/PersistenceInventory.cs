@@ -12,7 +12,24 @@ public sealed record PersistenceEntry(
     string Technique,
     string Change,
     DateTimeOffset? ChangedAtUtc,
-    IReadOnlyList<string> Indicators);
+    IReadOnlyList<string> Indicators,
+    PersistenceTaskDetail? TaskDetail = null);
+
+/// <summary>
+/// Read-only Task Scheduler metadata for a scheduled-task entry. It is not part of the baseline key or value hash,
+/// so collecting it does not mark existing tasks as modified. <see cref="LastResult"/> is the scheduler's raw code
+/// and is only set when the task has actually run.
+/// </summary>
+public sealed record PersistenceTaskDetail(
+    string State,
+    string RunAs,
+    string RunLevel,
+    string Author,
+    bool Hidden,
+    IReadOnlyList<string> Triggers,
+    DateTimeOffset? LastRunUtc,
+    DateTimeOffset? NextRunUtc,
+    int? LastResult);
 
 public sealed record PersistenceFinding(string Severity, string Technique, string Category, string Summary, string Indicator);
 

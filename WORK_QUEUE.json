@@ -1,6 +1,6 @@
 {
  "schemaVersion": 1,
- "updatedAt": "2026-11-23",
+ "updatedAt": "2026-11-28",
  "tasks": [
   {
    "id": "DN-001",
@@ -2003,6 +2003,30 @@
     "A second run with unchanged HEAD logs a skip instead of rebuilding"
    ],
    "notes": "2026-11-28 buffy: blocked by six pagentactivationruntimestarter (Power Automate Desktop) processes holding this machine at 100% CPU; a full-suite run failed five timing tests (a different five each attempt) while the same five passed 5/5 in one second alone. No nightly has been published."
+  },
+  {
+   "id": "DN-101",
+   "title": "Scheduled-tasks route with consented enable, disable and delete",
+   "status": "completed",
+   "priority": "high",
+   "files": [
+    "src/Downpour.Contracts/ScheduledTaskActionContracts.cs",
+    "src/Downpour.Contracts/PersistenceInventory.cs",
+    "src/Downpour.Core/ScheduledTaskActionClient.cs",
+    "src/Downpour.Service/ScheduledTaskActionExecutor.cs",
+    "src/Downpour.Service/ScheduledTaskActionPipeWorker.cs",
+    "src/Downpour.Desktop/Pages/ScheduledTasksPage.xaml",
+    "docs/SCHEDULED_TASKS.md",
+    "tests/Downpour.Tests/ScheduledTaskActionTests.cs"
+   ],
+   "acceptance": [
+    "Every scheduled task is listed read-only from the persistence snapshot, including hidden tasks",
+    "Enable, disable and delete require a preview, a single-use consent token and an audit record",
+    "Traversal and malformed paths are refused; Windows-owned and Downpour-owned tasks are protected",
+    "The sensor setting can turn all task changes off",
+    "Path, consent, protection and switch tests pass"
+   ],
+   "notes": "2026-11-28 buffy: implemented on top of the read-only view; 67 scheduled-task and persistence tests pass and the Debug build is clean. The COM mutation path was not exercised against live tasks and the row menu was not viewed. No release cut; full gates remain blocked by the 100% CPU load recorded in DN-100."
   }
  ]
 }

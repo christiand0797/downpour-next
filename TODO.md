@@ -677,4 +677,6 @@ This checklist tracks current implementation state; the detailed order, dependen
 - [x] Publish v0.1.29 from `c942195` with listener process attribution and verify tag, Latest, and all three asset digests (1,481 Release tests; package, full route smoke and window smoke passed).
 - [ ] Continue complete v29 parity: real detection/correlation and sensors, admin elevation, recovery-safe actions, driver lifecycle, operational AEGIS/advanced workflows, installer/signing/accessibility. Demonstration metrics do not count as protection. Host-isolation draft remains gated by the four merge blockers in `docs/AGENT_COORDINATION.md`.
 
+- [x] Add the scheduled-tasks Monitoring route and consent-gated enable/disable/delete through the action broker (DN-101; 67 tests pass; COM mutation path and row menu not yet exercised).
+
 Resume from the newest SHARED_CONTEXT checkpoint; do not treat historical completion claims or route presence as full functional parity.

@@ -6,7 +6,7 @@ using Downpour.Contracts;
 namespace Downpour.Core;
 
 /// <summary>A raw item observed by a collector, before baseline comparison.</summary>
-public sealed record PersistenceObservation(string Category, string Location, string Name, string Value, string Technique, string RunAs = "");
+public sealed record PersistenceObservation(string Category, string Location, string Name, string Value, string Technique, string RunAs = "", PersistenceTaskDetail? TaskDetail = null);
 
 /// <summary>Stored per-item baseline state: a value hash, never the value itself.</summary>
 public sealed record PersistenceBaselineItem(string ValueSha256, DateTimeOffset? FirstSeenUtc, DateTimeOffset? LastChangedUtc);
@@ -95,7 +95,7 @@ public static partial class PersistenceAnalyzer
             // (for example GoogleUpdateTaskMachineUA matches v29's ^GoogleUpdate[A-Z]{4,} pattern).
             IReadOnlyList<string> indicators = change == PersistenceChanges.Baseline ? [] : Indicators(observation);
             entries.Add(new PersistenceEntry(observation.Category, observation.Location, observation.Name, observation.Value,
-                observation.Technique, change, changedAt, indicators));
+                observation.Technique, change, changedAt, indicators, observation.TaskDetail));
         }
         return (entries, new PersistenceBaseline(1, created, updated), first);
     }

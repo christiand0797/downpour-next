@@ -244,7 +244,8 @@ public sealed class PersistenceInventoryProvider(string baselinePath, FileSignat
                             }
                             var enabled = (bool)task.Enabled ? "" : " [disabled]";
                             observations.Add(new(PersistenceCategories.ScheduledTask, Text((string)folder.Path), Text(taskPath),
-                                Text(string.Join(" ; ", actions) + enabled), "T1053.005", Text(runAs)));
+                                Text(string.Join(" ; ", actions) + enabled), "T1053.005", Text(runAs),
+                                DescribeTask(task, definition, runAs)));
                             count++;
                         }
                         catch (COMException)
@@ -270,6 +271,111 @@ public sealed class PersistenceInventoryProvider(string baselinePath, FileSignat
             if (schedulerObject is not null && Marshal.IsComObject(schedulerObject)) Marshal.FinalReleaseComObject(schedulerObject);
         }
     }
+
+    /// <summary>
+    /// Read-only metadata that makes a scheduled task reviewable without opening Task Scheduler. Every property is
+    /// optional in practice: a task whose principal or triggers this account cannot read still appears with its action
+    /// and state, and the unreadable parts stay blank instead of becoming a guess.
+    /// </summary>
+    private static PersistenceTaskDetail? DescribeTask(dynamic task, dynamic definition, string runAs)
+    {
+        try
+        {
+            var state = ((int)task.State) switch
+            {
+                1 => "Disabled",
+                2 => "Queued",
+                3 => "Ready",
+                4 => "Running",
+                _ => "Unknown",
+            };
+
+            var runLevel = "Unknown";
+            try { runLevel = (int)definition.Principal.RunLevel == 1 ? "Highest" : "Least privilege"; }
+            catch (Exception ex) when (OptionalTaskDetailException(ex)) { }
+
+            var author = "";
+            try { author = (string?)definition.RegistrationInfo.Author ?? ""; }
+            catch (Exception ex) when (OptionalTaskDetailException(ex)) { }
+
+            var hidden = false;
+            try { hidden = (bool)task.Hidden; }
+            catch (Exception ex) when (OptionalTaskDetailException(ex)) { }
+
+            var triggers = new List<string>();
+            try
+            {
+                foreach (dynamic trigger in (System.Collections.IEnumerable)definition.Triggers)
+                {
+                    if (triggers.Count >= 8) break;
+                    try
+                    {
+                        var type = ((int)trigger.Type) switch
+                        {
+                            1 => "Event",
+                            2 => "Time",
+                            3 => "Daily",
+                            4 => "Weekly",
+                            5 => "Monthly",
+                            6 => "Monthly day-of-week",
+                            7 => "Idle",
+                            8 => "At registration",
+                            9 => "At boot",
+                            10 => "At logon",
+                            11 => "Session change",
+                            12 => "Custom",
+                            _ => "Unknown trigger",
+                        };
+                        var enabled = (bool)trigger.Enabled ? "" : " (disabled)";
+                        var start = "";
+                        try
+                        {
+                            DateTime boundary = trigger.StartBoundary;
+                            if (boundary.Year > 1900) start = $" from {boundary:yyyy-MM-dd HH:mm}";
+                        }
+                        catch (Exception ex) when (OptionalTaskDetailException(ex)) { }
+                        triggers.Add(Text($"{type}{start}{enabled}"));
+                    }
+                    catch (Exception ex) when (OptionalTaskDetailException(ex)) { }
+                }
+            }
+            catch (Exception ex) when (OptionalTaskDetailException(ex)) { }
+
+            DateTimeOffset? lastRun = null;
+            int? lastResult = null;
+            try
+            {
+                DateTime value = task.LastRunTime;
+                if (value.Year > 1900)
+                {
+                    lastRun = LocalTaskTime(value);
+                    lastResult = (int)task.LastTaskResult;
+                }
+            }
+            catch (Exception ex) when (OptionalTaskDetailException(ex)) { }
+
+            DateTimeOffset? nextRun = null;
+            try
+            {
+                DateTime value = task.NextRunTime;
+                if (value.Year > 1900) nextRun = LocalTaskTime(value);
+            }
+            catch (Exception ex) when (OptionalTaskDetailException(ex)) { }
+
+            return new PersistenceTaskDetail(state, Text(runAs), runLevel, Text(author), hidden, triggers, lastRun, nextRun, lastResult);
+        }
+        catch (Exception ex) when (OptionalTaskDetailException(ex))
+        {
+            return null;
+        }
+    }
+
+    /// <summary>Task Scheduler returns local wall-clock times without a kind.</summary>
+    private static DateTimeOffset LocalTaskTime(DateTime value) => new(DateTime.SpecifyKind(value, DateTimeKind.Local));
+
+    private static bool OptionalTaskDetailException(Exception ex) =>
+        ex is COMException or InvalidCastException or ArgumentException or UnauthorizedAccessException
+            or Microsoft.CSharp.RuntimeBinder.RuntimeBinderException;
 
     private static void ReadWmiSubscriptions(List<PersistenceObservation> observations, List<string> status)
     {

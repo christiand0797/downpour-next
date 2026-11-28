@@ -22,8 +22,9 @@
 .PARAMETER PackagePath
     Portable folder. Defaults to artifacts\DownpourNext-win-x64-<Version>.
 
-.PARAMETER SkipRoutes
-    Skip the per-route desktop sweep.
+.PARAMETER Routes
+    Override the route list, for example -Routes scheduled-tasks while iterating on one page. Every name
+    must exist in capabilities.json.
 
 .PARAMETER SkipWindow
     Skip the native window smoke.
@@ -39,6 +40,7 @@ param(
     [string]$Version,
     [string]$Label,
     [string]$PackagePath,
+    [string[]]$Routes,
     [switch]$SkipRoutes,
     [switch]$SkipWindow,
     [switch]$SkipScanner
@@ -117,8 +119,16 @@ if (-not $SkipRoutes) {
     Start-Sleep -Seconds 1
 
     $capabilities = Get-Content -LiteralPath (Join-Path $repo 'capabilities.json') -Raw | ConvertFrom-Json
-    $routes = @('processes') + @($capabilities.capabilities.routeId | Where-Object { $_ -ne 'processes' })
-    Write-Host "==> Route smoke: $($routes.Count) routes" -ForegroundColor Cyan
+    $known = @($capabilities.capabilities.routeId)
+    $routes = if ($Routes) {
+        foreach ($route in $Routes) {
+            if ($known -notcontains $route) { Fail "Unknown route '$route'. Known routes: $($known -join ', ')" }
+        }
+        @($Routes)
+    } else {
+        @('processes') + @($known | Where-Object { $_ -ne 'processes' })
+    }
+    Write-Host "==> Route smoke: $($routes.Count) route$(if ($routes.Count -eq 1) { '' } else { 's' })" -ForegroundColor Cyan
 
     $crashLog = Join-Path $env:LOCALAPPDATA 'DownpourNext/logs/desktop-crash.log'
     $index = 0

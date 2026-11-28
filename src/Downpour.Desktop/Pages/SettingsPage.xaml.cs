@@ -34,6 +34,7 @@ public sealed partial class SettingsPage : Page
         FirewallActionsToggle.Toggled += async (_, _) => await SetSensorSettingAsync(Downpour.Contracts.SensorSettingKeys.FirewallActions, FirewallActionsToggle.IsOn);
         UsbActionsToggle.Toggled += async (_, _) => await SetSensorSettingAsync(Downpour.Contracts.SensorSettingKeys.UsbActions, UsbActionsToggle.IsOn);
         HostIsolationToggle.Toggled += async (_, _) => await SetSensorSettingAsync(Downpour.Contracts.SensorSettingKeys.HostIsolationActions, HostIsolationToggle.IsOn);
+        ScheduledTaskActionsToggle.Toggled += async (_, _) => await SetSensorSettingAsync(Downpour.Contracts.SensorSettingKeys.ScheduledTaskActions, ScheduledTaskActionsToggle.IsOn);
         ThreatDatabasesToggle.Toggled += async (_, _) => await SetSensorSettingAsync(Downpour.Contracts.SensorSettingKeys.ThreatDatabases, ThreatDatabasesToggle.IsOn);
         LocalLearningToggle.Toggled += async (_, _) => await SetSensorSettingAsync(Downpour.Contracts.SensorSettingKeys.LocalLearning, LocalLearningToggle.IsOn);
     }
@@ -65,6 +66,8 @@ public sealed partial class SettingsPage : Page
                 UsbActionsToggle.IsEnabled = true;
                 HostIsolationToggle.IsOn = settings.HostIsolationActions;
                 HostIsolationToggle.IsEnabled = true;
+                ScheduledTaskActionsToggle.IsOn = settings.ScheduledTaskActions;
+                ScheduledTaskActionsToggle.IsEnabled = true;
                 ThreatDatabasesToggle.IsOn = settings.ThreatDatabases;
                 ThreatDatabasesToggle.IsEnabled = true;
                 LocalLearningToggle.IsOn = settings.LocalLearning;
@@ -81,6 +84,7 @@ public sealed partial class SettingsPage : Page
                 FirewallActionsToggle.IsEnabled = false;
                 UsbActionsToggle.IsEnabled = false;
                 HostIsolationToggle.IsEnabled = false;
+                ScheduledTaskActionsToggle.IsEnabled = false;
                 ThreatDatabasesToggle.IsEnabled = false;
                 LocalLearningToggle.IsEnabled = false;
                 SensorSettingsState.Text = "The sensor service is not reachable, so its settings cannot be shown or changed.";
