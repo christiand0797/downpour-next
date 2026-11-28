@@ -40,8 +40,11 @@ one second once the clone was warm. It is not a way past a real regression, and 
 disables it.
 
 A failure stops at the failing gate and leaves the previous nightly and the stable release in place.
-The log is `artifacts/nightly/logs/nightly-<date>.log`; `artifacts/nightly/state.json` records the
-last commit, tag and result.
+Each run writes its own `artifacts/nightly/logs/nightly-<date>-<time>.log` so a rerun cannot
+interleave with the failed attempt; `artifacts/nightly/state.json` records the last commit, tag and
+result. Unattended builds set `MSBUILDDISABLENODEREUSE=1` and `UseSharedCompilation=false`: this
+clone's second build wedged inside the shared Roslyn compiler server with the process idle, and a
+scheduled task has no console at which a person would notice. The cost is a slightly slower build.
 
 ## What it does not do
 

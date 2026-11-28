@@ -65,6 +65,11 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $env:GIT_TERMINAL_PROMPT = '0'
+# Unattended builds have no console to notice a wedged build server. Node reuse and the shared
+# Roslyn compiler server have both stalled here; MSBuild reads these environment names as
+# properties, so the child Build-Portable.ps1 inherits them.
+$env:MSBUILDDISABLENODEREUSE = '1'
+$env:UseSharedCompilation = 'false'
 
 $scriptRepo = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $repo = if ($RepoPath) { (Resolve-Path -LiteralPath $RepoPath).Path } else { $scriptRepo }
@@ -76,7 +81,7 @@ $artifacts = Join-Path $repo 'artifacts'
 $nightlyDir = Join-Path $artifacts 'nightly'
 $logDir = Join-Path $nightlyDir 'logs'
 [IO.Directory]::CreateDirectory($logDir) | Out-Null
-$logPath = Join-Path $logDir "nightly-$Date.log"
+$logPath = Join-Path $logDir ("nightly-$Date-" + (Get-Date -Format 'HHmmss') + '.log')
 $statePath = Join-Path $nightlyDir 'state.json'
 $reportPath = Join-Path $nightlyDir "$Date-report.md"
 
@@ -366,7 +371,7 @@ $report = @"
 
 $queueLines
 
-Logs: ``artifacts/nightly/logs/nightly-$Date.log``
+Logs: ``$logPath``
 "@
 [IO.File]::WriteAllText($reportPath, $report + [Environment]::NewLine)
 
