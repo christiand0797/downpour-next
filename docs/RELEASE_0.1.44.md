@@ -42,4 +42,8 @@ locally because the feature is worthless without them; they never leave the mach
 
 ## Package
 
-Placeholder — filled after packaging.
+- `DownpourNext-win-x64-0.1.44.zip` — 306,650,231 bytes, SHA-256 `74b217d6aded4d1cb0ecdf039b3270153090d745b4f290526ac13645bdc30333`.
+- `DownpourNext-0.1.44-sbom.cdx.json` — SHA-256 `8cdcbaff43c07908ce28266fda40f52d981e8d6e4f671986d3709cd733ae8b3f` (52 components).
+- `DownpourNext-0.1.44-SHA256SUMS.txt` — 198 bytes, SHA-256 `b9f3eb0d8128112ae315f76992ad8aba930d4581f6a5b05d0ca846e49ef29e78`.
+- 1,077 entries, 773,011,784 expanded bytes, 52 runtime components. Every executable reports
+  `0.1.44+2d24aede02d725ea11be39127c22ae3b7768234b`.

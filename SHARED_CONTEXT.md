@@ -6,6 +6,7 @@
 - Read-only and unelevated (`NetUserEnum`, `NetUserGetLocalGroups`). Only `enabled|disabled` and `administrator|standard user` are baselined — no logon times, because that is user activity and would make every sign-in look like a modification. Account names are stored locally; nothing leaves the machine.
 - Two defects found by a temporary harness before release: (1) the first version paged `NetUserEnum` with a resume handle and reported **256 accounts on a machine with 8** — now a single `MAX_PREFERRED_LENGTH` call with de-duplication; (2) `NetLocalGroupGetMembers` level 3 resolves member names and **blocked for minutes** with an unreachable domain controller — membership is now per account via `NetUserGetLocalGroups`, with the group name from its well-known SID via `LookupAccountSid`. Capture after the fix: 2.08 s.
 - Verification: Debug 0 warnings/0 errors, 1,563 tests (6 new in `LocalAccountPersistenceTests`). The Persistence page with the new category was not viewed.
+- v0.1.44 published (DN-098 pending): built from `2d24aede02d725ea11be39127c22ae3b7768234b`; 1,563 Release tests, 1,077 package entries (773,011,784 expanded bytes, 52 components), every packaged route (179 YARA rules) and the window smoke passed. ZIP 306,650,231 bytes sha256 `74b217d6…`, SBOM `8cdcbaff…`, SHA256SUMS `b9f3eb0d…`.
 - Still not built, by design: anything that identifies a person from an account compromise. Attribution needs a provider's logs and legal process, not local inference.
 
 ## 2026-11-23 DNS novelty remembers when, and stops repeating itself (buffy, DN-095)

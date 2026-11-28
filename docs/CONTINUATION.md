@@ -53,6 +53,9 @@ HEAD)"` so the tag points at a pushed commit; the package script must keep pinni
 
 ## Current state (end of 0.1.44)
 
+- Published: `v0.1.44` as Latest, built from `2d24aede`; ZIP 306,650,231 bytes sha256 `74b217d6…`, SBOM `8cdcbaff…`,
+  SHA256SUMS `b9f3eb0d…`; 1,563 Release tests, 1,077 package entries (773,011,784 expanded bytes, 52 components), every
+  packaged route (179 YARA rules) and the window smoke passed.
 - Shipped in 0.1.44 (DN-097): local user accounts and Administrators membership are entries in the persistence TOFU
   baseline, with `T1136.001` findings for a new account or a privilege change. Read-only and unelevated; no logon times
   are recorded. Details, including the two defects the harness caught (duplicate paging; a domain-name-resolution stall
